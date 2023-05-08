@@ -1,9 +1,14 @@
-<script lang="ts">
-	import type { PageData } from './$types';
+<script>
+	export let data;
 
-	export let data: PageData;
+	console.log(data);
+	$: ({ Boards } = data);
 </script>
 
 <h1>About this site</h1>
 <p>TODO...</p>
 <a href="/">Home</a>
+{$Boards.data}
+{#each $Boards.data.boards as board}
+	{board}
+{/each}

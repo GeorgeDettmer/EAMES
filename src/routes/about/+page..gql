@@ -1,0 +1,18 @@
+query Boards {
+	boards {
+		id
+		assembly {
+			id
+			name
+		}
+		job {
+			id
+			customer {
+				id
+				name
+			}
+			quantity
+			batch
+		}
+	}
+}

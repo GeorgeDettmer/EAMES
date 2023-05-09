@@ -3,7 +3,7 @@
 /** @type {import('houdini').ConfigFile} */
 const config = {
 	watchSchema: {
-		url: 'https://easl-hasura-8543.loca.lt/v1/graphql',
+		url: 'http://192.168.1.221:8080/v1/graphql',
 		interval: 5000
 	},
 	plugins: {

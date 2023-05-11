@@ -1,7 +1,7 @@
 <script lang="”ts”">
 	import { graphql } from '$houdini';
 
-	$: assemblies = graphql(`
+	const assemblies = graphql(`
 		query Assemblies @load {
 			assemblies {
 				id

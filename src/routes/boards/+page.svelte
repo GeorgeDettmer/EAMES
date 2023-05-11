@@ -9,11 +9,15 @@
 <h1>About this site</h1>
 <p>TODO...</p>
 <a href="/">Home</a>
-{#each $Boards.data.boards as board}
-	<br />{board.id}
-	{board.job?.assembly.name}
-	{board.job?.assembly.revision_external}
-	{board.job?.customer.name}
+{#if Boards}
+	{#each $Boards.data.boards as board}
+		<br />{board.id}
+		{board.job?.assembly.name}
+		{board.job?.assembly.revision_external}
+		{board.job?.customer.name}
+	{:else}
+		No Boards
+	{/each}
 {:else}
-	No Boards
-{/each}
+	Undefined
+{/if}

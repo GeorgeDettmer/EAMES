@@ -2,6 +2,7 @@
 
 /** @type {import('houdini').ConfigFile} */
 const config = {
+	/* schemaPath: './schema.graphql', */
 	watchSchema: {
 		url: 'http://192.168.1.221:8080/v1/graphql',
 		interval: 5000

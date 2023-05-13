@@ -4,7 +4,7 @@
 const config = {
 	/* schemaPath: './schema.graphql', */
 	watchSchema: {
-		url: 'https://easl-hasura-8543.loca.lt/v1/graphql',
+		url: 'https://easl-hasura-skqluw3.loca.lt/v1/graphql',
 		interval: 5000
 	},
 	plugins: {

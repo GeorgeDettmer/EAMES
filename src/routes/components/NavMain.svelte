@@ -46,6 +46,7 @@
 	};
 	function navigateTo(path: string) {
 		console.log('NAVIGATE TO:', path);
+		location.replace(path);
 	}
 
 	const toggleTheme = () => {
@@ -86,7 +87,6 @@
 	}
 
 	onMount(() => {
-		console.log('onMounted');
 		document.addEventListener('scanComplete', onScanComplete);
 
 		let timeSinceActivity = 0;

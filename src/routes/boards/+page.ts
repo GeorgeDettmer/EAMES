@@ -27,6 +27,6 @@ export const _houdini_load = graphql(`
 /* export const _BoardsVariables: BoardsVariables = ({ params }) => {
 	console.log('Ppppppppppppppp', params);
 	return {
-		customer: 'NXP'
+		id: 4
 	};
 }; */

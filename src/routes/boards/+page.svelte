@@ -3,13 +3,14 @@
 	export let data: PageData;
 
 	console.log(data);
+	let { Boards } = data;
 	$: ({ Boards } = data);
 </script>
 
 <h1>About this site</h1>
 <p>TODO...</p>
 <a href="/">Home</a>
-{#if Boards}
+{#if !$Boards.fetching}
 	{#each $Boards.data.boards as board}
 		<br />{board.id}
 		{board.job?.assembly.name}
@@ -19,5 +20,5 @@
 		No Boards
 	{/each}
 {:else}
-	Undefined
+	Fetching...
 {/if}

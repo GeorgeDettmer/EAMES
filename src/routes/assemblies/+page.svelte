@@ -1,41 +1,31 @@
 <script lang="ts">
-	/* 	import { graphql } from '$houdini';
-	import type { PageData } from './$houdini';
-	const assemblies: PageData = graphql(`
-		query Assemblies @load {
-			assemblies {
-				id
-				name
-			}
-		}
-	`); */
+	import type { PageData } from '../assemblies/$types';
 
-	/* import type { PageData } from './$houdini';
 	export let data: PageData;
 
-	console.log(data);
-	let { Assemblies } = data;
-	$: ({ Assemblies } = data); */
+	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
 
-	import { graphql } from '$houdini';
-	const Assemblies = graphql(`
-		subscription Assemblies {
-			assemblies {
-				id
-				name
+	const assembliesSub = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription Assemblies {
+				assemblies {
+					id
+					name
+					revision_external
+					revision_internal
+				}
 			}
-		}
-	`);
-	$: Assemblies.listen();
+		`
+	});
 </script>
 
-<a href="/">Home</a>
-{#if !$Assemblies.fetching}
-	{#each $Assemblies.data.assemblies as item}
-		<div>{item.name}</div>
-	{:else}
-		"Loading"
-	{/each}
+{#if !$assembliesSub.data}
+	<p>No new messages</p>
 {:else}
-	Fetching...
+	<ul>
+		{#each $assembliesSub.data.assemblies as assembly}
+			<li>{assembly.id}: "{assembly.name}"</li>
+		{/each}
+	</ul>
 {/if}

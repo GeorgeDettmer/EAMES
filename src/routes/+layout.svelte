@@ -1,18 +1,60 @@
-<script>
-	import '../app.postcss';
-	import { fade } from 'svelte/transition';
-	import NavMain from './components/NavMain.svelte';
+<script lang="ts">
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	const gqlUrl = '://easl-hasura-skqluw3.loca.lt/v1/graphql';
+	const gqlHttp = 'https' + gqlUrl;
+	const gqlWs = 'wss' + gqlUrl;
+	import {
+		Client,
+		setContextClient,
+		cacheExchange,
+		fetchExchange,
+		subscriptionExchange
+	} from '@urql/svelte';
+	import { createClient as createWSClient } from 'graphql-ws';
+	const getToken = () => `cMJvwCG29qElvQ8mnouvac8BBDI0dCJT`;
+
+	const wsClient = createWSClient({
+		url: gqlWs,
+		connectionParams: {
+			headers: { 'x-hasura-admin-secret': getToken() }
+		}
+	});
+	const client = new Client({
+		url: gqlHttp,
+		exchanges: [
+			cacheExchange,
+			fetchExchange,
+			subscriptionExchange({
+				forwardSubscription(request) {
+					const input = {
+						...request,
+						query: request.query || ''
+					};
+					return {
+						subscribe(sink) {
+							const unsubscribe = wsClient.subscribe(input, sink);
+							return { unsubscribe };
+						}
+					};
+				}
+			})
+		],
+		fetchOptions: () => {
+			const token = getToken();
+			return {
+				headers: {
+					//authorization: token ? `Bearer ${token}` : '',
+					'x-hasura-admin-secret': token
+				}
+			};
+		}
+	});
+
+	setContextClient(client);
 </script>
 
-<NavMain />
-<main class="h-screen overflow-y-scroll">
-	<div class="mx-auto max-w-8xl py-16 sm:px-6 lg:px-8">
-		<div class="px-4 py-6 sm:px-0">
-			<div class="rounded-lg border-4 border-dashed border-grey-400">
-				<div in:fade={{ duration: 500 }}>
-					<slot />
-				</div>
-			</div>
-		</div>
-	</div>
-</main>
+<h1>Layout...</h1>
+<slot />

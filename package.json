@@ -29,6 +29,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@urql/devtools": "^2.0.3",
 		"@urql/svelte": "^4.0.1",
 		"graphql-ws": "^5.13.1"
 	}

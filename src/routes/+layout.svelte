@@ -13,6 +13,7 @@
 		fetchExchange,
 		subscriptionExchange
 	} from '@urql/svelte';
+	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
 	const getToken = () => `cMJvwCG29qElvQ8mnouvac8BBDI0dCJT`;
 
@@ -40,7 +41,8 @@
 						}
 					};
 				}
-			})
+			}),
+			devtoolsExchange
 		],
 		fetchOptions: () => {
 			const token = getToken();

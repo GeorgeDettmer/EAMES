@@ -25,10 +25,10 @@
 			}
 		`,
 		variables: {
-			batch: $page.url.searchParams.get('batch')
+			batch: $page.url.searchParams.get('batch') || 'May23'
 		}
 	});
-
+	//$: faultTotal = $faultsQueryStore.data.faults.length;
 	let faultSummary = new Map();
 	$: {
 		$faultsQueryStore?.data?.faults.forEach((fault) => {
@@ -39,6 +39,7 @@
 	}
 </script>
 
+Faults:
 {#if $faultsQueryStore.fetching}
 	<p>Loading...</p>
 {:else if $faultsQueryStore.error}
@@ -48,6 +49,8 @@
 	{#each [...faultSummary].sort((a, b) => b[1] - a[1]) as [type, count]}
 		<p>{type}: {count}</p>
 	{/each}
+	<hr />
+	<hr />
 	{#each $faultsQueryStore.data.faults as fault}
 		<p>{fault.ID}</p>
 		<pre>{JSON.stringify(fault)}</pre>

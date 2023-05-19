@@ -51,8 +51,8 @@
 	<ul>
 		{#each $boardsQuery.data.boards as board}
 			<li>
-				{board.id}:
-				<pre>{JSON.stringify(board)}</pre>
+				{board.id}: {board.job.assembly.name}
+				Signoffs:{JSON.stringify(board.signoffsByBoardId)}
 			</li>
 		{/each}
 	</ul>

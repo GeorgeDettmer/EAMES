@@ -3,9 +3,9 @@
 
 	export let data: LayoutData;
 
-	const gqlUrl = '://easl-hasura-skqluw3.loca.lt/v1/graphql';
-	const gqlHttp = 'https' + gqlUrl;
-	const gqlWs = 'wss' + gqlUrl;
+	const gqlUrl = '://192.168.1.221:8080//v1/graphql';
+	const gqlHttp = 'http' + gqlUrl;
+	const gqlWs = 'ws' + gqlUrl;
 	import {
 		Client,
 		setContextClient,

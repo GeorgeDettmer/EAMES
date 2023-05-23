@@ -78,6 +78,16 @@
 	});
 	//$: changesTotal = $packageHistoryQueryStore?.data?.mycronic_tpsys_packages?.length || 0;
 	$: console.log($packageHistoryQueryStore.data);
+
+	function compare(obj1, obj2) {
+		let newObj = {};
+		Object.keys(obj1).forEach((key) => {
+			if (obj1[key] !== obj2[key]) {
+				newObj[key] = [obj1[key], obj2[key]];
+			}
+		});
+		return newObj;
+	}
 </script>
 
 <input id="search" type="text" />
@@ -97,9 +107,11 @@ History:
 {:else}
 	{$page.url.searchParams.get('name')} ({$packageHistoryQueryStore.data.mycronic_tpsys_packages
 		.length})
-	{#each $packageHistoryQueryStore.data.mycronic_tpsys_packages as pkg}
+	{#each $packageHistoryQueryStore.data.mycronic_tpsys_packages as pkg, idx}
 		<p>{pkg.id}</p>
-		<pre>{JSON.stringify(pkg)}</pre>
+		<pre>{JSON.stringify(
+				compare($packageHistoryQueryStore.data.mycronic_tpsys_packages[idx - 1], pkg)
+			)}</pre>
 		<hr />
 	{/each}
 {/if}

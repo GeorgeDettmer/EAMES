@@ -58,5 +58,5 @@
 	setContextClient(client);
 </script>
 
-<h1>Layout...</h1>
+<!-- <h1>Layout...</h1> -->
 <slot />

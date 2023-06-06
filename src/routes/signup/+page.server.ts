@@ -15,16 +15,29 @@ export const actions: Actions = {
 		const formData = Object.fromEntries(await event.request.formData());
 
 		// Verify that we have an email and a password
-		if (!formData.username || !formData.password) {
+		if (!formData.username || !formData.firstname || !formData.lastname) {
 			return fail(400, {
-				error: 'Missing username or password'
+				error: 'Missing username, firstname or lastname'
 			});
 		}
 
-		const { username, password } = formData as { username: string; password: string };
+		const { username, firstname, lastname, passcode, password } = formData as {
+			username: string;
+			firstname: string;
+			lastname: string;
+			passcode: string;
+			password: string;
+		};
 
 		// Create a new user
-		const { error } = await createUser(username, password);
+		const { error } = await createUser(
+			username,
+			firstname,
+			lastname,
+			undefined,
+			password,
+			passcode
+		);
 
 		// If there was an error, return an invalid response
 		if (error) {

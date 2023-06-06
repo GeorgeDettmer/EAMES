@@ -1,7 +1,8 @@
+import { HASURA_URL } from '$env/static/private';
 import { Client, fetchExchange } from '@urql/core';
 
 export const client = new Client({
-	url: 'http://192.168.1.221:8080//v1/graphql',
+	url: HASURA_URL,
 	exchanges: [fetchExchange],
 	fetchOptions: () => {
 		return {

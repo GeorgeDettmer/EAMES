@@ -25,7 +25,7 @@
 {:else}
 	<ul>
 		{#each $assembliesSub.data.assemblies as assembly}
-			<li>{assembly.id}: "{assembly.name}"</li>
+			<li style="color:{'red'}">{assembly.id}: "{assembly.name}"</li>
 		{/each}
 	</ul>
 {/if}

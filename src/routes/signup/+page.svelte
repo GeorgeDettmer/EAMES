@@ -19,8 +19,23 @@
 		</div>
 
 		<div class="group">
+			<label for="firstname">Firstname</label>
+			<input type="text" name="firstname" id="firstname" required />
+		</div>
+
+		<div class="group">
+			<label for="lastname">Lastname</label>
+			<input type="text" name="lastname" id="lastname" required />
+		</div>
+
+		<div class="group">
 			<label for="password">Password</label>
-			<input type="password" name="password" id="password" required />
+			<input type="password" name="password" id="password" />
+		</div>
+
+		<div class="group">
+			<label for="passcode">Passcode</label>
+			<input type="password" name="passcode" id="passcode" />
 		</div>
 
 		<div class="submit-container">

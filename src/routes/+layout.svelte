@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { PUBLIC_HASURA_URL } from '$env/static/public';
 	import type { LayoutData } from './$types';
 	import { enhance } from '$app/forms';
 	export let data: LayoutData;
 
-	const gqlUrl = '://192.168.1.221:8080//v1/graphql';
+	const gqlUrl = '://easl-hasura-skqluw3.loca.lt/v1/graphql';
 	const gqlHttp = 'http' + gqlUrl;
 	const gqlWs = 'ws' + gqlUrl;
 	import {

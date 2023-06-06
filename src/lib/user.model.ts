@@ -3,6 +3,8 @@ import { JWT_ACCESS_SECRET } from '$env/static/private';
 import jwt from 'jsonwebtoken';
 import { client } from './graphql';
 
+import { generateRandomString, validate } from '$lib/utils';
+
 const _getUserByUsername = `#graphql
 	query getUserByUsername($username: String!) {
 		users(where: {username: {_eq: $username}}) {
@@ -34,70 +36,118 @@ const _getUserByToken = `#graphql
 	}
 `;
 
-const users = [
-	{ id: '1', username: 'gdettmer', password: 'test', passcode: '1234', initials: 'GD' }
-];
-const tokens = [{ token: 'abcd', username: 'gdettmer' }];
-/* export const findUser = (username: string) => {
-	return users.filter((u) => u.username == username)?.[0];
-}; */
+const _insertLoginToken = `#graphql
+	mutation insertLoginToken($token: String!, $user_id: uuid!) {
+		insert_users_tokens_one(object: {user_id: $user_id, token: $token}) {
+			token
+			user_id
+		}
+	}
+`;
+
+const _insertUser = `#graphql
+	mutation insertUser($username: String!, $first_name: String!, $last_name: String!, $initials: String!, $passcode: String, $password: String) {
+		insert_users_one(object: {username: $username, first_name: $first_name, last_name: $last_name, initials: $initials, passcode: $passcode, password: $password}) {
+			id
+			username
+			first_name
+			last_name
+			initials
+			passcode
+			password
+		}
+	}
+`;
+
 export const findUser = async (username: string) => {
 	const userQuery = await client.query(_getUserByUsername, { username: username });
 	const user = userQuery?.data?.users?.[0];
-	console.log('findUser request: ', JSON.stringify(user));
+	console.log('findUser request:', JSON.stringify(user));
 	return user;
 };
 export const getUserFromToken = async (token: string) => {
 	const tokenQuery = await client.query(_getUserByToken, { token: token });
 	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
-	console.log('getUserFromToken request: ', JSON.stringify(user));
+	console.log('getUserFromToken request:', JSON.stringify(user));
 	return user;
 };
+const addUser = async (
+	username: string,
+	firstName: string,
+	lastName: string,
+	initials?: string,
+	passcode?: string,
+	password?: string
+) => {
+	console.log('Add user');
+	const result = await client.mutation(_insertUser, {
+		username: username.toLowerCase(),
+		first_name: firstName,
+		last_name: lastName,
+		initials: initials,
+		passcode: passcode ?? null,
+		password: password ?? null
+	});
+	const newUser = result?.data?.insert_users_one;
+	console.log('addUser:', JSON.stringify(newUser));
+	return newUser;
+};
+export const addLoginToken = async (userId: string, loginToken?: string) => {
+	if (!loginToken) {
+		loginToken = generateRandomString();
+	}
 
-const generateRandom = (length: number = 8) => {
-	return crypto.randomUUID().split('-').join('').slice(0, length);
+	const result = await client.mutation(_insertLoginToken, { token: loginToken, user_id: userId });
+	const newToken = result?.data?.insert_users_tokens_one?.token;
+	console.log('NEW TOKEN:', result?.data?.insert_users_tokens_one);
+	return newToken;
 };
 
 const createUser = async (
 	username: string,
-	password: string,
-	initials: string = '',
-	passcode: string = ''
+	firstName: string,
+	lastName: string,
+	initials?: string,
+	password?: string,
+	passcode?: string
 ) => {
-	// Check if user exists
-	if (!username || typeof username != 'string') {
+	// Check if username is valid
+	if (!validate(username)) {
 		return {
-			error: 'A password must be provided'
+			error: 'Invalid username'
 		};
 	}
+	//Check if user with username already exits
 	const user = await findUser(username);
-
 	if (user) {
 		return {
 			error: 'User with this username already exists'
 		};
 	}
-	if (!password || typeof password != 'string') {
+	let missingInfo = [];
+	//Check if a passcode or password was provided
+	if (!validate(firstName)) {
+		missingInfo.push('first name');
+	} else if (!validate(lastName)) {
+		missingInfo.push('last name');
+	}
+	if (missingInfo.length > 0) {
 		return {
-			error: 'A password must be provided'
+			error: 'Missing information: ' + missingInfo.join(', ')
 		};
+	}
+	if (!initials) {
+		initials = (firstName?.[0] + lastName?.[0]).toUpperCase();
+	}
+	if (!passcode) {
+		passcode = Math.floor(Math.random() * 9000 + 1000).toString();
 	}
 
 	try {
-		const user = {
-			id: crypto.randomUUID(),
-			username: username,
-			password: password,
-			passcode: passcode || Math.floor(Math.random() * 9000 + 1000).toString(),
-			initials: initials || ''
-		};
-
-		users.push(user);
-		console.log('NEW USER: ', user, '=>', users);
-
-		tokens.push({ token: generateRandom(8), username: username });
-		console.log('NEW USER TOKEN: ', tokens);
-
+		let user = await addUser(username, firstName, lastName, initials, passcode, password);
+		console.log(JSON.stringify(user));
+		let token = await addLoginToken(user.id);
+		console.log(JSON.stringify(token));
 		return { user };
 	} catch (error) {
 		return {

@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { redirect, fail } from '@sveltejs/kit';
-import { loginUsernamePass } from '$lib/user.model';
+import { loginUsernamePass, loginToken } from '$lib/user.model';
 
 export const load: PageServerLoad = (event) => {
 	const user = event.locals.user;
@@ -14,11 +14,11 @@ export const actions: Actions = {
 	login: async (event) => {
 		const formData = Object.fromEntries(await event.request.formData());
 
-		if ((!formData.username || !formData.password) && !formData.token) {
+		/* if ((!formData.username || !formData.password) && !formData.token) {
 			return fail(400, {
-				error: 'Missing email or password'
+				error: 'Missing email or password / token'
 			});
-		}
+		} */
 
 		const { username, password, login_token } = formData as {
 			username: string;
@@ -26,14 +26,16 @@ export const actions: Actions = {
 			login_token: string;
 		};
 
-		const { error, token } = await loginUsernamePass(username, password);
+		const { error, token } = login_token
+			? await loginToken(login_token)
+			: await loginUsernamePass(username, password);
 
 		if (error) {
 			return fail(401, {
 				error
 			});
 		}
-		console.log('USER LOGIN: ', username);
+		console.log('USER LOGIN: ', username ?? loginToken);
 		// Set the cookie
 		event.cookies.set('AuthorizationToken', `Bearer ${token}`, {
 			httpOnly: false,

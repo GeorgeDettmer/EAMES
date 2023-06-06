@@ -20,11 +20,16 @@ const _getUserByToken = `#graphql
 	query getUserByToken($token: String!) {
 		users_tokens(where: {token: {_eq: $token}}) {
 			token
-			username
-			first_name
-			last_name
-			initials
-			passcode
+			user_id
+			active
+			expires_at
+			users_tokens_user {
+				id
+				username
+				first_name
+				last_name
+				initials
+			}
 		}
 	}
 `;
@@ -39,13 +44,14 @@ const tokens = [{ token: 'abcd', username: 'gdettmer' }];
 export const findUser = async (username: string) => {
 	const userQuery = await client.query(_getUserByUsername, { username: username });
 	const user = userQuery?.data?.users?.[0];
-	console.log(JSON.stringify(user));
+	console.log('findUser request: ', JSON.stringify(user));
 	return user;
 };
-export const getUserFromToken = (token: string) => {
-	const t = tokens.filter((t) => t.token == token)?.[0];
-	if (!t) return null;
-	return findUser(t.username);
+export const getUserFromToken = async (token: string) => {
+	const tokenQuery = await client.query(_getUserByToken, { token: token });
+	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
+	console.log('getUserFromToken request: ', JSON.stringify(user));
+	return user;
 };
 
 const generateRandom = (length: number = 8) => {
@@ -101,21 +107,15 @@ const createUser = async (
 };
 
 const loginUsernamePass = async (username: string = '', pass: string) => {
-	// Check if user exists
-	/* const user = await db.user.findUnique({
-		where: {
-			email
-		}
-	}); */
 	const user = await findUser(username);
 	if (!user) {
 		return {
 			error: 'Could not find user with this username: ' + username
 		};
 	}
-	// Verify the password
 	//const passwordIsValid = await bcrypt.compare(password, user.password);
-	const valid = user.passcode == pass || user.password == pass;
+	//Check if suppied pass string matches either the password or passcode values
+	const valid = user?.passcode === pass || user?.password === pass;
 	if (!valid) {
 		return {
 			error: 'Invalid credentials'
@@ -134,6 +134,24 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 	return { token };
 };
 
-const loginToken = async (loginToken: string) => {};
+const loginToken = async (loginToken: string) => {
+	const user = await getUserFromToken(loginToken);
+	if (!user) {
+		return {
+			error: 'Could not find user associated to this token: ' + loginToken
+		};
+	}
 
-export { createUser, loginUsernamePass };
+	const jwtUser = {
+		id: user.id,
+		username: user.username
+	};
+
+	const token = jwt.sign(jwtUser, JWT_ACCESS_SECRET, {
+		expiresIn: '1d'
+	});
+
+	return { token };
+};
+
+export { createUser, loginUsernamePass, loginToken };

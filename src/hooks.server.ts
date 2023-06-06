@@ -14,7 +14,7 @@ const getUserFromToken = (token: string) => {
 
 export const handle = SvelteKitAuth({
 	providers: [
-		Credentials({
+		/* Credentials({
 			// `credentials` is used to generate a form on the sign in page.
 			// You can specify which fields should be submitted, by adding keys to the `credentials` object.
 			// e.g. domain, username, password, 2FA token, etc.
@@ -44,21 +44,34 @@ export const handle = SvelteKitAuth({
 					// You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
 				}
 			}
-		}),
+		}), */
 		Credentials({
 			// `credentials` is used to generate a form on the sign in page.
 			// You can specify which fields should be submitted, by adding keys to the `credentials` object.
 			// e.g. domain, username, password, 2FA token, etc.
 			// You can pass any HTML attribute to the <input> tag through the object.
-			id: 'token',
-			name: 'Token',
+			//id: 'token',
+			//name: 'Token',
 			credentials: {
-				token: { label: 'Token', type: 'password' }
+				token: { label: 'Token', type: 'password' },
+				username: { label: 'Username', type: 'text' },
+				password: { label: 'Password', type: 'password' },
+				passcode: { label: 'Passcode', type: 'password' }
 			},
 			async authorize(credentials, req) {
 				// Add logic here to look up the user from the credentials supplied
-				console.log('TOKEN LOGIN: ', credentials.token);
-				const user = getUserFromToken(credentials.token);
+				console.log('LOGIN: ', credentials);
+				let user = null;
+				if (credentials?.token) {
+					console.log('TOKEN LOGIN: ', credentials.token);
+					user = getUserFromToken(credentials.token);
+				} else if (credentials?.username) {
+					console.log('USERNAME LOGIN: ', credentials.username);
+					user = findUser(credentials.username);
+					if (credentials?.password != user?.password && credentials?.passcode != user?.passcode) {
+						user = null;
+					}
+				}
 				if (user) {
 					console.log('LOGIN USER: ', user);
 					// Any object returned will be saved in `user` property of the JWT

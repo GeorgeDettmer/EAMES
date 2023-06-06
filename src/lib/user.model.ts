@@ -1,13 +1,46 @@
 import { JWT_ACCESS_SECRET } from '$env/static/private';
 //import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { client } from './graphql';
+
+const _getUserByUsername = `#graphql
+	query getUserByUsername($username: String!) {
+		users(where: {username: {_eq: $username}}) {
+			id
+			username
+			first_name
+			last_name
+			initials
+			passcode
+		}
+	}
+`;
+
+const _getUserByToken = `#graphql
+	query getUserByToken($token: String!) {
+		users_tokens(where: {token: {_eq: $token}}) {
+			token
+			username
+			first_name
+			last_name
+			initials
+			passcode
+		}
+	}
+`;
 
 const users = [
 	{ id: '1', username: 'gdettmer', password: 'test', passcode: '1234', initials: 'GD' }
 ];
 const tokens = [{ token: 'abcd', username: 'gdettmer' }];
-export const findUser = (username: string) => {
+/* export const findUser = (username: string) => {
 	return users.filter((u) => u.username == username)?.[0];
+}; */
+export const findUser = async (username: string) => {
+	const userQuery = await client.query(_getUserByUsername, { username: username });
+	const user = userQuery?.data?.users?.[0];
+	console.log(JSON.stringify(user));
+	return user;
 };
 export const getUserFromToken = (token: string) => {
 	const t = tokens.filter((t) => t.token == token)?.[0];
@@ -31,7 +64,7 @@ const createUser = async (
 			error: 'A password must be provided'
 		};
 	}
-	const user = findUser(username);
+	const user = await findUser(username);
 
 	if (user) {
 		return {
@@ -67,24 +100,22 @@ const createUser = async (
 	}
 };
 
-const loginUser = async (username: string, credential: string) => {
+const loginUsernamePass = async (username: string = '', pass: string) => {
 	// Check if user exists
 	/* const user = await db.user.findUnique({
 		where: {
 			email
 		}
 	}); */
-	const user = findUser(username);
-
+	const user = await findUser(username);
 	if (!user) {
 		return {
 			error: 'Could not find user with this username: ' + username
 		};
 	}
-
 	// Verify the password
 	//const passwordIsValid = await bcrypt.compare(password, user.password);
-	const valid = user.passcode === credential || user.password === credential;
+	const valid = user.passcode == pass || user.password == pass;
 	if (!valid) {
 		return {
 			error: 'Invalid credentials'
@@ -103,4 +134,6 @@ const loginUser = async (username: string, credential: string) => {
 	return { token };
 };
 
-export { createUser, loginUser };
+const loginToken = async (loginToken: string) => {};
+
+export { createUser, loginUsernamePass };

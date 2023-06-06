@@ -17,25 +17,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 				throw new Error('Something went wrong');
 			}
 
-			/* const user = await db.user.findUnique({
-				where: {
-					id: jwtUser.id
-				}
-			}); */
-
-			const user = findUser(jwtUser?.username);
-
+			const user = await findUser(jwtUser?.username);
 			if (!user) {
 				throw new Error('User not found');
 			}
 
-			const sessionUser = {
+			event.locals.user = {
 				id: user.id,
 				username: user.username,
 				initials: user.initials
 			};
-
-			event.locals.user = sessionUser;
 		} catch (error) {
 			console.error(error);
 		}

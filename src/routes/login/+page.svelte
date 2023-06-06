@@ -15,12 +15,17 @@
 	<form method="post" action="?/login" use:enhance>
 		<div class="group">
 			<label for="username">Username</label>
-			<input type="username" name="username" id="username" required />
+			<input type="username" name="username" id="username" />
 		</div>
 
 		<div class="group">
 			<label for="password">Password</label>
-			<input type="password" name="password" id="password" required />
+			<input type="password" name="password" id="password" />
+		</div>
+
+		<div class="group">
+			<label for="login_token">Token</label>
+			<input type="password" name="login_token" id="token" />
 		</div>
 
 		<div class="submit-container">

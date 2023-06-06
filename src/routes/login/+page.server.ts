@@ -29,12 +29,20 @@ export const actions: Actions = {
 		const { error, token } = login_token
 			? await loginToken(login_token)
 			: await loginUsernamePass(username.toLowerCase(), password);
-
+		console.log('JWT TOKEN:', token);
 		if (error) {
 			return fail(401, {
 				error
 			});
 		}
+
+		/* token["https://hasura.io/jwt/claims"] = {
+			"x-hasura-default-role": "user",
+			"x-hasura-allowed-roles": ["user"],
+			"x-hasura-user-id": "123",
+			"x-hasura-org-id": "456",
+			"x-hasura-custom": "custom-value"
+		  } */
 		console.log('USER LOGIN: ', username ?? loginToken);
 		// Set the cookie
 		event.cookies.set('AuthorizationToken', `Bearer ${token}`, {

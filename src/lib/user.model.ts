@@ -156,6 +156,20 @@ const createUser = async (
 	}
 };
 
+const getJwt = (user) => {
+	return {
+		id: user.id,
+		username: user.username,
+		firstname: user.first_name,
+		lastname: user.last_name,
+		initials: user.initials,
+		'https://hasura.io/jwt/claims': {
+			'x-hasura-default-role': user.username == 'gdettmer' ? 'admin' : 'user',
+			'x-hasura-allowed-roles': ['user', 'admin'],
+			'x-hasura-user-id': user.id
+		}
+	};
+};
 const loginUsernamePass = async (username: string = '', pass: string) => {
 	const user = await findUser(username);
 	if (!user) {
@@ -172,10 +186,7 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 		};
 	}
 
-	const jwtUser = {
-		id: user.id,
-		username: user.username
-	};
+	const jwtUser = getJwt(user);
 
 	const token = jwt.sign(jwtUser, JWT_ACCESS_SECRET, {
 		expiresIn: '1d'
@@ -192,10 +203,7 @@ const loginToken = async (loginToken: string) => {
 		};
 	}
 
-	const jwtUser = {
-		id: user.id,
-		username: user.username
-	};
+	const jwtUser = getJwt(user);
 
 	const token = jwt.sign(jwtUser, JWT_ACCESS_SECRET, {
 		expiresIn: '1d'

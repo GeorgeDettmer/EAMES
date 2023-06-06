@@ -16,12 +16,21 @@
 	} from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
-	const getToken = () => `cMJvwCG29qElvQ8mnouvac8BBDI0dCJT`;
+	//const getToken = () => `cMJvwCG29qElvQ8mnouvac8BBDI0dCJT`;
 
+	function getCookie(name) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		//if (parts.length === 2) {
+		return parts?.pop()?.split(';')?.shift() ?? '';
+		//}
+	}
+	const getToken = () => decodeURI(getCookie('AuthorizationToken'));
+	console.log(getToken());
 	const wsClient = createWSClient({
 		url: gqlWs,
 		connectionParams: {
-			headers: { 'x-hasura-admin-secret': getToken() }
+			headers: { Authorization: `${getToken()}`, 'X-Hasura-Role': 'user' }
 		}
 	});
 	const client = new Client({
@@ -49,19 +58,14 @@
 			const token = getToken();
 			return {
 				headers: {
-					//authorization: token ? `Bearer ${token}` : '',
-					'x-hasura-admin-secret': token
+					Authorization: token ? `${token}` : ''
+					//'x-hasura-admin-secret': token
 				}
 			};
 		}
 	});
 
 	setContextClient(client);
-
-	/* async function handleSignIn(id, options) {
-		let response = await signIn(id, options);
-		console.log(response);
-	} */
 
 	import { page } from '$app/stores';
 </script>
@@ -77,5 +81,5 @@
 		<a href="/login">Log In</a>
 	{/if}
 </p>
-<p>{JSON.stringify($page.data)}</p>
+<p>{JSON.stringify($page.data?.user)}</p>
 <slot />

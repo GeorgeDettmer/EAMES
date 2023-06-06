@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
-
+	import { enhance } from '$app/forms';
 	export let data: LayoutData;
 
 	const gqlUrl = '://192.168.1.221:8080//v1/graphql';
@@ -57,34 +57,23 @@
 
 	setContextClient(client);
 
-	async function handleSignIn(id, options) {
+	/* async function handleSignIn(id, options) {
 		let response = await signIn(id, options);
 		console.log(response);
-	}
+	} */
 
-	import { signIn, signOut } from '@auth/sveltekit/client';
 	import { page } from '$app/stores';
 </script>
 
-<h1>SvelteKit Auth Example</h1>
 <p>
-	{#if $page.data.session}
-		{#if $page.data.session.user?.image}
-			<span style="background-image: url('{$page.data.session.user.image}')" class="avatar" />
-		{:else}
-			<span>{$page.data.session.user?.initials || '-'}</span>
-		{/if}
-		<span class="signedInText">
-			<small>Signed in as</small><br />
-			<strong>{$page.data.session.user?.name ?? '#User'}</strong>
-		</span>
-		<p>{JSON.stringify($page.data.session)}</p>
-		<button on:click={() => signOut()} class="button">Sign out</button>
+	{#if data.user}
+		<span>{data.user.id}</span> - <span>{data.user.username}</span>
+		<form method="POST" action="/login?/logout" use:enhance>
+			<button type="submit" name="logout" value="true">Logout</button>
+		</form>
 	{:else}
-		<span class="notSignedInText">You are not signed in</span>
-		<button on:click={() => handleSignIn('credentials', { username: 'gdettmer', password: 'test' })}
-			>Sign In with Credentials</button
-		>
+		<a href="/signup">Sign Up</a>
+		<a href="/login">Log In</a>
 	{/if}
 </p>
 <p>{JSON.stringify($page.data)}</p>

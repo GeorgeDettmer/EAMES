@@ -79,7 +79,6 @@ const addUser = async (
 	passcode?: string,
 	password?: string
 ) => {
-	console.log('Add user');
 	const result = await client.mutation(_insertUser, {
 		username: username.toLowerCase(),
 		first_name: firstName,
@@ -96,7 +95,6 @@ export const addLoginToken = async (userId: string, loginToken?: string) => {
 	if (!loginToken) {
 		loginToken = generateRandomString();
 	}
-
 	const result = await client.mutation(_insertLoginToken, { token: loginToken, user_id: userId });
 	const newToken = result?.data?.insert_users_tokens_one?.token;
 	console.log('NEW TOKEN:', result?.data?.insert_users_tokens_one);

@@ -18,13 +18,18 @@
 		"@types/jsonwebtoken": "^9.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
+		"autoprefixer": "^10.4.14",
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte": "^2.26.0",
+		"postcss": "^8.4.24",
+		"postcss-load-config": "^4.0.1",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
+		"svelte-preprocess": "^5.0.3",
+		"tailwindcss": "^3.3.2",
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.0",
 		"vite": "^4.3.0"
@@ -33,8 +38,12 @@
 	"dependencies": {
 		"@auth/core": "^0.7.1",
 		"@auth/sveltekit": "^0.3.1",
+		"@popperjs/core": "^2.11.8",
 		"@urql/devtools": "^2.0.3",
 		"@urql/svelte": "^4.0.1",
+		"classnames": "^2.3.2",
+		"flowbite": "^1.6.5",
+		"flowbite-svelte": "^0.37.4",
 		"graphql-ws": "^5.13.1",
 		"jsonwebtoken": "^9.0.0"
 	}

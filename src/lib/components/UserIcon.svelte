@@ -13,9 +13,7 @@
 		pill
 		color="light"
 		class={buttonClass}
-		style={user?.profile?.colour
-			? `background-color:${user?.profile?.colour}`
-			: 'background-color:#64748b'}
+		style={user?.color ? `background-color:${user.color}` : 'background-color:#64748b'}
 	>
 		<Avatar {size} class={avatarClass}>
 			{#if user?.initials}
@@ -43,9 +41,7 @@
 	<Avatar
 		{size}
 		class={avatarClass + 'ml-2 text-white'}
-		style={user?.profile?.colour
-			? `background-color:${user?.profile?.colour}`
-			: 'background-color:#64748b'}
+		style={user?.color ? `background-color:${user?.color}` : 'background-color:#64748b'}
 	>
 		{#if user?.initials}
 			<span class="text-white">{user.initials}</span>

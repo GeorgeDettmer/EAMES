@@ -17,9 +17,8 @@
 	} from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
-	//const getToken = () => `cMJvwCG29qElvQ8mnouvac8BBDI0dCJT`;
 
-	function getCookie(name) {
+	function getCookie(name: string) {
 		const value = `; ${document.cookie}`;
 		const parts = value.split(`; ${name}=`);
 		return parts?.pop()?.split(';')?.shift() ?? '';
@@ -58,7 +57,6 @@
 			return {
 				headers: {
 					Authorization: token ? `${token}` : ''
-					//'x-hasura-admin-secret': token
 				}
 			};
 		}
@@ -88,9 +86,11 @@
 </svelte:head>
 
 <Navbar />
+
 <main class="h-screen overflow-y-scroll">
 	<div class="mx-auto max-w-8xl py-16 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
+			<p>{JSON.stringify($page.data?.user)}</p>
 			<div class="rounded-lg border-4 border-dashed border-grey-400">
 				<div in:fade={{ duration: 500 }}>
 					<slot />

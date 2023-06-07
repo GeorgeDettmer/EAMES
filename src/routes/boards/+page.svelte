@@ -46,7 +46,7 @@
 {#if $boardsQuery.fetching}
 	<p>Loading...</p>
 {:else if $boardsQuery.error}
-	<p>Oopsie! {$boardsQuery.error.message}</p>
+	<p>{$boardsQuery.error.message}</p>
 {:else}
 	<ul>
 		{#each $boardsQuery.data.boards as board}

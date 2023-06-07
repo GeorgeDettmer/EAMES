@@ -13,7 +13,9 @@ const _getUserByUsername = `#graphql
 			first_name
 			last_name
 			initials
+			password
 			passcode
+			color
 		}
 	}
 `;
@@ -31,6 +33,7 @@ const _getUserByToken = `#graphql
 				first_name
 				last_name
 				initials
+				color
 			}
 		}
 	}

@@ -1,9 +1,12 @@
 <script lang="ts">
+	import type { ActionData } from './$types';
+	export let form: ActionData;
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import {
+		Alert,
 		Progressbar,
 		Toggle,
 		Avatar,
@@ -51,12 +54,24 @@
 		}
 	}
 
+	function handleLoginSubmit() {
+		token = '';
+		username = '';
+		password = '';
+		loginVisible = false;
+	}
+
 	function handleLoginClick() {
 		if (token) {
 			console.log('TOKEN');
+			token = '';
+			loginVisible = false;
 		}
 		if (username && password) {
 			console.log('USER/PASS');
+			username = '';
+			password = '';
+			loginVisible = false;
 		}
 	}
 
@@ -78,172 +93,110 @@
 </Modal> -->
 
 <Modal id="login" bind:open={loginVisible} size="xs" autoclose={false}>
-	<form class="flex flex-col space-y-6" on:keyup={(e) => handleLoginKeyup(e)}>
+	<form
+		class="flex flex-col space-y-6"
+		method="post"
+		action="/login?/login"
+		use:enhance
+		on:submit={handleLoginSubmit}
+	>
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Sign in</h3>
-		{#if !showScanner}
-			<Label class="space-y-2">
-				<span>Username</span>
-				<Input type="text" name="username" disabled={token != ''} required bind:value={username} />
-			</Label>
-			<Label class="space-y-2">
-				<span>Password</span>
-				<Input
-					type={showPassword ? 'text' : 'password'}
-					name="password"
-					disabled={token != ''}
-					required
-					bind:value={password}
-				>
-					<button
-						tabindex="-1"
-						slot="left"
-						on:click|preventDefault={() => (showPassword = !showPassword)}
-						class="pointer-events-auto"
-					>
-						{#if showPassword}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-								/>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-							</svg>
-						{:else}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-								/>
-							</svg>
-						{/if}
-					</button>
-				</Input>
-			</Label>
-			<Hr class="my-1" width="w-64">or</Hr>
-		{/if}
-		<Label class="space-y-2">
-			<span>Token</span>
-			<Input
-				type={showToken ? 'text' : 'password'}
-				name="token"
+		<div class="group">
+			<label for="username">Username</label>
+			<input
+				type="text"
+				name="username"
+				id="username"
+				disabled={token != ''}
+				bind:value={username}
+			/>
+		</div>
+
+		<div class="group">
+			<label for="password">Password</label>
+			<input
+				type="password"
+				name="password"
+				id="password"
+				disabled={token != ''}
+				bind:value={password}
+			/>
+		</div>
+
+		<div class="group">
+			<label for="login_token">Token</label>
+			<input
+				type="password"
+				name="login_token"
+				id="token"
 				disabled={password != '' || username != ''}
-				required
 				bind:value={token}
-			>
-				<button
-					tabindex="-1"
-					slot="left"
-					on:click|preventDefault={() => (showToken = !showToken)}
-					class="pointer-events-auto"
-				>
-					{#if showToken}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-							/><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-							/></svg
-						>
-					{:else}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-							/></svg
-						>
-					{/if}
-				</button>
-				<button
-					tabindex="-1"
-					slot="right"
-					on:click|preventDefault={() => {
-						showScanner = !showScanner;
-						//getVideoFeed();
-					}}
-					class="pointer-events-auto"
-					disabled={false}
-				>
-					<svg
+			/>
+		</div>
+
+		<div class="submit-container">
+			<button type="submit">Login</button>
+		</div>
+
+		{#if form?.error}
+			<Alert border color="yellow">
+				<span slot="icon"
+					><svg
+						aria-hidden="true"
+						class="w-5 h-5"
+						fill="currentColor"
+						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
+						><path
+							fill-rule="evenodd"
+							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+							clip-rule="evenodd"
+						/></svg
 					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
-						/>
-					</svg>
-				</button>
-			</Input>
-		</Label>
-		{#if showScanner}
-			<div>
-				<Card img="/images/image-1.webp">
-					<div id="video-container">
-						<video id="qr-video" />
-					</div>
-					<p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
-						Present your token to your camera
-					</p>
-				</Card>
-			</div>
+				</span>
+				<span class="font-medium">Warning alert!</span>
+				{form.error}
+			</Alert>
 		{/if}
-		<Button
-			class="w-full1"
-			disabled={username == '' && password == '' && token == ''}
-			on:click={() => handleLoginClick()}>Login</Button
-		>
 	</form>
+	<!-- <form
+		class="flex flex-col space-y-6"
+		method="post"
+		action="/login?/login"
+		use:enhance
+		on:keyup={(e) => handleLoginKeyup(e)}
+	>
+		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Sign in</h3>
+		<Label for="username">Username</Label>
+		<Input type="text" name="username" disabled={token != ''} bind:value={username} />
+
+		<Label for="password">Password</Label>
+		<Input
+			type={showPassword ? 'text' : 'password'}
+			name="password"
+			disabled={token != ''}
+			bind:value={password}
+		/>
+
+		<Hr class="my-1" width="w-64">or</Hr>
+		<Label for="login_token">Token</Label>
+		<Input
+			type={showToken ? 'text' : 'password'}
+			name="login_token"
+			disabled={password != '' || username != ''}
+			bind:value={token}
+		/>
+		<button
+			type="submit"
+			class="w-full"
+			disabled={username == '' && password == '' && token == ''}
+			on:click={() => handleLoginClick()}>Login</button
+		>
+	</form> -->
 </Modal>
 
 <Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={false}>
-	<form class="flex flex-col space-y-6" on:keyup={(e) => handleSettingsKeyup(e)}>
+	<form class="flex flex-col space-y-6">
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Settings</h3>
 		<Toggle
 			on:click={toggleTheme}
@@ -292,24 +245,24 @@
 			</div> -->
 
 			<span>
-				<UserIcon {user} on:click={() => (userVisible = !userVisible)}>
-					{user?.profile?.name?.first || 'Sign in'}
+				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
+					{$page.data?.user?.firstname || $page.data?.user?.username || 'Sign in'}
 				</UserIcon>
 			</span>
 		</div>
 		<Dropdown inline bind={userVisible}>
 			<div slot="header" class="px-4 py-2">
 				{#if user}
-					<!-- <span class="block text-sm text-gray-900 dark:text-white">
-						{profile?.name?.first}
-						{profile?.name?.last}
+					<span class="block text-sm text-gray-900 dark:text-white">
+						{user?.firstname}
+						{user?.lastname}
 					</span>
 					<span
 						class="block truncate text-sm font-medium"
 						on:click|stopPropagation={navigateTo(`/users/${user._id}`)}
 					>
-						{profile?.name?.username}
-					</span> -->
+						{user?.username}
+					</span>
 				{:else}
 					<DropdownItem slot="footer" on:click={() => (loginVisible = true)}>Sign in</DropdownItem>
 				{/if}
@@ -323,17 +276,13 @@
 						loginVisible = true;
 					}}>Switch user</DropdownItem
 				>
-				<form method="POST" action="/login?/logout" use:enhance>
-					<button type="submit" name="logout" value="true">Logout</button>
-				</form>
-				<!-- <DropdownItem slot="footer" on:click={() => handleLogout()}>Sign out</DropdownItem> -->
+
+				<DropdownItem slot="footer" on:click={() => handleLogout()}
+					><form method="POST" action="/login?/logout" use:enhance>
+						<button type="submit" name="logout" value="true">Logout</button>
+					</form></DropdownItem
+				>
 			{/if}
 		</Dropdown>
 	</Navbar>
 </div>
-
-<style>
-	.navbar {
-		background-color: #1d1a2b;
-	}
-</style>

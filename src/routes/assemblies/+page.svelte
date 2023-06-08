@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from '../assemblies/$types';
-
 	export let data: PageData;
 
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';

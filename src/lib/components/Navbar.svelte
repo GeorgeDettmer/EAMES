@@ -1,30 +1,22 @@
 <script lang="ts">
-	import type { ActionData } from './$types';
-	export let form: ActionData;
 	import { page } from '$app/stores';
+
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
+	import LoginForm from '$lib/components/LoginForm.svelte';
 	import {
 		Alert,
-		Progressbar,
 		Toggle,
-		Avatar,
 		Dropdown,
 		DropdownItem,
 		Button,
 		Modal,
-		Label,
-		Input,
-		DarkMode,
-		Hr,
-		Card,
 		Navbar,
 		NavBrand,
 		NavLi,
 		NavUl,
-		NavHamburger,
-		DropdownDivider
+		NavHamburger
 	} from 'flowbite-svelte';
 	//export let currentSerial = $board.sn;
 
@@ -37,9 +29,6 @@
 	let token = '';
 	let password = '';
 	let username = '';
-	let showPassword = false;
-	let showToken = false;
-	let showScanner = false;
 
 	$: user = $page.data?.user;
 
@@ -54,7 +43,8 @@
 		}
 	}
 
-	function handleLoginSubmit() {
+	function handleLoginSubmit(e) {
+		console.log(e);
 		token = '';
 		username = '';
 		password = '';
@@ -93,7 +83,8 @@
 </Modal> -->
 
 <Modal id="login" bind:open={loginVisible} size="xs" autoclose={false}>
-	<form
+	<LoginForm />
+	<!-- <form
 		class="flex flex-col space-y-6"
 		method="post"
 		action="/login?/login"
@@ -137,28 +128,7 @@
 		<div class="submit-container">
 			<button type="submit">Login</button>
 		</div>
-
-		{#if form?.error}
-			<Alert border color="yellow">
-				<span slot="icon"
-					><svg
-						aria-hidden="true"
-						class="w-5 h-5"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-						xmlns="http://www.w3.org/2000/svg"
-						><path
-							fill-rule="evenodd"
-							d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-							clip-rule="evenodd"
-						/></svg
-					>
-				</span>
-				<span class="font-medium">Warning alert!</span>
-				{form.error}
-			</Alert>
-		{/if}
-	</form>
+	</form> -->
 	<!-- <form
 		class="flex flex-col space-y-6"
 		method="post"

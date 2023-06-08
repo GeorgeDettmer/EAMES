@@ -175,7 +175,7 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 	const user = await findUser(username);
 	if (!user) {
 		return {
-			error: 'Could not find user with this username: ' + username
+			error: 'Could not find user with the supplied username'
 		};
 	}
 	//const passwordIsValid = await bcrypt.compare(password, user.password);
@@ -183,7 +183,7 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 	const valid = user?.passcode === pass || user?.password === pass;
 	if (!valid) {
 		return {
-			error: 'Invalid credentials'
+			error: 'Incorrect password'
 		};
 	}
 
@@ -200,7 +200,7 @@ const loginToken = async (loginToken: string) => {
 	const user = await getUserFromToken(loginToken);
 	if (!user) {
 		return {
-			error: 'Could not find user associated to this token: ' + loginToken
+			error: 'Could not find user associated with the supplied token'
 		};
 	}
 

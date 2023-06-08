@@ -1,17 +1,20 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
+	export let form: ActionData;
 	import { enhance } from '$app/forms';
 
 	import { Alert } from 'flowbite-svelte';
 
-	export let form: ActionData;
+	import LoginForm from '$lib/components/LoginForm.svelte';
 </script>
 
 <svelte:head>
 	<title>Login</title>
 </svelte:head>
 
-<h1 class="text-3xl font-bold underline">Login</h1>
+<LoginForm />
+
+<!-- <h1 class="text-3xl font-bold underline">Login</h1>
 
 <form method="post" action="?/login" use:enhance>
 	<div class="group">
@@ -57,4 +60,4 @@
 
 <div class="actions">
 	<a href="/signup">Sign Up</a>
-</div>
+</div> -->

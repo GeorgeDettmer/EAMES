@@ -23,7 +23,8 @@
 		const parts = value.split(`; ${name}=`);
 		return parts?.pop()?.split(';')?.shift() ?? '';
 	}
-	const getToken = () => decodeURI(getCookie('AuthorizationToken'));
+	const getToken = () =>
+		decodeURI(sessionStorage.getItem('AuthorizationToken') || getCookie('AuthorizationToken'));
 	console.log(getToken());
 	const wsClient = createWSClient({
 		url: gqlWs,

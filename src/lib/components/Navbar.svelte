@@ -189,6 +189,9 @@
 		<NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>
 		</NavUl>
+		<NavUl {hidden}>
+			<NavLi href="/instructions">Instruction</NavLi>
+		</NavUl>
 		<Button
 			color="light"
 			id="serial"

@@ -3,7 +3,7 @@
 	export let user;
 	export let size = 'md';
 
-	export let avatarClass = ` mr-2 font-bold text-${['xs', 'sm'].includes(size) ? size : 'xl'} `;
+	export let avatarClass = ` font-bold text-${['xs', 'sm'].includes(size) ? size : 'xl'} `;
 	export let buttonClass = ` !p-1 !pr-2 text-white `;
 </script>
 
@@ -40,7 +40,7 @@
 {:else}
 	<Avatar
 		{size}
-		class={avatarClass + 'ml-2 text-white'}
+		class={avatarClass + ' text-white'}
 		style={user?.color ? `background-color:${user?.color}` : 'background-color:#64748b'}
 	>
 		{#if user?.initials}

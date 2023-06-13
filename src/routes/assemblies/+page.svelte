@@ -42,7 +42,7 @@
 	<ul>
 		{#each $assembliesSub.data.assemblies as assembly}
 			<li style="color:{'red'}">{assembly.id}: "{assembly.name}"</li>
-			<Instruction id={assembly}
+			<Instruction id={assembly} />
 		{/each}
 	</ul>
 {/if}

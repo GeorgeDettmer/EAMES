@@ -19,7 +19,8 @@
 	export let color = stringToColor(item?.part?.mpn);
 
 	function onItemClick(e, item) {
-		console.log($page.data.user.initials, 'ITEM CLICK: ', item, e);
+		console.log($page.data?.user?.initials, 'ITEM CLICK: ', item, e);
+		if (!$page.data.user.initials) return;
 		if (!item.signoff) {
 			item.signoff = {
 				initials: $page.data.user.initials
@@ -30,7 +31,7 @@
 	}
 
 	function onItemHover(e, item) {
-		console.log($page.data.user.initials, 'ITEM HOVER: ', item, e);
+		console.log($page.data?.user?.initials, 'ITEM HOVER: ', item, e);
 	}
 </script>
 

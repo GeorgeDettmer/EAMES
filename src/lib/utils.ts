@@ -15,7 +15,6 @@ export const stringToColor = (string: string) => {
 		'#00f9f4',
 		'#00bcd4',
 		'#009688',
-		'#209b24',
 		'#8bc34a',
 		'#afb42b',
 		'#ff9800',
@@ -25,7 +24,31 @@ export const stringToColor = (string: string) => {
 	];
 
 	var hash = 0;
-	if (string.length === 0) return hash;
+	if (typeof string !== 'string' || string?.length === 0) return hash;
+	for (var i = 0; i < string.length; i++) {
+		hash = string.charCodeAt(i) + ((hash << 5) - hash);
+		hash = hash & hash;
+	}
+	hash = ((hash % colors.length) + colors.length) % colors.length;
+	return colors[hash];
+};
+
+export const stringToColorClass = (string: string) => {
+	var colors = [
+		'pink-500',
+		'blue-500',
+		'yellow-500',
+		'orange-500',
+		'brown-500',
+		'purple-500',
+		'indigo-500',
+		'cyan-500',
+		'deep-orange-500',
+		'deep-purple-500'
+	];
+	if (typeof string !== 'string' || string?.length === 0) return 'grey-500';
+
+	let hash = 0;
 	for (var i = 0; i < string.length; i++) {
 		hash = string.charCodeAt(i) + ((hash << 5) - hash);
 		hash = hash & hash;

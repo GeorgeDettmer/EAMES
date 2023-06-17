@@ -5,6 +5,17 @@ import jwt from 'jsonwebtoken';
 
 import { findUser } from '$lib/user.model';
 
+import { HASURA_HEALTH_URL } from '$env/static/private';
+const hasuraHealth = async () => {
+	const healthz = await fetch(HASURA_HEALTH_URL);
+	if (healthz.status !== 200) {
+		console.error('HASURA ENDPOINT ERROR: ', healthz.statusText, healthz.body);
+	}
+	return healthz;
+};
+hasuraHealth().then((healthz) => console.log('HASURA HEALTH: ', healthz.statusText));
+setInterval(hasuraHealth, 5000);
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const authCookie = event.cookies.get('AuthorizationToken');
 

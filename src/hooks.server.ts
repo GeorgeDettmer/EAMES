@@ -6,14 +6,15 @@ import jwt from 'jsonwebtoken';
 import { findUser } from '$lib/user.model';
 
 import { HASURA_HEALTH_URL } from '$env/static/private';
-const hasuraHealth = async () => {
+const hasuraHealth = async (firstRun: boolean = false) => {
 	const healthz = await fetch(HASURA_HEALTH_URL);
 	if (healthz.status !== 200) {
-		console.error('HASURA ENDPOINT ERROR: ', healthz.statusText, healthz.body);
+		console.error('HASURA ENDPOINT ERROR: ', healthz?.statusText, healthz?.body);
+	} else if (firstRun) {
+		console.log('HASURA ENDPOINT HEALTH: ', healthz?.statusText);
 	}
-	return healthz;
 };
-hasuraHealth().then((healthz) => console.log('HASURA HEALTH: ', healthz.statusText));
+hasuraHealth(true);
 setInterval(hasuraHealth, 5000);
 
 export const handle: Handle = async ({ event, resolve }) => {

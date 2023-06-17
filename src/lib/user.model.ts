@@ -65,13 +65,13 @@ const _insertUser = `#graphql
 export const findUser = async (username: string) => {
 	const userQuery = await client.query(_getUserByUsername, { username: username });
 	const user = userQuery?.data?.users?.[0];
-	console.log('findUser request:', JSON.stringify(user));
+	console.log(`findUser request: ${user?.username}(${user?.id})`);
 	return user;
 };
 export const getUserFromToken = async (token: string) => {
 	const tokenQuery = await client.query(_getUserByToken, { token: token });
 	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
-	console.log('getUserFromToken request:', JSON.stringify(user));
+	console.log(`getUserFromToken request: ${user?.username}(${user?.id})`);
 	return user;
 };
 const addUser = async (

@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let data;
 	import { createEventDispatcher } from 'svelte';
 	import { gql, getContextClient, queryStore, subscriptionStore } from '@urql/svelte';
 
@@ -7,64 +8,70 @@
 	import InstructionList from '$lib/components/InstructionList.svelte';
 
 	let instructionId = 'c4d432d4-294b-4e8e-8aa2-a6a09f46f8fb';
-	let assemblyId = 1;
+	let boardId = data?.boardId;
 
-	$: assemblyInfoStore = queryStore({
+	$: boardInfoStore = queryStore({
 		client: getContextClient(),
 		query: gql`
-			query assemblyInfo($assemblyId: bigint!) {
-				assemblies_by_pk(id: $assemblyId) {
+			query boardInfo($boardId: bigint!) {
+				id
+				assembly {
 					id
 					name
-					revision_external
-					revision_internal
+					assembly_instructions {
+						instruction {
+							id
+							name
+							description
+							revision
+						}
+					}
 				}
-				steps(where: { assembly_id: { _eq: $assemblyId } }, distinct_on: instruction_id) {
-					instruction {
+				job {
+					id
+					batch
+					quantity
+					customer {
 						id
 						name
 					}
 				}
-			}
-		`,
-		variables: { assemblyId: assemblyId }
-	});
-
-	$: instuctionsStepsStore = queryStore({
-		client: getContextClient(),
-		query: gql`
-			query instructionSteps($instructionId: uuid!, $assemblyId: bigint!) {
-				instructions(where: { id: { _eq: $instructionId } }) {
+				signoffsByBoardId {
 					id
-					name
-					revision
-					description
-					active
+					step_id
+					user {
+						id
+						username
+						initials
+						first_name
+						last_name
+					}
 					created_at
 					updated_at
-					stepsByInstructionId(where: { assembly_id: { _eq: $assemblyId } }) {
-						id
-						reference
-						part_id
-						notes
-						signoffs {
-							id
-							user {
-								id
-								username
-								first_name
-								last_name
-								initials
-								color
-							}
-							created_at
-							updated_at
+					step {
+						instruction {
+							name
 						}
 					}
 				}
 			}
 		`,
-		variables: { instructionId: instructionId, assemblyId: assemblyId }
+		variables: { boardId: boardId }
+	});
+
+	$: assemblyStepsStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query instructionSteps($assemblyId: bigint!) {
+				steps(where: { assembly_id: { _eq: $assemblyId } }) {
+					id
+					reference
+					part_id
+					notes
+				}
+			}
+		`,
+		variables: { assemblyId: assemblyId }
 	});
 
 	$: instruction = $instuctionsStepsStore?.data?.instructions?.[0];

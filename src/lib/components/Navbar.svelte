@@ -16,10 +16,11 @@
 		NavBrand,
 		NavLi,
 		NavUl,
-		NavHamburger
+		NavHamburger,
+		Popover
 	} from 'flowbite-svelte';
 	//export let currentSerial = $board.sn;
-
+	import logo from '$lib/assets/easl-logo.png';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -182,7 +183,7 @@
 		let:toggle
 	>
 		<NavBrand href="/">
-			<img src="easl-logo.png" class="mr-3 h-6 sm:h-9" alt="EASL" />
+			<img src={logo} class="mr-3 h-6 sm:h-9" alt="EASL" />
 			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">EASL</span>
 		</NavBrand>
 		<NavHamburger on:click={toggle} />
@@ -206,7 +207,21 @@
 						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + 'a4bd'}
 					/>
 				</div>
-				<p alt="a4bd">a4bd</p>
+				<Popover placement="bottom" triggeredBy="#currentBoard" class="text-sm w-64 font-light">
+					<div class="space-y-2">
+						<h3 class="font-semibold text-gray-900 dark:text-white">
+							A4BDZ <span class="align-super text-xs">{parseInt('A4BDZ', 36)}</span>
+						</h3>
+						<p class="text-gray-500 dark:text-gray-400">
+							<span class="font-semibold text-gray-900 dark:text-white">5</span> of
+							<span class="font-semibold text-gray-900 dark:text-white">10</span> tasks remaining.
+						</p>
+						<div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
+							<div class="bg-red-600 h-2.5 rounded-full" style="width: 50%" />
+						</div>
+					</div>
+				</Popover>
+				<p alt="a4bd" class="text-xs" id="currentBoard">A4BDZ</p>
 			</div>
 		</Button>
 
@@ -219,7 +234,12 @@
 
 			<span>
 				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
-					{$page.data?.user?.firstname || $page.data?.user?.username || 'Sign in'}
+					<p class="px-1">
+						{$page.data?.user?.firstname || $page.data?.user?.username || 'Sign in'}
+					</p>
+					<!-- {#if $page.data?.user?.lastname}
+						<p>{$page.data?.user?.lastname}</p>
+					{/if} -->
 				</UserIcon>
 			</span>
 		</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import InstructionListItem from './InstructionListItem.svelte';
 	import { XCircle, CheckCircle } from 'svelte-heros-v2';
 
@@ -18,6 +19,19 @@
 		}
 	];
 
+	const dispatch = createEventDispatcher();
+
+	function handleHeaderClick(e) {
+		dispatch('header_click', {
+			event: e,
+			item: instruction
+		});
+	}
+
+	function handleItemClick(e: MouseEvent) {
+		console.log('LIST ITEM CLICK', e.detail?.item, e);
+	}
+
 	$: stepsComplete = steps?.filter((i) => i?.signoffs?.length > 0);
 	$: complete = stepsComplete?.length === steps?.length;
 </script>
@@ -29,6 +43,7 @@
 		class:border-red-600={!complete}
 		class:bg-green-200={complete}
 		class:bg-red-300={!complete}
+		on:click={(e) => handleHeaderClick(e)}
 	>
 		<div class="flex flex-row mx-1 my-2 steps-center text-3xl">
 			<div class="flex-none pr-2">
@@ -51,6 +66,6 @@
 		</div>
 	</div>
 	{#each steps as item (item.id)}
-		<InstructionListItem {item} />
+		<InstructionListItem on:item_click {item} />
 	{/each}
 </div>

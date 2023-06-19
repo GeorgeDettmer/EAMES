@@ -1,41 +1,32 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { XCircle, CheckCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
+	import { createEventDispatcher } from 'svelte';
+	import { XCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
+	import { stringToColorClass } from '$lib/utils';
+	import { Popover } from 'flowbite-svelte';
 
-	import { stringToColor, stringToColorClass } from '$lib/utils';
 	import UserIcon from './UserIcon.svelte';
 
 	export let item: Object;
-
 	export let color = stringToColorClass(item?.part_id);
-	$: console.log(color);
-	function onItemClick(e, item) {
-		console.log($page.data?.user?.initials, 'ITEM CLICK: ', item, e);
-		if (!$page.data.user.initials) return;
-		if (!item.signoff) {
-			item.signoff = {
-				initials: $page.data.user.initials
-			};
-		} else {
-			item.signoff = undefined;
-		}
-	}
 
-	function onItemHover(e, item) {
-		//console.log($page.data?.user?.initials, 'ITEM HOVER: ', item, e);
+	const dispatch = createEventDispatcher();
+
+	function onItemClick(e, item) {
+		dispatch('item_click', {
+			event: e,
+			step: item
+		});
 	}
 </script>
 
 <div
-	on:click={(e) => onItemClick(e, item)}
-	on:mouseenter={(e) => onItemHover(e, item)}
 	class="border-4 rounded-md w-full my-2 bg-opacity-50 hover:bg-opacity-75 bg-{color} border-{color}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
-		<div class="flex-none pr-2">
+		<div class="flex-none pr-2" on:click={(e) => onItemClick(e, item)}>
 			{#if item?.signoffs?.length > 0}
 				<div class="pl-1">
-					{#each item?.signoffs as signoff}
+					{#each item?.signoffs as signoff, idx (signoff?.id)}
 						<UserIcon user={signoff?.user} size="sm" />
 					{/each}
 				</div>

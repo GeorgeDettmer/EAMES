@@ -7,6 +7,7 @@ import { findUser } from '$lib/user.model';
 
 import { HASURA_HEALTH_URL } from '$env/static/private';
 const hasuraHealth = async (firstRun: boolean = false) => {
+	if (!HASURA_HEALTH_URL) return;
 	const healthz = await fetch(HASURA_HEALTH_URL);
 	if (healthz.status !== 200) {
 		console.error('HASURA ENDPOINT ERROR: ', healthz?.statusText, healthz?.body);

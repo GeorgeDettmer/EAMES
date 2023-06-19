@@ -7,7 +7,7 @@
 	import InstructionList from '$lib/components/InstructionList.svelte';
 
 	let instructionId = 'c4d432d4-294b-4e8e-8aa2-a6a09f46f8fb';
-	let assemblyId = 1;
+	let assemblyId = 2;
 
 	$: assemblyInfoStore = queryStore({
 		client: getContextClient(),
@@ -78,7 +78,7 @@
 </Blockquote>
 
 <div class="flex-col p-3">
-	<select class="w-auto" name="instruction" id="instructions" bind:value={instructionId}>
+	<select class="w-" name="instruction" id="instructions" bind:value={instructionId}>
 		{#each instructions as i}
 			<option value={i.instruction.id}>{i.instruction.name}</option>
 		{/each}

@@ -45,7 +45,7 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 // 1 day
 		});
 
-		throw redirect(302, '/');
+		//throw redirect(302, '/');
 	},
 	logout: async (event) => {
 		console.log('USER LOGOUT: ', event.locals.user?.username);

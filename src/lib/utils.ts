@@ -2,6 +2,8 @@ export const generateRandomString = (length: number = 8) => {
 	return crypto.randomUUID().split('-').join('').slice(0, length);
 };
 
+export const randomString = () => Math.round(Math.random() * 10e15).toString(16);
+
 export const validate = (thing: any, type: string = 'string') => !!thing && typeof thing === type;
 
 export const stringToColor = (string: string) => {
@@ -55,4 +57,8 @@ export const stringToColorClass = (string: string) => {
 	}
 	hash = ((hash % colors.length) + colors.length) % colors.length;
 	return colors[hash];
+};
+
+export const classes = {
+	link: ' cursor-pointer decoration-1 decoration-dotted underline hover:decoration-2 hover:decoration-solid '
 };

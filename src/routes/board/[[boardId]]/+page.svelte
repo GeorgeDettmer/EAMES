@@ -108,7 +108,7 @@
 								id
 								name
 								description
-								stepsByInstructionId {
+								stepsByInstructionId(order_by: { reference: asc }) {
 									id
 									reference
 									part_id
@@ -152,8 +152,6 @@
 	$: instruction = instructions?.filter((i) => i?.instruction?.id === instructionId)?.[0]
 		?.instruction;
 	$: steps = instruction?.stepsByInstructionId;
-
-	$: console.log('DATA:', instruction);
 </script>
 
 {#if boardId}
@@ -162,9 +160,14 @@
 	{:else if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
-		<Blockquote border bg class="p-4 my-4">
-			<P weight="medium">{boardInfo?.job?.customer?.name}</P>
-			<P weight="bold" size="xl">{assembly?.name} ({assembly?.revision_external})</P>
+		<Blockquote border bg class="p-4 my-4" borderClass="border-l-4 border-blue-900">
+			{#if boardInfo?.job}
+				<P weight="medium">{boardInfo?.job?.customer?.name}</P>
+			{/if}
+			<P weight="bold" size="xl">
+				{assembly?.name} ({assembly?.revision_external}:{assembly?.revision_internal})
+			</P>
+			<P weight="medium" size="sm">{assembly?.id}</P>
 		</Blockquote>
 
 		<div class="flex p-3">
@@ -180,12 +183,17 @@
 				</Blockquote>
 			{/if}
 		</div>
-		<InstructionList
-			on:header_click={handleHeaderClick}
-			on:item_click={handleStepClick}
-			{instruction}
-			{steps}
-		/>
+		<div class="flex">
+			<div class="outline-dotted w-2/3" />
+			<div class="float-right px-1 w-1/3">
+				<InstructionList
+					on:header_click={handleHeaderClick}
+					on:item_click={handleStepClick}
+					{instruction}
+					{steps}
+				/>
+			</div>
+		</div>
 		<pre>{JSON.stringify(steps, null, 2)}</pre>
 	{/if}
 {:else}

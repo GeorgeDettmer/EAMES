@@ -30,9 +30,7 @@ export const actions: Actions = {
 			? await loginToken(login_token)
 			: await loginUsernamePass(username.toLowerCase(), password);
 		if (error) {
-			return fail(401, {
-				error
-			});
+			return fail(401, { error });
 		}
 
 		console.log('USER LOGIN: ', username ?? loginToken);

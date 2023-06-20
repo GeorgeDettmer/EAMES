@@ -183,20 +183,13 @@
 		let:toggle
 	>
 		<NavBrand href="/">
-			<img src={logo} class="mr-3 h-6 sm:h-9" alt="EASL" />
+			<img src={logo} class="mr-1 h-6 sm:h-9" alt="EASL" />
 			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">EASL</span>
 		</NavBrand>
-		<NavHamburger on:click={toggle} />
-		<NavUl {hidden}>
-			<NavLi href="/boards">Boards</NavLi>
-		</NavUl>
-		<NavUl {hidden}>
-			<NavLi href="/instructions">Instruction</NavLi>
-		</NavUl>
 		<Button
 			color="light"
-			id="serial"
-			class="!p-1 mr-6"
+			id="currentBoard"
+			class="!p-1"
 			on:click={() => (boardVisible = !boardVisible)}
 		>
 			<div>
@@ -204,7 +197,7 @@
 					<img
 						class="w-6"
 						style:filter={'invert(0.5)'}
-						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + 'a4bd'}
+						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + 'A4BDZ'}
 					/>
 				</div>
 				<Popover placement="bottom" triggeredBy="#currentBoard" class="text-sm w-64 font-light">
@@ -221,25 +214,35 @@
 						</div>
 					</div>
 				</Popover>
-				<p alt="a4bd" class="text-xs" id="currentBoard">A4BDZ</p>
+				<p alt="A4BDZ" class="text-xs">A4BDZ</p>
 			</div>
 		</Button>
+		<NavHamburger on:click={toggle} />
+		<NavUl {hidden}>
+			<NavLi href="/boards">Boards</NavLi>
+		</NavUl>
+		<NavUl {hidden}>
+			<NavLi href="/instructions">Instruction</NavLi>
+		</NavUl>
 
 		<div class="flex items-center">
-			<!-- <div class="pr-1" class:hidden={timeSinceActivity > 1000}>
-				<div class="flex flex-col flex-nowrap justify-end w-2 h-12 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
-					<div class="bg-blue-700 overflow-hidden" role="progressbar" style={`height: ${(1000 / 100) * timeSinceActivity}%`} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" />
+			<div class="pr-1" class:hidden={true}>
+				<div
+					class="flex flex-col flex-nowrap justify-end w-2 h-12 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700"
+				>
+					<div
+						class="bg-blue-700 overflow-hidden"
+						role="progressbar"
+						style={`height: ${(1000 / 100) * 5}%`}
+					/>
 				</div>
-			</div> -->
+			</div>
 
 			<span>
 				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
 					<p class="px-1">
 						{$page.data?.user?.firstname || $page.data?.user?.username || 'Sign in'}
 					</p>
-					<!-- {#if $page.data?.user?.lastname}
-						<p>{$page.data?.user?.lastname}</p>
-					{/if} -->
 				</UserIcon>
 			</span>
 		</div>

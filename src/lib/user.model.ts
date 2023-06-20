@@ -167,7 +167,8 @@ const getJwt = (user) => {
 		'https://hasura.io/jwt/claims': {
 			'x-hasura-default-role': user.username == 'gdettmer' ? 'admin' : 'user',
 			'x-hasura-allowed-roles': ['user', 'admin'],
-			'x-hasura-user-id': user.id
+			'x-hasura-user-id': user.id,
+			'x-hasura-user-permissions': user.permissions
 		}
 	};
 };

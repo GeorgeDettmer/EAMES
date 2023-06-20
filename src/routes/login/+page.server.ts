@@ -33,7 +33,7 @@ export const actions: Actions = {
 			return fail(401, { error });
 		}
 
-		console.log('USER LOGIN: ', username ?? loginToken);
+		console.log('USER LOGIN: ', username ?? login_token);
 		// Set the cookie
 		event.cookies.set('AuthorizationToken', `Bearer ${token}`, {
 			httpOnly: false,

@@ -2,6 +2,10 @@ export const generateRandomString = (length: number = 8) => {
 	return crypto.randomUUID().split('-').join('').slice(0, length);
 };
 
+export const localStorageDefault = (key: string, defaultValue: string) => {
+	return localStorage.getItem(key) || defaultValue;
+};
+
 export const randomString = () => Math.round(Math.random() * 10e15).toString(16);
 
 export const validate = (thing: any, type: string = 'string') => !!thing && typeof thing === type;

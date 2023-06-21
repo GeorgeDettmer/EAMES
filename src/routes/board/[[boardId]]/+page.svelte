@@ -2,6 +2,7 @@
 	export let data;
 	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
+	import { localStorageDefault } from '$lib/utils';
 	import {
 		gql,
 		getContextClient,
@@ -14,7 +15,7 @@
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 
-	let instructionId = 'c4d432d4-294b-4e8e-8aa2-a6a09f46f8fb';
+	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
 
 	function handleHeaderClick(e) {
@@ -103,34 +104,15 @@
 						created_at
 					}
 					assembly {
-						assembly_instructions {
+						steps(distinct_on: instruction_id) {
 							instruction {
 								id
 								name
 								description
-								stepsByInstructionId(order_by: { reference: asc }) {
-									id
-									reference
-									part_id
-									notes
-									created_at
-									signoffs(where: { board_id: { _eq: $boardId } }) {
-										id
-										created_at
-										updated_at
-										user {
-											id
-											username
-											first_name
-											last_name
-											initials
-											color
-										}
-									}
-								}
 								revision
 								active
 								created_at
+								type
 							}
 						}
 						id
@@ -147,11 +129,59 @@
 
 	$: boardInfo = $boardInfoStore?.data?.boards?.[0];
 	$: assembly = boardInfo?.assembly || {};
-	$: instructions = assembly?.assembly_instructions || [];
+	$: assemblyId = assembly?.id;
+	$: instructions = assembly?.steps || [];
 
 	$: instruction = instructions?.filter((i) => i?.instruction?.id === instructionId)?.[0]
 		?.instruction;
-	$: steps = instruction?.stepsByInstructionId;
+
+	$: stepsInfoStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription Steps($assemblyId: bigint!, $boardId: bigint!, $instructionId: uuid!) {
+				steps(
+					where: { assembly_id: { _eq: $assemblyId }, instruction_id: { _eq: $instructionId } }
+				) {
+					id
+					reference
+					part_id
+					notes
+					created_at
+					color
+					signoffs(where: { board_id: { _eq: $boardId } }) {
+						id
+						created_at
+						updated_at
+						user {
+							id
+							username
+							first_name
+							last_name
+							initials
+							color
+						}
+					}
+					assembly_id
+				}
+			}
+		`,
+		variables: { assemblyId, boardId, instructionId }
+	});
+
+	$: steps = $stepsInfoStore?.data?.steps;
+	$: console.log(instructions);
+	$: {
+		if (!instructionId && instructions?.length > 0) {
+			const defaultInstructionType = localStorage.getItem(
+				'EAMES_workstationDefaultInstructionType'
+			);
+			const defaultInstructionTypeId = instructions.filter(
+				(i) => i?.instruction.type == defaultInstructionType
+			);
+			console.log(defaultInstructionType, instructions, defaultInstructionTypeId);
+			instructionId = defaultInstructionTypeId?.[0]?.instruction?.id || instructions?.[0]?.id;
+		}
+	}
 </script>
 
 {#if boardId}
@@ -167,7 +197,7 @@
 			<P weight="bold" size="xl">
 				{assembly?.name} ({assembly?.revision_external}:{assembly?.revision_internal})
 			</P>
-			<P weight="medium" size="sm">{assembly?.id}</P>
+			<P weight="medium" size="sm">{assemblyId}</P>
 		</Blockquote>
 
 		<div class="flex p-3">
@@ -176,24 +206,27 @@
 					<option value={i.instruction.id}>{i.instruction.name}</option>
 				{/each}
 			</select>
-			{#if instruction?.name}
+			{#if instruction}
 				<Blockquote border bg class="p-1 ml-1">
 					<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
 					<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
 				</Blockquote>
 			{/if}
 		</div>
-		<div class="flex">
-			<div class="outline-dotted w-2/3" />
-			<div class="float-right px-1 w-1/3">
-				<InstructionList
-					on:header_click={handleHeaderClick}
-					on:item_click={handleStepClick}
-					{instruction}
-					{steps}
-				/>
+		{#if instruction}
+			<div class="flex">
+				<div class="outline-dotted w-2/3" />
+				<div class="float-right px-1 w-1/3">
+					<InstructionList
+						on:header_click={handleHeaderClick}
+						on:item_click={handleStepClick}
+						{instruction}
+						{steps}
+					/>
+				</div>
 			</div>
-		</div>
+		{/if}
+
 		<pre>{JSON.stringify(steps, null, 2)}</pre>
 	{/if}
 {:else}

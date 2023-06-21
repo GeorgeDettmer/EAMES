@@ -1,5 +1,6 @@
-export const load = ({ params }) => {
+export const load = ({ params, url }) => {
 	return {
-		boardId: params?.boardId
+		boardId: params?.boardId,
+		instructionId: url.searchParams.get('instruction')
 	};
 };

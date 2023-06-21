@@ -2,13 +2,13 @@
 	import { createEventDispatcher } from 'svelte';
 	import { XCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
 	import { stringToColorClass, classes, randomString } from '$lib/utils';
-	import { Popover } from 'flowbite-svelte';
+	import { Popover, Hr } from 'flowbite-svelte';
 
 	import UserIcon from './UserIcon.svelte';
 	import PartInfo from '$lib/components/PartInfo.svelte';
 
 	export let item: Object;
-	export let color = stringToColorClass(item?.part_id);
+	export let color = item?.color || stringToColorClass(item?.part_id);
 
 	const dispatch = createEventDispatcher();
 
@@ -20,15 +20,18 @@
 			step: item
 		});
 	}
+
+	$: complete = item?.signoffs?.length > 0;
+	$: borderColor = complete ? 'green-400' : 'red-600';
 </script>
 
 <div
-	class="border-4 rounded-md w-full my-1 bg-opacity-50 hover:bg-opacity-75 bg-{color} border-{color}"
+	class="border-4 rounded-md w-full my-1 bg-opacity-50 hover:bg-opacity-75 bg-{color} border-{borderColor}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<div class={'flex-none pr-2 cursor-pointer'} on:click={(e) => onItemClick(e, item)}>
-			{#if item?.signoffs?.length > 0}
-				<div class="pl-1">
+			{#if complete}
+				<div class="p-1">
 					{#each item?.signoffs as signoff (signoff?.id)}
 						<UserIcon user={signoff?.user} size="sm" />
 					{/each}

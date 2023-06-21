@@ -1,0 +1,86 @@
+subscription Boards($boardId: bigint!) {
+	boards(where: { id: { _eq: $boardId } }) {
+		id
+		job {
+			id
+			quantity
+			batch
+			customer {
+				id
+				name
+			}
+			created_at
+		}
+		assembly {
+			assembly_instructions {
+				instruction {
+					id
+					name
+					description
+					stepsByInstructionId(order_by: { reference: asc }) {
+						id
+						reference
+						part_id
+						notes
+						created_at
+						color
+						signoffs(where: { board_id: { _eq: $boardId } }) {
+							id
+							created_at
+							updated_at
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+						}
+					}
+					revision
+					active
+					created_at
+				}
+			}
+			id
+			name
+			revision_external
+			revision_internal
+		}
+		updated_at
+	}
+}
+
+subscription Boards($boardId: bigint!) {
+	boards(where: { id: { _eq: $boardId } }) {
+		id
+		job {
+			id
+			quantity
+			batch
+			customer {
+				id
+				name
+			}
+			created_at
+		}
+		assembly {
+			assembly_instructions {
+				instruction {
+					id
+					name
+					description
+					revision
+					active
+					created_at
+				}
+			}
+			id
+			name
+			revision_external
+			revision_internal
+		}
+		updated_at
+	}
+}

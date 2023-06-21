@@ -47,6 +47,7 @@
 						reference
 						part_id
 						notes
+						color
 						signoffs {
 							id
 							user {
@@ -71,6 +72,8 @@
 	$: assembly = $assemblyInfoStore?.data?.assemblies_by_pk;
 
 	$: instructions = $assemblyInfoStore?.data?.steps || [];
+
+	$: console.log('DATA', instructions);
 </script>
 
 <Blockquote border bg class="p-4 my-4">

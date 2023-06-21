@@ -33,7 +33,9 @@
 	}
 
 	$: stepsComplete = steps?.filter((i) => i?.signoffs?.length > 0);
-	$: complete = stepsComplete?.length === steps?.length;
+	$: stepsCompleteCount = stepsComplete?.length;
+	$: stepsCount = steps?.length;
+	$: complete = stepsCompleteCount === stepsCount;
 </script>
 
 <div
@@ -60,10 +62,12 @@
 			class:text-green-400={complete}
 			class:text-red-600={!complete}
 		>
-			<p>{stepsComplete?.length}/{steps?.length}</p>
+			{#if stepsComplete && steps}
+				<p>{stepsComplete?.length}/{steps?.length}</p>
+			{/if}
 		</div>
 	</div>
 </div>
-{#each steps as item (item.id)}
+{#each steps || [] as item (item.id)}
 	<InstructionListItem on:item_click {item} />
 {/each}

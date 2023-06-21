@@ -15,7 +15,7 @@
 		class={buttonClass}
 		style={user?.color ? `background-color:${user.color}` : 'background-color:#64748b'}
 	>
-		<Avatar {size} class={avatarClass}>
+		<Avatar {size} class={avatarClass + ' ring-white ring-1'}>
 			{#if user?.initials}
 				{user.initials}
 			{:else}
@@ -40,7 +40,7 @@
 {:else}
 	<Avatar
 		{size}
-		class={avatarClass + ' text-white'}
+		class={avatarClass + ' text-white ring-white ring-1'}
 		style={user?.color ? `background-color:${user?.color}` : 'background-color:#64748b'}
 	>
 		{#if user?.initials}

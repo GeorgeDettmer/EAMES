@@ -141,6 +141,7 @@
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!, $instructionId: uuid!) {
 				steps(
 					where: { assembly_id: { _eq: $assemblyId }, instruction_id: { _eq: $instructionId } }
+					order_by: { reference: asc_nulls_first, part_id: desc }
 				) {
 					id
 					reference

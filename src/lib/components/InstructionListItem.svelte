@@ -26,7 +26,9 @@
 </script>
 
 <div
-	class="border-4 rounded-md w-full my-1 bg-opacity-50 hover:bg-opacity-75 bg-{color} border-{borderColor}"
+	class=" rounded-md w-full my-1 bg-opacity-75 hover:bg-opacity-50 bg-{color}  border-{borderColor} {item.part_id
+		? `border-4`
+		: 'border-4 border-dashed'}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<div class={'flex-none pr-2 cursor-pointer'} on:click={(e) => onItemClick(e, item)}>

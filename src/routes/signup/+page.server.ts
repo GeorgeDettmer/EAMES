@@ -5,8 +5,8 @@ import { createUser } from '$lib/user.model';
 export const load: PageServerLoad = (event) => {
 	const user = event.locals.user;
 
-	if (user) {
-		throw redirect(302, '/guarded');
+	if (!user) {
+		throw redirect(302, '/login');
 	}
 };
 

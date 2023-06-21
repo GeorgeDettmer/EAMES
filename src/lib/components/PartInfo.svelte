@@ -31,7 +31,10 @@
 		variables: { partId }
 	});
 	$: partInfo = $partInfoStore?.data?.parts_by_pk;
-	$: isGeneric = partInfo?.manufacturer === 'Generic';
+	$: isGeneric = partInfo?.manufacturer?.toLowerCase() === 'generic';
+	$: properties = Object.entries(partInfo?.properties || [])
+		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])
+		?.sort();
 </script>
 
 {#if $partInfoStore.fetching}
@@ -46,7 +49,7 @@
 				<Avatar src={partInfo.image_url} alt={partInfo?.name} size="lg" />
 			{/if}
 
-			<!-- <Button size="xs">Follow</Button> -->
+			<!-- <Button size="xs">Info</Button> -->
 		</div>
 		<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
 			{#if isGeneric}
@@ -55,8 +58,8 @@
 				<a
 					target="_blank"
 					href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`}
-					class={classes.link}
-				/>
+					class={classes.link}>{partInfo?.name}</a
+				>
 			{/if}
 		</div>
 		<div class="mb-3 text-sm font-normal">
@@ -68,9 +71,13 @@
 			{partInfo?.description}
 		</div>
 		{#if partInfo?.properties}
-			{#each Object.entries(partInfo?.properties).map( (p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()] ) as [name, value], idx}
+			<p class="font-medium">Properties</p>
+			<hr />
+			<hr />
+			{#each properties as [name, value], idx}
+				{@const propertyCount = Object.keys(partInfo.properties).length}
 				<p>{name}: {value}</p>
-				{#if idx < partInfo.properties.length}
+				{#if idx < propertyCount}
 					<hr />
 				{/if}
 			{/each}

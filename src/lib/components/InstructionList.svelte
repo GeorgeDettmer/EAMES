@@ -39,11 +39,11 @@
 </script>
 
 <div
-	class="border-4 rounded-md w-full"
+	class="border-4 rounded-md w-full bg-opacity-50"
 	class:border-green-400={complete}
 	class:border-red-600={!complete}
-	class:bg-green-200={complete}
-	class:bg-red-300={!complete}
+	class:bg-green-400={complete}
+	class:bg-red-600={!complete}
 	on:click={(e) => handleHeaderClick(e)}
 >
 	<div class="flex flex-row mx-1 my-2 steps-center text-3xl">

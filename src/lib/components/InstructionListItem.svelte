@@ -22,13 +22,17 @@
 	}
 
 	$: complete = item?.signoffs?.length > 0;
+	$: referenceStep = !!item?.part_id;
 	$: borderColor = complete ? 'green-400' : 'red-600';
+	$: bgColor = referenceStep ? color : borderColor;
+	$: borderClasses = referenceStep ? `border-4` : 'border-4 border-dashed';
+	$: bgOpacityClasses = referenceStep
+		? 'bg-opacity-75 hover:bg-opacity-50'
+		: 'bg-opacity-50 hover:bg-opacity-75';
 </script>
 
 <div
-	class=" rounded-md w-full my-1 bg-opacity-75 hover:bg-opacity-50 bg-{color}  border-{borderColor} {item.part_id
-		? `border-4`
-		: 'border-4 border-dashed'}"
+	class="rounded-md w-full my-1 {bgOpacityClasses} bg-{bgColor}  border-{borderColor} {borderClasses}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<div class={'flex-none pr-2 cursor-pointer'} on:click={(e) => onItemClick(e, item)}>

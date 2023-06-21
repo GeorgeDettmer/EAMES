@@ -11,7 +11,7 @@
 		mutationStore
 	} from '@urql/svelte';
 
-	import { Blockquote, P, Hr } from 'flowbite-svelte';
+	import { Blockquote, P, Accordion, AccordionItem } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 
@@ -170,17 +170,23 @@
 	});
 
 	$: steps = $stepsInfoStore?.data?.steps;
-	$: console.log(instructions);
 	$: {
 		if (!instructionId && instructions?.length > 0) {
-			const defaultInstructionType = localStorage.getItem(
-				'EAMES_workstationDefaultInstructionType'
-			);
+			const defaultInstructionType = localStorage
+				.getItem('EAMES_workstationDefaultInstructionType')
+				?.toUpperCase();
 			const defaultInstructionTypeId = instructions.filter(
-				(i) => i?.instruction.type == defaultInstructionType
+				(i) => i?.instruction?.type?.toUpperCase() === defaultInstructionType
 			);
-			console.log(defaultInstructionType, instructions, defaultInstructionTypeId);
-			instructionId = defaultInstructionTypeId?.[0]?.instruction?.id || instructions?.[0]?.id;
+			const inst = defaultInstructionTypeId?.[0]?.instruction || instructions?.[0]?.instruction;
+			instructionId = inst?.id;
+			console.info(
+				'NO INSTRUCTION ID',
+				`EAMES_workstationDefaultInstructionType: ${defaultInstructionType}`,
+				'USING:',
+				instructionId,
+				inst
+			);
 		}
 	}
 </script>
@@ -227,8 +233,12 @@
 				</div>
 			</div>
 		{/if}
-
-		<pre>{JSON.stringify(steps, null, 2)}</pre>
+		<Accordion>
+			<AccordionItem>
+				<span slot="header">Step data</span>
+				<pre>{JSON.stringify(steps, null, 2)}</pre>
+			</AccordionItem>
+		</Accordion>
 	{/if}
 {:else}
 	<p>No boardId</p>

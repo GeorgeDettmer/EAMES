@@ -14,6 +14,7 @@
 	import { Blockquote, P, Accordion, AccordionItem } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -119,6 +120,11 @@
 						name
 						revision_external
 						revision_internal
+						assemblies_cad {
+							id
+							name
+							data
+						}
 					}
 					updated_at
 				}
@@ -131,7 +137,6 @@
 	$: assembly = boardInfo?.assembly || {};
 	$: assemblyId = assembly?.id;
 	$: instructions = assembly?.steps || [];
-
 	$: instruction = instructions?.filter((i) => i?.instruction?.id === instructionId)?.[0]
 		?.instruction;
 
@@ -190,6 +195,10 @@
 			);
 		}
 	}
+
+	$: cad = boardInfo?.assembly?.assemblies_cad || {};
+
+	$: console.info('BOARD DATA', cad);
 </script>
 
 {#if boardId}
@@ -222,9 +231,11 @@
 			{/if}
 		</div>
 		{#if instruction}
-			<div class="flex">
-				<div class="outline-dotted w-2/3" />
-				<div class="float-right px-1 w-1/3">
+			<div class="flex h-max-screen">
+				<div class="outline-dotted w-2/3">
+					<Viewer outlinePins={[1]} id="BOT" height={500} data={cad} layerToShow="BOTTOM" />
+				</div>
+				<div class="float-right px-1 w-1/3 overflow-y-scroll">
 					<InstructionList
 						on:header_click={handleHeaderClick}
 						on:item_click={handleStepClick}

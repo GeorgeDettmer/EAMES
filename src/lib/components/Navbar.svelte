@@ -21,6 +21,7 @@
 	} from 'flowbite-svelte';
 	//export let currentSerial = $board.sn;
 	import logo from '$lib/assets/easl-logo.png';
+	import BoardOverview from './BoardOverview.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -79,91 +80,12 @@
 	});
 </script>
 
-<!-- <Modal id="board" bind:open={boardVisible} size="xl" autoclose={false}>
-	<Board id={$board.sn} signoffs={$board.processes} />
-</Modal> -->
+<Modal id="board" bind:open={boardVisible} size="xl" autoclose={false}>
+	<BoardOverview boardId={parseInt($page.data?.boardId)} />
+</Modal>
 
 <Modal id="login" bind:open={loginVisible} size="xs" autoclose={false}>
 	<LoginForm />
-	<!-- <form
-		class="flex flex-col space-y-6"
-		method="post"
-		action="/login?/login"
-		use:enhance
-		on:submit={handleLoginSubmit}
-	>
-		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Sign in</h3>
-		<div class="group">
-			<label for="username">Username</label>
-			<input
-				type="text"
-				name="username"
-				id="username"
-				disabled={token != ''}
-				bind:value={username}
-			/>
-		</div>
-
-		<div class="group">
-			<label for="password">Password</label>
-			<input
-				type="password"
-				name="password"
-				id="password"
-				disabled={token != ''}
-				bind:value={password}
-			/>
-		</div>
-
-		<div class="group">
-			<label for="login_token">Token</label>
-			<input
-				type="password"
-				name="login_token"
-				id="token"
-				disabled={password != '' || username != ''}
-				bind:value={token}
-			/>
-		</div>
-
-		<div class="submit-container">
-			<button type="submit">Login</button>
-		</div>
-	</form> -->
-	<!-- <form
-		class="flex flex-col space-y-6"
-		method="post"
-		action="/login?/login"
-		use:enhance
-		on:keyup={(e) => handleLoginKeyup(e)}
-	>
-		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Sign in</h3>
-		<Label for="username">Username</Label>
-		<Input type="text" name="username" disabled={token != ''} bind:value={username} />
-
-		<Label for="password">Password</Label>
-		<Input
-			type={showPassword ? 'text' : 'password'}
-			name="password"
-			disabled={token != ''}
-			bind:value={password}
-		/>
-
-		<Hr class="my-1" width="w-64">or</Hr>
-		<Label for="login_token">Token</Label>
-		<Input
-			type={showToken ? 'text' : 'password'}
-			name="login_token"
-			disabled={password != '' || username != ''}
-			bind:value={token}
-		/>
-		<button
-			type="submit"
-			class="w-full"
-			disabled={username == '' && password == '' && token == ''}
-			on:click={() => handleLoginClick()}>Login</button
-		>
-	</form> -->
 </Modal>
 
 <Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={false}>
@@ -197,13 +119,13 @@
 					<img
 						class="w-6"
 						style:filter={'invert(0.5)'}
-						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + 'A4BDZ'}
+						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + $page.data?.boardId}
 					/>
 				</div>
 				<Popover placement="bottom" triggeredBy="#currentBoard" class="text-sm w-64 font-light">
 					<div class="space-y-2">
 						<h3 class="font-semibold text-gray-900 dark:text-white">
-							A4BDZ <span class="align-super text-xs">{parseInt('A4BDZ', 36)}</span>
+							{$page.data?.boardId}
 						</h3>
 						<p class="text-gray-500 dark:text-gray-400">
 							<span class="font-semibold text-gray-900 dark:text-white">5</span> of
@@ -214,7 +136,7 @@
 						</div>
 					</div>
 				</Popover>
-				<p alt="A4BDZ" class="text-xs">A4BDZ</p>
+				<p alt={$page.data?.boardId} class="text-xs">{$page.data?.boardId}</p>
 			</div>
 		</Button>
 		<NavHamburger on:click={toggle} />

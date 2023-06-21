@@ -80,7 +80,7 @@
 	});
 </script>
 
-<Modal id="board" bind:open={boardVisible} size="xl" autoclose={false}>
+<Modal id="board" bind:open={boardVisible} size="xl" autoclose={true}>
 	<BoardOverview boardId={parseInt($page.data?.boardId)} />
 </Modal>
 
@@ -111,7 +111,7 @@
 		<Button
 			color="light"
 			id="currentBoard"
-			class="!p-1"
+			class="!p-1 float-right"
 			on:click={() => (boardVisible = !boardVisible)}
 		>
 			<div>
@@ -140,12 +140,12 @@
 			</div>
 		</Button>
 		<NavHamburger on:click={toggle} />
-		<NavUl {hidden}>
+		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>
 		</NavUl>
 		<NavUl {hidden}>
 			<NavLi href="/instructions">Instruction</NavLi>
-		</NavUl>
+		</NavUl> -->
 
 		<div class="flex items-center">
 			<div class="pr-1" class:hidden={true}>

@@ -149,6 +149,7 @@
 					notes
 					created_at
 					color
+					position
 					signoffs(where: { board_id: { _eq: $boardId } }) {
 						id
 						created_at

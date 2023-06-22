@@ -32,7 +32,7 @@
 </script>
 
 <div
-	class="rounded-md w-full my-1 {bgOpacityClasses} bg-{bgColor}  border-{borderColor} {borderClasses}"
+	class="rounded-md w-full my-1 {bgOpacityClasses} bg-{bgColor} border-{borderColor} {borderClasses}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<div class={'flex-none pr-2 cursor-pointer'} on:click={(e) => onItemClick(e, item)}>

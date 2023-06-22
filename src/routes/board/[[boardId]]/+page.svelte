@@ -1,8 +1,8 @@
 <script lang="ts">
 	export let data;
 	import { page } from '$app/stores';
-	import { createEventDispatcher } from 'svelte';
-	import { localStorageDefault } from '$lib/utils';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import { localStorageDefault, tailwindColors } from '$lib/utils';
 	import {
 		gql,
 		getContextClient,
@@ -14,7 +14,7 @@
 	import { Blockquote, P, Accordion, AccordionItem } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
-	import Viewer from '$lib/components/Viewer.svelte';
+	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -197,8 +197,152 @@
 	}
 
 	$: cad = boardInfo?.assembly?.assemblies_cad || {};
-
 	$: console.info('BOARD DATA', cad);
+
+	$: user = $page?.data?.user;
+
+	let tailwindColorToHex = (color: string) => {
+		let c = color.split('-');
+		return tailwindColors?.[c?.[0]]?.[c?.[1]] || '#fff4';
+	};
+
+	let draw_event = (e) => {
+		steps?.forEach((i) => {
+			if (i?.reference && i?.color) {
+				console.log(i.color, tailwindColorToHex(i.color));
+				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), 'TOP');
+			}
+		});
+		console.log('DRAW DONE', e);
+	};
+	let pin_event = (e) => {
+		let event = e?.detail?.event;
+		let eventType = event?.type;
+		let detail = e?.detail;
+		let component = e?.detail?.component;
+		let pin = detail?.pin;
+
+		if (eventType == 'mousedown') {
+			console.log('PIN CLICK: ', pin?.pin, component?.component, component, detail);
+		}
+	};
+
+	let updateComponentOutline = (reference: string, colour: string, rendererId: string = 'TOP') => {
+		let group = getComponentGroup(reference, rendererId);
+		console.log('Update component outline colour:', reference, colour, group);
+		if (!group) {
+			console.log('Update component outline colour:', 'NO GROUP', reference);
+			return;
+		}
+		if (colour == '') {
+			group.find(`.outline`).forEach((c) => {
+				console.log('Update component colour:', c);
+				c.fill('blue');
+				c.strokeWidth(2);
+			});
+			return;
+		}
+		group.find(`.outline`).forEach((c) => {
+			console.log('Update component colour:', c);
+			c.stroke(colour);
+			c.strokeWidth(5);
+			c.opacity(1);
+		});
+	};
+
+	let component_event = (e) => {
+		let event = e?.detail?.event;
+		let eventType = event?.type;
+		let detail = e?.detail;
+		let component = detail?.component;
+		if (detail?.pin_idx == undefined) {
+			if (eventType == 'mousedown') {
+				console.log('COMPONENT CLICK: ', component?.component, component, detail);
+				let itemIdx = steps.findIndex((i) => i.reference == component?.component);
+				onBoardItemClick(itemIdx);
+			}
+			if (eventType == 'mouseover') {
+				console.debug('COMPONENT OVER: ', component?.component, component, detail);
+				//currentInfo = `${component?.component} (${component?.device})`;
+			}
+			if (eventType == 'mouseout') {
+				console.debug('COMPONENT OUT: ', component?.component, component, detail);
+				//currentInfo = '';
+			}
+		}
+		//console.log(`COMPONENT EVENT | ${eventType.toUpperCase()}:`, component);
+	};
+
+	let updateComponentColour = (
+		reference: string,
+		colour: string,
+		rendererId: string = 'TOP',
+		opacity: number = 1
+	) => {
+		let group = getComponentGroup(reference, rendererId);
+		console.log('Update component colour:', reference, colour, group);
+		if (!group) {
+			console.log('Update component colour:', 'NO GROUP', reference);
+			return;
+		}
+		if (colour == '') {
+			group.find(`.outline`).forEach((c) => {
+				console.log('Update component colour:', c);
+				//c.fillEnabled(false);
+				c.fill('');
+			});
+			group.find(`.lead`).forEach((c) => {
+				console.log('Update component lead colour:', c);
+				c.fillEnabled(false);
+			});
+			return;
+		}
+		group.find(`.outline`).forEach((c) => {
+			console.log('Update component colour:', c);
+			c.fillEnabled(true);
+			c.fill(colour);
+			c.opacity(0.75);
+		});
+		group.find(`.lead`).forEach((c) => {
+			console.log('Update component lead colour:', c);
+			c.fillEnabled(false);
+			c.fill(colour);
+		});
+	};
+
+	function onBoardItemClick(idx: number) {
+		/* if (!Object.keys(user?.profile?.roles?.processes).includes(currentProcess.toLowerCase())) {
+			alert(
+				`You do not have permission to complete process: ${currentProcess} (${Object.keys(
+					user?.profile?.roles?.processes
+				)})`
+			);
+			return;
+		} */
+		console.log('onItemClick');
+		//console.log(items[idx].signoff);
+		const step = steps[idx];
+		let e = { detail: { event: step } };
+		handleStepClick(e);
+		console.log(idx, step);
+		/* if (!steps[idx].signoff) {
+			items[idx].signoff = user;
+			updateComponentColour(items[idx].reference, 'green');
+		} else {
+			items[idx].signoff = null;
+			updateComponentColour(items[idx].reference, '');
+		} */
+		//console.log(items[idx].signoff);
+	}
+
+	onMount(() => {
+		getRenderers().forEach((r) => {
+			r.scaleX(0.3186);
+			r.scaleY(0.3186);
+			//r.setPosition({ x: 500, y: 130 });
+			r.setPosition({ x: 270, y: 667 });
+		});
+	});
 </script>
 
 {#if boardId}
@@ -233,7 +377,18 @@
 		{#if instruction}
 			<div class="flex h-max-screen">
 				<div class="outline-dotted w-2/3">
-					<Viewer outlinePins={[1]} id="BOT" height={500} data={cad} layerToShow="BOTTOM" />
+					{#if steps}
+						<Viewer
+							on:pin_event={pin_event}
+							on:draw_done={draw_event}
+							on:component_event={component_event}
+							outlinePins={[1]}
+							id="TOP"
+							height={500}
+							data={cad}
+							layerToShow="TOP"
+						/>
+					{/if}
 				</div>
 				<div class="float-right px-1 w-1/3 overflow-y-scroll">
 					<InstructionList

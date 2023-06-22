@@ -259,9 +259,10 @@
 				rotation: component.r,
 				name: component?.component
 			});
-			let colour = 'blue';
+			let colour = 'black';
+			let defaultColor = colour;
 			let shape = shapes_parsed.filter((s) => s?.shape == component?.shape)[0];
-			colour = component?.device.includes('Not Fitted') ? 'red' : 'blue';
+			/* colour = component?.device.includes('Not Fitted') ? 'red' : 'blue'; */
 
 			let text = new Konva.Text({
 				text: component.component,
@@ -285,20 +286,19 @@
 				shapes = shapesFlat.filter((item) => typeof item == typeof 1);
 				shapes = [['LINE', ...shapes]];
 			}
-			let fontSize = 2;
 			shapes.forEach((s, shape_idx) => {
 				if (!s) return;
 				let shapeType = s[0].toUpperCase();
 				let points = s.slice(1).map((point) => convertUnits(point));
 				let stroke = colour;
 				let strokeWidth = 2;
-				let opacity = colour == 'blue' ? 1 : 0.5;
+				let opacity = colour == defaultColor ? 1 : 0.5;
 				let lineCap = 'round';
 				let fontSize = minMaxFromPointToPoints(
 					[convertUnits(component.x), convertUnits(component.y)],
 					[...points]
 				).min;
-				text.fontSize(fontSize);
+				text.fontSize(fontSize * 1.5);
 
 				if (points.length > 0) {
 					let mark = new Konva.Line({
@@ -319,7 +319,7 @@
 							strokeWidth: strokeWidth,
 							opacity: opacity,
 							name: 'outline',
-							fill: colour == 'blue' ? '' : colour
+							fill: colour == defaultColor ? '' : colour
 						});
 					} else if (shapeType == 'CIRCLE') {
 						mark = new Konva.Circle({
@@ -330,7 +330,7 @@
 							strokeWidth: strokeWidth,
 							opacity: opacity,
 							name: 'outline',
-							fill: colour == 'blue' ? '' : colour
+							fill: colour == defaultColor ? '' : colour
 						});
 					} else if (shapeType == 'LINE') {
 						mark = new Konva.Line({
@@ -342,7 +342,7 @@
 							lineJoin: 'round',
 							name: 'outline',
 							closed: true,
-							fill: colour == 'blue' ? '' : colour
+							fill: colour == defaultColor ? '' : colour
 						});
 					}
 
@@ -537,7 +537,7 @@
 							}
 						});
 					});
-					console.log(
+					/* console.log(
 						`${component.component}(${pin?.pin}):`,
 						{
 							padstack: padstack,
@@ -547,7 +547,7 @@
 						},
 						pad_marks,
 						`(${group.getChildren().length})`
-					);
+					); */
 				}
 			});
 

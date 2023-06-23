@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
+	import { createEventDispatcher } from 'svelte';
 	import { Label, Input, Hr, Card, Alert } from 'flowbite-svelte';
 
 	export let classes = 'max-w-sm';
@@ -14,6 +15,8 @@
 	export let token = '';
 	export let username = '';
 
+	const dispatch = createEventDispatcher();
+
 	let showPassword = false;
 	let showToken = false;
 	let showScanner = false;
@@ -21,10 +24,12 @@
 	let submitButton: HTMLButtonElement;
 
 	function handleLoginKeyup(e: KeyboardEvent) {
-		//console.log(e.key);
 		const key = e?.key;
 		if (key == 'Enter') {
 			submitButton?.click();
+			if (!$page?.form?.error) {
+				dispatch('submit');
+			}
 		}
 		if (key == 'Escape') {
 			username = '';
@@ -45,20 +50,6 @@
 	use:enhance
 	on:keyup={(e) => {
 		handleLoginKeyup(e);
-	}}
-	on:keydown={(e) => {
-		console.log(e?.key);
-		const isValid = [
-			...[...Array(10).keys()].map((n) => n.toString()),
-			'Escape',
-			'Enter',
-			'ArrowLeft',
-			'ArrowRight',
-			'Tab'
-		].includes(e?.key);
-		if (!isValid) {
-			e.preventDefault();
-		}
 	}}
 >
 	{#if !showScanner}
@@ -89,6 +80,22 @@
 					autocomplete="off"
 					disabled={userPassDisabled}
 					bind:value={password}
+					on:keydown={(e) => {
+						console.log(e?.key);
+						const isValid = [
+							...[...Array(10).keys()].map((n) => n.toString()),
+							'Escape',
+							'Enter',
+							'ArrowLeft',
+							'ArrowRight',
+							'Tab',
+							'Backspace',
+							'Delete'
+						].includes(e?.key);
+						if (!isValid) {
+							e.preventDefault();
+						}
+					}}
 				>
 					<button
 						tabindex="-1"

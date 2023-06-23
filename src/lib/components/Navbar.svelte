@@ -27,8 +27,8 @@
 	let settingsVisible = false;
 	let boardVisible = false;
 	let userVisible = false;
-
 	let loginVisible = false;
+
 	let token = '';
 	let password = '';
 	let username = '';
@@ -77,12 +77,17 @@
 	}
 </script>
 
+<pre>{JSON.stringify($page, null, 2)}</pre>
 <Modal id="board" bind:open={boardVisible} size="xl" autoclose={true} outsideclose={true}>
 	<BoardOverview boardId={parseInt($page.data?.boardId)} />
 </Modal>
 
 <Modal id="login" bind:open={loginVisible} size="xs" autoclose={false} outsideclose={true}>
-	<LoginForm />
+	<LoginForm
+		on:submit={() => {
+			loginVisible = false;
+		}}
+	/>
 </Modal>
 
 <Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={true} outsideclose={true}>

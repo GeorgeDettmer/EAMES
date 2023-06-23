@@ -22,7 +22,6 @@
 	function handleHeaderClick(e) {
 		console.log('LIST HEADER CLICK', e);
 	}
-
 	async function handleStepClick(e) {
 		const step = e.detail?.step;
 		const signoffs = step?.signoffs;
@@ -31,6 +30,7 @@
 		if (signoffs.filter((s) => s.user.id === $page?.data?.user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
 		}
+
 		if (!signed) {
 			let mutationResult = await gqlClient.mutation(
 				gql`
@@ -49,6 +49,8 @@
 			);
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
+			} else {
+				updateComponentOutline(step?.reference, tailwindColorToHex('green-400'));
 			}
 			console.log(mutationResult);
 		} else {
@@ -64,6 +66,8 @@
 			);
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
+			} else {
+				updateComponentOutline(step?.reference, tailwindColorToHex('red-600'));
 			}
 			console.log(mutationResult);
 		}
@@ -176,6 +180,10 @@
 	});
 
 	$: steps = $stepsInfoStore?.data?.steps;
+	$: stepsComplete = steps?.filter((i) => i?.signoffs?.length > 0);
+	$: stepsCompleteCount = stepsComplete?.length;
+	$: stepsCount = steps?.length;
+	$: complete = stepsCompleteCount === stepsCount;
 	$: {
 		if (!instructionId && instructions?.length > 0) {
 			const defaultInstructionType = localStorage
@@ -214,6 +222,12 @@
 			}
 		});
 		console.log('DRAW DONE', e);
+		getRenderers().forEach((r) => {
+			r.scaleX(0.275);
+			r.scaleY(0.275);
+			//r.setPosition({ x: 500, y: 130 });
+			r.setPosition({ x: 270, y: 600 });
+		});
 	};
 	let pin_event = (e) => {
 		let event = e?.detail?.event;
@@ -237,7 +251,7 @@
 		if (colour == '') {
 			group.find(`.outline`).forEach((c) => {
 				console.log('Update component colour:', c);
-				c.fill('blue');
+				c.fill('black');
 				c.strokeWidth(2);
 			});
 			return;
@@ -246,7 +260,7 @@
 			console.log('Update component colour:', c);
 			c.stroke(colour);
 			c.strokeWidth(5);
-			c.opacity(1);
+			//c.opacity(1);
 		});
 	};
 
@@ -258,15 +272,14 @@
 		if (detail?.pin_idx == undefined) {
 			if (eventType == 'mousedown') {
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
-				let itemIdx = steps.findIndex((i) => i.reference == component?.component);
-				onBoardItemClick(itemIdx);
+				onBoardItemClick(component?.component);
 			}
 			if (eventType == 'mouseover') {
-				console.debug('COMPONENT OVER: ', component?.component, component, detail);
+				//console.debug('COMPONENT OVER: ', component?.component, component, detail);
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
-				console.debug('COMPONENT OUT: ', component?.component, component, detail);
+				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
 			}
 		}
@@ -310,7 +323,7 @@
 		});
 	};
 
-	function onBoardItemClick(idx: number) {
+	function onBoardItemClick(reference: string) {
 		/* if (!Object.keys(user?.profile?.roles?.processes).includes(currentProcess.toLowerCase())) {
 			alert(
 				`You do not have permission to complete process: ${currentProcess} (${Object.keys(
@@ -321,10 +334,10 @@
 		} */
 		console.log('onItemClick');
 		//console.log(items[idx].signoff);
-		const step = steps[idx];
-		let e = { detail: { event: step } };
+		const step = steps.filter((s) => s.reference === reference)?.[0];
+		let e = { detail: { step: step } };
 		handleStepClick(e);
-		console.log(idx, step);
+		console.log(reference, step, e);
 		/* if (!steps[idx].signoff) {
 			items[idx].signoff = user;
 			updateComponentColour(items[idx].reference, 'green');
@@ -335,14 +348,7 @@
 		//console.log(items[idx].signoff);
 	}
 
-	onMount(() => {
-		getRenderers().forEach((r) => {
-			r.scaleX(0.3186);
-			r.scaleY(0.3186);
-			//r.setPosition({ x: 500, y: 130 });
-			r.setPosition({ x: 270, y: 667 });
-		});
-	});
+	onMount(() => {});
 </script>
 
 {#if boardId}
@@ -351,7 +357,7 @@
 	{:else if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
-		<Blockquote border bg class="p-4 my-4" borderClass="border-l-4 border-blue-900">
+		<Blockquote border bg class="p-2" borderClass="border-l-4 border-blue-900">
 			{#if boardInfo?.job}
 				<P weight="medium">{boardInfo?.job?.customer?.name}</P>
 			{/if}
@@ -361,14 +367,21 @@
 			<P weight="medium" size="sm">{assemblyId}</P>
 		</Blockquote>
 
-		<div class="flex p-3">
-			<select class="w-auto" name="instruction" id="instructions" bind:value={instructionId}>
+		<div class="flex my-2">
+			<select class="ml-2 w-auto" name="instruction" id="instructions" bind:value={instructionId}>
 				{#each instructions as i}
 					<option value={i.instruction.id}>{i.instruction.name}</option>
 				{/each}
 			</select>
 			{#if instruction}
-				<Blockquote border bg class="p-1 ml-1">
+				<Blockquote
+					border
+					bg
+					class="p-1 ml-1 flex-auto"
+					borderClass={`border-l-4 ${
+						!steps ? 'border-gray-600' : complete === false ? 'border-red-600' : 'border-green-400'
+					}`}
+				>
 					<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
 					<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
 				</Blockquote>
@@ -376,7 +389,7 @@
 		</div>
 		{#if instruction}
 			<div class="flex h-max-screen">
-				<div class="outline-dotted w-2/3">
+				<div class="outline-dotted w-2/3 mx-1">
 					{#if steps}
 						<Viewer
 							on:pin_event={pin_event}
@@ -384,7 +397,7 @@
 							on:component_event={component_event}
 							outlinePins={[1]}
 							id="TOP"
-							height={500}
+							height={650}
 							data={cad}
 							layerToShow="TOP"
 						/>

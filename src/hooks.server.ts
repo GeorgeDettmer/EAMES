@@ -40,14 +40,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 					throw new Error('User not found');
 				}
 
-				const passTypes = [];
-				if (user?.password) {
-					passTypes.push('password');
-				}
-				if (user?.passcode) {
-					passTypes.push('passcode');
-				}
-
 				event.locals.user = {
 					id: user.id,
 					username: user.username,
@@ -55,8 +47,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 					lastname: user.last_name,
 					initials: user.initials,
 					color: user.color,
-					processes: user.processes,
-					passTypes: passTypes
+					processes: user.processes
 				};
 				console.log(event.locals.user);
 			} catch (error) {

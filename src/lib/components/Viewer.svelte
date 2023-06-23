@@ -268,7 +268,7 @@
 				align: 'center',
 				verticalAlign: 'center',
 				fontStyle: 'bold',
-				name: component.component,
+				name: 'reference',
 				opacity: 0.75,
 				listening: false
 			});
@@ -345,7 +345,7 @@
 					if (s) {
 						mark.on('mouseover', function (e) {
 							if (mark.fill() == 'red' || mark.fill() == 'orange') return;
-							mark.strokeWidth(mark.strokeWidth() == 5 ? 10 : 5);
+							mark.strokeWidth(mark.strokeWidth() * 2);
 							/* mark.fill("blue");
                             mark.opacity(0.5);
                             mark.fillEnabled(true); */
@@ -363,7 +363,7 @@
 						});
 						mark.on('mouseout', function (e) {
 							if (mark.fill() == 'red' || mark.fill() == 'orange') return;
-							mark.strokeWidth(mark.strokeWidth() == 10 ? 5 : 2);
+							mark.strokeWidth(mark.strokeWidth() / 2);
 							/* mark.fill("blue");
                             mark.opacity(1);
                             mark.fillEnabled(false); */

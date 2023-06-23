@@ -27,7 +27,7 @@
 		const signoffs = step?.signoffs;
 		const signed = signoffs.length > 0;
 		console.log('STEP CLICK', signed ? '✅' : '❌', step);
-		if (signoffs.filter((s) => s.user.id === $page?.data?.user?.id).length > 0) {
+		if (signoffs.filter((s) => s.user.id === user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
 		}
 
@@ -45,12 +45,12 @@
 						}
 					}
 				`,
-				{ boardId, step_id: step.id, user_id: $page?.data?.user?.id }
+				{ boardId, step_id: step.id, user_id: user?.id }
 			);
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('green-400'));
+				updateComponentOutline(i?.reference, 'TOP', tailwindColorToHex('green-400'), 10);
 			}
 			console.log(mutationResult);
 		} else {
@@ -67,7 +67,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('red-600'));
+				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('red-600'), 5);
 			}
 			console.log(mutationResult);
 		}
@@ -88,7 +88,7 @@
 					}
 				}
 			`,
-			variables: { boardId, step_id, user_id: user_id || $page?.data?.user?.id }
+			variables: { boardId, step_id, user_id: user_id || user?.id }
 		});
 	};
 
@@ -208,6 +208,9 @@
 	$: console.info('BOARD DATA', cad);
 
 	$: user = $page?.data?.user;
+	$: processes = user?.processes || {};
+	$: allowedProcesses = Object.entries(processes)?.filter((p) => p[1]);
+	$: console.log('PROCESSES', processes, allowedProcesses);
 
 	let tailwindColorToHex = (color: string) => {
 		let c = color.split('-');
@@ -218,11 +221,13 @@
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
 				console.log(i.color, tailwindColorToHex(i.color));
+				const isSigned = i?.signoffs?.length > 0;
 				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), 'TOP');
 				updateComponentOutline(
 					i?.reference,
 					'TOP',
-					i?.signoffs?.length > 0 ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600')
+					isSigned ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600'),
+					isSigned ? 10 : 5
 				);
 			}
 		});
@@ -284,15 +289,45 @@
 				onBoardItemClick(component?.component);
 			}
 			if (eventType == 'mouseover') {
+				updateComponentReferenceColor(component?.component, 'TOP', 'black', 1);
 				//console.debug('COMPONENT OVER: ', component?.component, component, detail);
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
+				updateComponentReferenceColor(component?.component, 'TOP', 'black', 0.75);
 				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
 			}
 		}
 		//console.log(`COMPONENT EVENT | ${eventType.toUpperCase()}:`, component);
+	};
+
+	let updateComponentReferenceColor = (
+		reference: string,
+		rendererId: string = 'TOP',
+		colour: string,
+		opacity: number = 1,
+		size: number = 0
+	) => {
+		const group = getComponentGroup(reference, rendererId);
+		console.log('Update component reference:', reference, colour, group);
+		if (!group) {
+			console.log('Update component reference:', 'NO GROUP', reference);
+			return;
+		}
+
+		group?.find(`.reference`)?.forEach((c) => {
+			console.log('Update component reference:', c);
+			if (colour) {
+				c.fill(colour);
+			}
+			if (size) {
+				c.fontSize(size);
+			}
+			if (opacity) {
+				c.opacity(opacity);
+			}
+		});
 	};
 
 	let updateComponentColour = (
@@ -333,28 +368,20 @@
 	};
 
 	function onBoardItemClick(reference: string) {
-		/* if (!Object.keys(user?.profile?.roles?.processes).includes(currentProcess.toLowerCase())) {
+		if (!Object.keys(user?.processes).includes(instruction?.type?.toLowerCase())) {
 			alert(
-				`You do not have permission to complete process: ${currentProcess} (${Object.keys(
-					user?.profile?.roles?.processes
-				)})`
+				`You do not have permission to complete process of type: ${
+					instruction?.type
+				}. You have permi (${Object.keys(user?.profile?.roles?.processes)})`
 			);
 			return;
-		} */
+		}
 		console.log('onItemClick');
 		//console.log(items[idx].signoff);
 		const step = steps.filter((s) => s.reference === reference)?.[0];
 		let e = { detail: { step: step } };
 		handleStepClick(e);
 		console.log(reference, step, e);
-		/* if (!steps[idx].signoff) {
-			items[idx].signoff = user;
-			updateComponentColour(items[idx].reference, 'green');
-		} else {
-			items[idx].signoff = null;
-			updateComponentColour(items[idx].reference, '');
-		} */
-		//console.log(items[idx].signoff);
 	}
 
 	//INFO: Update CAD highlighting on steps change

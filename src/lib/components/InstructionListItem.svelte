@@ -6,6 +6,7 @@
 
 	import UserIcon from './UserIcon.svelte';
 	import PartInfo from '$lib/components/PartInfo.svelte';
+	import { slide } from 'svelte/transition';
 
 	export let item: Object;
 	export let color = item?.color || stringToColorClass(item?.part_id);
@@ -63,6 +64,7 @@
 					{#if item?.part_id}
 						<a id={listItemId} class={'float-right' + classes.link}>{item.part_id}</a>
 						<Popover
+							transition={slide}
 							style="z-index: 10000;"
 							placement="left"
 							triggeredBy={'#' + listItemId}

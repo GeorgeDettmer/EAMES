@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-
+	import { classes } from '$lib/utils';
 	import { enhance } from '$app/forms';
-	import { onMount } from 'svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import LoginForm from '$lib/components/LoginForm.svelte';
 	import {
@@ -23,11 +22,13 @@
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
 	import Barcode from './Barcode.svelte';
+	import UserOverview from './UserOverview.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
 	let userVisible = false;
 	let loginVisible = false;
+	let userInfoVisible = false;
 
 	let token = '';
 	let password = '';
@@ -39,6 +40,8 @@
 		const isDark = window.document.documentElement.classList.toggle('dark');
 		localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
 	};
+
+	let showDebug_page = false;
 
 	function handleLoginKeyup(e) {
 		if (e.key == 'Enter') {
@@ -71,13 +74,13 @@
 	function navigateTo(nav: string) {
 		console.log('PROXY navigateTo', nav);
 	}
-
-	function handleLogout() {
-		console.log('LOGOUT');
-	}
 </script>
 
-<pre>{JSON.stringify($page, null, 2)}</pre>
+{#if showDebug_page}<pre>{JSON.stringify($page, null, 2)}</pre>{/if}
+<Modal id="userInfo" bind:open={userInfoVisible} size="md" autoclose={true} outsideclose={true}>
+	<UserOverview />
+</Modal>
+
 <Modal id="board" bind:open={boardVisible} size="xl" autoclose={true} outsideclose={true}>
 	<BoardOverview boardId={parseInt($page.data?.boardId)} />
 </Modal>
@@ -96,6 +99,12 @@
 		<Toggle
 			on:click={toggleTheme}
 			checked={window.document.documentElement.classList.contains('dark')}>Dark mode</Toggle
+		>
+		<Toggle
+			on:click={() => {
+				showDebug_page = !showDebug_page;
+			}}
+			checked={showDebug_page}>Show Debug: $page</Toggle
 		>
 	</form>
 </Modal>
@@ -153,8 +162,10 @@
 						{user?.lastname}
 					</span>
 					<span
-						class="block truncate text-sm font-medium"
-						on:click|stopPropagation={navigateTo(`/users/${user._id}`)}
+						class={'block truncate text-sm font-medium' + classes.link}
+						on:click|stopPropagation={() => {
+							userInfoVisible = true;
+						}}
 					>
 						{user?.username}
 					</span>
@@ -167,12 +178,11 @@
 				<DropdownItem
 					slot="footer"
 					on:click={() => {
-						handleLogout();
 						loginVisible = true;
 					}}>Switch user</DropdownItem
 				>
 
-				<DropdownItem slot="footer" on:click={() => handleLogout()}
+				<DropdownItem slot="footer"
 					><form method="POST" action="/login?/logout" use:enhance>
 						<button type="submit" name="logout" value="true">Logout</button>
 					</form></DropdownItem

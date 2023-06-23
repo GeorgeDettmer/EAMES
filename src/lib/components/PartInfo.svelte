@@ -1,15 +1,7 @@
 <script lang="ts">
 	import { classes } from '$lib/utils';
 	import { gql, getContextClient, queryStore } from '@urql/svelte';
-	import {
-		Avatar,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell
-	} from 'flowbite-svelte';
+	import { Avatar } from 'flowbite-svelte';
 	export let partId: string = 'Unknown';
 
 	$: partInfoStore = queryStore({

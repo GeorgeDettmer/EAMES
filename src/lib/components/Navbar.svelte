@@ -16,13 +16,19 @@
 		NavLi,
 		NavUl,
 		NavHamburger,
-		Popover
+		Popover,
+		MegaMenu,
+		Chevron,
+		Avatar
 	} from 'flowbite-svelte';
 	//export let currentSerial = $board.sn;
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
 	import Barcode from './Barcode.svelte';
 	import UserOverview from './UserOverview.svelte';
+	import { ChevronRight } from 'svelte-heros-v2';
+	import { Tween } from 'konva/lib/Tween';
+	import { fade } from 'svelte/transition';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -74,6 +80,11 @@
 	function navigateTo(nav: string) {
 		console.log('PROXY navigateTo', nav);
 	}
+	let menu = [
+		{ name: 'About', href: '/about' },
+		{ name: 'Help', href: '/help' },
+		{ name: 'Report Issue', href: '/report/issue' }
+	];
 </script>
 
 {#if showDebug_page}<pre>{JSON.stringify($page, null, 2)}</pre>{/if}
@@ -115,16 +126,49 @@
 		let:hidden
 		let:toggle
 	>
-		<NavBrand href="/">
-			<img src={logo} class="mr-1 h-6 sm:h-9" alt="EASL" />
-			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">EASL</span>
-		</NavBrand>
-		<Barcode
-			boardId={$page?.data?.boardId}
-			on:click={() => {
-				boardVisible = true;
-			}}
-		/>
+		<div class={'flex cursor-pointer h-12 ring-indigo-800 hover:rotate-12 hover:ring-4'} in:fade>
+			<img src={logo} class="" alt="EASL" />
+		</div>
+		<MegaMenu full items={menu} let:item class="bg-slate-200">
+			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500"
+				>{item.name}</a
+			>
+
+			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local bg-gray-400 rounded-lg">
+				{#if user?.lastActivity || true}
+					<p class="mb-5 max-w-xl text-sm p-0 font-bold text-white">
+						Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch ||
+							'EAS12345'}
+					</p>
+					<div class="flex">
+						<Button color="blue">Continue...</Button>
+						<div
+							class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
+							style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
+						/>
+					</div>
+				{/if}
+			</a>
+		</MegaMenu>
+		<div class="ml-10 flex-auto outline-gray-500">
+			<div class="flex">
+				<div class=" grid grid-rows-2 grid-flow-col">
+					<div class="row-span-3 rounded-bl-lg rounded-tl-lg border-r-0 border-2 border-black">
+						<Barcode
+							boardId={$page?.data?.boardId}
+							on:click={() => {
+								boardVisible = true;
+							}}
+						/>
+					</div>
+					<div class="col-span-2 rounded-tr-lg border-2 border-b-0 border-black">
+						{user?.username}
+					</div>
+					<div class="col-span-2 rounded-br-lg border-2 border-black">{user?.id}</div>
+				</div>
+			</div>
+		</div>
+
 		<NavHamburger on:click={toggle} />
 		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>

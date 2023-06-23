@@ -69,5 +69,5 @@
 	</div>
 </div>
 {#each steps || [] as item (item.id)}
-	<InstructionListItem on:item_click {item} />
+	<InstructionListItem on:item_click on:item_mouse {item} />
 {/each}

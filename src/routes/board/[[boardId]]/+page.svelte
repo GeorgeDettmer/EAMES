@@ -50,7 +50,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, tailwindColorToHex('green-400'));
+				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('green-400'));
 			}
 			console.log(mutationResult);
 		} else {
@@ -67,7 +67,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, tailwindColorToHex('red-600'));
+				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('red-600'));
 			}
 			console.log(mutationResult);
 		}
@@ -219,13 +219,17 @@
 			if (i?.reference && i?.color) {
 				console.log(i.color, tailwindColorToHex(i.color));
 				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), 'TOP');
+				updateComponentOutline(
+					i?.reference,
+					'TOP',
+					i?.signoffs?.length > 0 ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600')
+				);
 			}
 		});
-		console.log('DRAW DONE', e);
+		console.log('DRAW DONE', e ?? '');
 		getRenderers().forEach((r) => {
 			r.scaleX(0.275);
 			r.scaleY(0.275);
-			//r.setPosition({ x: 500, y: 130 });
 			r.setPosition({ x: 270, y: 600 });
 		});
 	};
@@ -241,26 +245,31 @@
 		}
 	};
 
-	let updateComponentOutline = (reference: string, colour: string, rendererId: string = 'TOP') => {
-		let group = getComponentGroup(reference, rendererId);
-		console.log('Update component outline colour:', reference, colour, group);
+	let updateComponentOutline = (
+		reference: string,
+		rendererId: string = 'TOP',
+		colour: string,
+		width: number = 5,
+		opacity: number = 1
+	) => {
+		const group = getComponentGroup(reference, rendererId);
+		console.log('Update component outline:', reference, colour, group);
 		if (!group) {
 			console.log('Update component outline colour:', 'NO GROUP', reference);
 			return;
 		}
-		if (colour == '') {
-			group.find(`.outline`).forEach((c) => {
-				console.log('Update component colour:', c);
-				c.fill('black');
-				c.strokeWidth(2);
-			});
-			return;
-		}
-		group.find(`.outline`).forEach((c) => {
-			console.log('Update component colour:', c);
-			c.stroke(colour);
-			c.strokeWidth(5);
-			//c.opacity(1);
+
+		group?.find(`.outline`)?.forEach((c) => {
+			console.log('Update component outline:', c);
+			if (colour) {
+				c.stroke(colour);
+			}
+			if (width) {
+				c.strokeWidth(width);
+			}
+			if (opacity) {
+				c.opacity(opacity);
+			}
 		});
 	};
 
@@ -348,6 +357,13 @@
 		//console.log(items[idx].signoff);
 	}
 
+	//INFO: Update CAD highlighting on steps change
+	$: {
+		if (steps) {
+			draw_event();
+		}
+	}
+
 	onMount(() => {});
 </script>
 
@@ -357,68 +373,73 @@
 	{:else if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
-		<Blockquote border bg class="p-2" borderClass="border-l-4 border-blue-900">
+		<Blockquote border bg class="p-2 mb-1" borderClass="border-l-4 border-blue-900">
 			{#if boardInfo?.job}
-				<P weight="medium">{boardInfo?.job?.customer?.name}</P>
+				<P weight="medium" size="2xl">EAS{boardInfo?.job?.batch}</P>
 			{/if}
 			<P weight="bold" size="xl">
-				{assembly?.name} ({assembly?.revision_external}:{assembly?.revision_internal})
+				<span class="font-normal">{boardInfo?.job?.customer?.name}</span>
+				{assembly?.name} ({assembly?.revision_external}:{assembly?.revision_internal}) [{assemblyId}]
 			</P>
-			<P weight="medium" size="sm">{assemblyId}</P>
 		</Blockquote>
 
-		<div class="flex my-2">
-			<select class="ml-2 w-auto" name="instruction" id="instructions" bind:value={instructionId}>
-				{#each instructions as i}
-					<option value={i.instruction.id}>{i.instruction.name}</option>
-				{/each}
-			</select>
-			{#if instruction}
-				<Blockquote
-					border
-					bg
-					class="p-1 ml-1 flex-auto"
-					borderClass={`border-l-4 ${
-						!steps ? 'border-gray-600' : complete === false ? 'border-red-600' : 'border-green-400'
-					}`}
-				>
-					<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
-					<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
-				</Blockquote>
-			{/if}
-		</div>
-		{#if instruction}
-			<div class="flex h-max-screen">
-				<div class="outline-dotted w-2/3 mx-1">
-					{#if steps}
+		{#if boardInfo}
+			<div class="flex max-h-[740px]">
+				<div class="w-2/3">
+					<div>
+						{#if instruction}
+							<Blockquote
+								border
+								bg
+								class="p-1 flex-auto  mb-1"
+								borderClass={`border-l-4 ${
+									!steps
+										? 'border-gray-600'
+										: complete === false
+										? 'border-red-600'
+										: 'border-green-400'
+								}`}
+							>
+								<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
+								<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
+							</Blockquote>
+						{/if}
+					</div>
+					<div class="outline-dotted outline-slate-500">
 						<Viewer
 							on:pin_event={pin_event}
 							on:draw_done={draw_event}
 							on:component_event={component_event}
 							outlinePins={[1]}
 							id="TOP"
-							height={650}
+							height={675}
 							data={cad}
 							layerToShow="TOP"
 						/>
-					{/if}
+					</div>
 				</div>
 				<div class="float-right px-1 w-1/3 overflow-y-scroll">
-					<InstructionList
-						on:header_click={handleHeaderClick}
-						on:item_click={handleStepClick}
-						{instruction}
-						{steps}
-					/>
+					<select
+						class="w-full mb-1 h-14"
+						name="instruction"
+						id="instructions"
+						bind:value={instructionId}
+					>
+						{#each instructions as i}
+							<option value={i.instruction.id}>{i.instruction.name}</option>
+						{/each}
+					</select>
+					{#if instruction}
+						<InstructionList
+							on:header_click={handleHeaderClick}
+							on:item_click={handleStepClick}
+							on:item_mouse
+							{instruction}
+							{steps}
+						/>{/if}
 				</div>
 			</div>
 		{/if}
-		<Accordion>
-			<AccordionItem>
-				<span slot="header">Step data</span>
-				<pre>{JSON.stringify(steps, null, 2)}</pre>
-			</AccordionItem>
-		</Accordion>
 	{/if}
 {:else}
 	<p>No boardId</p>

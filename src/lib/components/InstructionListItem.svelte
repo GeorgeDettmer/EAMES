@@ -14,8 +14,15 @@
 
 	const listItemId = 'POP' + randomString();
 
-	function onItemClick(e, item) {
+	function onItemClick(e: MouseEvent, item) {
 		dispatch('item_click', {
+			event: e,
+			step: item
+		});
+	}
+
+	function onMouse(e: MouseEvent, item) {
+		dispatch('item_mouse', {
 			event: e,
 			step: item
 		});
@@ -32,6 +39,9 @@
 </script>
 
 <div
+	on:mouseenter={(e) => onMouse(e, item)}
+	on:mouseleave={(e) => onMouse(e, item)}
+	on:wheel={(e) => onMouse(e, item)}
 	class="rounded-md w-full my-1 {bgOpacityClasses} bg-{bgColor} border-{borderColor} {borderClasses}"
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
@@ -53,6 +63,7 @@
 					{#if item?.part_id}
 						<a id={listItemId} class={'float-right' + classes.link}>{item.part_id}</a>
 						<Popover
+							style="z-index: 10000;"
 							placement="left"
 							triggeredBy={'#' + listItemId}
 							trigger="hover"

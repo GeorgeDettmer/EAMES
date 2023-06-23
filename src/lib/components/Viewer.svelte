@@ -94,9 +94,10 @@
 	let annotationAvailableColors = annotationAvailableColorsOriginal;
 	console.log(data);
 	onMount(() => {
-		console.log('Create new viewer:', width, height, `${data?.name}(${data?.id})`);
 		width = width == 0 ? window_width : width;
 		height = height == 0 ? window_height : height;
+		console.log('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
+
 		stage = new Konva.Stage({
 			container: viewer,
 			width: width,
@@ -107,33 +108,28 @@
 		backgroundLayer = new Konva.Layer();
 		tooltipLayer = new Konva.Layer();
 		tooltip = new Konva.Text();
-		var scaleBy = 1.1;
+		let scaleBy = 1.1;
 		stage.on('wheel', (e) => {
 			// stop default scrolling
 			e.evt.preventDefault();
 
-			var oldScale = stage.scaleX();
-			var pointer = stage.getPointerPosition();
+			let oldScale = stage.scaleX();
+			let pointer = stage.getPointerPosition();
 
-			var mousePointTo = {
+			let mousePointTo = {
 				x: (pointer.x - stage.x()) / oldScale,
 				y: (pointer.y - stage.y()) / oldScale
 			};
 
-			// how to scale? Zoom in? Or zoom out?
 			let direction = e.evt.deltaY > 0 ? 1 : -1;
-
-			// when we zoom on trackpad, e.evt.ctrlKey is true
-			// in that case lets revert direction
 			if (e.evt.ctrlKey) {
 				direction = -direction;
 			}
 
-			var newScale = direction < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
+			let newScale = direction < 0 ? oldScale * scaleBy : oldScale / scaleBy;
 			stage.scale({ x: newScale, y: newScale });
 
-			var newPos = {
+			let newPos = {
 				x: pointer.x - mousePointTo.x * newScale,
 				y: pointer.y - mousePointTo.y * newScale
 			};
@@ -141,7 +137,7 @@
 		});
 		canDraw = true;
 		renderers.set(id, stage);
-		console.log('RENDERERS:', renderers);
+		console.log('CAD VIEWER | RENDERERS:', renderers);
 		return () => {
 			renderers.delete(stage);
 			stage.destroy();

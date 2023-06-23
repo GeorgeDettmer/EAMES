@@ -89,7 +89,7 @@
 <Navbar />
 
 <main class="h-screen overflow-y-scroll dark:bg-slate-600">
-	<div class="mx-auto max-w-8xl py-16 sm:px-6 lg:px-8">
+	<div class="mx-auto max-w-8xl pt-12 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
 			<div class="rounded-lg border-4 border-dashed border-grey-400">
 				<div in:fade={{ duration: 500 }}>

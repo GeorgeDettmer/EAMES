@@ -1,17 +1,10 @@
 <script lang="ts">
 	export let data;
 	import { page } from '$app/stores';
-	import { createEventDispatcher, onMount } from 'svelte';
-	import { localStorageDefault, tailwindColors } from '$lib/utils';
-	import {
-		gql,
-		getContextClient,
-		queryStore,
-		subscriptionStore,
-		mutationStore
-	} from '@urql/svelte';
+	import { tailwindColors } from '$lib/utils';
+	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
 
-	import { Blockquote, P, Accordion, AccordionItem } from 'flowbite-svelte';
+	import { Blockquote, P, Label, Select } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
@@ -32,7 +25,7 @@
 		}
 
 		if (!signed) {
-			let mutationResult = await gqlClient.mutation(
+			let mutationResult = await getContextClient().mutation(
 				gql`
 					mutation insertSignoffs($boardId: bigint!, $step_id: uuid!, $user_id: uuid!) {
 						insert_signoffs(
@@ -54,7 +47,7 @@
 			}
 			console.log(mutationResult);
 		} else {
-			let mutationResult = await gqlClient.mutation(
+			let mutationResult = await getContextClient().mutation(
 				gql`
 					mutation insertSignoffs($signoffId: uuid!) {
 						delete_signoffs_by_pk(id: $signoffId) {
@@ -72,25 +65,6 @@
 			console.log(mutationResult);
 		}
 	}
-
-	let gqlClient = getContextClient();
-	let updateSignoffsResult;
-	const updateSignoffs = ({ boardId, step_id, user_id }) => {
-		updateSignoffsResult = mutationStore({
-			gqlClient,
-			query: gql`
-				mutation updateSignoffs {
-					insert_signoffs(objects: { board_id: $boardId, step_id: $step_id, user_id: $user_id }) {
-						affected_rows
-						returning {
-							id
-						}
-					}
-				}
-			`,
-			variables: { boardId, step_id, user_id: user_id || user?.id }
-		});
-	};
 
 	$: boardInfoStore = subscriptionStore({
 		client: getContextClient(),
@@ -390,8 +364,6 @@
 			draw_event();
 		}
 	}
-
-	onMount(() => {});
 </script>
 
 {#if boardId}
@@ -400,7 +372,7 @@
 	{:else if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
-		<Blockquote border bg class="p-2 mb-1" borderClass="border-l-4 border-blue-900">
+		<Blockquote border bg class="p-2 mb-1" borderClass="border-l-8 border-blue-900">
 			{#if boardInfo?.job}
 				<P weight="medium" size="2xl">EAS{boardInfo?.job?.batch}</P>
 			{/if}
@@ -419,7 +391,7 @@
 								border
 								bg
 								class="p-1 flex-auto  mb-1"
-								borderClass={`border-l-4 ${
+								borderClass={`border-l-8 ${
 									!steps
 										? 'border-gray-600'
 										: complete === false
@@ -432,7 +404,7 @@
 							</Blockquote>
 						{/if}
 					</div>
-					<div class="outline-dotted outline-slate-500">
+					<div class="outline-slate-500 dark:bg-slate-500">
 						<Viewer
 							on:pin_event={pin_event}
 							on:draw_done={draw_event}
@@ -446,7 +418,7 @@
 					</div>
 				</div>
 				<div class="float-right px-1 w-1/3 overflow-y-scroll">
-					<select
+					<!-- <select
 						class="w-full mb-1 h-14"
 						name="instruction"
 						id="instructions"
@@ -455,7 +427,17 @@
 						{#each instructions as i}
 							<option value={i.instruction.id}>{i.instruction.name}</option>
 						{/each}
-					</select>
+					</select> -->
+					<Label class="h-16">
+						<Select
+							class="mt-2 -mb-2"
+							placeholder=""
+							items={instructions?.map((i) => {
+								return { value: i.instruction.id, name: i.instruction.name };
+							})}
+							bind:value={instructionId}
+						/>
+					</Label>
 					{#if instruction}
 						<InstructionList
 							on:header_click={handleHeaderClick}

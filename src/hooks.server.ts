@@ -16,7 +16,7 @@ const hasuraHealth = async (firstRun: boolean = false) => {
 	}
 };
 hasuraHealth(true);
-setInterval(hasuraHealth, 5000);
+//setInterval(hasuraHealth, 5000);
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const authCookie = event.cookies.get('AuthorizationToken');
@@ -40,6 +40,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 					throw new Error('User not found');
 				}
 
+				const passTypes = [];
+				if (user?.password) {
+					passTypes.push('password');
+				}
+				if (user?.passcode) {
+					passTypes.push('passcode');
+				}
+
 				event.locals.user = {
 					id: user.id,
 					username: user.username,
@@ -47,7 +55,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 					lastname: user.last_name,
 					initials: user.initials,
 					color: user.color,
-					processes: user.processes
+					processes: user.processes,
+					passTypes: passTypes
 				};
 				console.log(event.locals.user);
 			} catch (error) {

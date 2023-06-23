@@ -2,14 +2,13 @@
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 	import { Label, Input, Hr, Card, Alert } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
 
 	export let classes = 'max-w-sm';
 	classes += ' flex flex-col space-y-4';
 
-	export let allowPassword = true;
-	export let allowPasscode = true;
-	export let allowToken = true;
+	export let allowPassword = !localStorage.hasOwnProperty('EAMES_loginNoPassword');
+	export let allowPasscode = !localStorage.hasOwnProperty('EAMES_loginNoPasscode');
+	export let allowToken = !localStorage.hasOwnProperty('EAMES_loginNoToken');
 	export let password = '';
 	export let passcode = '';
 	export let token = '';
@@ -47,6 +46,20 @@
 	on:keyup={(e) => {
 		handleLoginKeyup(e);
 	}}
+	on:keydown={(e) => {
+		console.log(e?.key);
+		const isValid = [
+			...[...Array(10).keys()].map((n) => n.toString()),
+			'Escape',
+			'Enter',
+			'ArrowLeft',
+			'ArrowRight',
+			'Tab'
+		].includes(e?.key);
+		if (!isValid) {
+			e.preventDefault();
+		}
+	}}
 >
 	{#if !showScanner}
 		{#if allowPassword || allowPasscode}
@@ -61,11 +74,17 @@
 				/>
 			</Label>
 		{/if}
-		{#if allowPassword}
+		{#if allowPassword || allowPasscode}
 			<Label class="space-y-2" for="password">
-				<span class:text-gray-400={userPassDisabled}>Password</span>
+				<span class:text-gray-400={userPassDisabled}
+					>{allowPasscode && allowPassword
+						? 'Password/Passcode'
+						: allowPasscode
+						? 'Passcode'
+						: 'Password'}</span
+				>
 				<Input
-					type={showPassword ? 'text' : 'password'}
+					type={showPassword ? (!allowPassword ? 'text' : 'text') : 'password'}
 					name="password"
 					autocomplete="off"
 					disabled={userPassDisabled}

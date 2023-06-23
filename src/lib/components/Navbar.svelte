@@ -22,6 +22,7 @@
 	//export let currentSerial = $board.sn;
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
+	import Barcode from './Barcode.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -74,21 +75,17 @@
 	function handleLogout() {
 		console.log('LOGOUT');
 	}
-
-	onMount(() => {
-		console.log('onMounted');
-	});
 </script>
 
-<Modal id="board" bind:open={boardVisible} size="xl" autoclose={true}>
+<Modal id="board" bind:open={boardVisible} size="xl" autoclose={true} outsideclose={true}>
 	<BoardOverview boardId={parseInt($page.data?.boardId)} />
 </Modal>
 
-<Modal id="login" bind:open={loginVisible} size="xs" autoclose={false}>
+<Modal id="login" bind:open={loginVisible} size="xs" autoclose={false} outsideclose={true}>
 	<LoginForm />
 </Modal>
 
-<Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={false}>
+<Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={true} outsideclose={true}>
 	<form class="flex flex-col space-y-6">
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Settings</h3>
 		<Toggle
@@ -98,7 +95,7 @@
 	</form>
 </Modal>
 
-<div class="relative px-8">
+<div class="relative px-0">
 	<Navbar
 		navClass="px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
 		let:hidden
@@ -108,37 +105,12 @@
 			<img src={logo} class="mr-1 h-6 sm:h-9" alt="EASL" />
 			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">EASL</span>
 		</NavBrand>
-		<Button
-			color="light"
-			id="currentBoard"
-			class="!p-1 float-right"
-			on:click={() => (boardVisible = !boardVisible)}
-		>
-			<div>
-				<div class="flex items-center justify-center">
-					<img
-						class="w-6"
-						style:filter={'invert(0.5)'}
-						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + $page.data?.boardId}
-					/>
-				</div>
-				<Popover placement="bottom" triggeredBy="#currentBoard" class="text-sm w-64 font-light">
-					<div class="space-y-2">
-						<h3 class="font-semibold text-gray-900 dark:text-white">
-							{$page.data?.boardId}
-						</h3>
-						<p class="text-gray-500 dark:text-gray-400">
-							<span class="font-semibold text-gray-900 dark:text-white">5</span> of
-							<span class="font-semibold text-gray-900 dark:text-white">10</span> tasks remaining.
-						</p>
-						<div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-							<div class="bg-red-600 h-2.5 rounded-full" style="width: 50%" />
-						</div>
-					</div>
-				</Popover>
-				<p alt={$page.data?.boardId} class="text-xs">{$page.data?.boardId}</p>
-			</div>
-		</Button>
+		<Barcode
+			boardId={$page?.data?.boardId}
+			on:click={() => {
+				boardVisible = true;
+			}}
+		/>
 		<NavHamburger on:click={toggle} />
 		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>

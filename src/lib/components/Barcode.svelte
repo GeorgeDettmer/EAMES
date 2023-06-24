@@ -3,6 +3,7 @@
 	import { Button, Popover } from 'flowbite-svelte';
 
 	import BoardPopoverContent from './BoardPopoverContent.svelte';
+	import { padSerial } from '$lib/utils';
 
 	export let boardId: string;
 	export let barcodeType: string = 'datamatrix';
@@ -27,7 +28,7 @@
 		<div>
 			<div class="flex items-center justify-center">
 				<img class="" style:filter={'invert(0.5)'} src={barcodeImageUrl} alt={boardId} />
-				<p class="pl-1 text-4xl">{boardId.padStart(10 - boardId.length, '0')}</p>
+				<p class="pl-1 text-4xl">{padSerial(boardId)}</p>
 			</div>
 			<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">
 				<BoardPopoverContent

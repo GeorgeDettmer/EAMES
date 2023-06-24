@@ -182,7 +182,9 @@
 		}
 	}
 	$: cad = boardInfo?.assembly?.assemblies_cad || {};
-	$: console.info('BOARD INFO', boardInfo, steps);
+	$: console.info('BOARD', boardInfo);
+	$: console.info('STEPS', steps);
+	$: console.info('INSTRUCTION', instruction);
 	const currentBoardStore = getContext('currentBoard');
 	$: currentBoardStore.set({ boardInfo: boardInfo, boardSteps: allSteps });
 	$: user = $page?.data?.user;
@@ -406,10 +408,13 @@
 										<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
 										<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
 									</div>
-									<div class="flex-1 w-fit float-right">
+									<div
+										class="flex-1 w-fit float-right text-red-600"
+										class:line-through={Object.keys(user?.processes)?.includes(instruction?.type)}
+									>
 										<Label>
 											<Select
-												class="mt-2 -mb-2"
+												class="mt-2 -mb-2 "
 												placeholder=""
 												items={instructions?.map((i) => {
 													return { value: i.instruction.id, name: i.instruction.name };
@@ -422,7 +427,7 @@
 							</Blockquote>
 						{/if}
 					</div>
-					<div class="outline-slate-500 dark:bg-slate-500">
+					<div class="outline outline-slate-300 dark:bg-slate-500">
 						<Viewer
 							on:pin_event={pin_event}
 							on:draw_done={draw_event}

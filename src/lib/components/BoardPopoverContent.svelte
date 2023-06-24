@@ -12,7 +12,7 @@
 
 <div class="space-y-2">
 	<!-- <h3 class="font-semibold text-gray-900 dark:text-white text-3xl">
-		<span>{boardId.padStart(10 - boardId.length, '0')}</span>
+		<span>{boardId}</span>
 	</h3> -->
 	<p class="text-gray-500 dark:text-gray-400">
 		<span class="font-semibold text-gray-900 dark:text-white">{complete}</span> of

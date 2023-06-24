@@ -104,6 +104,10 @@
 							id
 							name
 							data
+							start_x
+							start_y
+							start_scale
+							layers
 						}
 					}
 					updated_at
@@ -159,9 +163,11 @@
 	$: allSteps = $stepsInfoStore?.data?.steps;
 	$: steps = allSteps?.filter((s) => s?.instruction_id === instructionId);
 	$: stepsComplete = steps?.filter((i) => i?.signoffs?.length > 0);
+	$: stepsIncomplete = steps?.filter((i) => i?.signoffs?.length === 0);
 	$: stepsCompleteCount = stepsComplete?.length;
 	$: stepsCount = steps?.length;
 	$: complete = stepsCompleteCount === stepsCount;
+
 	$: {
 		if (!instructionId && instructions?.length > 0) {
 			const defaultInstructionType = localStorage
@@ -190,13 +196,14 @@
 	$: user = $page?.data?.user;
 	$: processes = user?.processes || {};
 	$: allowedProcesses = Object.entries(processes)?.filter((p) => p[1]);
-	$: console.log('PROCESSES', processes, allowedProcesses);
+	$: console.info('PROCESSES', processes, allowedProcesses);
 
 	let tailwindColorToHex = (color: string) => {
 		let c = color.split('-');
 		return tailwindColors?.[c?.[0]]?.[c?.[1]] || '#fff4';
 	};
 
+	let visibleLayer: string = '';
 	let draw_event = (e) => {
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
@@ -211,11 +218,14 @@
 				);
 			}
 		});
-		console.log('DRAW DONE', e ?? '');
+		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
+		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference == c?.component)?.[0]?.layer;
+		console.log('DRAW DONE', e ?? '', visibleLayer, stepReference);
 		getRenderers().forEach((r) => {
-			r.scaleX(0.275);
-			r.scaleY(0.275);
-			r.setPosition({ x: 270, y: 600 });
+			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
+			r.scaleX(scale);
+			r.scaleY(scale);
+			r.setPosition({ x: cad?.start_x ? cad.start_x : 215, y: cad?.start_y ? cad.start_y : 900 });
 		});
 	};
 	let pin_event = (e) => {
@@ -410,7 +420,7 @@
 									</div>
 									<div
 										class="flex-1 w-fit float-right text-red-600"
-										class:line-through={Object.keys(user?.processes)?.includes(instruction?.type)}
+										class:line-through={!processes?.[instruction?.type?.toLowerCase()]}
 									>
 										<Label>
 											<Select
@@ -427,18 +437,25 @@
 							</Blockquote>
 						{/if}
 					</div>
-					<div class="outline outline-slate-300 dark:bg-slate-500">
-						<Viewer
-							on:pin_event={pin_event}
-							on:draw_done={draw_event}
-							on:component_event={component_event}
-							outlinePins={[1]}
-							id="TOP"
-							height={/* 675 */ 1000}
-							data={cad}
-							layerToShow="TOP"
-						/>
-					</div>
+
+					{#each cad?.layers as layer (layer)}
+						<div
+							class="outline outline-slate-300 dark:bg-slate-500"
+							class:hidden={layer !== visibleLayer}
+						>
+							<p>{layer}</p>
+							<Viewer
+								on:pin_event={pin_event}
+								on:draw_done={draw_event}
+								on:component_event={component_event}
+								outlinePins={[1]}
+								id={layer}
+								height={/* 675 */ 1000}
+								data={cad}
+								layerToShow={layer}
+							/>
+						</div>
+					{/each}
 				</div>
 				<div class="float-right px-1 w-1/3 overflow-y-auto">
 					{#if instruction}

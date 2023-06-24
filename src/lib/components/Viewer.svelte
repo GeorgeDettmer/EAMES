@@ -4,7 +4,7 @@
 	const checkRendererExisits = (renderer: string) => {
 		const exists = renderers.has(renderer);
 		if (!exists) {
-			console.log('EXPORT | VIEWER | Invalid renderer: ', renderer);
+			console.warn('EXPORT | VIEWER | Invalid renderer: ', renderer);
 		}
 		return exists;
 	};
@@ -16,19 +16,17 @@
 	export function removeComponent(reference: string, rendererId: string) {
 		checkRendererExisits(rendererId);
 		const renderer = renderers.get(rendererId);
-		console.log('EXPORT | removeComponent | ', renderer, reference);
+		console.debug('EXPORT | removeComponent | ', renderer, reference);
 		let group = renderer.find(`.${reference}`)?.[0];
-		console.log(group);
 		group.destroy();
 		let tooltip = renderer.findOne('._tooltip');
-		console.log(tooltip);
 	}
 
 	export function getComponentGroup(reference: string, rendererId: string) {
 		checkRendererExisits(rendererId);
 		const renderer = renderers.get(rendererId);
 		let group = renderer.find(`.${reference}`)?.[0];
-		//console.log('EXPORT | getComponentGroup | ', renderer, reference, group);
+		console.debug('EXPORT | getComponentGroup | ', renderer, reference, group);
 
 		return group;
 	}
@@ -36,7 +34,6 @@
 	export function goTo(reference: string, rendererId: string) {
 		checkRendererExisits(rendererId);
 		let group = getComponentGroup(reference, rendererId);
-		console.log(group);
 		return group;
 	}
 </script>
@@ -92,11 +89,10 @@
 		'turquoise'
 	];
 	let annotationAvailableColors = annotationAvailableColorsOriginal;
-	console.log(data);
 	onMount(() => {
 		width = width == 0 ? window_width : width;
 		height = height == 0 ? window_height : height;
-		console.log('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
+		console.info('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
 
 		stage = new Konva.Stage({
 			container: viewer,
@@ -137,7 +133,7 @@
 		});
 		canDraw = true;
 		renderers.set(id, stage);
-		console.log('CAD VIEWER | RENDERERS:', renderers);
+		console.info('CAD VIEWER | RENDERERS:', renderers);
 		return () => {
 			renderers.delete(stage);
 			stage.destroy();
@@ -146,7 +142,6 @@
 
 	$: {
 		if (data?.data) {
-			console.log('has data', data);
 			board_parsed = data?.data?.BOARD || [];
 			components_parsed = data?.data?.COMPONENTS || [];
 			shapes_parsed = data?.data?.SHAPES || [];
@@ -155,7 +150,7 @@
 			header_parsed = data?.data?.HEADER || [];
 
 			if (canDraw) {
-				console.log('RENDER@', new Date(), data?.name);
+				console.info('RENDER@', new Date(), data?.name);
 				draw();
 			}
 		}
@@ -206,7 +201,6 @@
 	let drawAllPins = true;
 	let sizeMultiplyer = hires ? 21.725 * 2 : 21.7;
 	function draw(data) {
-		console.log(layer);
 		let drawTime = Date.now();
 		sizeMultiplyer = hires ? 21.725 * 2 : 21.7;
 		layer.destroy();
@@ -233,7 +227,6 @@
 
 		featuresDrawn = 0;
 		let boardOutline = new Konva.Group();
-		//console.log(board_parsed);
 		board_parsed.forEach((line) => {
 			boardOutline.add(
 				new Konva.Line({
@@ -533,7 +526,7 @@
 							}
 						});
 					});
-					/* console.log(
+					console.debug(
 						`${component.component}(${pin?.pin}):`,
 						{
 							padstack: padstack,
@@ -543,7 +536,7 @@
 						},
 						pad_marks,
 						`(${group.getChildren().length})`
-					); */
+					);
 				}
 			});
 
@@ -591,7 +584,6 @@
 
 			if (text.rotation() == 180) {
 				text.rotation(0);
-				//console.log(text.rotation());
 			}
 			group.add(text);
 			layer.add(group);
@@ -667,10 +659,9 @@
 		stage.add(backgroundLayer);
 		stage.add(layer);
 		stage.add(tooltipLayer);
-
 		/* backgroundLayer.clip(0, 0, bounding.width, bounding.height);
         backgroundLayer.hide();
-        console.log("featuresDrawn:", featuresDrawn);
+        
 
         let featureCount = document.querySelector("#featureCount");
         featureCount.textContent = "featureCount: " + featuresDrawn;
@@ -684,7 +675,7 @@
             backgroundLayer.show();
         } */
 		//fitToScreen();
-		console.log('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
+		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
 		dispatch('draw_done', stage);
 	}
 

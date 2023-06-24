@@ -9,7 +9,7 @@
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
 	import { getContext, setContext } from 'svelte';
-	import { debug } from 'svelte/internal';
+	import { onMount } from 'svelte/internal';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -359,10 +359,14 @@
 		handleStepClick(e);
 		console.log(reference, step, e);
 	}
+	let canDraw = false;
+	onMount(() => {
+		canDraw = true;
+	});
 
 	//INFO: Update CAD highlighting on steps change
 	$: {
-		if (steps) {
+		if (canDraw && steps) {
 			draw_event();
 		}
 	}

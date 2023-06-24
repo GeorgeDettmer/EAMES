@@ -8,11 +8,12 @@
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
-	import { getContext, setContext } from 'svelte';
-	import { onMount } from 'svelte/internal';
+	import { getContext } from 'svelte';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
+
+	const urqlClient = getContextClient();
 
 	function handleHeaderClick(e) {
 		console.log('LIST HEADER CLICK', e);
@@ -25,9 +26,8 @@
 		if (signoffs?.filter((s) => s.user.id === user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
 		}
-
 		if (!signed) {
-			let mutationResult = await getContextClient().mutation(
+			let mutationResult = await urqlClient.mutation(
 				gql`
 					mutation insertSignoffs($boardId: bigint!, $step_id: uuid!, $user_id: uuid!) {
 						insert_signoffs(
@@ -49,7 +49,7 @@
 			}
 			console.log(mutationResult);
 		} else {
-			let mutationResult = await getContextClient().mutation(
+			let mutationResult = await urqlClient.mutation(
 				gql`
 					mutation insertSignoffs($signoffId: uuid!) {
 						delete_signoffs_by_pk(id: $signoffId) {
@@ -69,7 +69,7 @@
 	}
 
 	$: boardInfoStore = subscriptionStore({
-		client: getContextClient(),
+		client: urqlClient,
 		query: gql`
 			subscription Boards($boardId: bigint!) {
 				boards(where: { id: { _eq: $boardId } }) {
@@ -121,7 +121,7 @@
 		?.instruction;
 
 	$: stepsInfoStore = subscriptionStore({
-		client: getContextClient(),
+		client: urqlClient,
 		query: gql`
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
 				steps(
@@ -359,14 +359,10 @@
 		handleStepClick(e);
 		console.log(reference, step, e);
 	}
-	let canDraw = false;
-	onMount(() => {
-		canDraw = true;
-	});
 
 	//INFO: Update CAD highlighting on steps change
 	$: {
-		if (canDraw && steps) {
+		if (steps) {
 			draw_event();
 		}
 	}

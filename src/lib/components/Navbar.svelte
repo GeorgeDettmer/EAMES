@@ -136,20 +136,27 @@
 				>{item.name}</a
 			>
 
-			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local bg-gray-400 rounded-lg">
+			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
 				{#if user?.lastActivity || true}
-					<p class="mb-5 max-w-xl text-sm p-0 font-bold text-white">
-						Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch ||
-							'EAS12345'}
-					</p>
-					<div class="flex">
-						<Button color="blue">Continue...</Button>
-						<div
-							class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
-							style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
-						/>
+					<div class="border-2 p-5 rounded-lg">
+						<p class="mb-5 max-w-xl text-sm p-0 font-bold text-white">
+							Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch ||
+								'EAS12345'}
+						</p>
+						<div class="flex">
+							<Button color="blue" class="pr-10">Continue...</Button>
+							<div
+								class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
+								style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
+							/>
+						</div>
 					</div>
 				{/if}
+				<div class="pt-10 flex">
+					<p class="float-right font-italic">
+						built by <span class="font-semibold italic">George Dettmer</span>
+					</p>
+				</div>
 			</a>
 		</MegaMenu>
 		<div class="ml-10 flex-auto outline-gray-500">
@@ -204,8 +211,10 @@
 
 			<span>
 				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
-					<p class="px-1">
-						{$page.data?.user?.firstname || $page.data?.user?.username || 'Sign in'}
+					<p class="px-1 text-xl">
+						{[$page.data?.user?.firstname, $page.data?.user?.lastname].join(' ') ||
+							$page.data?.user?.username ||
+							'Sign in'}
 					</p>
 				</UserIcon>
 			</span>

@@ -7,6 +7,7 @@
 	import UserIcon from './UserIcon.svelte';
 	import PartInfo from '$lib/components/PartInfo.svelte';
 	import { slide } from 'svelte/transition';
+	import UserOverview from './UserOverview.svelte';
 
 	export let item: Object;
 	export let color = item?.color || stringToColorClass(item?.part_id);
@@ -50,7 +51,16 @@
 			{#if complete}
 				<div class="p-1">
 					{#each item?.signoffs as signoff (signoff?.id)}
-						<UserIcon user={signoff?.user} size="sm" />
+						<div id={listItemId + signoff?.id}><UserIcon user={signoff?.user} size="sm" /></div>
+						<Popover
+							style="z-index: 10000;"
+							placement="left"
+							triggeredBy={'#' + listItemId + signoff?.id}
+							trigger="hover"
+							class="w-96 text-sm font-light text-gray-500 bg-white dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
+						>
+							<UserOverview userId={signoff?.user?.id} />
+						</Popover>
 					{/each}
 				</div>
 			{:else}

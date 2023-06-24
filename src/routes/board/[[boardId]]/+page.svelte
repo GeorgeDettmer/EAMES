@@ -8,6 +8,8 @@
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
+	import { getContext, setContext } from 'svelte';
+	import { debug } from 'svelte/internal';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -43,7 +45,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(i?.reference, 'TOP', tailwindColorToHex('green-400'), 10);
+				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('green-400'), 10);
 			}
 			console.log(mutationResult);
 		} else {
@@ -121,9 +123,9 @@
 	$: stepsInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription Steps($assemblyId: bigint!, $boardId: bigint!, $instructionId: uuid!) {
+			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
 				steps(
-					where: { assembly_id: { _eq: $assemblyId }, instruction_id: { _eq: $instructionId } }
+					where: { assembly_id: { _eq: $assemblyId } }
 					order_by: { reference: asc_nulls_first, part_id: desc }
 				) {
 					id
@@ -133,6 +135,7 @@
 					created_at
 					color
 					position
+					instruction_id
 					signoffs(where: { board_id: { _eq: $boardId } }) {
 						id
 						created_at
@@ -150,10 +153,11 @@
 				}
 			}
 		`,
-		variables: { assemblyId, boardId, instructionId }
+		variables: { assemblyId, boardId }
 	});
 
-	$: steps = $stepsInfoStore?.data?.steps;
+	$: allSteps = $stepsInfoStore?.data?.steps;
+	$: steps = allSteps?.filter((s) => s?.instruction_id === instructionId);
 	$: stepsComplete = steps?.filter((i) => i?.signoffs?.length > 0);
 	$: stepsCompleteCount = stepsComplete?.length;
 	$: stepsCount = steps?.length;
@@ -177,10 +181,10 @@
 			);
 		}
 	}
-
 	$: cad = boardInfo?.assembly?.assemblies_cad || {};
-	$: console.info('BOARD DATA', cad);
-
+	$: console.info('BOARD INFO', boardInfo, steps);
+	const currentBoardStore = getContext('currentBoard');
+	$: currentBoardStore.set({ boardInfo: boardInfo, boardSteps: allSteps });
 	$: user = $page?.data?.user;
 	$: processes = user?.processes || {};
 	$: allowedProcesses = Object.entries(processes)?.filter((p) => p[1]);
@@ -194,7 +198,7 @@
 	let draw_event = (e) => {
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
-				console.log(i.color, tailwindColorToHex(i.color));
+				//console.log(i.color, tailwindColorToHex(i.color));
 				const isSigned = i?.signoffs?.length > 0;
 				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), 'TOP');
 				updateComponentOutline(
@@ -232,14 +236,14 @@
 		opacity: number = 1
 	) => {
 		const group = getComponentGroup(reference, rendererId);
-		console.log('Update component outline:', reference, colour, group);
+		//console.log('Update component outline:', reference, colour, group);
 		if (!group) {
-			console.log('Update component outline colour:', 'NO GROUP', reference);
+			//console.log('Update component outline colour:', 'NO GROUP', reference);
 			return;
 		}
 
 		group?.find(`.outline`)?.forEach((c) => {
-			console.log('Update component outline:', c);
+			//console.log('Update component outline:', c);
 			if (colour) {
 				c.stroke(colour);
 			}
@@ -284,14 +288,14 @@
 		size: number = 0
 	) => {
 		const group = getComponentGroup(reference, rendererId);
-		console.log('Update component reference:', reference, colour, group);
+		//console.log('Update component reference:', reference, colour, group);
 		if (!group) {
-			console.log('Update component reference:', 'NO GROUP', reference);
+			//console.log('Update component reference:', 'NO GROUP', reference);
 			return;
 		}
 
 		group?.find(`.reference`)?.forEach((c) => {
-			console.log('Update component reference:', c);
+			//console.log('Update component reference:', c);
 			if (colour) {
 				c.fill(colour);
 			}
@@ -311,47 +315,45 @@
 		opacity: number = 1
 	) => {
 		let group = getComponentGroup(reference, rendererId);
-		console.log('Update component colour:', reference, colour, group);
+		//console.log('Update component colour:', reference, colour, group);
 		if (!group) {
-			console.log('Update component colour:', 'NO GROUP', reference);
+			//console.log('Update component colour:', 'NO GROUP', reference);
 			return;
 		}
 		if (colour == '') {
 			group.find(`.outline`).forEach((c) => {
-				console.log('Update component colour:', c);
+				//console.log('Update component colour:', c);
 				//c.fillEnabled(false);
 				c.fill('');
 			});
 			group.find(`.lead`).forEach((c) => {
-				console.log('Update component lead colour:', c);
+				//console.log('Update component lead colour:', c);
 				c.fillEnabled(false);
 			});
 			return;
 		}
 		group.find(`.outline`).forEach((c) => {
-			console.log('Update component colour:', c);
+			//console.log('Update component colour:', c);
 			c.fillEnabled(true);
 			c.fill(colour);
 			c.opacity(0.75);
 		});
 		group.find(`.lead`).forEach((c) => {
-			console.log('Update component lead colour:', c);
+			//console.log('Update component lead colour:', c);
 			c.fillEnabled(false);
 			c.fill(colour);
 		});
 	};
 
 	function onBoardItemClick(reference: string) {
-		if (!Object.keys(user?.processes).includes(instruction?.type?.toLowerCase())) {
+		/* if (!Object.keys(user?.processes).includes(instruction?.type?.toLowerCase())) {
 			alert(
 				`You do not have permission to complete process of type: ${
 					instruction?.type
 				}. You have permi (${Object.keys(user?.profile?.roles?.processes)})`
 			);
 			return;
-		}
-		console.log('onItemClick');
-		//console.log(items[idx].signoff);
+		} */
 		const step = steps.filter((s) => s.reference === reference)?.[0];
 		let e = { detail: { step: step } };
 		handleStepClick(e);
@@ -372,7 +374,7 @@
 	{:else if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
-		<Blockquote border bg class="p-2 mb-1" borderClass="border-l-8 border-blue-900">
+		<!-- <Blockquote border bg class="p-2 mb-1" borderClass="border-l-8 border-blue-900">
 			{#if boardInfo?.job}
 				<P weight="medium" size="2xl">EAS{boardInfo?.job?.batch}</P>
 			{/if}
@@ -380,17 +382,17 @@
 				<span class="font-normal">{boardInfo?.job?.customer?.name}</span>
 				{assembly?.name} ({assembly?.revision_external}:{assembly?.revision_internal}) [{assemblyId}]
 			</P>
-		</Blockquote>
+		</Blockquote> -->
 
 		{#if boardInfo}
-			<div class="flex max-h-[740px]">
+			<div class="flex max-h-[1065px]">
 				<div class="w-2/3">
 					<div>
 						{#if instruction}
 							<Blockquote
 								border
 								bg
-								class="p-1 flex-auto  mb-1"
+								class="p-1 flex-auto mb-1 pb-2.5"
 								borderClass={`border-l-8 ${
 									!steps
 										? 'border-gray-600'
@@ -399,8 +401,24 @@
 										: 'border-green-400'
 								}`}
 							>
-								<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
-								<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
+								<div class="flex">
+									<div class="flex-none w-2/3">
+										<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
+										<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
+									</div>
+									<div class="flex-1 w-fit float-right">
+										<Label>
+											<Select
+												class="mt-2 -mb-2"
+												placeholder=""
+												items={instructions?.map((i) => {
+													return { value: i.instruction.id, name: i.instruction.name };
+												})}
+												bind:value={instructionId}
+											/>
+										</Label>
+									</div>
+								</div>
 							</Blockquote>
 						{/if}
 					</div>
@@ -411,33 +429,13 @@
 							on:component_event={component_event}
 							outlinePins={[1]}
 							id="TOP"
-							height={675}
+							height={/* 675 */ 1000}
 							data={cad}
 							layerToShow="TOP"
 						/>
 					</div>
 				</div>
-				<div class="float-right px-1 w-1/3 overflow-y-scroll">
-					<!-- <select
-						class="w-full mb-1 h-14"
-						name="instruction"
-						id="instructions"
-						bind:value={instructionId}
-					>
-						{#each instructions as i}
-							<option value={i.instruction.id}>{i.instruction.name}</option>
-						{/each}
-					</select> -->
-					<Label class="h-16">
-						<Select
-							class="mt-2 -mb-2"
-							placeholder=""
-							items={instructions?.map((i) => {
-								return { value: i.instruction.id, name: i.instruction.name };
-							})}
-							bind:value={instructionId}
-						/>
-					</Label>
+				<div class="float-right px-1 w-1/3 overflow-y-auto">
 					{#if instruction}
 						<InstructionList
 							on:header_click={handleHeaderClick}
@@ -445,7 +443,8 @@
 							on:item_mouse
 							{instruction}
 							{steps}
-						/>{/if}
+						/>
+					{/if}
 				</div>
 			</div>
 		{/if}

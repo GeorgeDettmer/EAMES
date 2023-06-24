@@ -28,7 +28,7 @@
 		checkRendererExisits(rendererId);
 		const renderer = renderers.get(rendererId);
 		let group = renderer.find(`.${reference}`)?.[0];
-		console.log('EXPORT | getComponentGroup | ', renderer, reference, group);
+		//console.log('EXPORT | getComponentGroup | ', renderer, reference, group);
 
 		return group;
 	}

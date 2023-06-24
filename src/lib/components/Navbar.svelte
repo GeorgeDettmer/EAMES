@@ -29,6 +29,7 @@
 	import { ChevronRight } from 'svelte-heros-v2';
 	import { Tween } from 'konva/lib/Tween';
 	import { fade } from 'svelte/transition';
+	import { getAllContexts, getContext } from 'svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -41,7 +42,8 @@
 	let username = '';
 
 	$: user = $page.data?.user;
-
+	const currentBoard = getContext('currentBoard');
+	$: console.log('all contexts', getAllContexts(), currentBoard);
 	const toggleTheme = () => {
 		const isDark = window.document.documentElement.classList.toggle('dark');
 		localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
@@ -152,19 +154,29 @@
 		</MegaMenu>
 		<div class="ml-10 flex-auto outline-gray-500">
 			<div class="flex">
-				<div class=" grid grid-rows-2 grid-flow-col">
-					<div class="row-span-3 rounded-bl-lg rounded-tl-lg border-r-0 border-2 border-black">
+				<div class="grid grid-rows-2 grid-flow-col">
+					<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
 						<Barcode
-							boardId={$page?.data?.boardId}
+							boardId={$page?.data?.boardId || '##########'}
 							on:click={() => {
 								boardVisible = true;
 							}}
 						/>
 					</div>
-					<div class="col-span-2 rounded-tr-lg border-2 border-b-0 border-black">
-						{user?.username}
-					</div>
-					<div class="col-span-2 rounded-br-lg border-2 border-black">{user?.id}</div>
+					{#if $currentBoard?.boardInfo?.id}
+						<div
+							class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500"
+						>
+							EAS{$currentBoard?.boardInfo?.job?.batch}
+						</div>
+						<div
+							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500"
+						>
+							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
+							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
+								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

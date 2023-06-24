@@ -4,7 +4,8 @@
 	import type { LayoutData } from './$types';
 	import { enhance } from '$app/forms';
 	export let data: LayoutData;
-
+	import { setContext } from 'svelte';
+	import { writable } from 'svelte/store';
 	const gqlUrl = PUBLIC_HASURA_URL;
 	const gqlHttp = 'http' + gqlUrl;
 	const gqlWs = 'ws://' + gqlUrl.split('://')[1];
@@ -70,6 +71,10 @@
 
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { fade } from 'svelte/transition';
+
+	const currentBoard = writable({});
+	setContext('currentBoard', currentBoard);
+	$: console.log('context', currentBoard);
 </script>
 
 <svelte:head>
@@ -91,7 +96,7 @@
 <main class="h-screen overflow-y-scroll dark:bg-slate-600">
 	<div class="mx-auto max-w-8xl pt-14 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
-			<div class="rounded-lg border-4 border-dashed border-grey-400">
+			<div class="rounded-lg">
 				<div in:fade={{ duration: 500 }}>
 					<slot />
 				</div>

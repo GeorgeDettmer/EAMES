@@ -64,7 +64,6 @@
 					{#if item?.part_id}
 						<a id={listItemId} class={'float-right' + classes.link}>{item.part_id}</a>
 						<Popover
-							transition={slide}
 							style="z-index: 10000;"
 							placement="left"
 							triggeredBy={'#' + listItemId}

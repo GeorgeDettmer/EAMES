@@ -45,7 +45,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('green-400'), 10);
+				updateComponentOutline(step?.reference, visibleLayer, tailwindColorToHex('green-400'), 10);
 			}
 			console.log(mutationResult);
 		} else {
@@ -62,7 +62,7 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, 'TOP', tailwindColorToHex('red-600'), 5);
+				updateComponentOutline(step?.reference, visibleLayer, tailwindColorToHex('red-600'), 5);
 			}
 			console.log(mutationResult);
 		}
@@ -205,21 +205,26 @@
 
 	let visibleLayer: string = '';
 	let draw_event = (e) => {
+		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
+		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference == c?.component)?.[0]?.layer;
+
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
 				//console.log(i.color, tailwindColorToHex(i.color));
 				const isSigned = i?.signoffs?.length > 0;
-				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), 'TOP');
+				updateComponentColour(
+					i?.reference,
+					tailwindColorToHex(i?.color || 'orange-500'),
+					visibleLayer
+				);
 				updateComponentOutline(
 					i?.reference,
-					'TOP',
+					visibleLayer,
 					isSigned ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600'),
 					isSigned ? 10 : 5
 				);
 			}
 		});
-		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
-		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference == c?.component)?.[0]?.layer;
 		console.log('DRAW DONE', e ?? '', visibleLayer, stepReference);
 		getRenderers().forEach((r) => {
 			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
@@ -242,7 +247,7 @@
 
 	let updateComponentOutline = (
 		reference: string,
-		rendererId: string = 'TOP',
+		rendererId: string = visibleLayer,
 		colour: string,
 		width: number = 5,
 		opacity: number = 1
@@ -279,12 +284,12 @@
 				onBoardItemClick(component?.component);
 			}
 			if (eventType == 'mouseover') {
-				updateComponentReferenceColor(component?.component, 'TOP', 'black', 1);
+				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
 				//console.debug('COMPONENT OVER: ', component?.component, component, detail);
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
-				updateComponentReferenceColor(component?.component, 'TOP', 'black', 0.75);
+				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.75);
 				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
 			}
@@ -374,7 +379,7 @@
 
 	//INFO: Update CAD highlighting on steps change
 	$: {
-		if (steps) {
+		if (cad && steps) {
 			draw_event();
 		}
 	}

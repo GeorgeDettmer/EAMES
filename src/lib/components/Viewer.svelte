@@ -4,7 +4,7 @@
 	const checkRendererExisits = (renderer: string) => {
 		const exists = renderers.has(renderer);
 		if (!exists) {
-			console.warn('EXPORT | VIEWER | Invalid renderer: ', renderer);
+			console.warn('EXPORT | VIEWER | Invalid renderer: ', renderer, renderers);
 		}
 		return exists;
 	};
@@ -158,7 +158,7 @@
 
 	$: {
 		if (layerToShow && canDraw) {
-			draw();
+			//draw();
 		}
 	}
 

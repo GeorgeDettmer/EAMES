@@ -205,9 +205,6 @@
 
 	let visibleLayer: string = '';
 	let draw_event = (e) => {
-		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
-		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference == c?.component)?.[0]?.layer;
-
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
 				//console.log(i.color, tailwindColorToHex(i.color));
@@ -225,12 +222,18 @@
 				);
 			}
 		});
-		console.log('DRAW DONE', e ?? '', visibleLayer, stepReference);
-		getRenderers().forEach((r) => {
+		console.log('DRAW DONE', e ?? '');
+		getRenderers().forEach((r, k) => {
 			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
+			const x = cad?.start_x ? cad.start_x : 215;
+			const y = cad?.start_y ? cad.start_y : 900;
+			const bb = r.find(`.bounds`)?.[0];
+			const width = bb?.attrs?.width;
+			console.info(k, width, bb);
+
 			r.scaleX(scale);
 			r.scaleY(scale);
-			r.setPosition({ x: cad?.start_x ? cad.start_x : 215, y: cad?.start_y ? cad.start_y : 900 });
+			r.setPosition({ x: k === 'TOP' ? x : x + width / 2.5, y: y });
 		});
 	};
 	let pin_event = (e) => {
@@ -380,6 +383,9 @@
 	//INFO: Update CAD highlighting on steps change
 	$: {
 		if (cad && steps) {
+			const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
+			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]
+				?.layer;
 			draw_event();
 		}
 	}
@@ -445,10 +451,21 @@
 
 					{#each cad?.layers as layer (layer)}
 						<div
-							class="outline outline-slate-300 dark:bg-slate-500"
+							class=" outline outline-slate-300 dark:bg-slate-500"
 							class:hidden={layer !== visibleLayer}
 						>
-							<p>{layer}</p>
+							<h1
+								on:click={() => {
+									visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
+									/* const layers = cad.layers;
+									const nextLayerIdx = layers.findIndex((l) => l === layer)++
+									
+									visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer; */
+								}}
+								class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1"
+							>
+								{layer.substring(0, 3)}
+							</h1>
 							<Viewer
 								on:pin_event={pin_event}
 								on:draw_done={draw_event}

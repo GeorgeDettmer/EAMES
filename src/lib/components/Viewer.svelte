@@ -591,6 +591,7 @@
 		layer.add(boardOutline);
 		let bounding = boardOutline.getClientRect();
 		let boundingArea = new Konva.Rect({
+			name: 'bounds',
 			x: bounding.x,
 			y: bounding.y,
 			width: bounding.width,

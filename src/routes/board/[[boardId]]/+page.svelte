@@ -22,7 +22,7 @@
 		const signoffs = step?.signoffs;
 		const signed = signoffs.length > 0;
 		console.log('STEP CLICK', signed ? '✅' : '❌', step);
-		if (signoffs.filter((s) => s.user.id === user?.id).length > 0) {
+		if (signoffs?.filter((s) => s.user.id === user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
 		}
 

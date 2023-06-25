@@ -18,6 +18,26 @@
 	function handleHeaderClick(e) {
 		console.log('LIST HEADER CLICK', e);
 	}
+	function handleStepMouse(e: CustomEvent) {
+		const detail = e?.detail;
+		const event = detail?.event;
+		const eventType = event?.type;
+		const step = detail?.step;
+		const signoffs = step?.signoffs;
+		const signed = signoffs.length > 0;
+		const renderGroup = getComponentGroup(step?.reference);
+		const layer = renderGroup?.attrs?.layer;
+
+		if (eventType == 'mousedown') {
+			//onBoardItemClick(step?.reference);
+		} else if (eventType == 'mouseenter') {
+			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
+		} else if (eventType == 'mouseleave') {
+			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);
+		} else {
+			console.warn('Unhandled', e);
+		}
+	}
 	async function handleStepClick(e) {
 		const step = e.detail?.step;
 		const signoffs = step?.signoffs;
@@ -26,8 +46,9 @@
 		if (signoffs?.filter((s) => s.user.id === user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
 		}
+		let mutationResult;
 		if (!signed) {
-			let mutationResult = await urqlClient.mutation(
+			mutationResult = await urqlClient.mutation(
 				gql`
 					mutation insertSignoffs($boardId: bigint!, $step_id: uuid!, $user_id: uuid!) {
 						insert_signoffs(
@@ -42,14 +63,10 @@
 				`,
 				{ boardId, step_id: step.id, user_id: user?.id }
 			);
-			if (mutationResult?.error) {
-				console.error('MUTATION ERROR: ', mutationResult);
-			} else {
-				updateComponentOutline(step?.reference, visibleLayer, tailwindColorToHex('green-400'), 10);
-			}
+
 			console.log(mutationResult);
 		} else {
-			let mutationResult = await urqlClient.mutation(
+			mutationResult = await urqlClient.mutation(
 				gql`
 					mutation insertSignoffs($signoffId: uuid!) {
 						delete_signoffs_by_pk(id: $signoffId) {
@@ -62,9 +79,20 @@
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 			} else {
-				updateComponentOutline(step?.reference, visibleLayer, tailwindColorToHex('red-600'), 5);
+				//updateComponentOutline(step?.reference, visibleLayer, tailwindColorToHex('red-600'), 5);
 			}
-			console.log(mutationResult);
+		}
+		console.log(mutationResult);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			alert('DATABASE ERROR: ' + mutationResult?.error);
+		} else {
+			updateComponentOutline(
+				step?.reference,
+				visibleLayer,
+				tailwindColorToHex(signed ? 'green-400' : 'red-600'),
+				signed ? 10 : 5
+			);
 		}
 	}
 
@@ -205,36 +233,35 @@
 
 	let visibleLayer: string = '';
 	let draw_event = (e) => {
+		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
+		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]?.layer;
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
-				//console.log(i.color, tailwindColorToHex(i.color));
 				const isSigned = i?.signoffs?.length > 0;
+				let rendererId = visibleLayer;
+				//TODO: Look to improve this. Below is finding the component group just to find id
+				// Then passing to updateComponent* just for those functions to do that again...
+				getRenderers().forEach((r, id) => {
+					if (getComponentGroup(i?.reference, id)) {
+						rendererId = id;
+						return;
+					}
+				});
 				updateComponentColour(
 					i?.reference,
 					tailwindColorToHex(i?.color || 'orange-500'),
-					visibleLayer
+					rendererId
 				);
 				updateComponentOutline(
 					i?.reference,
-					visibleLayer,
+					rendererId,
 					isSigned ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600'),
 					isSigned ? 10 : 5
 				);
 			}
 		});
-		console.log('DRAW DONE', e ?? '');
-		getRenderers().forEach((r, k) => {
-			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
-			const x = cad?.start_x ? cad.start_x : 215;
-			const y = cad?.start_y ? cad.start_y : 900;
-			const bb = r.find(`.bounds`)?.[0];
-			const width = bb?.attrs?.width;
-			console.info(k, width, bb);
-
-			r.scaleX(scale);
-			r.scaleY(scale);
-			r.setPosition({ x: k === 'TOP' ? x : x + width / 2.5, y: y });
-		});
+		//console.log('DRAW DONE', e ?? '');
+		/*  */
 	};
 	let pin_event = (e) => {
 		let event = e?.detail?.event;
@@ -246,14 +273,20 @@
 		if (eventType == 'mousedown') {
 			console.log('PIN CLICK: ', pin?.pin, component?.component, component, detail);
 		}
+		if (eventType == 'mouseover') {
+			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
+		}
+		if (eventType == 'mouseout') {
+			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.75);
+		}
 	};
 
 	let updateComponentOutline = (
 		reference: string,
 		rendererId: string = visibleLayer,
-		colour: string,
-		width: number = 5,
-		opacity: number = 1
+		colour?: string,
+		width?: number,
+		opacity?: number
 	) => {
 		const group = getComponentGroup(reference, rendererId);
 		//console.log('Update component outline:', reference, colour, group);
@@ -376,26 +409,41 @@
 		} */
 		const step = steps.filter((s) => s.reference === reference)?.[0];
 		let e = { detail: { step: step } };
-		handleStepClick(e);
+		if (!step) return;
 		console.log(reference, step, e);
+		handleStepClick(e);
 	}
 
 	//INFO: Update CAD highlighting on steps change
 	$: {
 		if (cad && steps) {
-			const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
-			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]
-				?.layer;
 			draw_event();
+		}
+	}
+	$: {
+		if (cad) {
+			getRenderers().forEach((r, k) => {
+				const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
+				const x = cad?.start_x ? cad.start_x : 215;
+				const y = cad?.start_y ? cad.start_y : 900;
+				const bb = r.find(`.bounds`)?.[0];
+				const width = bb?.attrs?.width;
+				console.info(k, width, bb);
+
+				r.scaleX(scale);
+				r.scaleY(scale);
+				r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y });
+			});
 		}
 	}
 </script>
 
 {#if boardId}
-	{#if !$boardInfoStore.data}
+	{#if $boardInfoStore.error}
+		<p>Error: {$boardInfoStore.error.name}</p>
+		<pre>{JSON.stringify($boardInfoStore.error, null, 2)}</pre>
+	{:else if !$boardInfoStore.data}
 		<p>Loading...</p>
-	{:else if $boardInfoStore.error}
-		<p>Error: {$boardInfoStore.error.message}</p>
 	{:else}
 		<!-- <Blockquote border bg class="p-2 mb-1" borderClass="border-l-8 border-blue-900">
 			{#if boardInfo?.job}
@@ -484,7 +532,7 @@
 						<InstructionList
 							on:header_click={handleHeaderClick}
 							on:item_click={handleStepClick}
-							on:item_mouse
+							on:item_mouse={handleStepMouse}
 							{instruction}
 							{steps}
 						/>

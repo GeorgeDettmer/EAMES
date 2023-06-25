@@ -19,14 +19,25 @@
 		console.debug('EXPORT | removeComponent | ', renderer, reference);
 		let group = renderer.find(`.${reference}`)?.[0];
 		group.destroy();
-		let tooltip = renderer.findOne('._tooltip');
 	}
 
-	export function getComponentGroup(reference: string, rendererId: string) {
+	export function getComponentGroup(reference: string, rendererId: string = '') {
+		let renderer;
+		if (!rendererId) {
+			getRenderers().forEach((r, id) => {
+				if (getComponentGroup(reference, id)) {
+					renderer = r;
+					rendererId = id;
+					return;
+				}
+			});
+		} else {
+			renderer = renderers.get(rendererId);
+		}
 		checkRendererExisits(rendererId);
-		const renderer = renderers.get(rendererId);
+
 		let group = renderer.find(`.${reference}`)?.[0];
-		console.debug('EXPORT | getComponentGroup | ', renderer, reference, group);
+		//console.debug('EXPORT | getComponentGroup | ', renderer, reference, group);
 
 		return group;
 	}
@@ -246,7 +257,8 @@
 				x: convertUnits(component.x),
 				y: convertUnits(component.y),
 				rotation: component.r,
-				name: component?.component
+				name: component?.component,
+				layer: component?.layer
 			});
 			let colour = 'black';
 			let defaultColor = colour;
@@ -265,8 +277,7 @@
 				opacity: 0.75,
 				listening: false
 			});
-			text.offsetX(text.width() / 2);
-			text.offsetY(text.height() / 2);
+
 			text.scaleY(-1);
 
 			let shapes = shape?.shapes;
@@ -283,11 +294,6 @@
 				let strokeWidth = 2;
 				let opacity = colour == defaultColor ? 1 : 0.5;
 				let lineCap = 'round';
-				let fontSize = minMaxFromPointToPoints(
-					[convertUnits(component.x), convertUnits(component.y)],
-					[...points]
-				).min;
-				text.fontSize(fontSize * 1.5);
 
 				if (points.length > 0) {
 					let mark = new Konva.Line({
@@ -373,7 +379,6 @@
 					}
 				}
 			});
-			let bounds = group.getClientRect();
 
 			let pins = shape.pins || [];
 			pins.forEach((pin, pin_idx) => {
@@ -495,7 +500,6 @@
 									});
 								});
 								mark.on('mouseout', function (e) {
-									cursorTooltip(false);
 									dispatch('pin_event', {
 										event: e,
 										viewer: id,
@@ -526,7 +530,7 @@
 							}
 						});
 					});
-					console.debug(
+					/* console.info(
 						`${component.component}(${pin?.pin}):`,
 						{
 							padstack: padstack,
@@ -536,14 +540,13 @@
 						},
 						pad_marks,
 						`(${group.getChildren().length})`
-					);
+					); */
 				}
 			});
 
 			featuresDrawn += group.getChildren().length;
 
 			group.on('mouseover', function (e) {
-				//currentCompText.innerHTML = "Reference: " + component.component + ` [${component.device}/${component.shape}]`;
 				dispatch('component_event', {
 					event: e,
 					viewer: id,
@@ -552,7 +555,6 @@
 				});
 			});
 			group.on('mouseout', function (e) {
-				//currentCompText.innerHTML = "Reference: Not Selected";
 				dispatch('component_event', {
 					event: e,
 					viewer: id,
@@ -561,7 +563,6 @@
 				});
 			});
 			group.on('mousedown touchstart', (e) => {
-				//createAnnotation(group);
 				dispatch('component_event', {
 					event: e,
 					viewer: id,
@@ -576,15 +577,39 @@
 				group.scaleX(-1);
 			}
 
-			if (group.width > 0 && group.height > 0) {
+			/* if (group.width > 0 && group.height > 0) {
 				group.cache({ pixelRatio: 0.2, drawBorder: true });
-			}
-			text.offsetX(text.width() / 2);
-			text.offsetY(text.height() / 2);
+			} */
 
 			if (text.rotation() == 180) {
 				text.rotation(0);
 			}
+
+			let bounds = group.getClientRect({ relativeTo: group });
+			//TODO: Center reference text to center of component group bounding box
+			/* let componentGroupbb = new Konva.Rect({
+				name: 'bounds',
+				x: bounds.x,
+				y: bounds.y,
+				width: bounds.width,
+				height: bounds.height,
+				stroke: 'red',
+				strokeWidth: 2,
+				opacity: 1,
+				strokeHitEnabled: false,
+				listening: false
+			});
+
+			group.add(componentGroupbb); */
+			let fontSize = Math.min(bounds.width, bounds.height) / 2;
+			text.fontSize(Math.max(fontSize - (fontSize / 100) * 10, 4));
+			text.offsetX(text.width() / 2);
+			text.offsetY(text.height() / 2);
+
+			/* text.offsetY(-bounds.width / 2 + text.width() / 2);
+			text.offsetX(-bounds.height / 2 + text.height() / 2); */
+			text.align('center');
+			text.verticalAlign('center');
 			group.add(text);
 			layer.add(group);
 		});
@@ -599,8 +624,9 @@
 			stroke: 'red',
 			strokeWidth: 2,
 			opacity: 1,
-			strokeHitEnabled: false,
-			listening: false
+			//strokeHitEnabled: false,
+			listening: false,
+			hitStrokeWidth: 0
 		});
 		let annotationArea = new Konva.Rect({
 			x: bounding.x,
@@ -610,8 +636,9 @@
 			stroke: 'blue',
 			strokeWidth: 2,
 			opacity: 1,
-			strokeHitEnabled: false,
-			listening: false
+			//strokeHitEnabled: false,
+			listening: false,
+			hitStrokeWidth: 0
 		});
 		layer.add(boundingArea);
 		layer.scaleY(-1);
@@ -620,62 +647,9 @@
 			layer.scaleX(-1);
 		}
 
-		/*
-            let backgroundImage = new Image();
-
-            let side = layerToShow == "TOP" ? 1 : 2;
-            let boardUrl = `${aoiapi}${"Boards/"}${document.querySelector("#fileupload")?.files?.[0]?.name}/SIDE${side}/Image${hires ? "HR" : ""}${false ? "SDR" : ""}`;
-            console.log("Board URL:", boardUrl);
-            backgroundImage.src = boardUrl;
-            backgroundImage.onload = (e) => {
-                let image = new Konva.Image({
-                    x: 0,
-                    y: 0,
-                    image: backgroundImage,
-                    width: backgroundImage.width,
-                    height: backgroundImage.height,
-                    listening: false,
-                    rotation: -90,
-                });
-                image.zIndex(-50);
-                image.opacity(0.75);
-                image.x(bounding.x - (side == 2 ? 3.5 : 10.3) * sizeMultiplyer); //(bounding.x - (10.3 * sizeMultiplyer))
-                image.y(bounding.y + (backgroundImage.height - 21.65 * sizeMultiplyer));
-                backgroundLayer.add(image);
-            };
-            backgroundImage.onerror = (e) => {
-                console.log("No AOI image...");
-            };
-
-            layer.move({
-                x: 300,
-                y: 700,
-            });
-            backgroundLayer.move({
-                x: 300,
-                y: 700,
-            });
-        */
-
 		stage.add(backgroundLayer);
 		stage.add(layer);
 		stage.add(tooltipLayer);
-		/* backgroundLayer.clip(0, 0, bounding.width, bounding.height);
-        backgroundLayer.hide();
-        
-
-        let featureCount = document.querySelector("#featureCount");
-        featureCount.textContent = "featureCount: " + featuresDrawn;
-        featureCount.style.color = "red";
-        if (featuresDrawn < 10000) {
-            featureCount.style.color = featuresDrawn < 5000 ? "green" : "orange";
-        }
-
-        let showImageCheckbox = document.querySelector("#showBoardImage").checked;
-        if (showImageCheckbox) {
-            backgroundLayer.show();
-        } */
-		//fitToScreen();
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
 		dispatch('draw_done', stage);
 	}

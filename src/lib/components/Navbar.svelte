@@ -5,31 +5,22 @@
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import LoginForm from '$lib/components/LoginForm.svelte';
 	import {
-		Alert,
 		Toggle,
 		Dropdown,
 		DropdownItem,
 		Button,
 		Modal,
 		Navbar,
-		NavBrand,
-		NavLi,
-		NavUl,
 		NavHamburger,
-		Popover,
-		MegaMenu,
-		Chevron,
-		Avatar
+		MegaMenu
 	} from 'flowbite-svelte';
-	//export let currentSerial = $board.sn;
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
 	import Barcode from './Barcode.svelte';
 	import UserOverview from './UserOverview.svelte';
-	import { ChevronRight } from 'svelte-heros-v2';
-	import { Tween } from 'konva/lib/Tween';
 	import { fade } from 'svelte/transition';
-	import { getAllContexts, getContext } from 'svelte';
+	import { getContext } from 'svelte';
+	import BoardInfo from './Navbar/BoardInfo.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -43,7 +34,6 @@
 
 	$: user = $page.data?.user;
 	const currentBoard = getContext('currentBoard');
-	$: console.log('all contexts', getAllContexts(), currentBoard);
 	const toggleTheme = () => {
 		const isDark = window.document.documentElement.classList.toggle('dark');
 		localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
@@ -159,6 +149,7 @@
 				</div>
 			</a>
 		</MegaMenu>
+
 		<div class="ml-10 flex-auto outline-gray-500">
 			<div class="flex">
 				<div class="grid grid-rows-2 grid-flow-col">
@@ -187,7 +178,7 @@
 				</div>
 			</div>
 		</div>
-
+		<BoardInfo boardId={$page?.data?.boardId} />
 		<NavHamburger on:click={toggle} />
 		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>

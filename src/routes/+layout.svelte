@@ -24,13 +24,22 @@
 		const parts = value.split(`; ${name}=`);
 		return parts?.pop()?.split(';')?.shift() ?? '';
 	}
+
+	//TODO: Use session/local storage for auth token to allow temporary user switch for firstoff etc
 	const getToken = () =>
 		decodeURI(sessionStorage.getItem('AuthorizationToken') || getCookie('AuthorizationToken'));
 	console.log(getToken());
+
+	const headers = {};
+	if (getToken()) {
+		headers['Authorization'] = getToken();
+		headers['X-Hasura-Role'] = 'user';
+	}
+
 	const wsClient = createWSClient({
 		url: gqlWs,
 		connectionParams: {
-			headers: { Authorization: `${getToken()}`, 'X-Hasura-Role': 'user' }
+			headers: headers
 		}
 	});
 	const client = new Client({
@@ -57,9 +66,7 @@
 		fetchOptions: () => {
 			const token = getToken();
 			return {
-				headers: {
-					Authorization: token ? `${token}` : ''
-				}
+				headers: headers
 			};
 		}
 	});

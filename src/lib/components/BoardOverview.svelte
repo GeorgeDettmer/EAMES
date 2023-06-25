@@ -15,6 +15,7 @@
 	import AccordionItem from './AccordionItem.svelte';
 	import { CheckCircle, XCircle } from 'svelte-heros-v2';
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
+	import { padSerial } from '$lib/utils';
 
 	export let boardId: string;
 

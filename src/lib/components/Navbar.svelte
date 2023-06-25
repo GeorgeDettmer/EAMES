@@ -178,7 +178,7 @@
 				</div>
 			</div>
 		</div>
-		<BoardInfo boardId={$page?.data?.boardId} />
+		<!-- <BoardInfo boardId={$page?.data?.boardId} /> -->
 		<NavHamburger on:click={toggle} />
 		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>

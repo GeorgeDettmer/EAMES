@@ -30,10 +30,14 @@
 		if (eventType == 'mousedown') {
 			//onBoardItemClick(step?.reference);
 		} else if (eventType == 'mouseenter') {
-			visibleLayer = layer;
-			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
+			if (renderGroup) {
+				visibleLayer = layer;
+				updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
+			}
 		} else if (eventType == 'mouseleave') {
-			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);
+			if (renderGroup) {
+				updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);
+			}
 		} else if (eventType == 'wheel') {
 		} else {
 			console.warn('Unhandled', e);
@@ -238,7 +242,7 @@
 		return tailwindColors?.[c?.[0]]?.[c?.[1]] || '#fff4';
 	};
 
-	let visibleLayer: string = $page?.data?.layer;
+	let visibleLayer: string = $page?.data?.layer || 'TOP';
 	console.warn('visibleLayer', visibleLayer);
 	let draw_event = (e) => {
 		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;

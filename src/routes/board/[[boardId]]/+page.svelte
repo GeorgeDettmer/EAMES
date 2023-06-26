@@ -33,6 +33,7 @@
 			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
 		} else if (eventType == 'mouseleave') {
 			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);
+		} else if (eventType == 'wheel') {
 		} else {
 			console.warn('Unhandled', e);
 		}

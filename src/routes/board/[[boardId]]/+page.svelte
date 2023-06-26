@@ -30,6 +30,7 @@
 		if (eventType == 'mousedown') {
 			//onBoardItemClick(step?.reference);
 		} else if (eventType == 'mouseenter') {
+			visibleLayer = layer;
 			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
 		} else if (eventType == 'mouseleave') {
 			updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);

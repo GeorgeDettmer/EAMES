@@ -7,6 +7,7 @@ export const load = ({ params, url }) => {
 	);
 	return {
 		boardId: params?.boardId,
-		instructionId: searchParams.get('instructionid')
+		instructionId: searchParams.get('instructionid'),
+		layer: searchParams.get('layer')?.toUpperCase()
 	};
 };

@@ -27,7 +27,6 @@
 		const signed = signoffs.length > 0;
 		const renderGroup = getComponentGroup(step?.reference);
 		const layer = renderGroup?.attrs?.layer;
-
 		if (eventType == 'mousedown') {
 			//onBoardItemClick(step?.reference);
 		} else if (eventType == 'mouseenter') {
@@ -237,10 +236,14 @@
 		return tailwindColors?.[c?.[0]]?.[c?.[1]] || '#fff4';
 	};
 
-	let visibleLayer: string = '';
+	let visibleLayer: string = $page?.data?.layer;
+	console.warn('visibleLayer', visibleLayer);
 	let draw_event = (e) => {
 		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
-		visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]?.layer;
+		if (!visibleLayer) {
+			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]
+				?.layer;
+		}
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
 				const isSigned = i?.signoffs?.length > 0;

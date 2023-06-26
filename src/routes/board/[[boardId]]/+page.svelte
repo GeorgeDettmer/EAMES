@@ -4,7 +4,7 @@
 	import { tailwindColors } from '$lib/utils';
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
 
-	import { Blockquote, P, Label, Select } from 'flowbite-svelte';
+	import { Blockquote, P, Label, Select, Modal } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
 	import { XCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
 	import { Popover } from 'flowbite-svelte';
@@ -7,6 +8,7 @@
 	import UserIcon from './UserIcon.svelte';
 	import PartInfo from '$lib/components/PartInfo.svelte';
 	import UserOverview from './UserOverview.svelte';
+	import ActivityHistory from './ActivityHistory.svelte';
 
 	export let item: Record<string, any>;
 	export let color = item?.color || stringToColorClass(item?.part_id);
@@ -36,6 +38,8 @@
 	$: bgOpacityClasses = referenceStep
 		? 'bg-opacity-75 hover:bg-opacity-50'
 		: 'bg-opacity-50 hover:bg-opacity-75';
+
+	$: boardId = $page?.data?.boardId;
 </script>
 
 <div
@@ -63,11 +67,21 @@
 							class="w-96 text-sm font-light text-gray-500 bg-white dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
 						>
 							<UserOverview userId={signoff?.user?.id} />
+							<ActivityHistory stepId={item?.id} {boardId} />
 						</Popover>
 					{/each}
 				</div>
 			{:else}
-				<XCircle size="40" class="text-red-600" />
+				<XCircle size="40" class="text-red-600" id={listItemId + item?.id} />
+				<Popover
+					style="z-index: 10000;"
+					placement="left"
+					triggeredBy={'#' + listItemId + item?.id}
+					trigger="hover"
+					class="w-96 text-sm font-light text-gray-500 bg-white dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
+				>
+					<ActivityHistory stepId={item?.id} {boardId} />
+				</Popover>
 			{/if}
 		</div>
 		<div class="flex-auto w-64">

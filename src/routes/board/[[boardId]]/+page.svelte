@@ -39,6 +39,12 @@
 		}
 	}
 	async function handleStepClick(e) {
+		if (!allowedProcesses.flat().includes(instruction?.type?.toLowerCase())) {
+			alert(
+				`You do not have permission to complete process of type: ${instruction?.type}. You have permission for ${allowedProcesses} only`
+			);
+			return;
+		}
 		const step = e.detail?.step;
 		const signoffs = step?.signoffs;
 		const signed = signoffs.length > 0;
@@ -399,14 +405,6 @@
 	};
 
 	function onBoardItemClick(reference: string) {
-		/* if (!Object.keys(user?.processes).includes(instruction?.type?.toLowerCase())) {
-			alert(
-				`You do not have permission to complete process of type: ${
-					instruction?.type
-				}. You have permi (${Object.keys(user?.profile?.roles?.processes)})`
-			);
-			return;
-		} */
 		const step = steps.filter((s) => s.reference === reference)?.[0];
 		let e = { detail: { step: step } };
 		if (!step) return;

@@ -18,6 +18,20 @@
 	function handleHeaderClick(e) {
 		console.log('LIST HEADER CLICK', e);
 	}
+
+	const componentOutlineSize = 15;
+
+	function getOutlineSize(signed: boolean = false, hover: boolean = false) {
+		if (signed && !hover) {
+			return componentOutlineSize * 2;
+		} else if (signed && hover) {
+			return componentOutlineSize * 3;
+		} else if (!signed && hover) {
+			return componentOutlineSize * 1.5;
+		}
+		return componentOutlineSize;
+	}
+
 	function handleStepMouse(e: CustomEvent) {
 		const detail = e?.detail;
 		const event = detail?.event;
@@ -27,16 +41,17 @@
 		const signed = signoffs.length > 0;
 		const renderGroup = getComponentGroup(step?.reference);
 		const layer = renderGroup?.attrs?.layer;
+
 		if (eventType == 'mousedown') {
 			//onBoardItemClick(step?.reference);
 		} else if (eventType == 'mouseenter') {
 			if (renderGroup) {
 				visibleLayer = layer;
-				updateComponentOutline(step?.reference, layer, undefined, signed ? 10 * 2 : 5 * 2);
+				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, true));
 			}
 		} else if (eventType == 'mouseleave') {
 			if (renderGroup) {
-				updateComponentOutline(step?.reference, layer, undefined, signed ? 10 : 5);
+				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, false));
 			}
 		} else if (eventType == 'wheel') {
 		} else {
@@ -102,7 +117,7 @@
 				step?.reference,
 				visibleLayer,
 				tailwindColorToHex(signed ? 'green-400' : 'red-600'),
-				signed ? 10 : 5
+				getOutlineSize(signed)
 			);
 		}
 	}
@@ -169,7 +184,7 @@
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
 				steps(
 					where: { assembly_id: { _eq: $assemblyId } }
-					order_by: { reference: asc_nulls_first, part_id: desc }
+					order_by: [{ part_id: asc_nulls_first }, { reference: asc }]
 				) {
 					id
 					reference
@@ -271,7 +286,7 @@
 					i?.reference,
 					rendererId,
 					isSigned ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600'),
-					isSigned ? 10 : 5
+					getOutlineSize(isSigned)
 				);
 			}
 		});
@@ -292,7 +307,7 @@
 			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
 		}
 		if (eventType == 'mouseout') {
-			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.75);
+			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
 		}
 	};
 
@@ -340,7 +355,7 @@
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
-				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.75);
+				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
 				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
 			}

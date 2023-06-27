@@ -274,7 +274,7 @@
 				verticalAlign: 'center',
 				fontStyle: 'bold',
 				name: 'reference',
-				opacity: 0.75,
+				opacity: 0.5,
 				listening: false
 			});
 

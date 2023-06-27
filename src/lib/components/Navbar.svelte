@@ -69,9 +69,6 @@
 		}
 	}
 
-	function navigateTo(nav: string) {
-		console.log('PROXY navigateTo', nav);
-	}
 	let menu = [
 		{ name: 'About', href: '/about' },
 		{ name: 'Help', href: '/help' },
@@ -118,7 +115,7 @@
 		let:hidden
 		let:toggle
 	>
-		<div class={'flex cursor-pointer h-12 ring-indigo-800 hover:rotate-12 hover:ring-4'} in:fade>
+		<div class="flex cursor-pointer h-12 ring-indigo-800 hover:ring-4" in:fade>
 			<img src={logo} class="" alt="EASL" />
 		</div>
 		<MegaMenu full items={menu} let:item class="bg-slate-200">
@@ -172,7 +169,8 @@
 						>
 							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
 							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
-								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
+								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal}) [{$currentBoard
+								?.boardInfo?.assembly?.id}]
 						</div>
 					{/if}
 				</div>

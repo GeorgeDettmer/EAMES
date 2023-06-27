@@ -463,7 +463,7 @@
 		</Blockquote> -->
 
 		{#if boardInfo}
-			<div class="flex max-h-[1065px]">
+			<div class="flex max-h-[825px]">
 				<div class="w-2/3">
 					<div>
 						{#if instruction}
@@ -517,7 +517,7 @@
 									
 									visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer; */
 								}}
-								class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1"
+								class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
 							>
 								{layer.substring(0, 3)}
 							</h1>
@@ -527,14 +527,14 @@
 								on:component_event={component_event}
 								outlinePins={[1]}
 								id={layer}
-								height={/* 675 */ 1000}
+								height={750}
 								data={cad}
 								layerToShow={layer}
 							/>
 						</div>
 					{/each}
 				</div>
-				<div class="float-right px-1 w-1/3 overflow-y-auto">
+				<div class="float-right px-1 w-1/3">
 					{#if instruction}
 						<InstructionList
 							on:header_click={handleHeaderClick}

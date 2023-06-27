@@ -48,8 +48,20 @@
 		</div>
 	</div>
 </div>
-<div class="overflow-y-auto">
+<div class="max-h-[750px] overflow-y-scroll scrollbar-hide">
 	{#each steps || [] as item (item.id)}
 		<InstructionListItem on:item_click on:item_mouse {item} />
 	{/each}
 </div>
+
+<style>
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* For IE, Edge and Firefox */
+	.scrollbar-hide {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+</style>

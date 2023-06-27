@@ -104,7 +104,6 @@
 		width = width == 0 ? window_width : width;
 		height = height == 0 ? window_height : height;
 		console.info('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
-
 		stage = new Konva.Stage({
 			container: viewer,
 			width: width,
@@ -209,7 +208,7 @@
 
 	let hires = false;
 	let smartRenderLeads = true;
-	let drawAllPins = true;
+	export let drawAllPins = true;
 	let sizeMultiplyer = hires ? 21.725 * 2 : 21.7;
 	function draw(data) {
 		let drawTime = Date.now();
@@ -577,7 +576,7 @@
 				group.scaleX(-1);
 			}
 
-			/* if (group.width > 0 && group.height > 0) {
+			/* if (group.width() > 0 && group.height() > 0) {
 				group.cache({ pixelRatio: 0.2, drawBorder: true });
 			} */
 

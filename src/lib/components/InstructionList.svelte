@@ -5,6 +5,7 @@
 
 	export let instruction: Record<string, any>;
 	export let steps: Array<Record<string, any>> = [];
+	export let activeReference: String = '';
 
 	const dispatch = createEventDispatcher();
 
@@ -50,7 +51,7 @@
 </div>
 <div class="max-h-[750px] overflow-y-scroll scrollbar-hide">
 	{#each steps || [] as item (item.id)}
-		<InstructionListItem on:item_click on:item_mouse {item} />
+		<InstructionListItem on:item_click on:item_mouse {item} {activeReference} />
 	{/each}
 </div>
 

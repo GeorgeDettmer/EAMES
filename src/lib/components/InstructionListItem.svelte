@@ -12,6 +12,7 @@
 
 	export let item: Record<string, any>;
 	export let color = item?.color || stringToColorClass(item?.part_id);
+	export let activeReference: String = '';
 
 	const dispatch = createEventDispatcher();
 	const listItemId = 'POP' + randomString();
@@ -30,16 +31,22 @@
 		});
 	}
 
+	$: console.log(activeReference);
+	$: active = activeReference == item?.part_id;
 	$: complete = item?.signoffs?.length > 0;
 	$: referenceStep = !!item?.part_id;
 	$: borderColor = complete ? 'green-400' : 'red-600';
 	$: bgColor = referenceStep ? color : borderColor;
 	$: borderClasses = referenceStep ? `border-4` : 'border-4 border-dashed';
 	$: bgOpacityClasses = referenceStep
-		? 'bg-opacity-75 hover:bg-opacity-50'
+		? active
+			? 'bg-opacity-50'
+			: 'bg-opacity-75 hover:bg-opacity-50'
 		: 'bg-opacity-50 hover:bg-opacity-75';
 
 	$: boardId = $page?.data?.boardId;
+
+	$: _class = `rounded-md w-full my-1 ${bgOpacityClasses} bg-${bgColor} border-${borderColor} ${borderClasses}`;
 </script>
 
 <div
@@ -48,7 +55,7 @@
 	on:wheel|passive={(e) => onMouse(e, item)}
 	on:click={(e) => onMouse(e, item)}
 	on:mousedown={(e) => onMouse(e, item)}
-	class="rounded-md w-full my-1 {bgOpacityClasses} bg-{bgColor} border-{borderColor} {borderClasses}"
+	class={_class}
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -99,10 +106,10 @@
 						>
 							<PartInfo partId={item.part_id} />
 						</Popover>
-						{#if item?.notes}
-							<hr />
-							<div class="text-sm italic">{item.notes}</div>
-						{/if}
+					{/if}
+					{#if item?.notes}
+						<hr />
+						<div class="text-sm italic">{item.notes}</div>
 					{/if}
 				{:else if item?.notes}
 					<div class="text-base italic">{item.notes}</div>

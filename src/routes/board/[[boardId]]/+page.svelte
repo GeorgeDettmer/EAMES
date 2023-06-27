@@ -162,6 +162,7 @@
 							start_y
 							start_scale
 							layers
+							meta
 						}
 					}
 					updated_at
@@ -339,6 +340,7 @@
 		});
 	};
 
+	let activeReference = '';
 	let component_event = (e) => {
 		let event = e?.detail?.event;
 		let eventType = event?.type;
@@ -351,10 +353,12 @@
 			}
 			if (eventType == 'mouseover') {
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
+				activeReference = component?.component;
 				//console.debug('COMPONENT OVER: ', component?.component, component, detail);
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
+				activeReference = '';
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
 				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
@@ -524,23 +528,30 @@
 							class=" outline outline-slate-300 dark:bg-slate-500"
 							class:hidden={layer !== visibleLayer}
 						>
-							<h1
-								on:click={() => {
-									visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
-									/* const layers = cad.layers;
+							<div>
+								<h1
+									on:click={() => {
+										visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
+										/* const layers = cad.layers;
 									const nextLayerIdx = layers.findIndex((l) => l === layer)++
 									
 									visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer; */
-								}}
-								class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
-							>
-								{layer.substring(0, 3)}
-							</h1>
+									}}
+									class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
+								>
+									{layer.substring(0, 3)}
+								</h1>
+								<h1 class="text-3xl font-bold opacity-50 float-right p-1">
+									{activeReference}
+								</h1>
+							</div>
 							<Viewer
 								on:pin_event={pin_event}
 								on:draw_done={draw_event}
 								on:component_event={component_event}
-								outlinePins={[1]}
+								drawAllPins={cad?.meta?.drawAllPins && true}
+								highlightPins={cad?.meta?.highlightPins || []}
+								outlinePins={cad?.meta?.outlinePins || [1]}
 								id={layer}
 								height={750}
 								data={cad}
@@ -557,6 +568,7 @@
 							on:item_mouse={handleStepMouse}
 							{instruction}
 							{steps}
+							{activeReference}
 						/>
 					{/if}
 				</div>

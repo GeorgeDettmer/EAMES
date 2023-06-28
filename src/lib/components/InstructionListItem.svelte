@@ -31,7 +31,7 @@
 		});
 	}
 
-	$: console.log(activeReference);
+	//$: console.log(activeReference);
 	$: active = activeReference == item?.part_id;
 	$: complete = item?.signoffs?.length > 0;
 	$: referenceStep = !!item?.part_id;

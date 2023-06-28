@@ -48,10 +48,12 @@
 			if (renderGroup) {
 				visibleLayer = layer;
 				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, true));
+				renderGroup.zIndex(renderGroup.zIndex() * 2);
 			}
 		} else if (eventType == 'mouseleave') {
 			if (renderGroup) {
 				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, false));
+				renderGroup.zIndex(renderGroup.zIndex() / 2);
 			}
 		} else if (eventType == 'wheel') {
 		} else {
@@ -500,7 +502,11 @@
 							>
 								<div class="flex">
 									<div class="flex-none w-2/3">
-										<P weight="bold" size="xl">{instruction?.name}: {instruction?.description}</P>
+										<P weight="bold" size="xl"
+											>{instruction?.name}{instruction?.description
+												? `: ${instruction?.description}`
+												: ''}</P
+										>
 										<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
 									</div>
 									<div
@@ -549,7 +555,7 @@
 								on:pin_event={pin_event}
 								on:draw_done={draw_event}
 								on:component_event={component_event}
-								drawAllPins={cad?.meta?.drawAllPins && true}
+								drawAllPins={cad?.meta?.drawAllPins === undefined ? true : cad?.meta?.drawAllPins}
 								highlightPins={cad?.meta?.highlightPins || []}
 								outlinePins={cad?.meta?.outlinePins || [1]}
 								id={layer}

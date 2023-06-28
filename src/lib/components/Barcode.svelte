@@ -5,9 +5,11 @@
 	import BoardPopoverContent from './BoardPopoverContent.svelte';
 	import { padSerial } from '$lib/utils';
 
-	export let boardId: string;
+	export let boardId: string = '0';
 	export let barcodeType: string = 'datamatrix';
 	export let barcodeImageUrl: string = `http://bwipjs-api.metafloor.com/?bcid=${barcodeType}&text=${boardId}`;
+
+	$: id = padSerial(boardId);
 
 	const dispatch = createEventDispatcher();
 
@@ -26,17 +28,19 @@
 		}}
 	>
 		<div>
-			<div class="flex items-center justify-center">
-				<img class="" style:filter={'invert(0.5)'} src={barcodeImageUrl} alt={boardId} />
-				<p class="pl-1 text-4xl">{padSerial(boardId)}</p>
+			<div class="flex items-center justify-center {boardId == '0' ? 'text-red-600' : ''}">
+				<img class="" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
+				<p class="pl-1 text-4xl">{id}</p>
 			</div>
-			<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">
-				<BoardPopoverContent
-					{boardId}
-					complete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length > 0).length}
-					incomplete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length == 0).length}
-				/>
-			</Popover>
+			{#if boardId != '0'}
+				<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">
+					<BoardPopoverContent
+						{boardId}
+						complete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length > 0).length}
+						incomplete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length == 0).length}
+					/>
+				</Popover>
+			{/if}
 		</div>
 	</Button>
 {/if}

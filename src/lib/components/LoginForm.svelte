@@ -82,6 +82,7 @@
 					disabled={userPassDisabled}
 					bind:value={password}
 					on:keydown={(e) => {
+						if (allowPassword) return;
 						console.log(e?.key);
 						const isValid = [
 							...[...Array(10).keys()].map((n) => n.toString()),

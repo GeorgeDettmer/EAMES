@@ -49,6 +49,6 @@ export const actions: Actions = {
 		console.log('USER LOGOUT: ', event.locals.user?.username);
 		event.cookies.delete('AuthorizationToken');
 		event.locals.user = undefined;
-		throw redirect(302, '/login');
+		throw redirect(302, '/');
 	}
 };

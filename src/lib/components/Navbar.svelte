@@ -152,7 +152,7 @@
 				<div class="grid grid-rows-2 grid-flow-col">
 					<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
 						<Barcode
-							boardId={$page?.data?.boardId || '##########'}
+							boardId={$page?.data?.boardId}
 							on:click={() => {
 								boardVisible = true;
 							}}

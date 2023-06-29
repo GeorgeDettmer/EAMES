@@ -70,13 +70,6 @@
 
 	$: drawnPins = highlightPins.concat(outlinePins);
 
-	interface ComponentEvent {
-		event: string;
-		viewer: string;
-		component_idx: number;
-		component: string;
-	}
-
 	let viewer: HTMLDivElement;
 	let window_height: number;
 	let window_width: number;
@@ -650,6 +643,7 @@
 		stage.add(layer);
 		stage.add(tooltipLayer);
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
+		console.warn(stage.toJSON());
 		dispatch('draw_done', stage);
 	}
 

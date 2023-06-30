@@ -3,40 +3,97 @@
 
 	import Shape from './Renderer/Shape.svelte';
 
-	export let classes: string = '';
-	export let style: string = '';
-	export let id: number = -1;
 	export let data = {};
 	export let width: number = 0;
 	export let height: number = 0;
-	export let layerToShow: string = 'TOP';
-	export let importAvailable: boolean = !data;
-	export let highlightPins: number[] = [];
-	export let outlinePins: number[] = [];
-	export let featuresDrawn: number = 0;
 
-	width = width == 0 ? window_width : width;
-	height = height == 0 ? window_height : height;
-
-	const flattenShapeLinePoints = (shapes)=>{
-		const shapesFlat = shapes.flat();
-		if (!['CIRCLE', 'RECTANGLE'].some((v) => shapesFlat.includes(v))) {
-			shapes = shapesFlat.filter((item) => typeof item == typeof 1);
-			shapes = [['LINE', ...shapes]];
-		}
-		return shapes
+	let window_width = 0;
+	let window_height = 0;
+	let sizeMultiplyer = false ? 21.725 * 2 : 21.7;
+	function convertUnits(n, units) {
+		return (units || data?.HEADER?.units) == 'INCH'
+			? n * sizeMultiplyer * 25.4
+			: n * sizeMultiplyer;
 	}
+
+	const flattenShapeLinePoints = (shapes) => {
+		const shapesFlat = shapes.map((s) => Object.values(s)).flat();
+		if (!['CIRCLE', 'RECTANGLE'].some((v) => shapesFlat.includes(v))) {
+			shapes = shapesFlat.filter((item) => typeof item == typeof []);
+			shapes = [{ type: 'LINE', points: shapes }];
+		}
+		return shapes;
+	};
+
+	const onDrag = (e) => {
+		const scaleBy = 1.1;
+		const event = e.detail.evt;
+		event.preventDefault();
+
+		let oldScale = stage.scaleX();
+		let pointer = stage.getPointerPosition();
+
+		let mousePointTo = {
+			x: (pointer.x - stage.x()) / oldScale,
+			y: (pointer.y - stage.y()) / oldScale
+		};
+
+		let direction = event.deltaY > 0 ? 1 : -1;
+		if (event.ctrlKey) {
+			direction = -direction;
+		}
+
+		let newScale = direction < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+		stage.scale({ x: newScale, y: newScale });
+
+		let newPos = {
+			x: pointer.x - mousePointTo.x * newScale,
+			y: pointer.y - mousePointTo.y * newScale
+		};
+		stage.position(newPos);
+	};
+
+	$: console.log(data, window_width, window_height, width, height);
+
+	$: size = {
+		width: (width == 0 ? window_width : width) - 50,
+		height: (height == 0 ? window_height : height) - 200
+	};
+
+	let stage;
 </script>
 
-<Stage config={{ width, height }}>
+<svelte:window bind:innerHeight={window_height} bind:innerWidth={window_width} />
+
+<Stage
+	config={{ width: size.width, height: size.height, draggable: true }}
+	bind:handle={stage}
+	on:wheel={onDrag}
+>
 	<Layer>
-		<Group>
-			{#each flattenShapeLinePoints(data?.data?.BOARD) as outlineShape}
-			<Shape shape={} config={points:[]}/>
+		<Group
+			config={{
+				name: 'outline'
+			}}
+		>
+			{#each flattenShapeLinePoints(data?.BOARD) as { type, points }, i}
+				<p>{JSON.stringify(type)}</p>
+				<!-- <Line
+					config={{
+						x: 200,
+						y: 200,
+						points: points.map((x) => convertUnits(x)),
+						stroke: 'blue',
+						strokeWidth: 4,
+						lineCap: 'round'
+					}}
+				/> -->
+				<Rect config={{ x: 100, y: 100, width: 10, height: 10, fill: 'blue' }} />
 			{/each}
-			
-			<Line config={{}} />
+
+			<!-- <Line config={{}} /> -->
+			<Rect config={{ x: 100, y: 100, width: 10, height: 10, fill: 'blue' }} />
+			<Shape shape="RECTANGLE" config={{ x: 120, y: 100, width: 10, height: 10, fill: 'red' }} />
 		</Group>
-		<Rect config={{ x: 100, y: 100, width: 400, height: 200, fill: 'blue' }} />
 	</Layer>
 </Stage>

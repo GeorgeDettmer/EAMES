@@ -6,18 +6,18 @@
 	import type { StarConfig } from 'konva/lib/shapes/Star';
 	import { Rect, Circle, Ellipse, Star, Line } from 'svelte-konva';
 
-	export const shape: string = 'LINE';
-	export const config: RectConfig | CircleConfig | EllipseConfig | StarConfig | LineConfig = {};
+	export let shape: string = 'LINE';
+	export let config = {};
 </script>
 
 {#if shape === 'RECTANGLE'}
-	<Rect {config} />
+	<Rect config={{ config }} />
 {:else if shape === 'CIRCLE'}
-	<Circle {config} />
+	<Circle config={{ config }} />
 {:else if shape === 'ELLIPSE'}
-	<Ellipse {config} />
+	<Ellipse config={{ config }} />
 {:else if shape === 'STAR'}
-	<Star {config} />
+	<Star config={{ config }} />
 {:else}
-	<Line {config} />
+	<Line config={{ config }} />
 {/if}

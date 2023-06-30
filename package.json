@@ -48,6 +48,7 @@
 		"jsonwebtoken": "^9.0.0",
 		"konva": "^9.2.0",
 		"moment": "^2.29.4",
+		"simplify-js": "^1.2.4",
 		"svelte-heros-v2": "^0.7.1",
 		"svelte-konva": "^0.3.0"
 	}

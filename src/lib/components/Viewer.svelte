@@ -245,6 +245,7 @@
 
 		components_parsed.forEach((component, component_idx) => {
 			if (!component || component?.layer != layerToShow) return;
+			let componentFeaturesDrawn = 0;
 			let group = new Konva.Group({
 				x: convertUnits(component.x),
 				y: convertUnits(component.y),
@@ -269,7 +270,8 @@
 				opacity: 0.5,
 				listening: false
 			});
-
+			componentFeaturesDrawn++;
+			featuresDrawn++;
 			text.scaleY(-1);
 
 			let shapes = shape?.shapes;
@@ -288,6 +290,8 @@
 				let lineCap = 'round';
 
 				if (points.length > 0) {
+					featuresDrawn++;
+					componentFeaturesDrawn++;
 					let mark = new Konva.Line({
 						points: points,
 						stroke: 'red',
@@ -407,6 +411,8 @@
 							let lineCap = 'round';
 							points = points.slice(1).map((point) => convertUnits(point));
 							if (points.length > 0) {
+								featuresDrawn++;
+								componentFeaturesDrawn++;
 								let mark = new Konva.Line({
 									points: points,
 									stroke: 'red',
@@ -536,7 +542,7 @@
 				}
 			});
 
-			featuresDrawn += group.getChildren().length;
+			//featuresDrawn += group.getChildren().length;
 
 			group.on('mouseover', function (e) {
 				dispatch('component_event', {
@@ -643,7 +649,6 @@
 		stage.add(layer);
 		stage.add(tooltipLayer);
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
-		console.warn(stage.toJSON());
 		dispatch('draw_done', stage);
 	}
 

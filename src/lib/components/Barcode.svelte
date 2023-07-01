@@ -28,7 +28,7 @@
 		}}
 	>
 		<div>
-			<div class="flex items-center justify-center {boardId == '0' ? 'text-red-600' : ''}">
+			<div class="flex items-center justify-center {boardId == '0' && 'text-red-600'}">
 				<img class="" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
 				<p class="pl-1 text-4xl">{id}</p>
 			</div>

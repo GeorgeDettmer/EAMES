@@ -71,7 +71,9 @@ export const findUser = async (username: string) => {
 };
 export const getUserFromToken = async (token: string) => {
 	const tokenQuery = await client.query(_getUserByToken, { token: token });
+
 	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
+	if (!user) console.error('No user found for token: ' + token);
 	console.log(`getUserFromToken request: ${user?.username}(${user?.id})`);
 	return user;
 };

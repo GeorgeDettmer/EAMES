@@ -6,8 +6,8 @@ export const localStorageDefault = (key: string, defaultValue: string) => {
 	return localStorage.getItem(key) || defaultValue;
 };
 
-export const padSerial = (sn: string = '0', minLength: number = 10) =>
-	sn?.padStart(minLength - sn.length, '0') || '0';
+export const padSerial = (sn: string = '0', minLength: number = 7) =>
+	sn?.padStart(Math.max(sn.length, minLength), '0') || '0';
 
 export const randomString = () => Math.round(Math.random() * 10e15).toString(16);
 

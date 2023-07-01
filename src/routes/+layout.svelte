@@ -64,7 +64,6 @@
 			devtoolsExchange
 		],
 		fetchOptions: () => {
-			const token = getToken();
 			return {
 				headers: headers
 			};
@@ -82,6 +81,7 @@
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
 	$: console.log('context', currentBoard);
+	$: console.warn('HEADERS', headers);
 </script>
 
 <svelte:head>

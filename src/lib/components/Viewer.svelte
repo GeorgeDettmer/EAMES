@@ -370,7 +370,8 @@
 								component: component
 							});
 						});
-						mark.perfectDrawEnabled(false);
+						mark.perfectDrawEnabled(true);
+						mark.fillAfterStrokeEnabled(true);
 						group.add(mark);
 					}
 				}
@@ -517,7 +518,7 @@
 										pin: pin
 									});
 								});
-								mark.perfectDrawEnabled(false);
+								//mark.perfectDrawEnabled(false);
 								pinGroup.add(mark);
 								pinGroup.rotation(parseFloat(pin.r));
 								if (highlightPins.includes(parseInt(pin?.pin))) {

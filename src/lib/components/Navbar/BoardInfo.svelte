@@ -35,7 +35,7 @@
 					<div
 						class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500"
 					>
-						<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
+						<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name || ''}</span>
 						{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
 							?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
 					</div>

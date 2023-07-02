@@ -18,7 +18,7 @@
 
 {#if boardId}
 	<Button
-		color=""
+		color="none"
 		id={'board-' + boardId}
 		class="!p-1 mt-0.5"
 		on:click={(e) => {

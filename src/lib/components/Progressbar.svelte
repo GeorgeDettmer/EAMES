@@ -25,7 +25,7 @@
 	</div>
 {/if}
 <div class={classNames('w-full rounded-full', size, $$props.class)}>
-	{#if labelInside}
+	{#if labelInside && !isNaN(progress)}
 		<div
 			class={classNames(labelInsideClass, size, barColors[color])}
 			class:hidden={!parseInt(progress)}

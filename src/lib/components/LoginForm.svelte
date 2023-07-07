@@ -48,6 +48,7 @@
 	class={classes}
 	method="post"
 	action="/login?/login"
+	autocomplete="off"
 	use:enhance
 	on:keyup={(e) => {
 		handleLoginKeyup(e);
@@ -57,13 +58,7 @@
 		{#if allowPassword || allowPasscode}
 			<Label class="space-y-2" for="username">
 				<span class:text-gray-400={userPassDisabled}>Username</span>
-				<Input
-					type="text"
-					name="username"
-					autocomplete="off"
-					disabled={userPassDisabled}
-					bind:value={username}
-				/>
+				<Input type="text" name="username" disabled={userPassDisabled} bind:value={username} />
 			</Label>
 		{/if}
 		{#if allowPassword || allowPasscode}
@@ -76,9 +71,13 @@
 						: 'Password'}</span
 				>
 				<Input
-					type={showPassword ? (!allowPassword ? 'text' : 'text') : 'password'}
+					style={showPassword
+						? !allowPassword
+							? '-webkit-text-security: none;'
+							: 'none'
+						: '-webkit-text-security: disc;'}
+					type="text"
 					name="password"
-					autocomplete="off"
 					disabled={userPassDisabled}
 					bind:value={password}
 					on:keydown={(e) => {
@@ -152,7 +151,6 @@
 			<Input
 				type={showToken ? 'text' : 'password'}
 				name="login_token"
-				autocomplete="off"
 				disabled={tokenDisabled}
 				bind:value={token}
 			>

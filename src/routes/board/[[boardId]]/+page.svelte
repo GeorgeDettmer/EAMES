@@ -485,7 +485,7 @@
 
 		{#if boardInfo}
 			<div class="flex max-h-[825px]">
-				<div class="w-2/3">
+				<div class="w-2/3 hidden md:block">
 					<div>
 						{#if instruction}
 							<Blockquote
@@ -528,45 +528,46 @@
 							</Blockquote>
 						{/if}
 					</div>
-
-					{#each cad?.layers as layer (layer)}
-						<div
-							class=" outline outline-slate-300 dark:bg-slate-500"
-							class:hidden={layer !== visibleLayer}
-						>
-							<div>
-								<h1
-									on:click={() => {
-										visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
-										/* const layers = cad.layers;
+					<div class="hidden md:block">
+						{#each cad?.layers as layer (layer)}
+							<div
+								class="outline outline-slate-300 dark:bg-slate-500"
+								class:hidden={layer !== visibleLayer}
+							>
+								<div>
+									<h1
+										on:click={() => {
+											visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
+											/* const layers = cad.layers;
 									const nextLayerIdx = layers.findIndex((l) => l === layer)++
 									
 									visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer; */
-									}}
-									class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
-								>
-									{layer.substring(0, 3)}
-								</h1>
-								<h1 class="text-3xl font-bold opacity-50 float-right p-1">
-									{activeReference}
-								</h1>
+										}}
+										class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
+									>
+										{layer.substring(0, 3)}
+									</h1>
+									<h1 class="text-3xl font-bold opacity-50 float-right p-1">
+										{activeReference}
+									</h1>
+								</div>
+								<Viewer
+									on:pin_event={pin_event}
+									on:draw_done={draw_event}
+									on:component_event={component_event}
+									drawAllPins={cad?.meta?.drawAllPins === undefined ? true : cad?.meta?.drawAllPins}
+									highlightPins={cad?.meta?.highlightPins || []}
+									outlinePins={cad?.meta?.outlinePins || [1]}
+									id={layer}
+									height={750}
+									data={cad}
+									layerToShow={layer}
+								/>
 							</div>
-							<Viewer
-								on:pin_event={pin_event}
-								on:draw_done={draw_event}
-								on:component_event={component_event}
-								drawAllPins={cad?.meta?.drawAllPins === undefined ? true : cad?.meta?.drawAllPins}
-								highlightPins={cad?.meta?.highlightPins || []}
-								outlinePins={cad?.meta?.outlinePins || [1]}
-								id={layer}
-								height={750}
-								data={cad}
-								layerToShow={layer}
-							/>
-						</div>
-					{/each}
+						{/each}
+					</div>
 				</div>
-				<div class="float-right px-1 w-1/3">
+				<div class="float-right px-1 md:w-1/3">
 					{#if instruction}
 						<InstructionList
 							on:header_click={handleHeaderClick}

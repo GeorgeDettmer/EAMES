@@ -12,7 +12,8 @@
 		Modal,
 		Navbar,
 		NavHamburger,
-		MegaMenu
+		MegaMenu,
+		Popover
 	} from 'flowbite-svelte';
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
@@ -21,6 +22,7 @@
 	import { fade } from 'svelte/transition';
 	import { getContext } from 'svelte';
 	import BoardInfo from './Navbar/BoardInfo.svelte';
+	import JobPopoverContent from './JobPopoverContent.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -111,11 +113,11 @@
 
 <div class="relative px-0">
 	<Navbar
-		navClass="px-2 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
+		navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
 		let:hidden
 		let:toggle
 	>
-		<div class="flex cursor-pointer h-12 ring-indigo-800 hover:ring-4" in:fade>
+		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade>
 			<img src={logo} class="" alt="EASL" />
 		</div>
 		<MegaMenu full items={menu} let:item class="bg-slate-200">
@@ -147,7 +149,7 @@
 			</a>
 		</MegaMenu>
 
-		<div class="ml-10 flex-auto outline-gray-500">
+		<div class="ml-1 sm:ml-10 flex-auto outline-gray-500">
 			<div class="flex">
 				<div class="grid grid-rows-2 grid-flow-col">
 					<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
@@ -158,26 +160,34 @@
 							}}
 						/>
 					</div>
-					{#if $currentBoard?.boardInfo?.id}
+					{#if $currentBoard?.boardInfo?.id && $currentBoard?.boardInfo.job}
 						<div
-							class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500"
+							class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500 {'job-' +
+								$currentBoard?.boardInfo.job?.id}"
 						>
 							EAS{$currentBoard?.boardInfo?.job?.batch}
 						</div>
 						<div
-							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500"
+							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +
+								$currentBoard?.boardInfo.job?.id}"
 						>
 							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
 							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
-								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal}) [{$currentBoard
-								?.boardInfo?.assembly?.id}]
+								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
 						</div>
+						<Popover
+							placement="bottom"
+							triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id}
+							class="w-64"
+						>
+							<JobPopoverContent job={$currentBoard?.boardInfo.job} />
+						</Popover>
 					{/if}
 				</div>
 			</div>
 		</div>
 		<!-- <BoardInfo boardId={$page?.data?.boardId} /> -->
-		<NavHamburger on:click={toggle} />
+
 		<!-- <NavUl {hidden}>
 			<NavLi href="/boards">Boards</NavLi>
 		</NavUl>
@@ -200,7 +210,7 @@
 
 			<span>
 				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
-					<p class="px-1 text-xl">
+					<p class="px-1 text-xl hidden md:block">
 						{[$page.data?.user?.firstname, $page.data?.user?.lastname].join(' ') ||
 							$page.data?.user?.username ||
 							'Sign in'}
@@ -211,7 +221,7 @@
 		<Dropdown inline bind={userVisible}>
 			<div slot="header" class="px-4 py-2">
 				{#if user}
-					<span class="block text-sm text-gray-900 dark:text-white">
+					<span class="text-sm text-gray-900 dark:text-white">
 						{user?.firstname}
 						{user?.lastname}
 					</span>

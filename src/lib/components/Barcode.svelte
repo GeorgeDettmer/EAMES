@@ -29,8 +29,8 @@
 	>
 		<div>
 			<div class="flex items-center justify-center {boardId == '0' && 'text-red-600'}">
-				<img class="" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
-				<p class="pl-1 text-4xl">{id}</p>
+				<img class="hidden md:block" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
+				<p class="pl-1 md:text-4xl text-xl my-auto">{id}</p>
 			</div>
 			{#if boardId != '0'}
 				<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">

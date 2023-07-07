@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	import { Label, Input, Hr, Card, Alert } from 'flowbite-svelte';
+	import { getContextClient, gql, queryStore } from '@urql/svelte';
 
 	export let classes = 'max-w-sm';
 	classes += ' flex flex-col space-y-4';
@@ -42,6 +43,24 @@
 
 	$: tokenDisabled = password != '' || passcode != '' || username != '';
 	$: userPassDisabled = token != '';
+
+	$: usersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query users {
+				users(where: { active: { _eq: true } }) {
+					id
+					username
+					first_name
+					last_name
+					initials
+					color
+				}
+			}
+		`
+	});
+	$: users = $usersStore?.data?.users || [];
+	$: console.log(users);
 </script>
 
 <form
@@ -56,6 +75,11 @@
 >
 	{#if !showScanner}
 		{#if allowPassword || allowPasscode}
+			<datalist>
+				{#each users as user}
+					<option>{user.username}</option>
+				{/each}
+			</datalist>
 			<Label class="space-y-2" for="username">
 				<span class:text-gray-400={userPassDisabled}>Username</span>
 				<Input type="text" name="username" disabled={userPassDisabled} bind:value={username} />

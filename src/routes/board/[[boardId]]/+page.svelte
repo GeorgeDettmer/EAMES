@@ -567,8 +567,29 @@
 						{/each}
 					</div>
 				</div>
-				<div class="float-right px-1 md:w-1/3">
-					{#if instruction}
+				<div class="md:w-1/3 float-right px-1">
+					{#if instruction?.meta?.externalSource}
+						<div class="w-1/2 float-right">
+							<InstructionList
+								on:header_click={handleHeaderClick}
+								on:item_click={handleStepClick}
+								on:item_mouse={handleStepMouse}
+								{instruction}
+								{steps}
+								{activeReference}
+							/>
+						</div>
+						<div class="w-1/2 float-right">
+							<InstructionList
+								on:header_click={handleHeaderClick}
+								on:item_click={handleStepClick}
+								on:item_mouse={handleStepMouse}
+								{instruction}
+								{steps}
+								{activeReference}
+							/>
+						</div>
+					{:else if instruction}
 						<InstructionList
 							on:header_click={handleHeaderClick}
 							on:item_click={handleStepClick}

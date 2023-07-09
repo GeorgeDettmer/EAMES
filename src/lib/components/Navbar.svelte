@@ -126,18 +126,18 @@
 			>
 
 			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
-				{#if user?.lastActivity || true}
+				{#if user?.lastActivity}
 					<div class="border-2 p-5 rounded-lg">
-						<p class="mb-5 max-w-xl text-sm p-0 font-bold text-white">
+						<p class="mb-5 max-w-xl text-sm p-0 font-bold dark:text-white">
 							Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch ||
 								'EAS12345'}
 						</p>
 						<div class="flex">
 							<Button color="blue" class="pr-10">Continue...</Button>
-							<div
+							<!-- 							<div
 								class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
 								style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
-							/>
+							/> -->
 						</div>
 					</div>
 				{/if}
@@ -186,6 +186,7 @@
 				</div>
 			</div>
 		</div>
+
 		<!-- <BoardInfo boardId={$page?.data?.boardId} /> -->
 
 		<!-- <NavUl {hidden}>

@@ -67,7 +67,8 @@ export const stringToColorClass = (string: string) => {
 };
 
 export const classes = {
-	link: ' cursor-pointer decoration-1 decoration-dotted underline hover:decoration-2 hover:decoration-solid '
+	link: ' cursor-pointer decoration-1 underline hover:decoration-2 hover:decoration-solid ',
+	popover: ' cursor-pointer decoration-1 decoration-dotted underline hover:decoration-2 '
 };
 
 import colors from 'tailwindcss/colors.js';

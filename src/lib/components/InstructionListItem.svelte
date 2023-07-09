@@ -96,7 +96,7 @@
 				{#if item?.reference}
 					{item.reference}
 					{#if item?.part_id}
-						<a id={listItemId} class={'float-right' + classes.link}>{item.part_id}</a>
+						<a id={listItemId} class={'float-right' + classes.popover}>{item.part_id}</a>
 						<Popover
 							style="z-index: 10000;"
 							placement="left"

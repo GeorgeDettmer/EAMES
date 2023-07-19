@@ -538,10 +538,11 @@
 									<h1
 										on:click={() => {
 											visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
-											/* const layers = cad.layers;
-									const nextLayerIdx = layers.findIndex((l) => l === layer)++
-									
-									visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer; */
+											/*
+											const layers = cad.layers;
+											const nextLayerIdx = layers.findIndex((l) => l === layer)++
+											visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer;
+											*/
 										}}
 										class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
 									>

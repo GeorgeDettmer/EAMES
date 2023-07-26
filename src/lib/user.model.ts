@@ -7,7 +7,7 @@ import { generateRandomString, validate } from '$lib/utils';
 
 const _getUserByUsername = `#graphql
 	query getUserByUsername($username: String!) {
-		users(where: {username: {_eq: $username}}) {
+		users(where: {username: {_ilike: $username}}) {
 			id
 			username
 			first_name
@@ -86,7 +86,7 @@ const addUser = async (
 	password?: string
 ) => {
 	const result = await client.mutation(_insertUser, {
-		username: username.toLowerCase(),
+		username: username,
 		first_name: firstName,
 		last_name: lastName,
 		initials: initials,

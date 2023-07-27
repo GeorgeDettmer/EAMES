@@ -28,7 +28,7 @@
 		const key = e?.key;
 		if (key == 'Enter') {
 			submitButton?.click();
-			//FIX: Not set unless on /login route
+			//TODO: FIX: Not set unless on /login route
 			if (!$page?.form?.error) {
 				dispatch('submit');
 			}

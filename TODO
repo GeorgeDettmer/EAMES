@@ -1,0 +1,26 @@
+CAD Viewer:
+  Parser:
+    ☐ Add ODB++ parser (Just x/y/rotation and footprint information)
+    ☐ Refactor GENCAD parser to use improved parsing method (as per ODB++ parser)
+    ☐ Generate generic 'middle man' JSON format CAD for renderer to consume (allows or one format output regardless of input CAD type)
+
+  Renderer:
+    ☐ Center and scale to fit viewport
+    ☐ Improve current selection highlight visibility
+    ☐ Refactor to render from generic 'middle man' JSON CAD format
+    ☐ Render SVG/IMAGE layer for gerber/silkscreen/orientation layers
+    ☐ Allow for other images to be easily shown/aligned (board master images etc)
+
+Barcode:
+  ☐ Scan for board
+  ☐ Scan for token login
+
+Users:
+  ☐ Assess switch to session based login rather than JWT to have more control over user login sessions
+  Management:
+    ☐ Fine grained user process control. Level of process ability restrictions
+    ☐ Creation of new users, assigning roles etc
+    ☐ Generation of new login pins & tokens
+  Login:
+    ☐ Fix login error messages not shown in login dialog when not on /login route
+

@@ -61,18 +61,21 @@
 		}
 	}
 	async function handleStepClick(e) {
-		if (!allowedProcesses.flat().includes(instruction?.type?.toLowerCase())) {
-			alert(
-				`You do not have permission to complete process of type: ${instruction?.type}. You have permission for ${allowedProcesses} only`
-			);
-			return;
-		}
 		const step = e.detail?.step;
 		const signoffs = step?.signoffs;
 		const signed = signoffs.length > 0;
 		console.log('STEP CLICK', signed ? '✅' : '❌', step);
 		if (signoffs?.filter((s) => s.user.id === user?.id).length > 0) {
 			console.warn('USER ALREADY SIGNED OFF FOR STEP', step);
+		} else {
+			if (!allowedProcesses.flat().includes(instruction?.type?.toLowerCase())) {
+				alert(
+					`You do not have permission to complete process of type: ${
+						instruction?.type
+					}. You have permission for: ${allowedProcesses.map((p) => p[0]?.toUpperCase())}`
+				);
+				return;
+			}
 		}
 		let mutationResult;
 		if (!signed) {

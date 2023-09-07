@@ -214,6 +214,8 @@
 						}
 					}
 					assembly_id
+					dynamic
+					meta
 				}
 			}
 		`,

@@ -24,3 +24,6 @@ Users:
   Login:
     ☐ Fix login error messages not shown in login dialog when not on /login route
 
+Instructions:
+  Dynamic:
+    ☐ Store 

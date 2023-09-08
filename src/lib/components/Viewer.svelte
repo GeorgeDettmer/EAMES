@@ -229,7 +229,7 @@
 		tooltipLayer.add(tooltip);
 
 		featuresDrawn = 0;
-		let boardOutline = new Konva.Group();
+		let boardOutline = new Konva.Group({ name: 'outline' });
 		board_parsed.forEach((line) => {
 			boardOutline.add(
 				new Konva.Line({

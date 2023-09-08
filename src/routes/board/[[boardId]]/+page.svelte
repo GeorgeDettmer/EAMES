@@ -273,6 +273,18 @@
 			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]
 				?.layer;
 		}
+		getRenderers().forEach((r, k) => {
+			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
+			const x = cad?.start_x ? cad.start_x : 215;
+			const y = cad?.start_y ? cad.start_y : 900;
+			const bb = r.find(`.bounds`)?.[0];
+			const width = bb?.attrs?.width;
+			console.info('UPDATE', k, width, bb);
+			//Fill board to screen https://codepen.io/spark25/pen/VwXvZpp
+			r.scaleX(scale);
+			r.scaleY(scale);
+			r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y });
+		});
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
 				const isSigned = i?.signoffs?.length > 0;
@@ -455,18 +467,18 @@
 	}
 	$: {
 		if (cad) {
-			getRenderers().forEach((r, k) => {
+			/* getRenderers().forEach((r, k) => {
 				const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
 				const x = cad?.start_x ? cad.start_x : 215;
 				const y = cad?.start_y ? cad.start_y : 900;
 				const bb = r.find(`.bounds`)?.[0];
 				const width = bb?.attrs?.width;
-				console.info(k, width, bb);
+				console.info('UPDATE', k, width, bb);
 
 				r.scaleX(scale);
 				r.scaleY(scale);
 				r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y });
-			});
+			}); */
 		}
 	}
 </script>

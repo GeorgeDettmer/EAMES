@@ -10,6 +10,7 @@
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
 	import { getContext } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
+	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -606,15 +607,7 @@
 					</div>
 				</div>
 				<div class="md:w-1/3 float-right px-1">
-					{#if detailVisible}
-						<div>
-							<ComponentDetail
-								json={detailVisible.event.target.toJSON()}
-								component={detailVisible}
-								on:back={() => (detailVisible = null)}
-							/>
-						</div>
-					{:else if instruction?.meta?.externalSource}
+					{#if instruction?.meta?.externalSource}
 						<div class="w-1/2 float-right">
 							<InstructionList
 								on:header_click={handleHeaderClick}
@@ -636,14 +629,25 @@
 							/>
 						</div>
 					{:else if instruction}
-						<InstructionList
-							on:header_click={handleHeaderClick}
-							on:item_click={handleStepClick}
-							on:item_mouse={handleStepMouse}
-							{instruction}
-							{steps}
-							{activeReference}
-						/>
+						<InstructionListHeader on:header_click={handleHeaderClick} {steps} {instruction} />
+						{#if detailVisible}
+							<div>
+								<ComponentDetail
+									json={detailVisible.event.target.toJSON()}
+									component={detailVisible}
+									on:back={() => (detailVisible = null)}
+								/>
+							</div>
+						{:else}
+							<InstructionList
+								on:header_click={handleHeaderClick}
+								on:item_click={handleStepClick}
+								on:item_mouse={handleStepMouse}
+								{instruction}
+								{steps}
+								{activeReference}
+							/>
+						{/if}
 					{/if}
 				</div>
 			</div>

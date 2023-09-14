@@ -11,7 +11,7 @@
 </script>
 
 <div>
-	<Card class="mb-4">
+	<Card class="m-1 w-full">
 		<div class="flex justify-between">
 			<div class="py-1">
 				<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

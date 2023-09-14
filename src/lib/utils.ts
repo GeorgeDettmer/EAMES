@@ -11,6 +11,10 @@ export const padSerial = (sn: string = '0', minLength: number = 7) =>
 
 export const randomString = () => Math.round(Math.random() * 10e15).toString(16);
 
+export const truncateString = (str: string, length: number = 5, suffix: string = '…') => {
+	return str.length > length ? str.slice(0, length - 1) + suffix : str;
+};
+
 export const validate = (thing: any, type: string = 'string') => !!thing && typeof thing === type;
 
 export const stringToColor = (string: string) => {

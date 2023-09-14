@@ -53,6 +53,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { Button } from 'flowbite-svelte';
 	import Konva from 'konva';
+	import { truncateString } from '$lib/utils';
 	export const name = '';
 	const dispatch = createEventDispatcher();
 
@@ -257,9 +258,8 @@
 			let defaultColor = colour;
 			let shape = shapes_parsed.filter((s) => s?.shape == component?.shape)[0];
 			/* colour = component?.device.includes('Not Fitted') ? 'red' : 'blue'; */
-
 			let text = new Konva.Text({
-				text: component.component,
+				text: truncateString(component.component),
 				fontSize: 2,
 				fontFamily: 'Calibri',
 				fill: colour,
@@ -600,8 +600,9 @@
 			});
 
 			group.add(componentGroupbb); */
-			let fontSize = Math.min(bounds.width, bounds.height) / 2;
-			text.fontSize(Math.max(fontSize - (fontSize / 100) * 10, 4));
+			let fontSize = Math.min(bounds.width, bounds.height) / 3;
+			//text.fontSize(Math.max(fontSize - (fontSize / 100) * 10, 4));
+			text.fontSize(fontSize);
 			text.offsetX(text.width() / 2);
 			text.offsetY(text.height() / 2);
 

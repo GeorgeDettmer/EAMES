@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let data;
 	import { page } from '$app/stores';
-	import { tailwindColors } from '$lib/utils';
+	import { tailwindColors, truncateString } from '$lib/utils';
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
 
 	import { Blockquote, P, Label, Select, Modal } from 'flowbite-svelte';
@@ -9,6 +9,7 @@
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
 	import { getContext } from 'svelte';
+	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -367,18 +368,34 @@
 		let component = detail?.component;
 		if (detail?.pin_idx == undefined) {
 			if (eventType == 'mousedown') {
+				detailVisible = null;
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
-				onBoardItemClick(component?.component);
+				if (event.evt.altKey) {
+					detailVisible = detail;
+				}
+				if (!event.evt.altKey) {
+					onBoardItemClick(component?.component);
+				}
 			}
 			if (eventType == 'mouseover') {
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
 				activeReference = component?.component;
+				getComponentGroup(activeReference)
+					?.find(`.reference`)
+					?.forEach((c) => {
+						c.text(activeReference);
+					});
 				//console.debug('COMPONENT OVER: ', component?.component, component, detail);
 				//currentInfo = `${component?.component} (${component?.device})`;
 			}
 			if (eventType == 'mouseout') {
 				activeReference = '';
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
+				getComponentGroup(component?.component)
+					?.find(`.reference`)
+					?.forEach((c) => {
+						c.text(truncateString(component?.component));
+					});
 				//console.debug('COMPONENT OUT: ', component?.component, component, detail);
 				//currentInfo = '';
 			}
@@ -481,6 +498,8 @@
 			}); */
 		}
 	}
+
+	let detailVisible = null;
 </script>
 
 {#if boardId}
@@ -545,48 +564,55 @@
 							</Blockquote>
 						{/if}
 					</div>
-					<div class="hidden md:block">
-						{#each cad?.layers as layer (layer)}
-							<div
-								class="outline outline-slate-300 dark:bg-slate-500"
-								class:hidden={layer !== visibleLayer}
-							>
-								<div>
-									<h1
-										on:click={() => {
-											visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
-											/*
-											const layers = cad.layers;
-											const nextLayerIdx = layers.findIndex((l) => l === layer)++
-											visibleLayer = nextLayerIdx > layers.length ? 0 : layers?.[nextLayerIdx] || layer;
-											*/
-										}}
-										class="cursor-pointer text-3xl font-bold opacity-50 float-right ml-auto absolute z-50 p-1 hover:opacity-100"
-									>
-										{layer.substring(0, 3)}
-									</h1>
-									<h1 class="text-3xl font-bold opacity-50 float-right p-1">
-										{activeReference}
-									</h1>
-								</div>
-								<Viewer
-									on:pin_event={pin_event}
-									on:draw_done={draw_event}
-									on:component_event={component_event}
-									drawAllPins={cad?.meta?.drawAllPins === undefined ? true : cad?.meta?.drawAllPins}
-									highlightPins={cad?.meta?.highlightPins || []}
-									outlinePins={cad?.meta?.outlinePins || [1]}
-									id={layer}
-									height={750}
-									data={cad}
-									layerToShow={layer}
-								/>
+					<div class="md:block">
+						<div class="outline outline-slate-300 dark:bg-slate-500">
+							<div>
+								{#each cad?.layers as layer (layer)}
+									<div class:hidden={layer !== visibleLayer}>
+										<div class="flex">
+											<!-- svelte-ignore a11y-click-events-have-key-events -->
+											<h1
+												on:click={() => {
+													visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
+												}}
+												class="cursor-pointer text-3xl font-bold opacity-50 z-50 p-1 hover:opacity-100"
+											>
+												{layer.substring(0, 3)}
+											</h1>
+											<div class="ml-auto float-right">
+												<h1 class="text-3xl font-bold opacity-50 p-1">
+													{activeReference}
+												</h1>
+											</div>
+										</div>
+										<Viewer
+											on:pin_event={pin_event}
+											on:draw_done={draw_event}
+											on:component_event={component_event}
+											drawAllPins={cad?.meta?.drawAllPins === undefined
+												? true
+												: cad?.meta?.drawAllPins}
+											highlightPins={cad?.meta?.highlightPins || []}
+											outlinePins={cad?.meta?.outlinePins || [1]}
+											id={layer}
+											height={750}
+											data={cad}
+											layerToShow={layer}
+										/>
+									</div>
+								{/each}
 							</div>
-						{/each}
+						</div>
 					</div>
 				</div>
 				<div class="md:w-1/3 float-right px-1">
-					{#if instruction?.meta?.externalSource}
+					{#if detailVisible}
+						<div>
+							<h1 on:click={() => (detailVisible = null)}>X</h1>
+							{JSON.stringify(detailVisible?.event?.target, null, 2)}
+							<ComponentDetail json={detailVisible.event.target.toJSON()} />
+						</div>
+					{:else if instruction?.meta?.externalSource}
 						<div class="w-1/2 float-right">
 							<InstructionList
 								on:header_click={handleHeaderClick}

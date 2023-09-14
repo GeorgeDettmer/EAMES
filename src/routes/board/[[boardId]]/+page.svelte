@@ -608,9 +608,11 @@
 				<div class="md:w-1/3 float-right px-1">
 					{#if detailVisible}
 						<div>
-							<h1 on:click={() => (detailVisible = null)}>X</h1>
-							{JSON.stringify(detailVisible?.event?.target, null, 2)}
-							<ComponentDetail json={detailVisible.event.target.toJSON()} />
+							<ComponentDetail
+								json={detailVisible.event.target.toJSON()}
+								component={detailVisible}
+								on:back={() => (detailVisible = null)}
+							/>
 						</div>
 					{:else if instruction?.meta?.externalSource}
 						<div class="w-1/2 float-right">

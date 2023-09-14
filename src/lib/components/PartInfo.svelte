@@ -34,7 +34,7 @@
 {:else if $partInfoStore.error}
 	<h1 class="text-red-600">Part query error</h1>
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
-{:else}
+{:else if partInfo}
 	<div class="p-3">
 		<div class="flex justify-between items-center mb-2">
 			{#if partInfo?.image_url}
@@ -74,5 +74,9 @@
 				{/if}
 			{/each}
 		{/if}
+	</div>
+{:else}
+	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
+		Part info unavailable...
 	</div>
 {/if}

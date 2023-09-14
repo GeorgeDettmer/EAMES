@@ -44,6 +44,5 @@
 </script>
 
 <div>
-	Viewer:
 	<div bind:this={viewer} class="overflow-hidden" id="viewerjson" />
 </div>

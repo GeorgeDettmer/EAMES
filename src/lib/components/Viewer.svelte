@@ -529,6 +529,22 @@
 							}
 						});
 					});
+					let pinBB = pinGroup.getClientRect({ relativeTo: pinGroup });
+					let text_pin = new Konva.Text({
+						name: 'pin_number',
+						x: pinBB.x,
+						y: pinBB.y,
+						text: pin?.pin,
+						scaleX: -1,
+						visible: false,
+						stroke: 'blue',
+						fontSize: 12
+					});
+					text_pin.position({
+						x: pinBB.x + pinBB.width / 2 + text_pin.width() / 2,
+						y: pinBB.y + pinBB.height / 2 - text_pin.height() / 2
+					});
+					pinGroup.add(text_pin);
 					/* console.info(
 						`${component.component}(${pin?.pin}):`,
 						{

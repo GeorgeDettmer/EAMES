@@ -25,6 +25,7 @@
 			/>
 		</div>
 		<Hr />
+		{component?.component?.device}
 		<PartInfo partId={component?.component?.device} />
 
 		<ViewerFromJson {json} />

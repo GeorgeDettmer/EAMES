@@ -370,7 +370,7 @@
 		if (detail?.pin_idx == undefined) {
 			if (eventType == 'mousedown') {
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
-				if (event.evt.altKey) {
+				if (!detailVisible && event.evt.altKey) {
 					detailVisible = detail;
 				}
 				if (!event.evt.altKey) {

@@ -21,7 +21,7 @@
 		group.destroy();
 	}
 
-	export function getComponentGroup(reference: string, rendererId: string = '') {
+	export function getComponentGroups(reference: string, rendererId: string = '') {
 		let renderer;
 		if (!rendererId) {
 			getRenderers().forEach((r, id) => {
@@ -36,10 +36,14 @@
 		}
 		checkRendererExisits(rendererId);
 
-		let group = renderer.find(`.${reference}`)?.[0];
+		let groups = renderer.find(`.${reference}`);
 		//console.debug('EXPORT | getComponentGroup | ', renderer, reference, group);
 
-		return group;
+		return groups;
+	}
+
+	export function getComponentGroup(reference: string, rendererId: string = '') {
+		return getComponentGroups(reference, rendererId)?.[0];
 	}
 
 	export function goTo(reference: string, rendererId: string) {

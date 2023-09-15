@@ -50,7 +50,8 @@
 			stroke: 'black',
 			fontFamily: 'Calibri',
 			fontSize: 25,
-			scaleX: -1
+			scaleX: -1,
+			opacity: 0.5
 		});
 		text_width.position({
 			y: bb.y + -text_width.height() - 10,
@@ -79,7 +80,8 @@
 			stroke: 'black',
 			fontFamily: 'Calibri',
 			fontSize: 25,
-			scaleX: -1
+			scaleX: -1,
+			opacity: 0.5
 		});
 		text_height.position({
 			y: bb.y + bb.height / 2 + text_height.width() / 2,
@@ -101,7 +103,8 @@
 		group_dimensions.add(arrow_height);
 
 		group.scaleX(-1);
-		group.position({ x: -stage.width() / 2, y: 250 / 2 });
+		//group.position({ x: -stage.width() / 2, y: 250 / 2 });
+		group.position({ x: layer.width() / 2 + bb.width, y: 0 });
 		group.rotation(0);
 
 		group.find('.pin_number').forEach((p) => p.visible(true));

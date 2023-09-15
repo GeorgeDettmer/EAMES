@@ -7,7 +7,11 @@
 	import { Blockquote, P, Label, Select, Modal } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
-	import Viewer, { getRenderers, getComponentGroup } from '$lib/components/Viewer.svelte';
+	import Viewer, {
+		getRenderers,
+		getComponentGroup,
+		getComponentGroups
+	} from '$lib/components/Viewer.svelte';
 	import { getContext } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
@@ -171,6 +175,7 @@
 							layers
 							meta
 						}
+						meta
 					}
 					updated_at
 				}
@@ -312,6 +317,16 @@
 				);
 			}
 		});
+		assembly?.meta?.dnf?.forEach((ref) => {
+			let rendererId;
+			getRenderers().forEach((r, id) => {
+				if (getComponentGroup(ref, id)) {
+					rendererId = id;
+					return;
+				}
+			});
+			updateComponentColour(ref.toUpperCase(), 'red', rendererId);
+		});
 		//console.log('DRAW DONE', e ?? '');
 		/*  */
 	};
@@ -437,34 +452,36 @@
 		rendererId: string = 'TOP',
 		opacity: number = 1
 	) => {
-		let group = getComponentGroup(reference, rendererId);
+		let groups = getComponentGroups(reference, rendererId);
 		//console.log('Update component colour:', reference, colour, group);
-		if (!group) {
+		if (!groups) {
 			//console.log('Update component colour:', 'NO GROUP', reference);
 			return;
 		}
-		if (colour == '') {
+		groups.forEach((group) => {
+			if (colour == '') {
+				group.find(`.outline`).forEach((c) => {
+					//console.log('Update component colour:', c);
+					//c.fillEnabled(false);
+					c.fill('');
+				});
+				group.find(`.lead`).forEach((c) => {
+					//console.log('Update component lead colour:', c);
+					c.fillEnabled(false);
+				});
+				return;
+			}
 			group.find(`.outline`).forEach((c) => {
 				//console.log('Update component colour:', c);
-				//c.fillEnabled(false);
-				c.fill('');
+				c.fillEnabled(true);
+				c.fill(colour);
+				c.opacity(0.75);
 			});
 			group.find(`.lead`).forEach((c) => {
 				//console.log('Update component lead colour:', c);
 				c.fillEnabled(false);
+				c.fill(colour);
 			});
-			return;
-		}
-		group.find(`.outline`).forEach((c) => {
-			//console.log('Update component colour:', c);
-			c.fillEnabled(true);
-			c.fill(colour);
-			c.opacity(0.75);
-		});
-		group.find(`.lead`).forEach((c) => {
-			//console.log('Update component lead colour:', c);
-			c.fillEnabled(false);
-			c.fill(colour);
 		});
 	};
 
@@ -566,7 +583,7 @@
 						{/if}
 					</div>
 					<div class="md:block">
-						<div class="outline outline-slate-300 dark:bg-slate-500">
+						<div class="outline outline-slate-300 dark:bg-slate-400">
 							<div>
 								{#each cad?.layers as layer (layer)}
 									<div class:hidden={layer !== visibleLayer}>
@@ -596,7 +613,7 @@
 											highlightPins={cad?.meta?.highlightPins || []}
 											outlinePins={cad?.meta?.outlinePins || [1]}
 											id={layer}
-											height={700}
+											height={window.innerHeight - 250}
 											data={cad}
 											layerToShow={layer}
 										/>

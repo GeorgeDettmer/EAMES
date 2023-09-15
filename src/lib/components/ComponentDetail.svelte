@@ -10,8 +10,8 @@
 	export let component;
 </script>
 
-<div>
-	<Card class="m-1 w-full">
+<div class="w-full my-1">
+	<Card size="xl">
 		<div class="flex justify-between">
 			<div class="py-1">
 				<h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { page } from '$app/stores';
 	import { gql, getContextClient, queryStore, subscriptionStore } from '@urql/svelte';
 
 	import { Blockquote, P } from 'flowbite-svelte';
@@ -7,7 +8,7 @@
 	import InstructionList from '$lib/components/InstructionList.svelte';
 
 	let instructionId = 'c4d432d4-294b-4e8e-8aa2-a6a09f46f8fb';
-	let assemblyId = 2;
+	let assemblyId = $page.url.searchParams.get('assemblyId') || 2;
 
 	$: assemblyInfoStore = queryStore({
 		client: getContextClient(),
@@ -91,6 +92,6 @@
 	{:else if $instuctionsStepsStore.error}
 		<p>Error: {$instuctionsStepsStore.error.message}</p>
 	{:else}
-		<InstructionList {instruction} steps={instruction?.stepsByInstructionId} />
+		<InstructionList {instruction} steps={instruction?.stepsByInstructionId} showHeader />
 	{/if}
 </div>

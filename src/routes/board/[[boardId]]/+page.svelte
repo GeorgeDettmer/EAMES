@@ -369,7 +369,6 @@
 		let component = detail?.component;
 		if (detail?.pin_idx == undefined) {
 			if (eventType == 'mousedown') {
-				detailVisible = null;
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
 				if (event.evt.altKey) {
 					detailVisible = detail;
@@ -501,6 +500,7 @@
 	}
 
 	let detailVisible = null;
+	let componentDetail;
 </script>
 
 {#if boardId}
@@ -596,7 +596,7 @@
 											highlightPins={cad?.meta?.highlightPins || []}
 											outlinePins={cad?.meta?.outlinePins || [1]}
 											id={layer}
-											height={750}
+											height={700}
 											data={cad}
 											layerToShow={layer}
 										/>
@@ -633,9 +633,11 @@
 						{#if detailVisible}
 							<div>
 								<ComponentDetail
-									json={detailVisible.event.target.toJSON()}
+									json={detailVisible.event.target.parent.toJSON()}
 									component={detailVisible}
-									on:back={() => (detailVisible = null)}
+									on:back={() => {
+										detailVisible = null;
+									}}
 								/>
 							</div>
 						{:else}

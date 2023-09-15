@@ -412,7 +412,7 @@
 							let shapeType = points[0].toUpperCase();
 							let strokeWidth = drawPin ? 1.5 : 1;
 							let opacity = 0.75;
-							let stroke = drawPin ? 'orangered' : 'purple';
+							let stroke = drawPin ? 'red' : 'purple';
 							let lineCap = 'round';
 							points = points.slice(1).map((point) => convertUnits(point));
 							if (points.length > 0) {

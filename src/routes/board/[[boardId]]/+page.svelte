@@ -325,7 +325,7 @@
 					return;
 				}
 			});
-			updateComponentColour(ref.toUpperCase(), 'red', rendererId);
+			updateComponentColour(ref.toUpperCase(), '#bd1313', rendererId);
 		});
 		//console.log('DRAW DONE', e ?? '');
 		/*  */

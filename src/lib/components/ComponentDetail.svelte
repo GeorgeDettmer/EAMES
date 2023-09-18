@@ -3,6 +3,7 @@
 	import { ArrowLeftOutline, ArrowRightOutline } from 'flowbite-svelte-icons';
 	import ViewerFromJson from './ViewerFromJSON.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { classes } from '$lib/utils';
 	import PartInfo from './PartInfo.svelte';
 	import { XMark } from 'svelte-heros-v2';
 	const dispatch = createEventDispatcher();
@@ -25,8 +26,12 @@
 			/>
 		</div>
 		<Hr />
-		{component?.component?.device}
-		<PartInfo partId={component?.component?.device} />
+		<a
+			target="_blank"
+			href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
+			class={classes.link}>{component?.component?.device}</a
+		>
+		<PartInfo partId={component?.component?.device} partLinkVisible={false} />
 
 		<ViewerFromJson {json} />
 	</Card>

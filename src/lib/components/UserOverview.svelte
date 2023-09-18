@@ -42,8 +42,8 @@
 {:else if instructionTypes?.length == 0}{:else}
 	<div class=" flex">
 		<div class="p-4 mx-auto flex-col flex">
-			<div class="flex-auto">
-				<UserIcon user={userInfo} size="lg">
+			<div class="flex-auto place-self-center">
+				<UserIcon user={userInfo} size="lg" avatar={true}>
 					<div class="flex flex-col items-center p-3">
 						<h5 class="text-xl font-medium text-white">
 							{[userInfo?.first_name, userInfo?.last_name].join(' ')}

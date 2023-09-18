@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
 	import { XCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
-	import { Popover } from 'flowbite-svelte';
+	import { Hr, Popover } from 'flowbite-svelte';
 	import { stringToColorClass, classes, randomString } from '$lib/utils';
 
 	import UserIcon from './UserIcon.svelte';
@@ -116,12 +116,27 @@
 				{/if}
 			</div>
 		</div>
-		<div class="flex-none pr-2">
-			{#if item?.side === false}
+		{#if item?.user}
+			<div class="flex-none p-2" id={listItemId + item?.user?.id}>
+				<UserIcon user={item?.user} size="sm" />
+
+				<!-- {#if item?.side === false}
 				<ChevronDown />
 			{:else if item?.side === true}
 				<ChevronUp />
-			{/if}
-		</div>
+			{/if} -->
+			</div>
+			<Popover
+				style="z-index: 10000;"
+				placement="left"
+				triggeredBy={'#' + listItemId + item?.user?.id}
+				trigger="hover"
+				class="w-96 text-sm font-light text-gray-500 bg-white dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
+			>
+				<UserOverview userId={item?.user?.id} />
+				<Hr>{item?.created_at}</Hr>
+				<h1 class="text-lg">{item?.notes}</h1>
+			</Popover>
+		{/if}
 	</div>
 </div>

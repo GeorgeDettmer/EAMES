@@ -197,25 +197,33 @@
 		</NavUl> -->
 
 		<div class="flex items-center">
-			<div class="pr-1" class:hidden={true}>
-				<div
-					class="flex flex-col flex-nowrap justify-end w-2 h-12 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700"
-				>
-					<div
-						class="bg-blue-700 overflow-hidden"
-						role="progressbar"
-						style={`height: ${(1000 / 100) * 5}%`}
-					/>
-				</div>
-			</div>
-
 			<span>
-				<UserIcon user={$page.data?.user} on:click={() => (userVisible = !userVisible)}>
+				<UserIcon
+					user={$page.data?.user}
+					on:click={() => {
+						console.log($page.data?.user);
+						if ($page?.data?.user) {
+							userVisible = !userVisible;
+						} else {
+							loginVisible = true;
+						}
+					}}
+				>
 					<p class="px-1 text-xl hidden md:block">
-						{[$page.data?.user?.firstname, $page.data?.user?.lastname].join(' ') ||
-							$page.data?.user?.username ||
-							'Sign in'}
+						{$page.data?.user
+							? [$page.data?.user?.firstname, $page.data?.user?.lastname].join(' ') ||
+							  $page.data?.user?.username
+							: 'Sign in'}
 					</p>
+					<div class:hidden={false}>
+						<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
+							<div
+								class="bg-blue-700 overflow-hidden"
+								role="progressbar"
+								style={`height: ${(1000 / 100) * 5}%`}
+							/>
+						</div>
+					</div>
 				</UserIcon>
 			</span>
 		</div>

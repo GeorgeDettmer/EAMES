@@ -7,7 +7,9 @@
 
 	export let boardId: string = '0';
 	export let barcodeType: string = 'datamatrix';
-	export let barcodeImageUrl: string = `http://bwipjs-api.metafloor.com/?bcid=${barcodeType}&text=${boardId}`;
+	export let barcodeImageUrl: string = `http://bwipjs-api.metafloor.com/?bcid=${barcodeType}&text=${
+		'http://192.168.1.73:5173/board/' + boardId
+	}`;
 
 	$: id = padSerial(boardId);
 
@@ -29,7 +31,7 @@
 	>
 		<div>
 			<div class="flex items-center justify-center {boardId == '0' && 'text-red-600'}">
-				<img class="hidden md:block" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
+				<img class="hidden md:block max-h-10" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
 				<p class="pl-1 md:text-4xl text-xl my-auto">{id}</p>
 			</div>
 			{#if boardId != '0'}

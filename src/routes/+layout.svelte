@@ -34,6 +34,8 @@
 	if (getToken()) {
 		headers['Authorization'] = getToken();
 		headers['X-Hasura-Role'] = 'user';
+	} else {
+		headers['X-Hasura-Role'] = 'anonymous';
 	}
 
 	const wsClient = createWSClient({

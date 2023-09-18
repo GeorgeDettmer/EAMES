@@ -3,6 +3,7 @@
 	import { gql, getContextClient, queryStore } from '@urql/svelte';
 	import { Avatar } from 'flowbite-svelte';
 	export let partId: string = 'Unknown';
+	export let partLinkVisible = true;
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),
@@ -43,17 +44,20 @@
 
 			<!-- <Button size="xs">Info</Button> -->
 		</div>
-		<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
-			{#if isGeneric}
-				<p>{partInfo?.name}</p>
-			{:else}
-				<a
-					target="_blank"
-					href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`}
-					class={classes.link}>{partInfo?.name}</a
-				>
-			{/if}
-		</div>
+		{#if partLinkVisible}
+			<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
+				{#if isGeneric}
+					<p>{partInfo?.name}</p>
+				{:else}
+					<a
+						target="_blank"
+						href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`}
+						class={classes.link}>{partInfo?.name}</a
+					>
+				{/if}
+			</div>
+		{/if}
+
 		<div class="mb-3 text-sm font-normal">
 			{#if partInfo?.manufacturer}
 				<p>{partInfo.manufacturer}</p>

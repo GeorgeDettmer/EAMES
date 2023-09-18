@@ -60,7 +60,7 @@
 		`
 	});
 	$: users = $usersStore?.data?.users || [];
-	$: console.log(users);
+	$: console.log($usersStore?.data);
 </script>
 
 <form
@@ -166,8 +166,10 @@
 						{/if}
 					</button>
 				</Input>
-			</Label>{/if}
-		{#if (allowPasscode || allowPassword) && allowToken}<Hr class="my-1" width="w-64">or</Hr>{/if}
+			</Label>
+		{/if}
+		{#if (allowPasscode || allowPassword) && allowToken}
+			<Hr class="my-1" width="w-64">or</Hr>{/if}
 	{/if}
 	{#if allowToken}
 		<Label class="space-y-2" for="login_token">

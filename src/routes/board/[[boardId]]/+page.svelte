@@ -222,6 +222,15 @@
 					}
 					assembly_id
 					dynamic
+					board_id
+					user {
+						id
+						username
+						first_name
+						last_name
+						initials
+						color
+					}
 					meta
 				}
 			}
@@ -663,7 +672,15 @@
 								on:item_click={handleStepClick}
 								on:item_mouse={handleStepMouse}
 								{instruction}
-								{steps}
+								steps={steps?.filter((s) => s.board_id)}
+								{activeReference}
+							/>
+							<InstructionList
+								on:header_click={handleHeaderClick}
+								on:item_click={handleStepClick}
+								on:item_mouse={handleStepMouse}
+								{instruction}
+								steps={steps?.filter((s) => !s.board_id)}
 								{activeReference}
 							/>
 						{/if}

@@ -13,8 +13,8 @@
 	onMount(() => {
 		stage = new Konva.Stage({
 			container: viewer,
-			width: window.innerWidth,
-			height: 250,
+			width: 500, //window.innerWidth,
+			height: 200,
 			draggable: true
 		});
 
@@ -108,8 +108,19 @@
 		group.rotation(0);
 
 		group.find('.pin_number').forEach((p) => p.visible(true));
-
 		group.add(group_dimensions);
+
+		const scale = Math.min(
+			stage.width() / (group.getClientRect().width * 1.5),
+			stage.height() / (group.getClientRect().height * 1.5)
+		);
+		stage.position({
+			x: -group.getClientRect().x * scale,
+			y: -group.getClientRect().y * scale
+		});
+		stage.scaleX(scale);
+		stage.scaleY(scale);
+
 		stage.on('wheel', (e) => {
 			// stop default scrolling
 			e.evt.preventDefault();
@@ -144,5 +155,5 @@
 </script>
 
 <div>
-	<div bind:this={viewer} class="overflow-hidden" />
+	<div bind:this={viewer} class="overflow-hidden w-full" />
 </div>

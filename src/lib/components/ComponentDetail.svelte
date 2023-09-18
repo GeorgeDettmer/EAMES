@@ -31,8 +31,8 @@
 			href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
 			class={classes.link}>{component?.component?.device}</a
 		>
-		<PartInfo partId={component?.component?.device} partLinkVisible={false} />
 
+		<PartInfo partId={component?.component?.device} partLinkVisible={false} />
 		<ViewerFromJson {json} />
 	</Card>
 </div>

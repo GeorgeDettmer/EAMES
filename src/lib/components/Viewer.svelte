@@ -256,7 +256,8 @@
 				y: convertUnits(component.y),
 				rotation: component.r,
 				name: component?.component,
-				layer: component?.layer
+				layer: component?.layer,
+				component: component
 			});
 			let colour = 'black';
 			let defaultColor = colour;
@@ -542,7 +543,8 @@
 						scaleX: -1,
 						visible: false,
 						stroke: 'blue',
-						fontSize: 12
+						fontSize: 12,
+						fontStyle: 'italic'
 					});
 					text_pin.position({
 						x: pinBB.x + pinBB.width / 2 + text_pin.width() / 2,
@@ -670,6 +672,14 @@
 		stage.add(backgroundLayer);
 		stage.add(layer);
 		stage.add(tooltipLayer);
+		stage.on('contextmenu', (e) => {
+			dispatch('contextmenu', {
+				event: e,
+				viewer: id,
+				component_idx: null,
+				component: null
+			});
+		});
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
 		dispatch('draw_done', stage);
 	}

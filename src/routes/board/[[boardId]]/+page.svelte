@@ -15,6 +15,8 @@
 	import { getContext } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
+	import Konva from 'konva';
+	import { Stage } from 'konva/lib/Stage.js';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;
@@ -62,6 +64,14 @@
 				renderGroup.zIndex(renderGroup.zIndex() / 2);
 			}
 		} else if (eventType == 'wheel') {
+		} else if (eventType == 'click') {
+			console.log('click', event?.target?.nodeName, renderGroup);
+			if (event?.target?.nodeName == 'A') {
+				detailVisible = {
+					component: renderGroup?.attrs?.component,
+					event: { target: { parent: renderGroup } }
+				};
+			}
 		} else {
 			console.warn('Unhandled', e);
 		}
@@ -394,10 +404,11 @@
 		if (detail?.pin_idx == undefined) {
 			if (eventType == 'mousedown') {
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
-				if (!detailVisible && event.evt.altKey) {
+				if (event.evt.button === 2) {
+					detailVisible = null;
 					detailVisible = detail;
 				}
-				if (!event.evt.altKey) {
+				if (event.evt.button !== 2) {
 					onBoardItemClick(component?.component);
 				}
 			}
@@ -604,7 +615,7 @@
 												}}
 												class="cursor-pointer text-3xl font-bold opacity-50 z-50 p-1 hover:opacity-100"
 											>
-												{layer.substring(0, 3)}
+												{layer === 'BOTTOM' ? 'BOT' : layer}
 											</h1>
 											<div class="ml-auto float-right">
 												<h1 class="text-3xl font-bold opacity-50 p-1">
@@ -616,6 +627,14 @@
 											on:pin_event={pin_event}
 											on:draw_done={draw_event}
 											on:component_event={component_event}
+											on:contextmenu={(e) => {
+												e.detail.event.evt.preventDefault();
+												console.log(e);
+												console.log('stage', e.detail.event.target instanceof Konva.Stage);
+												if (e.detail.event.target instanceof Konva.Stage) {
+													detailVisible = null;
+												}
+											}}
 											drawAllPins={cad?.meta?.drawAllPins === undefined
 												? true
 												: cad?.meta?.drawAllPins}

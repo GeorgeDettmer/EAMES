@@ -92,7 +92,7 @@
 			console.log('SCAN', 'TOKEN', barcode.split('|')?.[1]);
 		}
 		if (type == 'SN') {
-			goto('/board/' + barcode);
+			//goto('/board/' + barcode);
 			console.log('barcode', barcode);
 		}
 	}

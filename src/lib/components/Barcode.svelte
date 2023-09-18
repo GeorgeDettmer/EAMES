@@ -7,9 +7,7 @@
 
 	export let boardId: string = '0';
 	export let barcodeType: string = 'datamatrix';
-	export let barcodeImageUrl: string = `http://bwipjs-api.metafloor.com/?bcid=${barcodeType}&text=${
-		'http://192.168.1.73:5173/board/' + boardId
-	}`;
+	export let barcodeImageUrl: string = `http://bwipjs-api.metafloor.com/?bcid=${barcodeType}&text=${window.location.origin}/board/${boardId}`;
 
 	$: id = padSerial(boardId);
 

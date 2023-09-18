@@ -84,7 +84,51 @@
 	setContext('currentBoard', currentBoard);
 	$: console.log('context', currentBoard);
 	$: console.warn('HEADERS', headers);
+
+	function handleBarcodeScan(barcode: string): void {
+		const type: string = barcode.includes('|') ? barcode.split('|')?.[0]?.toUpperCase() : 'SN';
+		console.log(type);
+		if (type === 'TOKEN') {
+			console.log('SCAN', 'TOKEN', barcode.split('|')?.[1]);
+		}
+		if (type == 'SN') {
+			goto('/board/' + barcode);
+			console.log('barcode', barcode);
+		}
+	}
+	let keys = {
+		timeStamp: 0,
+		result: ''
+	};
+	function handleWindowKey(event) {
+		const key = event.key;
+		if (key === '~') {
+			keys.timeStamp = event.timeStamp;
+			console.log('START CAPTURE', key, event.timeStamp);
+		} else {
+			if (key === 'Enter' && keys.timeStamp) {
+				console.log('END CAPTURE', key, event.timeStamp, event.timeStamp - keys.timeStamp);
+				console.log('OUTPUT:', keys.result);
+				handleBarcodeScan(keys.result);
+				keys.timeStamp = 0;
+				keys.result = '';
+			}
+			if (
+				keys.timeStamp &&
+				new Set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ |').has(key)
+			) {
+				keys.result += key;
+			}
+		}
+		if (keys.timeStamp && event.timeStamp - keys.timeStamp > 10000) {
+			console.log('CAPTURE EXPIRED');
+			keys.timeStamp = 0;
+			keys.result = '';
+		}
+	}
 </script>
+
+<svelte:window on:keydown={handleWindowKey} />
 
 <svelte:head>
 	<script>

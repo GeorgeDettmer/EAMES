@@ -4,6 +4,7 @@
 	import { Avatar } from 'flowbite-svelte';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible = true;
+	export let partInfo = false;
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),

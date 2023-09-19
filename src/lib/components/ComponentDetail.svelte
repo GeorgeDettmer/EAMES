@@ -6,9 +6,12 @@
 	import { classes } from '$lib/utils';
 	import PartInfo from './PartInfo.svelte';
 	import { XMark } from 'svelte-heros-v2';
+	import List from './KnowledgeBase/List.svelte';
 	const dispatch = createEventDispatcher();
 	export let json;
 	export let component;
+	export let kbId: string;
+	let hasInfo: boolean = false;
 </script>
 
 <div class="w-full my-1">
@@ -31,8 +34,18 @@
 			href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
 			class={classes.link}>{component?.component?.device}</a
 		>
+		<div class:hidden={!hasInfo} class="py-1">
+			<PartInfo
+				partId={component?.component?.device}
+				partLinkVisible={false}
+				bind:partInfo={hasInfo}
+			/>
+		</div>
 
-		<PartInfo partId={component?.component?.device} partLinkVisible={false} />
 		<ViewerFromJson {json} />
+		{#if kbId}
+			<Hr>kb</Hr>
+			<List {kbId} />
+		{/if}
 	</Card>
 </div>

@@ -2,6 +2,8 @@
 	import { queryStore, getContextClient, gql } from '@urql/svelte';
 	import { Modal, Carousel, Activity, ActivityItem } from 'flowbite-svelte';
 	import type { SizeType } from 'flowbite-svelte/dist/types';
+	import { onMount } from 'svelte';
+	import UserIcon from '../UserIcon.svelte';
 
 	export let visible: boolean = false;
 	export let size: SizeType = 'lg';
@@ -17,17 +19,6 @@
 		});
 	}
 	let imageIndex = 0;
-
-	let comments = kbItem?.comments?.map((c) => {
-		return {
-			title: c?.id,
-			date: c?.created_at,
-			text: c?.content,
-			alt: 'image alt here',
-			src: '/images/profile-picture-2.webp'
-		};
-	});
-	console.log(comments);
 </script>
 
 <Modal id="kbmodal" bind:open={visible} {size} autoclose={true} outsideclose={true}>
@@ -47,17 +38,47 @@
 	</form>-->
 	<div class="max-w-4xl space-y-4">
 		{#if hasImages}
-			<Carousel {images} let:Indicators let:Controls bind:imageIndex>
+			<!-- <Carousel {images} let:Indicators let:Controls bind:imageIndex>
 				<Controls />
 				<Indicators />
-			</Carousel>
+			</Carousel> -->
 		{/if}
 
 		<!-- <Thumbnails {images} bind:imageIndex /> -->
 	</div>
-	{#if comments}
-		<Activity>
-			<ActivityItem activities={comments} />
-		</Activity>
+	{#if kbItem?.comments}
+		<div
+			class="p-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600"
+		>
+			<div class="justify-between items-center mb-3 sm:flex">
+				<p class=" text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
+					{kbItem?.comments?.length} comment{kbItem?.comments?.length > 1 ? 's' : ''}
+				</p>
+				<div class="text-sm font-normal text-gray-500 lex dark:text-gray-300" />
+			</div>
+			{#each kbItem?.comments as comment}
+				<div class="">
+					<!-- <span
+					class="flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900"
+				>
+					<img class="rounded-full shadow-lg" {src} {alt} />
+				</span> -->
+
+					{#if comment?.content}
+						<div class="flex">
+							<div><UserIcon user={comment?.user} size="sm" /></div>
+							<div
+								class="w-full p-2 text-sm italic font-normal text-gray-500 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300"
+							>
+								<div class="text-xs font-thin float-right">
+									{new Date(comment?.created_at).toLocaleString()}
+								</div>
+								<div>{@html comment?.content}</div>
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/each}
+		</div>
 	{/if}
 </Modal>

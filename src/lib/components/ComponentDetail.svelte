@@ -10,7 +10,7 @@
 	const dispatch = createEventDispatcher();
 	export let json;
 	export let component;
-	export let kbId: string;
+	export let kbId: string = '';
 	let hasInfo: boolean = false;
 </script>
 

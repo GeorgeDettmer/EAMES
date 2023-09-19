@@ -19,6 +19,7 @@
 					manufacturer
 					created_at
 					updated_at
+					kb_id
 				}
 			}
 		`,
@@ -79,6 +80,7 @@
 				{/if}
 			{/each}
 		{/if}
+		{#if partInfo?.kbId}{/if}
 	</div>
 {:else}
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>

@@ -702,6 +702,16 @@
 								{activeReference}
 							/>
 						{/if}
+					{:else if detailVisible}
+						<div>
+							<ComponentDetail
+								json={detailVisible.event.target.parent.toJSON()}
+								component={detailVisible}
+								on:back={() => {
+									detailVisible = null;
+								}}
+							/>
+						</div>
 					{/if}
 				</div>
 			</div>

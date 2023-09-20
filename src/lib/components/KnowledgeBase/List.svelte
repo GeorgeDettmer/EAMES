@@ -5,12 +5,13 @@
 
 	export let kbId: string;
 	export let kbInfo: boolean = false;
+	export let kbItems: number = 0;
 
 	$: kbInfoStore = queryStore({
 		client: getContextClient(),
 		query: gql`
 			query kb($kbId: uuid) {
-				kb(where: { kb_id: { _eq: $kbId } }) {
+				kb(where: { kb_id: { _eq: $kbId } }, order_by: { updated_at: asc }) {
 					id
 					kb_id
 					created_at
@@ -27,7 +28,7 @@
 						username
 						processes
 					}
-					comments {
+					comments(order_by: { created_at: desc }) {
 						id
 						content
 						images
@@ -53,7 +54,8 @@
 	$: currentKbItem = {};
 	$: modalVisible = false;
 
-	$: console.log($kbInfoStore);
+	$: console.log($kbInfoStore, kb?.length);
+	$: kbItems = kb?.length || 0;
 </script>
 
 <Modal bind:kbItem={currentKbItem} bind:visible={modalVisible} />
@@ -66,8 +68,8 @@
 {:else if kbInfo}
 	{#each kb as kbItem, kbIndex}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<ol
-			class=" list-decimal cursor-pointer"
+		<div
+			class="cursor-pointer"
 			on:click={(e) => {
 				console.log('kbClick', kbItem, e);
 				currentKbItem = kbItem;
@@ -75,6 +77,6 @@
 			}}
 		>
 			<ListItem {kbItem} {kbIndex} />
-		</ol>
+		</div>
 	{/each}
 {/if}

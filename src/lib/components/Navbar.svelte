@@ -23,6 +23,7 @@
 	import { getContext } from 'svelte';
 	import BoardInfo from './Navbar/BoardInfo.svelte';
 	import JobPopoverContent from './JobPopoverContent.svelte';
+	import { goto } from '$app/navigation';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -170,6 +171,7 @@
 						<div
 							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +
 								$currentBoard?.boardInfo.job?.id}"
+							on:click={() => goto('/kb/' + $currentBoard?.boardInfo?.assembly?.kb)}
 						>
 							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
 							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly

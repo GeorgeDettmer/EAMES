@@ -74,9 +74,6 @@
 
 	setContextClient(client);
 
-	import { page } from '$app/stores';
-	import { Alert } from 'flowbite-svelte';
-
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { fade } from 'svelte/transition';
 

@@ -36,7 +36,7 @@
 		<ViewerFromJson {json} height={150} />
 		<Hr />
 
-		<div class:hidden={!hasInfo} class="py-1">
+		<div class:hidden={!hasInfo} class="py-0">
 			<PartInfo
 				partId={component?.component?.device}
 				partLinkVisible={false}

@@ -32,6 +32,9 @@
 	$: properties = Object.entries(partInfo?.properties || [])
 		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])
 		?.sort();
+
+	let kbItems = 0;
+	$: console.log('kbItems', kbItems);
 </script>
 
 {#if $partInfoStore.fetching}
@@ -41,7 +44,7 @@
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
 {:else if partInfo}
 	<div class="p-1">
-		<div class="flex justify-between items-center mb-2">
+		<div class="flex justify-between items-center mb-0">
 			{#if partInfo?.image_url}
 				<Avatar src={partInfo.image_url} alt={partInfo?.name} size="lg" />
 			{/if}
@@ -62,29 +65,36 @@
 			</div>
 		{/if}
 
-		<div class="mb-3 text-sm font-normal">
+		<div class="mb-1 text-sm font-normal">
 			{#if partInfo?.manufacturer}
 				<p>{partInfo.manufacturer}</p>
 			{/if}
 		</div>
-		<div class="mb-4 text-sm font-light">
+		<div class="mb-1 text-sm font-light">
 			{partInfo?.description}
 		</div>
 		{#if partInfo?.properties}
-			<p class="font-medium">Properties</p>
-			<hr />
+			<p class="">Properties</p>
 			<hr />
 			{#each properties as [name, value], idx}
 				{@const propertyCount = Object.keys(partInfo.properties).length}
-				<p>{name}: {value}</p>
+				<p class="text-sm">{name}: {value}</p>
 				{#if idx < propertyCount}
 					<hr />
 				{/if}
 			{/each}
 		{/if}
 		{#if kbVisible && partInfo?.kb}
-			<Hr class="pb-1">KB</Hr>
-			<div class="py-2"><List kbId={partInfo?.kb} /></div>
+			<div class:hidden={kbItems === 0}>
+				<Hr class="pb-1"
+					>🧾<a class="cursor-pointer" target="_blank" href={window.origin + '/kb/' + partInfo?.kb}
+						>➕</a
+					></Hr
+				>
+			</div>
+			<div class="py-2 overflow-y-auto overflow-x-hidden h-44">
+				<List kbId={partInfo?.kb} bind:kbItems />
+			</div>
 		{/if}
 	</div>
 {:else}

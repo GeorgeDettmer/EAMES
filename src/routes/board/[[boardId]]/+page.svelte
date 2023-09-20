@@ -612,7 +612,7 @@
 												on:click={() => {
 													visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
 												}}
-												class="cursor-pointer text-3xl font-bold opacity-50 z-50 p-1 hover:opacity-100"
+												class="cursor-pointer text-3xl font-bold opacity-50 z-1 p-1 hover:opacity-100"
 											>
 												{layer === 'BOTTOM' ? 'BOT' : layer}
 											</h1>

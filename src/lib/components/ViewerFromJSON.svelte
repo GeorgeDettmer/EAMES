@@ -109,8 +109,8 @@
 		group.add(group_dimensions);
 
 		const scale = Math.min(
-			stage.width() / (group.getClientRect().width * 1.5),
-			stage.height() / (group.getClientRect().height * 1.5)
+			stage.width() / (group.getClientRect().width * 1.1),
+			stage.height() / (group.getClientRect().height * 1.1)
 		);
 		stage.position({
 			x: -group.getClientRect().x * scale,

@@ -23,20 +23,24 @@
 	console.log(kbItem);
 </script>
 
-<Card img={image ? `../src/lib/assets/${image}` : ''} horizontal class="mb-1">
-	<div class="-inset-5"><p>{kbIndex + 1}</p></div>
+<div
+	class="mb-1 hover:shadow-inner p-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600"
+>
+	<!-- <div class="-inset-5"><p>{kbIndex + 1}</p></div> -->
 	<div class="flex">
-		<!-- <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">
-				{kbIndex + 1 ? kbIndex + 1 : kbItem?.id}
-			</h5> -->
-		<div class="float-left mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
-			{@html kbItem?.content}
-		</div>
-
 		{#if kbItem?.user}
 			<div class="float-right">
 				<UserIcon user={kbItem?.user} size="sm" />
 			</div>
 		{/if}
+		<div class="float-left mb-3 text-sm font-normal text-gray-700 dark:text-gray-400 leading-tight">
+			{@html kbItem?.content}
+		</div>
+		<!-- <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">
+				{kbIndex + 1 ? kbIndex + 1 : kbItem?.id}
+			</h5> -->
+		{#if image}
+			<img src={`../src/lib/assets/${image}`} class="w-28 !p-0 float-right mx-auto" />
+		{/if}
 	</div>
-</Card>
+</div>

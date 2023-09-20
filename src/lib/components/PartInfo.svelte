@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { classes } from '$lib/utils';
 	import { gql, getContextClient, queryStore } from '@urql/svelte';
-	import { Avatar, Hr } from 'flowbite-svelte';
+	import { Hr } from 'flowbite-svelte';
 	import List from './KnowledgeBase/List.svelte';
+	import { onMount } from 'svelte';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible = true;
 	export let kbVisible = false;
@@ -18,6 +19,7 @@
 					description
 					properties
 					image_url
+					images
 					manufacturer
 					created_at
 					updated_at
@@ -35,6 +37,21 @@
 
 	let kbItems = 0;
 	$: console.log('kbItems', kbItems);
+
+	$: images = partInfo?.images || [];
+	let imageIdx = 0;
+	$: image = images?.[imageIdx];
+	let imageInterval = 2000;
+	onMount(() => {
+		if (!images) return;
+		setInterval(() => {
+			imageIdx++;
+			if (imageIdx > images.length - 1) {
+				imageIdx = 0;
+			}
+			image = images[imageIdx];
+		}, imageInterval);
+	});
 </script>
 
 {#if $partInfoStore.fetching}
@@ -44,9 +61,23 @@
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
 {:else if partInfo}
 	<div class="p-1">
-		<div class="flex justify-between items-center mb-0">
-			{#if partInfo?.image_url}
-				<Avatar src={partInfo.image_url} alt={partInfo?.name} size="lg" />
+		<div class="flex items-center mb-0">
+			{#if partInfo?.image_url && !image}
+				<img src={partInfo.image_url} alt={partInfo?.name} class="w-1/4 p-0 m-0" />
+			{/if}
+			{#if image}
+				<img
+					src={image}
+					alt={partInfo?.name}
+					class="w-1/4 p-0 m-0 aspect-square"
+					on:click={() => {
+						imageIdx++;
+						imageInterval = 2000;
+						if (imageIdx > images.length - 1) {
+							imageIdx = 0;
+						}
+					}}
+				/>
 			{/if}
 
 			<!-- <Button size="xs">Info</Button> -->

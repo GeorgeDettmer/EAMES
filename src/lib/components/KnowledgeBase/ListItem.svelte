@@ -9,7 +9,7 @@
 	let images = kbItem?.images || [];
 	let imageIdx = 0;
 	let image = images?.[imageIdx];
-
+	let imageInterval = 2000;
 	onMount(() => {
 		if (!images) return;
 		setInterval(() => {
@@ -18,7 +18,7 @@
 				imageIdx = 0;
 			}
 			image = images[imageIdx];
-		}, 2000);
+		}, imageInterval);
 	});
 	console.log(kbItem);
 </script>
@@ -40,7 +40,17 @@
 				{kbIndex + 1 ? kbIndex + 1 : kbItem?.id}
 			</h5> -->
 		{#if image}
-			<img src={`../src/lib/assets/${image}`} class="w-28 !p-0 float-right mx-auto" />
+			<img
+				src={`../src/lib/assets/${image}`}
+				class="w-28 !p-0 float-right mx-auto"
+				on:click={() => {
+					imageIdx++;
+					imageInterval = 2000;
+					if (imageIdx > images.length - 1) {
+						imageIdx = 0;
+					}
+				}}
+			/>
 		{/if}
 	</div>
 </div>

@@ -85,7 +85,7 @@
 			{/each}
 		{/if}
 		{#if kbVisible && partInfo?.kb}
-			<div class:hidden={kbItems === 0}>
+			<div>
 				<Hr class="pb-1"
 					>🧾<a class="cursor-pointer" target="_blank" href={window.origin + '/kb/' + partInfo?.kb}
 						>➕</a

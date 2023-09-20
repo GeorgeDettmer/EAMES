@@ -679,6 +679,18 @@
 				component: null
 			});
 		});
+
+		const scale = Math.max(
+			stage.width() / (bounding.width * 1),
+			stage.height() / (bounding.height * 1)
+		);
+		stage.position({
+			x: -bounding.x * scale,
+			y: -bounding.y * scale
+		});
+		stage.scaleX(scale);
+		stage.scaleY(scale);
+
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
 		dispatch('draw_done', stage);
 	}

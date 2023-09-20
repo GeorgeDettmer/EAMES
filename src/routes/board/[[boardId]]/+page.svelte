@@ -537,7 +537,6 @@
 	}
 
 	let detailVisible = null;
-	let componentDetail;
 </script>
 
 {#if boardId}

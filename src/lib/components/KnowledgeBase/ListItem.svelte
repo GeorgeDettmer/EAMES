@@ -24,17 +24,19 @@
 </script>
 
 <Card img={image ? `../src/lib/assets/${image}` : ''} horizontal class="mb-1">
-	<div>
-		<h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-			{kbIndex + 1 ? kbIndex + 1 : kbItem?.id} <span class="text-sm">({kbItem?.kb_id})</span>
-		</h5>
+	<div class="-inset-5"><p>{kbIndex + 1}</p></div>
+	<div class="flex">
+		<!-- <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">
+				{kbIndex + 1 ? kbIndex + 1 : kbItem?.id}
+			</h5> -->
+		<div class="float-left mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
+			{@html kbItem?.content}
+		</div>
+
 		{#if kbItem?.user}
 			<div class="float-right">
-				<UserIcon user={kbItem?.user} />
+				<UserIcon user={kbItem?.user} size="sm" />
 			</div>
 		{/if}
-		<p class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight">
-			{kbItem?.content}
-		</p>
 	</div>
 </Card>

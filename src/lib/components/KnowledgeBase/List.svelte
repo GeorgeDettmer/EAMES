@@ -66,8 +66,8 @@
 {:else if kbInfo}
 	{#each kb as kbItem, kbIndex}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<div
-			class="cursor-pointer"
+		<ol
+			class=" list-decimal cursor-pointer"
 			on:click={(e) => {
 				console.log('kbClick', kbItem, e);
 				currentKbItem = kbItem;
@@ -75,6 +75,6 @@
 			}}
 		>
 			<ListItem {kbItem} {kbIndex} />
-		</div>
+		</ol>
 	{/each}
 {/if}

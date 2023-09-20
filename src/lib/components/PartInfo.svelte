@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { classes } from '$lib/utils';
 	import { gql, getContextClient, queryStore } from '@urql/svelte';
-	import { Avatar } from 'flowbite-svelte';
+	import { Avatar, Hr } from 'flowbite-svelte';
+	import List from './KnowledgeBase/List.svelte';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible = true;
+	export let kbVisible = false;
 	export let partInfo = false;
 
 	$: partInfoStore = queryStore({
@@ -19,7 +21,7 @@
 					manufacturer
 					created_at
 					updated_at
-					kb_id
+					kb
 				}
 			}
 		`,
@@ -38,7 +40,7 @@
 	<h1 class="text-red-600">Part query error</h1>
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
 {:else if partInfo}
-	<div class="p-3">
+	<div class="p-1">
 		<div class="flex justify-between items-center mb-2">
 			{#if partInfo?.image_url}
 				<Avatar src={partInfo.image_url} alt={partInfo?.name} size="lg" />
@@ -80,7 +82,10 @@
 				{/if}
 			{/each}
 		{/if}
-		{#if partInfo?.kbId}{/if}
+		{#if kbVisible && partInfo?.kb}
+			<Hr class="pb-1">KB</Hr>
+			<div class="py-2"><List kbId={partInfo?.kb} /></div>
+		{/if}
 	</div>
 {:else}
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>

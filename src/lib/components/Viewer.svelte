@@ -542,9 +542,8 @@
 						text: pin?.pin,
 						scaleX: -1,
 						visible: false,
-						stroke: 'blue',
-						fontSize: 12,
-						fontStyle: 'italic'
+						fill: 'blue',
+						fontSize: 15
 					});
 					text_pin.position({
 						x: pinBB.x + pinBB.width / 2 + text_pin.width() / 2,

@@ -22,7 +22,8 @@
 </script>
 
 <Modal id="kbmodal" bind:open={visible} {size} autoclose={true} outsideclose={true}>
-	{kbItem?.kb_id}
+	<p>{kbItem?.kb_id}</p>
+	<div>{@html kbItem?.content}</div>
 	<!-- <form class="flex flex-col space-y-6">
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Settings</h3>
 		<Toggle
@@ -52,7 +53,7 @@
 		>
 			<div class="justify-between items-center mb-3 sm:flex">
 				<p class=" text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
-					{kbItem?.comments?.length} comment{kbItem?.comments?.length > 1 ? 's' : ''}
+					{kbItem?.comments?.length} comment{kbItem?.comments?.length === 1 ? '' : 's'}
 				</p>
 				<div class="text-sm font-normal text-gray-500 lex dark:text-gray-300" />
 			</div>

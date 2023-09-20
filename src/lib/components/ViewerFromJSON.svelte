@@ -6,6 +6,8 @@
 	import { text } from 'svelte/internal';
 
 	export let json;
+	export let width: number = 500;
+	export let height: number = 200;
 
 	let viewer: HTMLDivElement;
 	let stage: Stage;
@@ -13,8 +15,8 @@
 	onMount(() => {
 		stage = new Konva.Stage({
 			container: viewer,
-			width: 500, //window.innerWidth,
-			height: 200,
+			width: width, //window.innerWidth,
+			height: height,
 			draggable: true
 		});
 
@@ -36,7 +38,7 @@
 			x: bb.x,
 			y: bb.y,
 			stroke: 'gray',
-			opacity: 0.25
+			opacity: 0.75
 		});
 		group.add(bbRect);
 
@@ -47,11 +49,10 @@
 			text: (Math.round((bb.width / 21.7) * 100) / 100).toString(),
 			x: bb.x,
 			y: bb.y,
-			stroke: 'black',
+			fill: 'gray',
 			fontFamily: 'Calibri',
 			fontSize: 25,
-			scaleX: -1,
-			opacity: 0.5
+			scaleX: -1
 		});
 		text_width.position({
 			y: bb.y + -text_width.height() - 10,
@@ -61,13 +62,12 @@
 			x: bb.x,
 			y: bb.y - 10,
 			points: [bb.width, 0, 0, 0],
-			fill: 'black',
-			stroke: 'black',
+			fill: 'gray',
+			stroke: 'gray',
 			strokeWidth: 2,
 			pointerAtBeginning: true,
 			pointerWidth: 10,
-			pointerLength: 10,
-			opacity: 0.5
+			pointerLength: 10
 		});
 		group_dimensions.add(text_width);
 		group_dimensions.add(arrow_width);
@@ -77,11 +77,10 @@
 			x: bb.x,
 			y: bb.y,
 			rotation: 90,
-			stroke: 'black',
+			fill: 'gray',
 			fontFamily: 'Calibri',
 			fontSize: 25,
-			scaleX: -1,
-			opacity: 0.5
+			scaleX: -1
 		});
 		text_height.position({
 			y: bb.y + bb.height / 2 + text_height.width() / 2,
@@ -91,13 +90,12 @@
 			x: bb.x - 10,
 			y: bb.y,
 			points: [0, 0, 0, bb.height],
-			fill: 'black',
-			stroke: 'black',
+			fill: 'gray',
+			stroke: 'gray',
 			strokeWidth: 2,
 			pointerAtBeginning: true,
 			pointerWidth: 10,
-			pointerLength: 10,
-			opacity: 0.5
+			pointerLength: 10
 		});
 		group_dimensions.add(text_height);
 		group_dimensions.add(arrow_height);

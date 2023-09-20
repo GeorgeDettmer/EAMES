@@ -74,7 +74,7 @@
 			{partInfo?.description}
 		</div>
 		{#if partInfo?.properties}
-			<p class="">Properties</p>
+			<p class="font-semibold">Properties:</p>
 			<hr />
 			{#each properties as [name, value], idx}
 				{@const propertyCount = Object.keys(partInfo.properties).length}

@@ -10,7 +10,7 @@ const hasuraHealth = async (firstRun: boolean = false) => {
 	if (!HASURA_HEALTH_URL) return;
 	const healthz = await fetch(HASURA_HEALTH_URL);
 	if (healthz.status !== 200) {
-		console.error('HASURA ENDPOINT ERROR: ', healthz?.statusText, healthz?.status, healthz?.body);
+		console.error('HASURA ENDPOINT ERROR: ', healthz?.statusText, healthz?.status);
 	} else if (firstRun) {
 		console.log('HASURA ENDPOINT HEALTH: ', healthz?.statusText, healthz?.status);
 	}

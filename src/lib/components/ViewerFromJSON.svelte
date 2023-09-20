@@ -29,9 +29,15 @@
 		//stage.scaleY(-1);
 		//stage.scaleX(1);
 		console.log(group);
-		group.findOne('.reference').remove();
+		group.findOne('.reference')?.remove();
+		group.find('.outline')?.forEach((o) => {
+			o.strokeWidth(2);
+			o.stroke('black');
+		});
 
 		let bb = group.getClientRect({ relativeTo: group });
+		let groupMax = Math.max(group.getClientRect().width, group.getClientRect().height);
+		let fontSize = Math.max(25, groupMax / 6);
 		let bbRect = new Konva.Rect({
 			width: bb.width,
 			height: bb.height,
@@ -51,7 +57,7 @@
 			y: bb.y,
 			fill: 'gray',
 			fontFamily: 'Calibri',
-			fontSize: 25,
+			fontSize: fontSize,
 			scaleX: -1
 		});
 		text_width.position({
@@ -79,7 +85,7 @@
 			rotation: 90,
 			fill: 'gray',
 			fontFamily: 'Calibri',
-			fontSize: 25,
+			fontSize: fontSize,
 			scaleX: -1
 		});
 		text_height.position({
@@ -107,7 +113,6 @@
 
 		group.find('.pin_number').forEach((p) => p.visible(true));
 		group.add(group_dimensions);
-
 		const scale = Math.min(
 			stage.width() / (group.getClientRect().width * 1.1),
 			stage.height() / (group.getClientRect().height * 1.1)

@@ -4,7 +4,7 @@
 	import type { LayoutData } from './$types';
 	import { enhance } from '$app/forms';
 	export let data: LayoutData;
-	import { setContext } from 'svelte';
+	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
 	const gqlUrl = PUBLIC_HASURA_URL;
 	const gqlHttp = 'http' + gqlUrl;
@@ -14,7 +14,8 @@
 		setContextClient,
 		cacheExchange,
 		fetchExchange,
-		subscriptionExchange
+		subscriptionExchange,
+		mapExchange
 	} from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
@@ -28,7 +29,6 @@
 	//TODO: Use session/local storage for auth token to allow temporary user switch for firstoff etc
 	const getToken = () =>
 		decodeURI(sessionStorage.getItem('AuthorizationToken') || getCookie('AuthorizationToken'));
-	console.log(getToken());
 
 	const headers = {};
 	if (getToken()) {
@@ -40,10 +40,21 @@
 
 	const wsClient = createWSClient({
 		url: gqlWs,
+		shouldRetry: () => true,
 		connectionParams: {
 			headers: headers
+		},
+		on: {
+			error: (error) => {
+				setContext('connectionError', error);
+				alert = error;
+			},
+			connected: (socket) => {
+				alert = null;
+			}
 		}
 	});
+	setContext('connectionError', null);
 	const client = new Client({
 		url: gqlUrl,
 		exchanges: [
@@ -63,7 +74,12 @@
 					};
 				}
 			}),
-			devtoolsExchange
+			devtoolsExchange,
+			mapExchange({
+				onError(error, operation) {
+					console.error(`The operation ${operation.key} has errored with:`, error);
+				}
+			})
 		],
 		fetchOptions: () => {
 			return {
@@ -76,6 +92,8 @@
 
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { fade } from 'svelte/transition';
+	import { FireOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
+	import { Alert, Button, Toast } from 'flowbite-svelte';
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
@@ -123,6 +141,8 @@
 			keys.result = '';
 		}
 	}
+
+	$: alert = getContext('connectionError');
 </script>
 
 <svelte:window on:keydown={handleWindowKey} />
@@ -146,6 +166,17 @@
 <main class="h-screen overflow-y-scroll dark:bg-slate-600">
 	<div class="mx-auto max-w-8xl pt-14 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
+			{#if alert}
+				<Alert class="!items-start" color="red">
+					<span slot="icon">
+						<InfoCircleSolid slot="icon" class="w-4 h-4" />
+						<span class="sr-only">Websocket connection error...</span>
+					</span>
+					<p class="font-medium">Websocket connection error...</p>
+					{JSON.stringify(alert)}
+				</Alert>
+			{/if}
+
 			<div class="rounded-lg">
 				<div in:fade={{ duration: 500 }}>
 					<slot />

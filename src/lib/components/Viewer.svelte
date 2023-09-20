@@ -377,6 +377,7 @@
 						});
 						mark.perfectDrawEnabled(true);
 						mark.fillAfterStrokeEnabled(true);
+						mark.addName('outline');
 						group.add(mark);
 					}
 				}

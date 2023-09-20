@@ -9,6 +9,8 @@
 	let value = '';
 	const urqlClient = getContextClient();
 	async function submit() {
+		if (!value) return;
+		console.log('submit new kb');
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
 			gql`
@@ -39,7 +41,10 @@
 			</ToolbarButton>
 		</ToolbarGroup>
 		<ToolbarButton name="send" slot="end">
-			<PapperPlaneOutline class="w-5 h-5 rotate-45" on:click={submit} />
+			<PapperPlaneOutline
+				class={'w-5 h-5 rotate-45 ' + (!value ? 'mix-blend-difference cursor-not-allowed' : '')}
+				on:click={submit}
+			/>
 		</ToolbarButton>
 	</Toolbar>
 	{#if error}

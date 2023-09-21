@@ -11,6 +11,7 @@
 	export let json;
 	export let component;
 	export let kbId: string = '';
+	export let dnf = false;
 	let hasInfo: boolean = false;
 </script>
 
@@ -21,11 +22,16 @@
 				<h5 class="text-2xl font-bold text-gray-900 dark:text-white">
 					{component?.component?.component}
 				</h5>
-				<a
-					target="_blank"
-					href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
-					class={classes.link + 'font-bold'}>{component?.component?.device}</a
-				>
+				{#if dnf}
+					<p class="font-bold text-red-600">Not Fitted</p>
+				{:else}
+					<a
+						target="_blank"
+						href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
+						class={classes.link + 'font-bold'}>{component?.component?.device}</a
+					>
+				{/if}
+
 				<p class="text-xs font-thin">{component?.component?.shape}</p>
 			</div>
 			<XMark

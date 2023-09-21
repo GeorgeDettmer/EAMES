@@ -679,6 +679,9 @@
 								<ComponentDetail
 									json={detailVisible.event.target.parent.toJSON()}
 									component={detailVisible}
+									dnf={(assembly?.meta?.dnf || []).includes(
+										detailVisible?.component?.component?.toUpperCase()
+									)}
 									on:back={() => {
 										detailVisible = null;
 									}}

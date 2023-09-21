@@ -118,7 +118,7 @@
 		let:hidden
 		let:toggle
 	>
-		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade>
+		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>
 			<img src={logo} class="" alt="EASL" />
 		</div>
 		<MegaMenu full items={menu} let:item class="bg-slate-200">

@@ -56,7 +56,7 @@
   </button>
 </h2>
 {#if open}
-  <div transition:multiple={transitionParams}>
+  <div transition:multiple|global={transitionParams}>
     <div class={ctx.flush ? "py-5" : "p-5"}>
       <slot />
     </div>

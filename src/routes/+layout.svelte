@@ -207,7 +207,7 @@
 			{/if}
 
 			<div class="rounded-lg">
-				<div in:fade={{ duration: 500 }}>
+				<div in:fade|global={{ duration: 500 }}>
 					<slot />
 				</div>
 			</div>

@@ -143,6 +143,7 @@
 	}
 
 	$: alert = getContext('connectionError');
+	setContext('windowTitle', '');
 </script>
 
 <svelte:window on:keydown={handleWindowKey} />
@@ -159,6 +160,7 @@
 			let activityTimeout = localStorage.getItem('activityTimeout') || 30 * 60 * 1000;
 		}
 	</script>
+	<title>EAMES {getContext('windowTitle')}</title>
 </svelte:head>
 
 <Navbar />

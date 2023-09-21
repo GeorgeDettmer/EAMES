@@ -12,11 +12,10 @@
 		getComponentGroup,
 		getComponentGroups
 	} from '$lib/components/Viewer.svelte';
-	import { getContext } from 'svelte';
+	import { getContext, setContext } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
 	import Konva from 'konva';
-	import { Stage } from 'konva/lib/Stage.js';
 
 	let instructionId = data?.instructionId;
 	let boardId = data?.boardId;

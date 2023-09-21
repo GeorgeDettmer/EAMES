@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { Card, Button, Hr } from 'flowbite-svelte';
-	import { ArrowLeftOutline, ArrowRightOutline } from 'flowbite-svelte-icons';
+	import { Card, Hr } from 'flowbite-svelte';
 	import ViewerFromJson from './ViewerFromJSON.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { classes } from '$lib/utils';
 	import PartInfo from './PartInfo.svelte';
 	import { XMark } from 'svelte-heros-v2';
-	import List from './KnowledgeBase/List.svelte';
 	const dispatch = createEventDispatcher();
 	export let json;
 	export let component;

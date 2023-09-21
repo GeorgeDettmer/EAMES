@@ -23,31 +23,34 @@
 </script>
 
 <div class="flex font-thin text-sm">
-	<!-- <div><p>{kbItem?.id} ({kbItem?.kb_id})</p></div> -->
-	<div class="float-right">
+	<div class="flex">
+		<a class="cursor-pointer" target="_blank" href={window.origin + '/kb/' + kbItem?.kb_id}>📝</a>
 		<p>{new Date(kbItem?.created_at).toLocaleString()}</p>
-		<Tooltip>
-			{#if kbItem?.updated_at !== kbItem?.created_at}
-				Edited @ {new Date(kbItem?.updated_at).toLocaleString()}
-				<br />
-			{/if}
-			Created @ {new Date(kbItem?.created_at).toLocaleString()}
-		</Tooltip>
 	</div>
+
+	<Tooltip>
+		{#if kbItem?.updated_at !== kbItem?.created_at}
+			Edited @ {new Date(kbItem?.updated_at).toLocaleString()}
+			<br />
+		{/if}
+		Created @ {new Date(kbItem?.created_at).toLocaleString()}
+	</Tooltip>
 </div>
 
-<div
-	class="p-4 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600"
->
-	{@html kbItem?.content}
+<div class="p-1">
+	<div class="mx-4 mb-4">{@html kbItem?.content}</div>
 
 	{#if images.length > 0}
-		<div
-			class="p-1 m-1 bg-white rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600 grid md:grid-cols-3 sm:grid-cols-2"
-		>
+		<div class="grid md:grid-cols-3 sm:grid-cols-2">
 			<!-- <img src={image ? `../src/lib/assets/${image}` : ''} /> -->
 			{#each images as image}
-				<img src={`../src/lib/assets/${image}`} class="w-fit" />
+				<a
+					href={`../src/lib/assets/${image}`}
+					target="_blank"
+					class="border rounded-lg p-1 mx-1 hover:shadow-inner"
+				>
+					<img src={`../src/lib/assets/${image}`} class="w-fit" alt={image} />
+				</a>
 			{/each}
 		</div>
 	{/if}

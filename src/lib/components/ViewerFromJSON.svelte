@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	import Konva from 'konva';
 	import type { Stage } from 'konva/lib/Stage';
 	import type { Layer } from 'konva/lib/Layer';
-	import { text } from 'svelte/internal';
 
 	export let json;
 	export let width: number = 500;
@@ -152,6 +151,7 @@
 		});
 
 		return () => {
+			console.log('destroy: ViewerFromJSON');
 			stage.destroy();
 		};
 	});

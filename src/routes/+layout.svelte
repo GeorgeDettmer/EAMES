@@ -1,5 +1,5 @@
 <script lang="ts">
-	//import { messagesStore } from "svelte-legos";
+	import { messagesStore } from "svelte-legos";
 	import '../app.postcss';
 	import { PUBLIC_HASURA_URL } from '$env/static/public';
 	import type { LayoutData } from './$types';
@@ -97,6 +97,7 @@
 	import { Alert, Button, Toast } from 'flowbite-svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from "$app/stores";
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
@@ -116,10 +117,10 @@
 		console.log('LOGIN', result);
 		if (result.type === 'success') {
 			// rerun all `load` functions, following the successful update
-			//messagesStore(result?.data?.error, "success");
 			await invalidateAll();
+			messagesStore("Logged in as " + $page?.data?.user?.username, "success");
 		} else {
-			//messagesStore(result?.data?.error, "error");
+			messagesStore(result?.data?.error, "error");
 		}
 	}
 

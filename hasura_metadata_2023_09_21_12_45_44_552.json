@@ -1,0 +1,1582 @@
+{
+  "resource_version": 582,
+  "metadata": {
+    "version": 3,
+    "sources": [
+      {
+        "name": "aggregations",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "mycronic_tpsys",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_components",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_packages",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_pcbs",
+              "schema": "public"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/aggregations",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "eames",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "assemblies",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assemblies_cad",
+                "using": {
+                  "foreign_key_constraint_on": "cad_id"
+                }
+              },
+              {
+                "name": "bom",
+                "using": {
+                  "foreign_key_constraint_on": "bom_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "assembly_instructions",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "boards",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "jobs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "jobs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "revision_external",
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "cad_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "cad_id",
+                    "id",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "revision_internal"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "assembly_instructions",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "instruction",
+                "using": {
+                  "foreign_key_constraint_on": "instruction_id"
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "instruction_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "boards",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "job",
+                "using": {
+                  "foreign_key_constraint_on": "job_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "signoffsByBoardId",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "board_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "board_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "id",
+                    "job_id",
+                    "signoffs",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "id",
+                    "job_id",
+                    "signoffs",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "bom",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "assemblies",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "bom_id",
+                    "table": {
+                      "name": "assemblies",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "lines",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "bom_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "bom_lines",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "bom_lines",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "bom",
+                "using": {
+                  "foreign_key_constraint_on": "bom_id"
+                }
+              },
+              {
+                "name": "partByPart",
+                "using": {
+                  "foreign_key_constraint_on": "part"
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "cad",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "assemblies",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "cad_id",
+                    "table": {
+                      "name": "assemblies",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "start_scale",
+                    "start_x",
+                    "start_y",
+                    "data",
+                    "layers",
+                    "meta",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "data",
+                    "created_at",
+                    "updated_at",
+                    "name",
+                    "start_x",
+                    "start_y",
+                    "start_scale",
+                    "layers",
+                    "meta"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "customers",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "jobs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "customer_id",
+                    "table": {
+                      "name": "jobs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "name": "name"
+                    },
+                    "relationship_type": "object",
+                    "source": "earp",
+                    "table": {
+                      "name": "customers_erp",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "customers_erp"
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "flows",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "history",
+              "schema": "public"
+            },
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "new_val",
+                    "old_val",
+                    "operation",
+                    "schemaname",
+                    "tabname",
+                    "who",
+                    "tstamp"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "instructions",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "stepsByAssemblyId",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "instruction_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "assembly_instructions",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "instruction_id",
+                    "table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "stepsByInstructionId",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "instruction_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "revision",
+                    "meta",
+                    "description",
+                    "name",
+                    "type",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "revision",
+                    "meta",
+                    "description",
+                    "name",
+                    "type",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "jobs",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "customer",
+                "using": {
+                  "foreign_key_constraint_on": "customer_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "boards",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "job_id",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "customer_id",
+                    "id",
+                    "batch",
+                    "quantity",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "customer_id",
+                    "id",
+                    "batch",
+                    "quantity",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kb",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "comments",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "kb_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "kb_comments",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "content",
+                    "created_at",
+                    "images",
+                    "kb_id",
+                    "updated_at"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "kb_id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "kb_id",
+                    "user_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kb_comments",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "created_at",
+                    "updated_at",
+                    "content",
+                    "user_id",
+                    "images",
+                    "kb_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "kb_id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "parts",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "bom_lines",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part",
+                    "table": {
+                      "name": "bom_lines",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "name",
+                    "description",
+                    "created_at",
+                    "updated_at",
+                    "properties",
+                    "image_url",
+                    "manufacturer",
+                    "polarised",
+                    "kb",
+                    "images"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "polarised",
+                    "images",
+                    "properties",
+                    "description",
+                    "id",
+                    "image_url",
+                    "manufacturer",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "kb"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "signoffs",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "board",
+                "using": {
+                  "foreign_key_constraint_on": "board_id"
+                }
+              },
+              {
+                "name": "step",
+                "using": {
+                  "foreign_key_constraint_on": "step_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "steps",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "board",
+                "using": {
+                  "foreign_key_constraint_on": "board_id"
+                }
+              },
+              {
+                "name": "instruction",
+                "using": {
+                  "foreign_key_constraint_on": "instruction_id"
+                }
+              },
+              {
+                "name": "part",
+                "using": {
+                  "foreign_key_constraint_on": "part_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "signoffs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "step_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "board_id",
+                    "dynamic",
+                    "meta",
+                    "position",
+                    "color",
+                    "notes",
+                    "part_id",
+                    "reference",
+                    "created_at",
+                    "id",
+                    "instruction_id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "board_id",
+                    "dynamic",
+                    "meta",
+                    "position",
+                    "color",
+                    "notes",
+                    "part_id",
+                    "reference",
+                    "created_at",
+                    "id",
+                    "instruction_id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "kb_comments",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "kb_comments",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kbs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "kb",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "signoffs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "users_tokens",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "users_tokens",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "color",
+                    "created_at",
+                    "first_name",
+                    "id",
+                    "initials",
+                    "last_active",
+                    "last_name",
+                    "permissions",
+                    "processes",
+                    "updated_at",
+                    "username"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "color",
+                    "created_at",
+                    "first_name",
+                    "id",
+                    "initials",
+                    "last_active",
+                    "last_name",
+                    "processes",
+                    "updated_at",
+                    "username"
+                  ],
+                  "filter": {
+                    "_exists": {
+                      "_table": {
+                        "name": "users",
+                        "schema": "public"
+                      },
+                      "_where": {
+                        "id": {
+                          "_eq": "X-Hasura-User-Id"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users_tokens",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "users_tokens_user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/eames",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "eamrp",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "items",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "items_location",
+                "using": {
+                  "foreign_key_constraint_on": "location_id"
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "changed_username": "username"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "users",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "changed_username_mes"
+              },
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "item": "id"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "item_board"
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "locations",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "location_id",
+                    "table": {
+                      "name": "items",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/eamrp",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        },
+        "customization": {
+          "root_fields": {
+            "namespace": "mrp"
+          }
+        }
+      },
+      {
+        "name": "earp",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "customers_erp",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "customersErpByName",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "name",
+                    "table": {
+                      "name": "customers_erp",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "customers_erp",
+                "using": {
+                  "foreign_key_constraint_on": "name"
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "name": "name"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "customers",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "mes_to_ero_customer"
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/earp",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "mycronic",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "component",
+              "schema": "mydbcompview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "events",
+              "schema": "mydbelogview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "package_base",
+              "schema": "mydbpackview_12"
+            }
+          },
+          {
+            "table": {
+              "name": "package_base",
+              "schema": "mydbpackview_13"
+            }
+          },
+          {
+            "table": {
+              "name": "user",
+              "schema": "mydbuserview_10"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://viewreader:viewsonly@192.168.1.244:5432/mydata_common_db",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": "faults",
+        "definition": {
+          "handler": "http://192.168.1.107:4444/aoi/api/faults",
+          "output_type": "[SampleOutput]",
+          "arguments": [
+            {
+              "name": "batch",
+              "type": "String"
+            },
+            {
+              "name": "sn",
+              "type": "String"
+            },
+            {
+              "name": "last",
+              "type": "Int"
+            }
+          ],
+          "request_transform": {
+            "method": "GET",
+            "query_params": {
+              "batch": "{{$body.input?.batch}}",
+              "last": "{{$body.input?.last}}",
+              "sn": "{{$body.input?.sn}}"
+            },
+            "request_headers": {
+              "add_headers": {},
+              "remove_headers": [
+                "content-type"
+              ]
+            },
+            "template_engine": "Kriti",
+            "version": 2
+          },
+          "type": "query",
+          "timeout": 5
+        },
+        "comment": "Get faults",
+        "permissions": [
+          {
+            "role": "user"
+          }
+        ]
+      },
+      {
+        "name": "faults_dayco_rapid",
+        "definition": {
+          "handler": "http://192.168.1.107:4444/aoi/api/faults",
+          "output_type": "[API_Fault]",
+          "arguments": [
+            {
+              "name": "input",
+              "type": "API_Fault_Input"
+            }
+          ],
+          "request_transform": {
+            "method": "GET",
+            "query_params": {
+              "sn": "{{$body.input?.boardId}}"
+            },
+            "request_headers": {
+              "add_headers": {},
+              "remove_headers": [
+                "content-type"
+              ]
+            },
+            "template_engine": "Kriti",
+            "version": 2
+          },
+          "type": "query",
+          "timeout": 2
+        },
+        "comment": "faults_dayco_rapid"
+      }
+    ],
+    "custom_types": {
+      "input_objects": [
+        {
+          "name": "SampleInput",
+          "fields": [
+            {
+              "name": "batch",
+              "type": "String!"
+            },
+            {
+              "name": "sn",
+              "type": "String!"
+            }
+          ]
+        },
+        {
+          "name": "API_Fault_Input",
+          "fields": [
+            {
+              "name": "boardId",
+              "type": "String!"
+            }
+          ]
+        }
+      ],
+      "objects": [
+        {
+          "name": "SampleOutput",
+          "fields": [
+            {
+              "name": "Accepted",
+              "type": "String"
+            },
+            {
+              "name": "BoardName",
+              "type": "String"
+            },
+            {
+              "name": "Bottom",
+              "type": "Float"
+            },
+            {
+              "name": "DateActioned",
+              "type": "String"
+            },
+            {
+              "name": "DateInspected",
+              "type": "String"
+            },
+            {
+              "name": "Description",
+              "type": "String"
+            },
+            {
+              "name": "FaultDescription",
+              "type": "String"
+            },
+            {
+              "name": "Filename",
+              "type": "String"
+            },
+            {
+              "name": "ID",
+              "type": "Int"
+            },
+            {
+              "name": "Ident",
+              "type": "String"
+            },
+            {
+              "name": "Inspector",
+              "type": "String"
+            },
+            {
+              "name": "JobNumber",
+              "type": "String"
+            },
+            {
+              "name": "Left",
+              "type": "Float"
+            },
+            {
+              "name": "PartNumber",
+              "type": "String"
+            },
+            {
+              "name": "Reworked",
+              "type": "String"
+            },
+            {
+              "name": "Right",
+              "type": "Float"
+            },
+            {
+              "name": "SerialNumber",
+              "type": "String"
+            },
+            {
+              "name": "Side",
+              "type": "Int"
+            },
+            {
+              "name": "Top",
+              "type": "Float"
+            }
+          ],
+          "relationships": [
+            {
+              "field_mapping": {
+                "SerialNumber": "id"
+              },
+              "name": "board",
+              "remote_table": {
+                "name": "boards",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "array"
+            },
+            {
+              "field_mapping": {
+                "Inspector": "first_name"
+              },
+              "name": "user",
+              "remote_table": {
+                "name": "users",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "array"
+            },
+            {
+              "field_mapping": {
+                "Reworked": "initials"
+              },
+              "name": "user_rw",
+              "remote_table": {
+                "name": "users",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "name": "API_Fault",
+          "fields": [
+            {
+              "name": "id",
+              "type": "String"
+            },
+            {
+              "name": "user",
+              "type": "String"
+            },
+            {
+              "name": "reference",
+              "type": "String"
+            },
+            {
+              "name": "type",
+              "type": "String"
+            },
+            {
+              "name": "description",
+              "type": "String"
+            },
+            {
+              "name": "imagePath",
+              "type": "String"
+            },
+            {
+              "name": "imageDate",
+              "type": "String"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

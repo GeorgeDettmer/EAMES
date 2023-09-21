@@ -413,7 +413,7 @@
 							if (!points) return;
 							let shapeType = points[0].toUpperCase();
 							let strokeWidth = drawPin ? 1.5 : 1;
-							let opacity = 0.75;
+							let opacity = 0.25;
 							let stroke = drawPin ? 'red' : 'purple';
 							let lineCap = 'round';
 							points = points.slice(1).map((point) => convertUnits(point));
@@ -439,7 +439,7 @@
 										opacity: opacity,
 										name: 'lead',
 										fill: stroke,
-										fillEnabled: false
+										fillEnabled: true
 									});
 								} else if (shapeType == 'CIRCLE') {
 									mark = new Konva.Circle({
@@ -451,7 +451,7 @@
 										opacity: opacity,
 										name: 'lead',
 										fill: stroke,
-										fillEnabled: false
+										fillEnabled: true
 									});
 								} else if (shapeType == 'LINE') {
 									mark = new Konva.Line({
@@ -464,7 +464,7 @@
 										name: 'lead',
 										closed: true,
 										fill: stroke,
-										fillEnabled: false
+										fillEnabled: true
 									});
 								}
 
@@ -494,7 +494,7 @@
                                         stage.getRelativePointerPosition()
                                     ); */
 								});
-								mark.on('mouseout', function (e) {
+								mark.on('mouseover', function (e) {
 									dispatch('pin_event', {
 										event: e,
 										viewer: id,
@@ -524,7 +524,7 @@
 										pin: pin
 									});
 								});
-								//mark.perfectDrawEnabled(false);
+								mark.perfectDrawEnabled(false);
 								pinGroup.add(mark);
 								pinGroup.rotation(parseFloat(pin.r));
 								if (highlightPins.includes(parseInt(pin?.pin))) {

@@ -3,11 +3,11 @@ import { redirect, fail } from '@sveltejs/kit';
 import { loginUsernamePass, loginToken } from '$lib/user.model';
 
 export const load: PageServerLoad = (event) => {
-	const user = event.locals.user;
+	/* const user = event.locals.user;
 
 	if (user) {
 		throw redirect(302, '/');
-	}
+	} */
 };
 
 export const actions: Actions = {

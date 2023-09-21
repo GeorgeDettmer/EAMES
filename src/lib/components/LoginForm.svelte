@@ -75,14 +75,20 @@
 >
 	{#if !showScanner}
 		{#if allowPassword || allowPasscode}
-			<datalist>
+			<datalist id="usernames">
 				{#each users as user}
-					<option>{user.username}</option>
+					<option value={user.username} />
 				{/each}
 			</datalist>
 			<Label class="space-y-2" for="username">
 				<span class:text-gray-400={userPassDisabled}>Username</span>
-				<Input type="text" name="username" disabled={userPassDisabled} bind:value={username} />
+				<Input
+					list="usernames"
+					type="text"
+					name="username"
+					disabled={userPassDisabled}
+					bind:value={username}
+				/>
 			</Label>
 		{/if}
 		{#if allowPassword || allowPasscode}

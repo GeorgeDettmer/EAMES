@@ -354,15 +354,18 @@
 		let detail = e?.detail;
 		let component = e?.detail?.component;
 		let pin = detail?.pin;
-
+		console.log('PIN: ', pin?.pin, component?.component, component, detail);
 		if (eventType == 'mousedown') {
 			console.log('PIN CLICK: ', pin?.pin, component?.component, component, detail);
 		}
 		if (eventType == 'mouseover') {
 			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
+			console.log('PIN OVER: ', pin?.pin, component?.component, component, detail);
+			activePin = pin?.pin;
 		}
 		if (eventType == 'mouseout') {
 			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
+			activePin = '';
 		}
 	};
 
@@ -395,6 +398,7 @@
 	};
 
 	let activeReference = '';
+	let activePin = '';
 	let component_event = (e) => {
 		let event = e?.detail?.event;
 		let eventType = event?.type;
@@ -606,20 +610,23 @@
 								{#each cad?.layers as layer (layer)}
 									<div class:hidden={layer !== visibleLayer}>
 										<div class="flex">
+											<div>
+												<h1 class="text-3xl font-bold opacity-50 p-1">
+													{activeReference}
+													{#if activePin}
+														({activePin})
+													{/if}
+												</h1>
+											</div>
 											<!-- svelte-ignore a11y-click-events-have-key-events -->
 											<h1
 												on:click={() => {
 													visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
 												}}
-												class="cursor-pointer text-3xl font-bold opacity-50 z-1 p-1 hover:opacity-100"
+												class="ml-auto float-right cursor-pointer text-3xl font-bold opacity-50 z-1 p-1 hover:opacity-100"
 											>
 												{layer === 'BOTTOM' ? 'BOT' : layer}
 											</h1>
-											<div class="ml-auto float-right">
-												<h1 class="text-3xl font-bold opacity-50 p-1">
-													{activeReference}
-												</h1>
-											</div>
 										</div>
 										<Viewer
 											on:pin_event={pin_event}

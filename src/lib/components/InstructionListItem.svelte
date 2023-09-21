@@ -59,7 +59,11 @@
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<div class="flex-none pr-2 cursor-pointer" on:click={(e) => onItemClick(e, item)}>
+		<div
+			class="flex-none pr-2"
+			class:cursor-pointer={$page?.data?.user}
+			on:click={(e) => onItemClick(e, item)}
+		>
 			{#if complete}
 				<div class="p-1">
 					{#each item?.signoffs as signoff (signoff?.id)}

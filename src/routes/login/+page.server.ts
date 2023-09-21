@@ -46,7 +46,7 @@ export const actions: Actions = {
 		//throw redirect(302, '/');
 	},
 	logout: async (event) => {
-		console.log('USER LOGOUT: ', event.locals.user?.username);
+		console.log('USER LOGOUT: ', event.locals.user);
 		event.cookies.delete('AuthorizationToken');
 		event.locals.user = undefined;
 		throw redirect(302, '/login');

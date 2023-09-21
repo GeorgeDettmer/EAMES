@@ -34,7 +34,10 @@ const _getUserByToken = `#graphql
 				first_name
 				last_name
 				initials
+				password
+				passcode
 				color
+				processes
 			}
 		}
 	}

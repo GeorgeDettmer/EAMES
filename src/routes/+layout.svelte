@@ -1,8 +1,9 @@
 <script lang="ts">
+	//import { messagesStore } from "svelte-legos";
 	import '../app.postcss';
 	import { PUBLIC_HASURA_URL } from '$env/static/public';
 	import type { LayoutData } from './$types';
-	import { enhance } from '$app/forms';
+	import { deserialize, enhance } from '$app/forms';
 	export let data: LayoutData;
 	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
@@ -94,17 +95,43 @@
 	import { fade } from 'svelte/transition';
 	import { FireOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
 	import { Alert, Button, Toast } from 'flowbite-svelte';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { invalidateAll } from '$app/navigation';
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
 	$: console.log('context', currentBoard);
 	$: console.warn('HEADERS', headers);
 
+	async function loginFromToken(token: string) {
+		const data = new FormData();
+		data.set('login_token', token);
+
+		const response = await fetch('/login?/login', {
+			method: 'POST',
+			body: data
+		});
+
+		const result: ActionResult = deserialize(await response.text());
+		console.log('LOGIN', result);
+		if (result.type === 'success') {
+			// rerun all `load` functions, following the successful update
+			//messagesStore(result?.data?.error, "success");
+			await invalidateAll();
+		} else {
+			//messagesStore(result?.data?.error, "error");
+		}
+	}
+
 	function handleBarcodeScan(barcode: string): void {
 		const type: string = barcode.includes('|') ? barcode.split('|')?.[0]?.toUpperCase() : 'SN';
 		console.log(type);
 		if (type === 'TOKEN') {
-			console.log('SCAN', 'TOKEN', barcode.split('|')?.[1]);
+			const token = barcode.split('|')?.[1];
+			console.log('SCAN', 'TOKEN', token);
+			if (token) {
+				loginFromToken(token);
+			}
 		}
 		if (type == 'SN') {
 			//goto('/board/' + barcode);

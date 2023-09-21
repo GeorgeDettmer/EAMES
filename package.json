@@ -36,7 +36,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@auth/core": "^0.7.1",
 		"@auth/sveltekit": "^0.3.1",
 		"@popperjs/core": "^2.11.8",
 		"@urql/devtools": "^2.0.3",

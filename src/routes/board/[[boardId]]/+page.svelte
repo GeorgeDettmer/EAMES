@@ -16,9 +16,10 @@
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
 	import Konva from 'konva';
+	import type { Group } from 'konva/lib/Group.js';
 
 	let instructionId = data?.instructionId;
-	let boardId = data?.boardId;
+	$: boardId = $page?.data?.boardId;
 
 	const urqlClient = getContextClient();
 
@@ -107,7 +108,7 @@
 						}
 					}
 				`,
-				{ boardId, step_id: step.id, user_id: user?.id }
+				{ boardId: $page?.data?.boardId, step_id: step.id, user_id: user?.id }
 			);
 
 			console.log(mutationResult);
@@ -190,7 +191,7 @@
 				}
 			}
 		`,
-		variables: { boardId: boardId }
+		variables: { boardId: $page?.data?.boardId }
 	});
 
 	$: boardInfo = $boardInfoStore?.data?.boards?.[0];
@@ -244,7 +245,7 @@
 				}
 			}
 		`,
-		variables: { assemblyId, boardId }
+		variables: { assemblyId, boardId: $page?.data?.boardId }
 	});
 
 	$: allSteps = $stepsInfoStore?.data?.steps;
@@ -314,10 +315,12 @@
 			if (i?.reference && i?.color) {
 				const isSigned = i?.signoffs?.length > 0;
 				let rendererId = visibleLayer;
+				let group: Group | undefined;
 				//TODO: Look to improve this. Below is finding the component group just to find id
 				// Then passing to updateComponent* just for those functions to do that again...
 				getRenderers().forEach((r, id) => {
-					if (getComponentGroup(i?.reference, id)) {
+					group = getComponentGroup(i?.reference, id);
+					if (group) {
 						rendererId = id;
 						return;
 					}
@@ -559,7 +562,7 @@
 	let detailVisible = null;
 </script>
 
-{#if boardId}
+{#if $page?.data?.boardId}
 	{#if $boardInfoStore.error}
 		<p>Error: {$boardInfoStore.error.name}</p>
 		<pre>{JSON.stringify($boardInfoStore.error, null, 2)}</pre>
@@ -741,6 +744,8 @@
 					{/if}
 				</div>
 			</div>
+		{:else}
+			<p>No board info for: {$page?.data?.boardId}</p>
 		{/if}
 	{/if}
 {:else}

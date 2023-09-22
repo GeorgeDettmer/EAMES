@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { messagesStore } from 'svelte-legos';
 	import '../app.postcss';
-	import { PUBLIC_HASURA_URL } from '$env/static/public';
+	import {
+		PUBLIC_HASURA_URL,
+		PUBLIC_BARCODE_endKey,
+		PUBLIC_BARCODE_startKey,
+		PUBLIC_BARCODE_separator
+	} from '$env/static/public';
 	import type { LayoutData } from './$types';
 	import { deserialize, enhance } from '$app/forms';
 	export let data: LayoutData;
@@ -107,7 +112,7 @@
 	import { FireOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
 	import { Alert, Button, Toast } from 'flowbite-svelte';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 
 	const currentBoard = writable({});
@@ -135,47 +140,78 @@
 		}
 	}
 
+	async function logout(redirect?: string) {
+		const response = await fetch('/login?/logout', {
+			method: 'POST'
+		});
+
+		const result: ActionResult = deserialize(await response.text());
+		console.log('LOGOUT', result);
+		if (result.type === 'success') {
+			// rerun all `load` functions, following the successful update
+			await invalidateAll();
+			messagesStore('Logged out', 'success');
+		} else {
+			messagesStore(result?.data?.error, 'error');
+		}
+	}
+
 	function handleBarcodeScan(barcode: string): void {
-		const type: string = barcode.includes('|') ? barcode.split('|')?.[0]?.toUpperCase() : 'SN';
-		console.log(type);
-		if (type === 'TOKEN') {
+		if (barcode.startsWith('TOKEN')) {
 			const token = barcode.split('|')?.[1];
 			console.log('SCAN', 'TOKEN', token);
 			if (token) {
 				loginFromToken(token);
 			}
+			return;
 		}
-		if (type == 'SN') {
-			//goto('/board/' + barcode);
-			console.log('barcode', barcode);
+		if (barcode.startsWith('LOGOUT')) {
+			console.log('SCAN', 'LOGOUT');
+			logout();
+			return;
 		}
+		console.log('SCAN', 'BARCODE', barcode);
+		goto('/board/' + barcode, { invalidateAll: true, replaceState: true });
 	}
 	let keys = {
+		watching: false,
 		timeStamp: 0,
-		result: ''
+		result: '',
+		config: {
+			startKey: PUBLIC_BARCODE_startKey,
+			endKey: PUBLIC_BARCODE_endKey,
+			separator: PUBLIC_BARCODE_separator
+		}
 	};
 	function handleWindowKey(event) {
 		const key = event.key;
-		if (key === '~') {
+		if (key === keys.config.startKey && !keys.watching) {
+			keys.watching = true;
 			keys.timeStamp = event.timeStamp;
 			console.log('START CAPTURE', key, event.timeStamp);
 		} else {
-			if (key === 'Enter' && keys.timeStamp) {
+			if (key === keys.config.endKey && keys.timeStamp) {
 				console.log('END CAPTURE', key, event.timeStamp, event.timeStamp - keys.timeStamp);
 				console.log('OUTPUT:', keys.result);
 				handleBarcodeScan(keys.result);
+				keys.watching = false;
 				keys.timeStamp = 0;
 				keys.result = '';
 			}
 			if (
 				keys.timeStamp &&
-				new Set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ |').has(key)
+				new Set(
+					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' +
+						keys.config.startKey +
+						keys.config.endKey
+				).has(key)
 			) {
 				keys.result += key;
 			}
 		}
-		if (keys.timeStamp && event.timeStamp - keys.timeStamp > 10000) {
+		if (keys.timeStamp && event.timeStamp - keys.timeStamp > 5000) {
 			console.log('CAPTURE EXPIRED');
+			keys.watching = false;
 			keys.timeStamp = 0;
 			keys.result = '';
 		}

@@ -354,19 +354,33 @@
 		let detail = e?.detail;
 		let component = e?.detail?.component;
 		let pin = detail?.pin;
-		console.log('PIN: ', pin?.pin, component?.component, component, detail);
 		if (eventType == 'mousedown') {
 			console.log('PIN CLICK: ', pin?.pin, component?.component, component, detail);
 		}
 		if (eventType == 'mouseover') {
 			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
-			console.log('PIN OVER: ', pin?.pin, component?.component, component, detail);
+			componentHover(component?.component, visibleLayer, true);
 			activePin = pin?.pin;
 		}
 		if (eventType == 'mouseout') {
 			updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
+			componentHover(component?.component, visibleLayer, false);
 			activePin = '';
 		}
+	};
+
+	let componentHover = (reference: string, rendererId: string = visibleLayer, hover: boolean) => {
+		const group = getComponentGroup(reference, rendererId);
+		if (!group) {
+			return;
+		}
+
+		group?.find(`.outline`)?.forEach((c) => {
+			c.strokeWidth(hover ? c.strokeWidth() * 2 : c.strokeWidth() / 2);
+			/* if (opacity) {
+				c.opacity(opacity);
+			} */
+		});
 	};
 
 	let updateComponentOutline = (
@@ -374,7 +388,8 @@
 		rendererId: string = visibleLayer,
 		colour?: string,
 		width?: number,
-		opacity?: number
+		opacity?: number,
+		widthDouble: boolean = false
 	) => {
 		const group = getComponentGroup(reference, rendererId);
 		//console.log('Update component outline:', reference, colour, group);
@@ -388,8 +403,8 @@
 			if (colour) {
 				c.stroke(colour);
 			}
-			if (width) {
-				c.strokeWidth(width);
+			if (width || widthDouble) {
+				c.strokeWidth(widthDouble ? c.strokeWidth() * 2 : width);
 			}
 			if (opacity) {
 				c.opacity(opacity);
@@ -417,6 +432,7 @@
 			}
 			if (eventType == 'mouseover') {
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 1);
+				componentHover(component?.component, visibleLayer, true);
 				activeReference = component?.component;
 				getComponentGroup(activeReference)
 					?.find(`.reference`)
@@ -429,6 +445,7 @@
 			if (eventType == 'mouseout') {
 				activeReference = '';
 				updateComponentReferenceColor(component?.component, visibleLayer, 'black', 0.5);
+				componentHover(component?.component, visibleLayer, false);
 				getComponentGroup(component?.component)
 					?.find(`.reference`)
 					?.forEach((c) => {

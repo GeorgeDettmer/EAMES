@@ -20,7 +20,8 @@
 	import { messagesStore } from 'svelte-legos';
 
 	let instructionId = data?.instructionId;
-	$: boardId = $page?.data?.boardId;
+	//$: boardId = $page?.data?.boardId;
+	let boardId = data?.boardId;
 
 	const urqlClient = getContextClient();
 
@@ -113,7 +114,7 @@
 						}
 					}
 				`,
-				{ boardId: $page?.data?.boardId, step_id: step.id, user_id: user?.id }
+				{ boardId: boardId, step_id: step.id, user_id: user?.id }
 			);
 
 			console.log(mutationResult);
@@ -196,7 +197,7 @@
 				}
 			}
 		`,
-		variables: { boardId: $page?.data?.boardId }
+		variables: { boardId: boardId }
 	});
 
 	$: boardInfo = $boardInfoStore?.data?.boards?.[0];
@@ -250,7 +251,7 @@
 				}
 			}
 		`,
-		variables: { assemblyId, boardId: $page?.data?.boardId }
+		variables: { assemblyId, boardId: boardId }
 	});
 
 	$: allSteps = $stepsInfoStore?.data?.steps;

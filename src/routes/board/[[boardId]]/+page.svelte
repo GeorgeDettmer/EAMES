@@ -57,12 +57,14 @@
 		} else if (eventType == 'mouseenter') {
 			if (renderGroup) {
 				visibleLayer = layer;
-				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, true));
+				//updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, true));
+				componentHover(step?.reference, layer, true);
 				renderGroup.zIndex(renderGroup.zIndex() * 2);
 			}
 		} else if (eventType == 'mouseleave') {
 			if (renderGroup) {
-				updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, false));
+				//updateComponentOutline(step?.reference, layer, undefined, getOutlineSize(signed, false));
+				componentHover(step?.reference, layer, false);
 				renderGroup.zIndex(renderGroup.zIndex() / 2);
 			}
 		} else if (eventType == 'wheel') {

@@ -107,25 +107,26 @@
 					u.id ==
 					(history?.operation === 'DELETE' ? history?.old_val?.user_id : history?.new_val?.user_id)
 			)?.[0]}
-			<TimelineItem customLiClass="ml-4 !mb-0" date={moment(history?.tstamp).add(1, 'h').fromNow()}>
-				<svelte:fragment slot="icon">
-					<span
-						class="flex absolute -left-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-0 ring-white dark:ring-gray-900 dark:bg-primary-900"
-					>
-						{#if history?.operation === 'DELETE'}
-							<XCircle variation="solid" size="20" class="text-red-600" />
-						{:else}
-							<CheckCircle variation="solid" size="20" class="text-green-500" />
-						{/if}
-					</span>
-				</svelte:fragment>
-				<UserIcon {user} size="sm">
-					<p class="px-1">{[user?.first_name, user?.last_name].join(' ')}</p>
-				</UserIcon>
-				<!-- <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">
-					
-				</p> -->
-			</TimelineItem>
+			{#if user}<TimelineItem
+					customLiClass="ml-4 !mb-0"
+					date={moment(history?.tstamp).add(1, 'h').fromNow()}
+				>
+					<svelte:fragment slot="icon">
+						<span
+							class="flex absolute -left-3 justify-center items-center w-6 h-6 bg-primary-200 rounded-full ring-0 ring-white dark:ring-gray-900 dark:bg-primary-900"
+						>
+							{#if history?.operation === 'DELETE'}
+								<XCircle variation="solid" size="20" class="text-red-600" />
+							{:else}
+								<CheckCircle variation="solid" size="20" class="text-green-500" />
+							{/if}
+						</span>
+					</svelte:fragment>
+
+					<UserIcon {user} size="sm">
+						<p class="px-1">{user?.first_name} {user?.last_name}</p>
+					</UserIcon>
+				</TimelineItem>{/if}
 		{/each}
 
 		{#if more !== 0}

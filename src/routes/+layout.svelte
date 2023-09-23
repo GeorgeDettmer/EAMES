@@ -72,11 +72,10 @@
 				console.error('Websocket error: ', error);
 			},
 			connected: (socket) => {
-				messagesStore('Websocket connected: ' + socket?.url, 'success');
 				console.info('Websocket connected: ', socket);
 			},
 			connecting: () => {
-				messagesStore('Websocket connecting...', 'info');
+				console.info('Websocket connecting...');
 			}
 		}
 	});
@@ -177,7 +176,7 @@
 
 	function handleBarcodeScan(barcode: string): void {
 		if (barcode.startsWith('TOKEN')) {
-			const token = barcode.split('|')?.[1];
+			const token = barcode.split(keys.config.separator)?.[1];
 			console.log('SCAN', 'TOKEN', token);
 			if (token) {
 				loginFromToken(token);
@@ -189,8 +188,10 @@
 			logout();
 			return;
 		}
-		console.log('SCAN', 'BARCODE', barcode);
-		goto('/board/' + barcode, { invalidateAll: true, replaceState: true });
+		const sn = parseInt(barcode);
+		if (!sn) return;
+		console.log('SCAN', 'BARCODE', barcode, sn);
+		goto('/board/' + sn, { invalidateAll: true, replaceState: true });
 	}
 	let keys = {
 		watching: false,

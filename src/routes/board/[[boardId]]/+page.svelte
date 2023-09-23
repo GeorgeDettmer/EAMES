@@ -21,7 +21,7 @@
 
 	let instructionId = data?.instructionId;
 	//$: boardId = $page?.data?.boardId;
-	let boardId = data?.boardId;
+	$: boardId = data?.boardId;
 
 	const urqlClient = getContextClient();
 

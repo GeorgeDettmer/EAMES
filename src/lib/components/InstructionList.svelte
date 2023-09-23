@@ -9,7 +9,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	function handleHeaderClick(e: MouseEvent) {
+	function handleHeaderClick(e: CustomEvent<any>): void {
 		dispatch('header_click', {
 			event: e,
 			item: instruction

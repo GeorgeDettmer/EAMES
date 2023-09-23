@@ -11,7 +11,6 @@
 		Button,
 		Modal,
 		Navbar,
-		NavHamburger,
 		MegaMenu,
 		Popover
 	} from 'flowbite-svelte';
@@ -21,7 +20,6 @@
 	import UserOverview from './UserOverview.svelte';
 	import { fade } from 'svelte/transition';
 	import { getContext } from 'svelte';
-	import BoardInfo from './Navbar/BoardInfo.svelte';
 	import JobPopoverContent from './JobPopoverContent.svelte';
 	import { goto } from '$app/navigation';
 	//Modal toggles
@@ -189,15 +187,6 @@
 			</div>
 		</div>
 
-		<!-- <BoardInfo boardId={$page?.data?.boardId} /> -->
-
-		<!-- <NavUl {hidden}>
-			<NavLi href="/boards">Boards</NavLi>
-		</NavUl>
-		<NavUl {hidden}>
-			<NavLi href="/instructions">Instruction</NavLi>
-		</NavUl> -->
-
 		<div class="flex items-center">
 			<span>
 				<UserIcon
@@ -212,10 +201,13 @@
 					}}
 				>
 					<p class="px-1 text-xl hidden md:block">
-						{$page.data?.user
-							? [$page.data?.user?.firstname, $page.data?.user?.lastname].join(' ') ||
-							  $page.data?.user?.username
-							: 'Sign in'}
+						{#if $page?.data?.user?.firstname && $page?.data?.user?.lastname}
+							{$page?.data?.user?.firstname} {$page?.data?.user?.lastname}
+						{:else if $page?.data?.user?.username}
+							{$page?.data?.user?.username}
+						{:else}
+							Sign in
+						{/if}
 					</p>
 					<div class:hidden={false}>
 						<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
@@ -231,10 +223,10 @@
 		</div>
 		<Dropdown inline bind={userVisible}>
 			<div slot="header" class="px-4 py-2">
-				{#if user}
+				{#if $page?.data?.user}
 					<span class="text-sm text-gray-900 dark:text-white">
-						{user?.firstname}
-						{user?.lastname}
+						{$page?.data?.user?.firstname}
+						{$page?.data?.user?.lastname}
 					</span>
 					<span
 						class={'block truncate text-sm font-medium' + classes.link}
@@ -242,7 +234,7 @@
 							userInfoVisible = true;
 						}}
 					>
-						{user?.username}
+						{$page?.data?.user?.username}
 					</span>
 				{:else}
 					<DropdownItem slot="footer" on:click={() => (loginVisible = true)}>Sign in</DropdownItem>
@@ -257,11 +249,11 @@
 					}}>Switch user</DropdownItem
 				>
 
-				<DropdownItem slot="footer"
-					><form method="POST" action="/login?/logout" use:enhance>
+				<DropdownItem slot="footer">
+					<form method="POST" action="/login?/logout" use:enhance>
 						<button type="submit" name="logout" value="true">Logout</button>
-					</form></DropdownItem
-				>
+					</form>
+				</DropdownItem>
 			{/if}
 		</Dropdown>
 	</Navbar>

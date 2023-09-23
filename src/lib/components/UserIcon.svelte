@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Button, Avatar } from 'flowbite-svelte';
-	export let user;
-	export let size = 'md';
-	export let avatar = true;
 
-	export let avatarClass = ` font-bold text-${['xs', 'sm'].includes(size) ? size : 'xl'} `;
-	export let buttonClass = ` !p-1 !pr-2 text-white `;
+	export let user: any;
+	export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
+	export let avatar: boolean = true;
+	export let avatarClass: string = ` font-bold text-${['xs', 'sm'].includes(size) ? size : 'xl'} `;
+	export let buttonClass: string = ` !p-1 !pr-2 text-white `;
 </script>
 
 {#if $$slots.default}

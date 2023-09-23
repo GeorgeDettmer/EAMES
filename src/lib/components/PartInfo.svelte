@@ -5,8 +5,8 @@
 	import List from './KnowledgeBase/List.svelte';
 	import { onMount } from 'svelte';
 	export let partId: string = 'Unknown';
-	export let partLinkVisible = true;
-	export let kbVisible = false;
+	export let partLinkVisible: boolean = true;
+	export let kbVisible: boolean = false;
 	export let partInfo = false;
 
 	$: partInfoStore = queryStore({

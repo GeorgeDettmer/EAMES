@@ -17,14 +17,14 @@
 	const dispatch = createEventDispatcher();
 	const listItemId = 'POP' + randomString();
 
-	function onItemClick(e: MouseEvent, item) {
+	function onItemClick(e: MouseEvent, item: any) {
 		dispatch('item_click', {
 			event: e,
 			step: item
 		});
 	}
 
-	function onMouse(e: MouseEvent, item) {
+	function onMouse(e: MouseEvent, item: any) {
 		dispatch('item_mouse', {
 			event: e,
 			step: item
@@ -49,6 +49,8 @@
 	$: _class = `rounded-md w-full my-1 ${bgOpacityClasses} bg-${bgColor} border-${borderColor} ${borderClasses}`;
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	on:mouseenter={(e) => onMouse(e, item)}
 	on:mouseleave={(e) => onMouse(e, item)}
@@ -59,9 +61,11 @@
 >
 	<div class="flex flex-row mx-1 my-2 items-center">
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
 			class="flex-none pr-2"
 			class:cursor-pointer={$page?.data?.user}
+			class:cursor-not-allowed={!$page?.data?.user}
 			on:click={(e) => onItemClick(e, item)}
 		>
 			{#if complete}

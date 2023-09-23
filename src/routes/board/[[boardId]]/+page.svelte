@@ -17,6 +17,7 @@
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
 	import Konva from 'konva';
 	import type { Group } from 'konva/lib/Group.js';
+	import { messagesStore } from 'svelte-legos';
 
 	let instructionId = data?.instructionId;
 	$: boardId = $page?.data?.boardId;
@@ -77,6 +78,10 @@
 		}
 	}
 	async function handleStepClick(e) {
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
 		const step = e.detail?.step;
 		const signoffs = step?.signoffs;
 		const signed = signoffs.length > 0;
@@ -132,7 +137,7 @@
 		console.log(mutationResult);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
-			alert('DATABASE ERROR: ' + mutationResult?.error);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			updateComponentOutline(
 				step?.reference,

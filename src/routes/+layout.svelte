@@ -1,20 +1,9 @@
 <script lang="ts">
-	import { messagesStore } from 'svelte-legos';
 	import '../app.postcss';
-	import {
-		PUBLIC_HASURA_URL,
-		PUBLIC_BARCODE_endKey,
-		PUBLIC_BARCODE_startKey,
-		PUBLIC_BARCODE_separator
-	} from '$env/static/public';
-	import type { LayoutData } from './$types';
-	import { deserialize, enhance } from '$app/forms';
-	export let data: LayoutData;
+	import { messagesStore } from 'svelte-legos';
+	import { deserialize } from '$app/forms';
 	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
-	const gqlUrl = PUBLIC_HASURA_URL;
-	const gqlHttp = 'http' + gqlUrl;
-	const gqlWs = 'ws://' + gqlUrl.split('://')[1];
 	import {
 		Client,
 		setContextClient,
@@ -25,6 +14,18 @@
 	} from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
+	import {
+		PUBLIC_HASURA_URL,
+		PUBLIC_BARCODE_endKey,
+		PUBLIC_BARCODE_startKey,
+		PUBLIC_BARCODE_separator
+	} from '$env/static/public';
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	const gqlUrl = PUBLIC_HASURA_URL;
+	const gqlWs = 'ws://' + gqlUrl.split('://')[1];
 
 	function getCookie(name: string) {
 		const value = `; ${document.cookie}`;
@@ -47,20 +48,38 @@
 	const wsClient = createWSClient({
 		url: gqlWs,
 		shouldRetry: () => true,
-		connectionParams: {
+		connectionParams: () => {
+			const token = getToken();
+			if (!token) {
+				return {
+					headers: {
+						'X-Hasura-Role': 'anonymous'
+					}
+				};
+			}
+			return {
+				headers: {
+					Authorization: token,
+					'X-Hasura-Role': 'user'
+				}
+			};
+		} /* {
 			headers: headers
-		},
+		} */,
 		on: {
 			error: (error) => {
-				setContext('connectionError', error);
-				alert = error;
+				messagesStore('Websocket error: ' + error, 'error');
+				console.error('Websocket error: ', error);
 			},
 			connected: (socket) => {
-				alert = null;
+				messagesStore('Websocket connected: ' + socket?.url, 'success');
+				console.info('Websocket connected: ', socket);
+			},
+			connecting: () => {
+				messagesStore('Websocket connecting...', 'info');
 			}
 		}
 	});
-	setContext('connectionError', null);
 	const client = new Client({
 		url: gqlUrl,
 		exchanges: [
@@ -83,6 +102,7 @@
 			devtoolsExchange,
 			mapExchange({
 				onError(error, operation) {
+					messagesStore('Query error: ' + error, 'error');
 					console.error(`The operation ${operation.key} has errored with:`, error);
 				}
 			})
@@ -109,8 +129,6 @@
 
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { fade } from 'svelte/transition';
-	import { FireOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
-	import { Alert, Button, Toast } from 'flowbite-svelte';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -136,13 +154,14 @@
 			await invalidateAll();
 			messagesStore('Logged in as ' + $page?.data?.user?.username, 'success');
 		} else {
-			messagesStore(result?.data?.error, 'error');
+			messagesStore(result?.error?.message || result?.data?.error, 'error');
 		}
 	}
 
 	async function logout(redirect?: string) {
 		const response = await fetch('/login?/logout', {
-			method: 'POST'
+			method: 'POST',
+			body: new FormData()
 		});
 
 		const result: ActionResult = deserialize(await response.text());
@@ -152,7 +171,7 @@
 			await invalidateAll();
 			messagesStore('Logged out', 'success');
 		} else {
-			messagesStore(result?.data?.error, 'error');
+			messagesStore(result?.error?.message || result?.data?.error, 'error');
 		}
 	}
 
@@ -217,7 +236,6 @@
 		}
 	}
 
-	$: alert = getContext('connectionError');
 	setContext('windowTitle', '');
 </script>
 
@@ -243,17 +261,6 @@
 <main class="h-screen overflow-y-scroll dark:bg-slate-600">
 	<div class="mx-auto max-w-8xl pt-14 sm:px-6 lg:px-8">
 		<div class="px-4 py-6 sm:px-0">
-			{#if alert}
-				<Alert class="!items-start" color="red">
-					<span slot="icon">
-						<InfoCircleSolid slot="icon" class="w-4 h-4" />
-						<span class="sr-only">Websocket connection error...</span>
-					</span>
-					<p class="font-medium">Websocket connection error...</p>
-					{JSON.stringify(alert)}
-				</Alert>
-			{/if}
-
 			<div class="rounded-lg">
 				<div in:fade|global={{ duration: 500 }}>
 					<slot />
@@ -262,14 +269,3 @@
 		</div>
 	</div>
 </main>
-<!-- {#if data.user}
-	<span>{data.user.id}</span> - <span>{data.user.username}</span>
-	<form method="POST" action="/login?/logout" use:enhance>
-		<button type="submit" name="logout" value="true">Logout</button>
-	</form>
-{:else}
-	<a href="/signup">Sign Up</a>
-	<a href="/login">Log In</a>
-{/if}
-
-<p>{JSON.stringify(page.data?.user)}</p> -->

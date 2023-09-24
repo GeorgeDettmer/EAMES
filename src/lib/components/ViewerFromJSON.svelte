@@ -37,6 +37,10 @@
 		let bb = group.getClientRect({ relativeTo: group });
 		let groupMax = Math.max(group.getClientRect().width, group.getClientRect().height);
 		let fontSize = Math.max(25, groupMax / 6);
+
+		let group_dimensions = new Konva.Group({
+			name: 'dimensions'
+		});
 		let bbRect = new Konva.Rect({
 			width: bb.width,
 			height: bb.height,
@@ -45,11 +49,7 @@
 			stroke: 'gray',
 			opacity: 0.75
 		});
-		group.add(bbRect);
-
-		let group_dimensions = new Konva.Group({
-			name: 'dimensions'
-		});
+		group_dimensions.add(bbRect);
 		let text_width = new Konva.Text({
 			text: (Math.round((bb.width / 21.7) * 100) / 100).toString(),
 			x: bb.x,
@@ -107,7 +107,7 @@
 
 		group.scaleX(-1);
 		//group.position({ x: -stage.width() / 2, y: 250 / 2 });
-		group.position({ x: layer.width() / 2 + bb.width, y: 0 });
+		group.position({ x: stage.width() / 2 + bb.width, y: 0 });
 		group.rotation(0);
 
 		group.find('.pin_number').forEach((p) => p.visible(true));

@@ -19,11 +19,7 @@
 		console.debug('EXPORT | removeComponent | ', renderer, reference);
 		const group = renderer?.find(`.${reference}`)?.[0];
 		if (!group) {
-			console.debug(
-				'EXPORT | removeComponent | Could not find component group',
-				renderer,
-				reference
-			);
+			console.debug('EXPORT | removeComponent | Could not find component group', renderer, reference);
 			return false;
 		}
 		group?.destroy();
@@ -55,6 +51,25 @@
 		let group = getComponentGroup(reference, rendererId);
 		return group;
 	}
+
+	export const fitToScreen = (rendererId: string) => {
+		const renderer = getRenderers().get(rendererId);
+		if (!renderer) return;
+		console.log('renderer', renderer, rendererId);
+		const layer = renderer?.findOne('.board');
+		console.log(renderer, layer);
+		if (!layer) return;
+		const scale = Math.min(
+			renderer.width() / (layer.getClientRect().width * 1.025),
+			renderer.height() / (layer.getClientRect().height * 1.025)
+		);
+		renderer.position({
+			x: -layer.getClientRect().x * scale,
+			y: -layer.getClientRect().y * scale
+		});
+		renderer.scaleX(scale);
+		renderer.scaleY(scale);
+	};
 </script>
 
 <script lang="ts">
@@ -96,8 +111,8 @@
 		console.info('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
 		stage = new Konva.Stage({
 			container: viewer,
-			width: width,
-			height: height,
+			width: width + 1,
+			height: height + 1,
 			draggable: true
 		});
 		layer = new Konva.Layer();
@@ -168,7 +183,7 @@
 		sizeMultiplyer = hires ? 21.725 * 2 : 21.7;
 		layer.destroy();
 		backgroundLayer.destroy();
-		layer = new Konva.Layer();
+		layer = new Konva.Layer({ name: 'board' });
 		backgroundLayer = new Konva.Layer();
 
 		featuresDrawn = 0;
@@ -323,10 +338,7 @@
 					let pad_marks = [];
 					pad_shapes.forEach((shapes) => {
 						let shapeArrayFlat = shapes.flat();
-						if (
-							smartRenderLeads &&
-							!['CIRCLE', 'RECTANGLE'].some((v) => shapeArrayFlat.includes(v))
-						) {
+						if (smartRenderLeads && !['CIRCLE', 'RECTANGLE'].some((v) => shapeArrayFlat.includes(v))) {
 							shapes = shapeArrayFlat.filter((item) => typeof item == typeof 1);
 							shapes = [['LINE', ...shapes]];
 						}
@@ -564,16 +576,7 @@
 			});
 		});
 
-		const scale = Math.max(
-			stage.width() / (bounding.width * 1),
-			stage.height() / (bounding.height * 1)
-		);
-		stage.position({
-			x: -bounding.x * scale,
-			y: -bounding.y * scale
-		});
-		stage.scaleX(scale);
-		stage.scaleY(scale);
+		fitToScreen(layerToShow);
 
 		console.info('Draw:', Date.now() - drawTime, 'ms', layer, featuresDrawn);
 		dispatch('draw_done', stage);
@@ -582,26 +585,6 @@
 	function convertUnits(n: number, units: 'INCH' | 'MM' = header_parsed?.units) {
 		return units == 'INCH' ? n * sizeMultiplyer * 25.4 : n * sizeMultiplyer;
 	}
-
-	const fitToScreen = (tween: Boolean = false) => {
-		// get layers
-		const nodesLayer = layer;
-		const layerSize = nodesLayer.getClientRect({
-			relativeTo: stage
-		});
-
-		// calculate sizes
-		const stageSize = stage.getSize();
-		const scaleX = stageSize.width / layerSize.width;
-		const scaleY = stageSize.height / layerSize.height;
-		const scaleValue = Math.min(scaleX, scaleY) * 0.9;
-
-		if (tween) {
-			moveStage(stage, { x: 0, y: 20 }, { x: scaleValue, y: scaleValue });
-		} else {
-			stage.scale({ scaleValue, scaleValue });
-		}
-	};
 
 	const moveStage = (stage, location, scale) => {
 		const { x, y } = location;
@@ -621,8 +604,8 @@
 	};
 </script>
 
-<svelte:window bind:innerHeight={window_height} bind:innerWidth={window_width} />
+<!-- <svelte:window bind:innerHeight={window_height} bind:innerWidth={window_width} /> -->
 
-<div {style} class={classes}>
+<div {style} class={classes} bind:clientWidth={window_width} bind:clientHeight={window_height}>
 	<div bind:this={viewer} class="overflow-hidden" />
 </div>

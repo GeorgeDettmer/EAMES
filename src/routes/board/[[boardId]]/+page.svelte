@@ -7,11 +7,7 @@
 	import { Blockquote, P, Label, Select, Modal } from 'flowbite-svelte';
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
-	import Viewer, {
-		getRenderers,
-		getComponentGroup,
-		getComponentGroups
-	} from '$lib/components/Viewer.svelte';
+	import Viewer, { getRenderers, getComponentGroup, getComponentGroups, fitToScreen } from '$lib/components/Viewer.svelte';
 	import { getContext, setContext } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
@@ -22,6 +18,9 @@
 	let instructionId = data?.instructionId;
 	//$: boardId = $page?.data?.boardId;
 	$: boardId = data?.boardId;
+
+	let viewer_width = 0;
+	$: console.log('w:', viewer_width);
 
 	const urqlClient = getContextClient();
 
@@ -106,9 +105,7 @@
 			mutationResult = await urqlClient.mutation(
 				gql`
 					mutation insertSignoffs($boardId: bigint!, $step_id: uuid!, $user_id: uuid!) {
-						insert_signoffs(
-							objects: [{ board_id: $boardId, step_id: $step_id, user_id: $user_id }]
-						) {
+						insert_signoffs(objects: [{ board_id: $boardId, step_id: $step_id, user_id: $user_id }]) {
 							affected_rows
 							returning {
 								id
@@ -206,17 +203,13 @@
 	$: assembly = boardInfo?.assembly || {};
 	$: assemblyId = assembly?.id;
 	$: instructions = assembly?.steps || [];
-	$: instruction = instructions?.filter((i) => i?.instruction?.id === instructionId)?.[0]
-		?.instruction;
+	$: instruction = instructions?.filter((i) => i?.instruction?.id === instructionId)?.[0]?.instruction;
 
 	$: stepsInfoStore = subscriptionStore({
 		client: urqlClient,
 		query: gql`
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
-				steps(
-					where: { assembly_id: { _eq: $assemblyId } }
-					order_by: [{ part_id: asc_nulls_first }, { reference: asc }]
-				) {
+				steps(where: { assembly_id: { _eq: $assemblyId } }, order_by: [{ part_id: asc_nulls_first }, { reference: asc }]) {
 					id
 					reference
 					part_id
@@ -266,9 +259,7 @@
 
 	$: {
 		if (!instructionId && instructions?.length > 0) {
-			const defaultInstructionType = localStorage
-				.getItem('EAMES_workstationDefaultInstructionType')
-				?.toUpperCase();
+			const defaultInstructionType = localStorage.getItem('EAMES_workstationDefaultInstructionType')?.toUpperCase();
 			const defaultInstructionTypeId = instructions.filter(
 				(i) => i?.instruction?.type?.toUpperCase() === defaultInstructionType
 			);
@@ -304,8 +295,7 @@
 	let draw_event = (e) => {
 		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
 		if (!visibleLayer) {
-			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]
-				?.layer;
+			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]?.layer;
 		}
 		getRenderers().forEach((r, k) => {
 			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
@@ -315,9 +305,9 @@
 			const width = bb?.attrs?.width;
 			//console.info('UPDATE', k, width, bb);
 			//Fill board to screen https://codepen.io/spark25/pen/VwXvZpp
-			r.scaleX(scale);
+			/* r.scaleX(scale);
 			r.scaleY(scale);
-			r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y });
+			r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y }); */
 		});
 		steps?.forEach((i) => {
 			if (i?.reference && i?.color) {
@@ -333,11 +323,7 @@
 						return;
 					}
 				});
-				updateComponentColour(
-					i?.reference,
-					tailwindColorToHex(i?.color || 'orange-500'),
-					rendererId
-				);
+				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), rendererId);
 				updateComponentOutline(
 					i?.reference,
 					rendererId,
@@ -497,12 +483,7 @@
 		});
 	};
 
-	let updateComponentColour = (
-		reference: string,
-		colour: string,
-		rendererId: string = 'TOP',
-		opacity: number = 1
-	) => {
+	let updateComponentColour = (reference: string, colour: string, rendererId: string = 'TOP', opacity: number = 1) => {
 		let groups = getComponentGroups(reference, rendererId);
 		//console.log('Update component colour:', reference, colour, group);
 		if (!groups) {
@@ -597,19 +578,13 @@
 								bg
 								class="p-1 flex-auto mb-1 pb-2.5"
 								borderClass={`border-l-8 ${
-									!steps
-										? 'border-gray-600'
-										: complete === false
-										? 'border-red-600'
-										: 'border-green-400'
+									!steps ? 'border-gray-600' : complete === false ? 'border-red-600' : 'border-green-400'
 								}`}
 							>
 								<div class="flex">
 									<div class="flex-none w-2/3">
 										<P weight="bold" size="xl"
-											>{instruction?.name}{instruction?.description
-												? `: ${instruction?.description}`
-												: ''}</P
+											>{instruction?.name}{instruction?.description ? `: ${instruction?.description}` : ''}</P
 										>
 										<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
 									</div>
@@ -647,6 +622,7 @@
 												</h1>
 											</div>
 											<!-- svelte-ignore a11y-click-events-have-key-events -->
+											<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 											<h1
 												on:click={() => {
 													visibleLayer = visibleLayer === 'TOP' ? 'BOTTOM' : 'TOP';
@@ -668,9 +644,7 @@
 													detailVisible = null;
 												}
 											}}
-											drawAllPins={cad?.meta?.drawAllPins === undefined
-												? true
-												: cad?.meta?.drawAllPins}
+											drawAllPins={cad?.meta?.drawAllPins === undefined ? true : cad?.meta?.drawAllPins}
 											highlightPins={cad?.meta?.highlightPins || []}
 											outlinePins={cad?.meta?.outlinePins || [1]}
 											id={layer}
@@ -713,9 +687,7 @@
 								<ComponentDetail
 									json={detailVisible.event.target.parent.toJSON()}
 									component={detailVisible}
-									dnf={(assembly?.meta?.dnf || []).includes(
-										detailVisible?.component?.component?.toUpperCase()
-									)}
+									dnf={(assembly?.meta?.dnf || []).includes(detailVisible?.component?.component?.toUpperCase())}
 									on:back={() => {
 										detailVisible = null;
 									}}

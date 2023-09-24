@@ -10,7 +10,9 @@
 	export let component;
 	export let kbId: string = '';
 	export let dnf = false;
+	export let showPopoutButton = true;
 	let hasInfo: boolean = false;
+	let footprint;
 </script>
 
 <div class="w-full my-1">
@@ -37,19 +39,30 @@
 					on:click={() => dispatch('back')}
 					class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100 mb-2 "
 				/>
-				<a href={window.origin + '/part/' + (component?.component?.device || '')} target="_blank">
-					<ArrowTopRightOnSquare
-						on:click={() => dispatch('back')}
-						class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100"
-					/>
-				</a>
+				{#if showPopoutButton}
+					<a href={window.origin + '/part/' + (component?.component?.device || '')} target="_blank">
+						<ArrowTopRightOnSquare
+							on:click={() => dispatch('back')}
+							class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100"
+						/>
+					</a>
+				{/if}
 			</div>
 		</div>
 		<ViewerFromJson {json} height={150} />
+		{#if footprint}
+			<ViewerFromJson json={footprint} height={150} />
+		{/if}
 		<Hr />
 
 		<div class:hidden={!hasInfo} class="py-0">
-			<PartInfo partId={component?.component?.device} partLinkVisible={false} kbVisible={!!kbId} bind:partInfo={hasInfo} />
+			<PartInfo
+				partId={component?.component?.device}
+				partLinkVisible={false}
+				kbVisible={!!kbId}
+				bind:partInfo={hasInfo}
+				bind:footprint
+			/>
 		</div>
 	</Card>
 </div>

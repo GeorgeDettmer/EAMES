@@ -9,6 +9,7 @@
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
 	export let partInfo = false;
+	export let footprint = {};
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),
@@ -25,6 +26,7 @@
 					created_at
 					updated_at
 					kb
+					footprint
 				}
 			}
 		`,
@@ -35,6 +37,7 @@
 	$: properties = Object.entries(partInfo?.properties || [])
 		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])
 		?.sort();
+	$: footprint = partInfo?.footprint;
 
 	let kbItems = 0;
 	$: console.log('kbItems', kbItems);

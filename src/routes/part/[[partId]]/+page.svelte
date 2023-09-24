@@ -4,19 +4,19 @@
 	import type { PageData } from '../$types';
 
 	export let data: PageData;
-	let partId: string = data?.partId;
+	$: partId = data?.partId;
 
 	let kbInfo = false;
 </script>
 
 <div class="w-2/3 mx-auto">
-	<div
-		class="p-4 my-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600 max-h-fit"
-	>
-		<ComponentDetail 
-		component={{component: {component: {device: partId}}}
-		on:back={() => {
-			window.close()
-		}} />
+	<div class="p-4 my-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600 max-h-fit">
+		<ComponentDetail
+			showPopoutButton={false}
+			component={{ component: { component: partId } }}
+			on:back={() => {
+				window.close();
+			}}
+		/>
 	</div>
 </div>

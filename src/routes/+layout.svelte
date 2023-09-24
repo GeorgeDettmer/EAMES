@@ -4,14 +4,7 @@
 	import { deserialize } from '$app/forms';
 	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
-	import {
-		Client,
-		setContextClient,
-		cacheExchange,
-		fetchExchange,
-		subscriptionExchange,
-		mapExchange
-	} from '@urql/svelte';
+	import { Client, setContextClient, cacheExchange, fetchExchange, subscriptionExchange, mapExchange } from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
 	import {
@@ -34,8 +27,7 @@
 	}
 
 	//TODO: Use session/local storage for auth token to allow temporary user switch for firstoff etc
-	const getToken = () =>
-		decodeURI(sessionStorage.getItem('AuthorizationToken') || getCookie('AuthorizationToken'));
+	const getToken = () => decodeURI(sessionStorage.getItem('AuthorizationToken') || getCookie('AuthorizationToken'));
 
 	const headers = {};
 	if (getToken()) {
@@ -68,7 +60,7 @@
 		} */,
 		on: {
 			error: (error) => {
-				messagesStore('Websocket error: ' + error, 'error');
+				messagesStore('Websocket error', 'error');
 				console.error('Websocket error: ', error);
 			},
 			connected: (socket) => {
@@ -221,9 +213,7 @@
 			if (
 				keys.timeStamp &&
 				new Set(
-					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' +
-						keys.config.startKey +
-						keys.config.endKey
+					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.startKey + keys.config.endKey
 				).has(key)
 			) {
 				keys.result += key;
@@ -246,8 +236,7 @@
 	<script>
 		if (window) {
 			localStorage.getItem('color-theme') === 'dark' ||
-			(!('color-theme' in localStorage) &&
-				window.matchMedia('(prefers-color-scheme: dark)').matches)
+			(!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
 				? window.document.documentElement.classList.add('dark')
 				: window.document.documentElement.classList.remove('dark');
 

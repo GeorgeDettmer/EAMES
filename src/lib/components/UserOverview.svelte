@@ -54,16 +54,18 @@
 			</div>
 
 			<div class="">
-				<div class="flex space-x-2 mt-2 justify-center flex-wrap">
-					{#each Object.entries(userProcesses) as [process, allowed], idx}
-						<p class="font-semibold">
-							{process.toUpperCase()}: {allowed ? `✅` : '❌'}
-						</p>
-						{#if idx < instructionTypes.length - 1}
-							<p>|</p>
-						{/if}
-					{/each}
-				</div>
+				{#if userProcesses}
+					<div class="flex space-x-2 mt-2 justify-center flex-wrap">
+						{#each Object.entries(userProcesses) as [process, allowed], idx}
+							<p class="font-semibold">
+								{process.toUpperCase()}: {allowed ? `✅` : '❌'}
+							</p>
+							{#if idx < instructionTypes.length - 1}
+								<p>|</p>
+							{/if}
+						{/each}
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

@@ -33,23 +33,25 @@
 	let error: string | undefined = '';
 </script>
 
-<Textarea placeholder="Your knowledge base content..." rows="6" bind:value>
-	<Toolbar slot="header" embedded>
-		<ToolbarGroup>
-			<ToolbarButton name="Upload image">
-				<ImageOutline class="w-5 h-5" />
+<div class:hidden={!$page?.data?.user}>
+	<Textarea placeholder="Your knowledge base content..." rows="6" bind:value>
+		<Toolbar slot="header" embedded>
+			<ToolbarGroup>
+				<ToolbarButton name="Upload image">
+					<ImageOutline class="w-5 h-5" />
+				</ToolbarButton>
+			</ToolbarGroup>
+			<ToolbarButton name="send" slot="end">
+				<PapperPlaneOutline
+					class={'w-5 h-5 rotate-45 ' + (!value ? 'mix-blend-difference cursor-not-allowed' : '')}
+					on:click={submit}
+				/>
 			</ToolbarButton>
-		</ToolbarGroup>
-		<ToolbarButton name="send" slot="end">
-			<PapperPlaneOutline
-				class={'w-5 h-5 rotate-45 ' + (!value ? 'mix-blend-difference cursor-not-allowed' : '')}
-				on:click={submit}
-			/>
-		</ToolbarButton>
-	</Toolbar>
-	{#if error}
-		<Toolbar slot="footer" embedded>
-			<p class="">Error: {error}</p>
 		</Toolbar>
-	{/if}
-</Textarea>
+		{#if error}
+			<Toolbar slot="footer" embedded>
+				<p class="">Error: {error}</p>
+			</Toolbar>
+		{/if}
+	</Textarea>
+</div>

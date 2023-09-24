@@ -4,6 +4,7 @@
 	import { Hr } from 'flowbite-svelte';
 	import List from './KnowledgeBase/List.svelte';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
@@ -87,10 +88,8 @@
 				{#if isGeneric}
 					<p>{partInfo?.name}</p>
 				{:else}
-					<a
-						target="_blank"
-						href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`}
-						class={classes.link}>{partInfo?.name}</a
+					<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
+						>{partInfo?.name}</a
 					>
 				{/if}
 			</div>
@@ -117,11 +116,12 @@
 		{/if}
 		{#if kbVisible && partInfo?.kb}
 			<div>
-				<Hr class="pb-1"
-					>🧾<a class="cursor-pointer" target="_blank" href={window.origin + '/kb/' + partInfo?.kb}
-						>➕</a
-					></Hr
-				>
+				<Hr class="pb-1">
+					🧾
+					{#if $page?.data?.user}
+						<a class="cursor-pointer" target="_blank" href={window.origin + '/kb/' + partInfo?.kb}>➕</a>
+					{/if}
+				</Hr>
 			</div>
 			<div class="py-2 overflow-y-auto overflow-x-hidden h-44">
 				<List kbId={partInfo?.kb} bind:kbItems />
@@ -129,7 +129,5 @@
 		{/if}
 	</div>
 {:else}
-	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
-		Part info unavailable...
-	</div>
+	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Part info unavailable...</div>
 {/if}

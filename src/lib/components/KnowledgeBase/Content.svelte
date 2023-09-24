@@ -44,11 +44,7 @@
 		<div class="grid md:grid-cols-3 sm:grid-cols-2">
 			<!-- <img src={image ? `../src/lib/assets/${image}` : ''} /> -->
 			{#each images as image}
-				<a
-					href={`../src/lib/assets/${image}`}
-					target="_blank"
-					class="border rounded-lg p-1 mx-1 hover:shadow-inner"
-				>
+				<a href={`../src/lib/assets/${image}`} target="_blank" class="border rounded-lg p-1 mx-1 hover:shadow-inner">
 					<img src={`../src/lib/assets/${image}`} class="w-fit" alt={image} />
 				</a>
 			{/each}
@@ -72,9 +68,7 @@
 	</form>-->
 
 {#if kbItem?.comments}
-	<div
-		class="p-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600"
-	>
+	<div class="p-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600">
 		<div class="justify-between items-center mb-1 sm:flex">
 			<p class=" text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
 				{kbItem?.comments?.length} comment{kbItem?.comments?.length === 1 ? '' : 's'}

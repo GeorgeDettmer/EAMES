@@ -300,7 +300,7 @@
 	};
 
 	let visibleLayer: string = $page?.data?.layer || 'TOP';
-	console.warn('visibleLayer', visibleLayer);
+	//console.warn('visibleLayer', visibleLayer);
 	let draw_event = (e) => {
 		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
 		if (!visibleLayer) {
@@ -313,7 +313,7 @@
 			const y = cad?.start_y ? cad.start_y : 900;
 			const bb = r.find(`.bounds`)?.[0];
 			const width = bb?.attrs?.width;
-			console.info('UPDATE', k, width, bb);
+			//console.info('UPDATE', k, width, bb);
 			//Fill board to screen https://codepen.io/spark25/pen/VwXvZpp
 			r.scaleX(scale);
 			r.scaleY(scale);

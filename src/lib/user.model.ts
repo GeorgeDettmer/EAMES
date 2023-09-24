@@ -76,9 +76,24 @@ export const getUserFromToken = async (token: string) => {
 	const tokenQuery = await client.query(_getUserByToken, { token: token });
 
 	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
-	if (!user) console.error('No user found for token: ' + token);
+	if (!user) {
+		console.error('No user found for token: ' + token);
+		return { error: `No user found for token (${token})` };
+	}
+	if (!tokenQuery?.data?.users_tokens?.[0]?.active) {
+		console.error('Token no longer active', token);
+		return { error: `Token (${token}) no longer active` };
+	}
+	if (tokenQuery?.data?.users_tokens?.[0]?.expires_at) {
+		const expire = new Date(tokenQuery?.data?.users_tokens?.[0]?.expires_at);
+		console.log(expire, new Date(), new Date() > expire);
+		if (new Date() > expire) {
+			return { error: `Token (${token}) expired @ ${expire.toLocaleTimeString()} ${expire.toLocaleDateString()}` };
+		}
+	}
+
 	console.log(`getUserFromToken request: ${user?.username}(${user?.id})`);
-	return user;
+	return { user };
 };
 const addUser = async (
 	username: string,
@@ -205,10 +220,10 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 };
 
 const loginToken = async (loginToken: string) => {
-	const user = await getUserFromToken(loginToken);
-	if (!user) {
+	const { error, user } = await getUserFromToken(loginToken);
+	if (error) {
 		return {
-			error: 'Could not find user associated with the supplied token'
+			error
 		};
 	}
 

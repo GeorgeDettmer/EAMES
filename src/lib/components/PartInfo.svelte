@@ -8,7 +8,7 @@
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
-	export let partInfo = false;
+	export let hasInfo = false;
 	export let footprint = {};
 
 	$: partInfoStore = queryStore({
@@ -38,6 +38,7 @@
 		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])
 		?.sort();
 	$: footprint = partInfo?.footprint;
+	$: hasInfo = !!partInfo;
 
 	let kbItems = 0;
 	$: console.log('kbItems', kbItems);

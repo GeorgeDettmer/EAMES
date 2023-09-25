@@ -60,7 +60,7 @@
 				partId={component?.component?.device}
 				partLinkVisible={false}
 				kbVisible={!!kbId}
-				bind:partInfo={hasInfo}
+				bind:hasInfo
 				bind:footprint
 			/>
 		</div>

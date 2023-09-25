@@ -9,6 +9,7 @@
 	export let json = {};
 	export let component;
 	export let kbId: string = '';
+	export let kbVisible: boolean = true;
 	export let dnf = false;
 	export let showPopoutButton = true;
 	export let galleryVisible: boolean = false;
@@ -47,7 +48,7 @@
 					on:click={() => dispatch('back')}
 					class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100 mb-2 "
 				/>
-				{#if showPopoutButton}
+				{#if showPopoutButton && hasInfo}
 					<a href={window.origin + '/part/' + (component?.component?.device || '')} target="_blank">
 						<ArrowTopRightOnSquare
 							on:click={() => dispatch('back')}
@@ -70,7 +71,7 @@
 			<PartInfo
 				partId={component?.component?.device}
 				partLinkVisible={false}
-				kbVisible={!!kbId || hasInfo}
+				kbVisible={(!!kbId || hasInfo) && kbVisible}
 				bind:hasInfo
 				bind:footprint
 				{galleryVisible}

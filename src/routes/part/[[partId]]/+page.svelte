@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
+	import List from '$lib/components/KnowledgeBase/List.svelte';
 
 	import type { PageData } from '../$types';
 
@@ -13,6 +14,7 @@
 	<div class="p-4 my-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600 max-h-fit">
 		<ComponentDetail
 			galleryVisible={true}
+			kbVisible={true}
 			showPopoutButton={false}
 			component={{ component: { device: partId } }}
 			on:back={() => {

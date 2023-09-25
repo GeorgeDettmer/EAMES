@@ -213,7 +213,7 @@
 			if (
 				keys.timeStamp &&
 				new Set(
-					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.startKey + keys.config.endKey
+					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.startKey + keys.config.separator
 				).has(key)
 			) {
 				keys.result += key;

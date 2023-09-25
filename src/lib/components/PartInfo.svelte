@@ -8,6 +8,7 @@
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
+	export let galleryVisible: boolean = false;
 	export let hasInfo = false;
 	export let footprint = {};
 
@@ -70,7 +71,7 @@
 			{#if partInfo?.image_url && !image}
 				<img src={partInfo.image_url} alt={partInfo?.name} class="w-1/4 p-0 m-0" />
 			{/if}
-			{#if image}
+			{#if image && !galleryVisible}
 				<img
 					src={image}
 					alt={partInfo?.name}
@@ -84,6 +85,17 @@
 					}}
 				/>
 			{/if}
+			<div>
+				{#if galleryVisible && images.length > 0}
+					<div class="grid md:grid-cols-3 sm:grid-cols-2">
+						{#each images as image}
+							<a href={image} target="_blank" class="border rounded-lg p-1 mx-1 my-1 hover:shadow-inner">
+								<img src={image} class="w-fit aspect-auto" alt={image} />
+							</a>
+						{/each}
+					</div>
+				{/if}
+			</div>
 
 			<!-- <Button size="xs">Info</Button> -->
 		</div>

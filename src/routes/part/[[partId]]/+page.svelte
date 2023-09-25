@@ -12,8 +12,9 @@
 <div class="w-2/3 mx-auto">
 	<div class="p-4 my-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600 max-h-fit">
 		<ComponentDetail
+			galleryVisible={true}
 			showPopoutButton={false}
-			component={{ component: { component: partId } }}
+			component={{ component: { device: partId } }}
 			on:back={() => {
 				window.close();
 			}}

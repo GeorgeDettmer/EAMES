@@ -6,11 +6,12 @@
 	import PartInfo from './PartInfo.svelte';
 	import { XMark, ArrowTopRightOnSquare } from 'svelte-heros-v2';
 	const dispatch = createEventDispatcher();
-	export let json;
+	export let json = {};
 	export let component;
 	export let kbId: string = '';
 	export let dnf = false;
 	export let showPopoutButton = true;
+	export let galleryVisible: boolean = false;
 	let hasInfo: boolean = false;
 	let footprint;
 </script>
@@ -19,20 +20,27 @@
 	<Card size="xl">
 		<div class="flex">
 			<div class="py-1">
-				<h5 class="text-2xl font-bold text-gray-900 dark:text-white">
-					{component?.component?.component}
-				</h5>
+				{#if component?.component?.component}
+					<h5 class="text-2xl font-bold text-gray-900 dark:text-white">
+						{component?.component?.component}
+					</h5>
+				{/if}
+
 				{#if dnf}
 					<p class="font-bold text-red-600">Not Fitted</p>
 				{:else}
 					<a
 						target="_blank"
 						href={`https://octopart.com/search?q=${component?.component?.device}&currency=GBP`}
-						class={classes.link + 'font-bold'}>{component?.component?.device}</a
+						class={classes.link + 'font-bold'}
+						class:text-2xl={!component?.component?.component}
 					>
+						{component?.component?.device}
+					</a>
 				{/if}
-
-				<p class="text-xs font-thin">{component?.component?.shape}</p>
+				{#if component?.component?.shape}
+					<p class="text-xs font-thin">{component?.component?.shape}</p>
+				{/if}
 			</div>
 			<div class="float-right mx-auto mr-0">
 				<XMark
@@ -49,7 +57,10 @@
 				{/if}
 			</div>
 		</div>
-		<ViewerFromJson {json} height={150} />
+		{#if Object.keys(json).length > 0}
+			<ViewerFromJson {json} height={150} />
+		{/if}
+
 		{#if footprint}
 			<ViewerFromJson json={footprint} height={150} />
 		{/if}
@@ -59,9 +70,10 @@
 			<PartInfo
 				partId={component?.component?.device}
 				partLinkVisible={false}
-				kbVisible={!!kbId}
+				kbVisible={!!kbId || hasInfo}
 				bind:hasInfo
 				bind:footprint
+				{galleryVisible}
 			/>
 		</div>
 	</Card>

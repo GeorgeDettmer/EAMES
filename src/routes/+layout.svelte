@@ -123,6 +123,7 @@
 	import type { ActionResult } from '@sveltejs/kit';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import Barcode from '$lib/components/Barcode.svelte';
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
@@ -180,10 +181,23 @@
 			logout();
 			return;
 		}
-		const sn = parseInt(barcode);
-		if (!sn) return;
-		console.log('SCAN', 'BARCODE', barcode, sn);
-		goto('/board/' + sn, { invalidateAll: true, replaceState: true });
+		const page: string = window.location.pathname.split('/')?.[1] || '';
+		console.log('SCAN', barcode, 'PAGE: ', page);
+		if (page === 'board') {
+			const sn = parseInt(barcode);
+			if (!sn) return;
+			goto('/board/' + sn, { invalidateAll: true, replaceState: true });
+			return;
+		}
+		if (page === 'part') {
+			goto('/part/' + barcode, { invalidateAll: true, replaceState: true });
+			return;
+		}
+		if (page === '') {
+			goto('/overview/' + barcode, { invalidateAll: true, replaceState: true });
+			return;
+		}
+		console.log('SCAN', 'UNHANDLED');
 	}
 	let keys = {
 		watching: false,
@@ -204,8 +218,12 @@
 		} else {
 			if (key === keys.config.endKey && keys.timeStamp) {
 				console.log('END CAPTURE', key, event.timeStamp, event.timeStamp - keys.timeStamp);
-				console.log('OUTPUT:', keys.result);
-				handleBarcodeScan(keys.result);
+				if (keys.result) {
+					console.log('OUTPUT:', keys.result);
+					handleBarcodeScan(keys.result);
+				} else {
+					console.log('EMPTY CAPTURE');
+				}
 				keys.watching = false;
 				keys.timeStamp = 0;
 				keys.result = '';

@@ -117,6 +117,7 @@
 					}}
 				/>
 			{/if}
+
 			<div>
 				{#if galleryVisible && images.length > 0}
 					<div class="grid md:grid-cols-3 sm:grid-cols-2">
@@ -128,7 +129,7 @@
 					</div>
 				{/if}
 			</div>
-
+			<slot />
 			<!-- <Button size="xs">Info</Button> -->
 		</div>
 		{#if kbVisible && partInfo?.kb}

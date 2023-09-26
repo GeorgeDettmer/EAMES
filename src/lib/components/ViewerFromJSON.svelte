@@ -11,14 +11,26 @@
 	let viewer: HTMLDivElement;
 	let stage: Stage;
 	let layer: Layer;
+	let window_width;
+	let window_height;
 	onMount(() => {
 		stage = new Konva.Stage({
 			container: viewer,
-			width: width, //window.innerWidth,
+			width: 10,
 			height: height,
 			draggable: true
 		});
 
+		draw();
+
+		return () => {
+			console.log('destroy: ViewerFromJSON');
+			stage.destroy();
+		};
+	});
+
+	function draw() {
+		stage.width(window_width);
 		layer = new Konva.Layer();
 		let group = Konva.Node.create(json, viewer);
 		let scaleBy = 1.1;
@@ -149,14 +161,9 @@
 			};
 			stage.position(newPos);
 		});
-
-		return () => {
-			console.log('destroy: ViewerFromJSON');
-			stage.destroy();
-		};
-	});
+	}
 </script>
 
-<div>
+<div class="min-w-full" bind:clientWidth={window_width} bind:clientHeight={window_height}>
 	<div bind:this={viewer} class="overflow-hidden w-full" />
 </div>

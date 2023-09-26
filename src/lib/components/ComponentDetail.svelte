@@ -59,7 +59,7 @@
 			</div>
 		</div>
 		{#if Object.keys(json).length > 0}
-			<ViewerFromJson {json} height={150} />
+			<ViewerFromJson {json} height={250} />
 		{/if}
 
 		{#if footprint}

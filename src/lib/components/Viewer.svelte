@@ -111,7 +111,7 @@
 		console.info('CAD VIEWER | New viewer:', width, height, `${data?.name}(${data?.id})`);
 		stage = new Konva.Stage({
 			container: viewer,
-			width: width + 1,
+			width: width + 100,
 			height: height + 1,
 			draggable: true
 		});

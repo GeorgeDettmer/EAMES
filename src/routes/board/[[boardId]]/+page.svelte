@@ -69,8 +69,10 @@
 		} else if (eventType == 'click') {
 			console.log('click', event?.target?.nodeName, renderGroup);
 			if (event?.target?.nodeName == 'A') {
+				let d = renderGroup?.attrs?.component;
+				d.device = event?.target.innerHTML;
 				detailVisible = {
-					component: renderGroup?.attrs?.component,
+					component: d,
 					event: { target: { parent: renderGroup } }
 				};
 			}

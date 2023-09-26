@@ -4,16 +4,7 @@
 	import { enhance } from '$app/forms';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import LoginForm from '$lib/components/LoginForm.svelte';
-	import {
-		Toggle,
-		Dropdown,
-		DropdownItem,
-		Button,
-		Modal,
-		Navbar,
-		MegaMenu,
-		Popover
-	} from 'flowbite-svelte';
+	import { Toggle, Dropdown, DropdownItem, Button, Modal, Navbar, MegaMenu, Popover } from 'flowbite-svelte';
 	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
 	import Barcode from './Barcode.svelte';
@@ -83,7 +74,7 @@
 </Modal>
 
 <Modal id="board" bind:open={boardVisible} size="xl" autoclose={true} outsideclose={true}>
-	<BoardOverview boardId={parseInt($page.data?.boardId)} />
+	<BoardOverview boardId={$page.data?.boardId} />
 </Modal>
 
 <Modal id="login" bind:open={loginVisible} size="xs" autoclose={false} outsideclose={true}>
@@ -97,10 +88,7 @@
 <Modal id="settings" bind:open={settingsVisible} size="xs" autoclose={true} outsideclose={true}>
 	<form class="flex flex-col space-y-6">
 		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Settings</h3>
-		<Toggle
-			on:click={toggleTheme}
-			checked={window.document.documentElement.classList.contains('dark')}>Dark mode</Toggle
-		>
+		<Toggle on:click={toggleTheme} checked={window.document.documentElement.classList.contains('dark')}>Dark mode</Toggle>
 		<Toggle
 			on:click={() => {
 				showDebug_page = !showDebug_page;
@@ -111,25 +99,18 @@
 </Modal>
 
 <div class="relative px-0">
-	<Navbar
-		navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b"
-		let:hidden
-		let:toggle
-	>
+	<Navbar navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
 		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>
 			<img src={logo} class="" alt="EASL" />
 		</div>
 		<MegaMenu full items={menu} let:item class="bg-slate-200">
-			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500"
-				>{item.name}</a
-			>
+			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500">{item.name}</a>
 
 			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
 				{#if user?.lastActivity}
 					<div class="border-2 p-5 rounded-lg">
 						<p class="mb-5 max-w-xl text-sm p-0 font-bold dark:text-white">
-							Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch ||
-								'EAS12345'}
+							Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch || 'EAS12345'}
 						</p>
 						<div class="flex">
 							<Button color="blue" class="pr-10">Continue...</Button>
@@ -153,7 +134,7 @@
 				<div class="grid grid-rows-2 grid-flow-col">
 					<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
 						<Barcode
-							boardId={$page?.data?.boardId}
+							boardId={$currentBoard?.boardInfo?.id?.toString()}
 							on:click={() => {
 								boardVisible = true;
 							}}
@@ -175,11 +156,7 @@
 							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
 								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
 						</div>
-						<Popover
-							placement="bottom"
-							triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id}
-							class="w-64"
-						>
+						<Popover placement="bottom" triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id} class="w-64">
 							<JobPopoverContent job={$currentBoard?.boardInfo.job} />
 						</Popover>
 					{/if}
@@ -211,11 +188,7 @@
 					</p>
 					<div class:hidden={false}>
 						<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
-							<div
-								class="bg-blue-700 overflow-hidden"
-								role="progressbar"
-								style={`height: ${(1000 / 100) * 5}%`}
-							/>
+							<div class="bg-blue-700 overflow-hidden" role="progressbar" style={`height: ${(1000 / 100) * 5}%`} />
 						</div>
 					</div>
 				</UserIcon>

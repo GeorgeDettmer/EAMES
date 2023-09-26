@@ -20,7 +20,7 @@
 <div class="w-full my-1">
 	<Card size="xl">
 		<div class="flex">
-			<div class="py-1">
+			<div class="py-0.5">
 				{#if component?.component?.component}
 					<h5 class="text-2xl font-bold text-gray-900 dark:text-white">
 						{component?.component?.component}

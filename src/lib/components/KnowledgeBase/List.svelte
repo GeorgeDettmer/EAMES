@@ -47,7 +47,8 @@
 				}
 			}
 		`,
-		variables: { kbId }
+		variables: { kbId },
+		requestPolicy: 'cache-and-network'
 	});
 	$: kb = $kbInfoStore?.data?.kb;
 	$: kbInfo = !!kb;

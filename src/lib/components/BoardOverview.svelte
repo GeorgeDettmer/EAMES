@@ -1,23 +1,18 @@
 <script lang="ts">
-	import {
-		Badge,
-		Card,
-		Tooltip,
-		Timeline,
-		TimelineItem,
-		Hr,
-		Listgroup,
-		ListgroupItem,
-		Accordion
-	} from 'flowbite-svelte';
+	import { Badge, Card, Tooltip, Timeline, TimelineItem, Hr, Listgroup, ListgroupItem, Accordion } from 'flowbite-svelte';
 	import Progressbar from './Progressbar.svelte';
 	import UserIcon from './UserIcon.svelte';
 	import AccordionItem from './AccordionItem.svelte';
 	import { CheckCircle, XCircle } from 'svelte-heros-v2';
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
 	import { padSerial } from '$lib/utils';
+	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
+	import { page } from '$app/stores';
 
 	export let boardId: string;
+
+	$: boardId = $page?.data?.boardId;
 
 	$: boardInfoStore = subscriptionStore({
 		client: getContextClient(),
@@ -68,10 +63,7 @@
 		client: getContextClient(),
 		query: gql`
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
-				steps(
-					where: { assembly_id: { _eq: $assemblyId } }
-					order_by: { reference: asc_nulls_first, part_id: desc }
-				) {
+				steps(where: { assembly_id: { _eq: $assemblyId } }, order_by: { reference: asc_nulls_first, part_id: desc }) {
 					id
 					reference
 					part_id
@@ -121,7 +113,7 @@
 	$: {
 		summary = {};
 		steps?.forEach((step) => {
-			console.info(step);
+			//console.info(step);
 			const stepInstructionName = step?.instruction?.name;
 			if (stepInstructionName) {
 				const signoffs = summary[stepInstructionName]?.signoffs;
@@ -154,15 +146,15 @@
 	});
 	$: incomplete = total - complete;
 	$: console.log('INCOMPLETE', incompleteList);
+
+	let currentBoard: Writable<{}> = getContext('currentBoard');
+	$: console.log('currentBoard', $currentBoard);
+	$: currentBoard.set({ boardInfo });
 </script>
 
 {#if boardId}
 	<div class="p-8">
-		<Card
-			size="xl"
-			padding="xl"
-			class={isComplete ? 'ring-4 ring-green-400' : 'ring-4 ring-red-600'}
-		>
+		<Card size="xl" padding="xl" class={isComplete ? 'ring-4 ring-green-400' : 'ring-4 ring-red-600'}>
 			<div class="flow-root">
 				<div class="flex float-left items-center">
 					<img
@@ -171,9 +163,9 @@
 						style:filter={'invert(0.5)'}
 						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + boardId}
 					/>
-					<h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white justify-left">
-						{boardId}
-					</h5>
+					<p class="mb-2 md:text-4xl text-xl text-gray-900 dark:text-white justify-left">
+						{padSerial(boardId)}
+					</p>
 				</div>
 				<div class="flex float-right items-center ml-auto">
 					{#if steps}
@@ -206,9 +198,7 @@
 						</h3>
 						<Accordion flush multiple>
 							{#each completeList as [key, value]}
-								<AccordionItem
-									defaultClass="flex items-center justify-between w-full font-medium text-left"
-								>
+								<AccordionItem defaultClass="flex items-center justify-between w-full font-medium text-left">
 									<span slot="header" class="text-base flex mx-2">
 										<div class="flex">
 											<CheckCircle size="25" class="text-green-400 mr-2" />

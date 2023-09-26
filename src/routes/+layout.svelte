@@ -127,7 +127,7 @@
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
-	$: console.log('context', currentBoard);
+	$: console.log('context', $currentBoard);
 	$: console.warn('HEADERS', headers);
 
 	async function loginFromToken(token: string) {
@@ -168,7 +168,7 @@
 	}
 
 	function handleBarcodeScan(barcode: string): void {
-		if (barcode.startsWith('TOKEN')) {
+		if (barcode.toUpperCase().startsWith('TOKEN')) {
 			const token = barcode.split(keys.config.separator)?.[1];
 			console.log('SCAN', 'TOKEN', token);
 			if (token) {
@@ -176,7 +176,7 @@
 			}
 			return;
 		}
-		if (barcode.startsWith('LOGOUT')) {
+		if (barcode.toUpperCase().startsWith('LOGOUT')) {
 			console.log('SCAN', 'LOGOUT');
 			logout();
 			return;
@@ -193,7 +193,7 @@
 			goto('/part/' + barcode, { invalidateAll: true, replaceState: true });
 			return;
 		}
-		if (page === '') {
+		if (page === '' || page === 'overview') {
 			goto('/overview/' + barcode, { invalidateAll: true, replaceState: true });
 			return;
 		}

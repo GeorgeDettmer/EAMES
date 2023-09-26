@@ -2,6 +2,7 @@
 	import { Tooltip } from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { onMount } from 'svelte';
+	import Comments from './Comments.svelte';
 
 	export let kbItem;
 
@@ -50,24 +51,10 @@
 			{/each}
 		</div>
 	{/if}
-
-	<!-- <Thumbnails {images} bind:imageIndex /> -->
 </div>
-<!-- <form class="flex flex-col space-y-6">
-		<h3 class="text-xl font-medium text-gray-900 dark:text-white p-0">Settings</h3>
-		<Toggle
-			on:click={toggleTheme}
-			checked={window.document.documentElement.classList.contains('dark')}>Dark mode</Toggle
-		>
-		<Toggle
-			on:click={() => {
-				showDebug_page = !showDebug_page;
-			}}
-			checked={showDebug_page}>Show Debug: $page</Toggle
-		> 
-	</form>-->
 
 {#if kbItem?.comments}
+	<Comments comments={kbItem?.comments} />
 	<div class="p-2 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-gray-700 dark:border-gray-600">
 		<div class="justify-between items-center mb-1 sm:flex">
 			<p class=" text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
@@ -77,12 +64,6 @@
 		</div>
 		{#each kbItem?.comments as comment}
 			<div class="">
-				<!-- <span
-					class="flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900"
-				>
-					<img class="rounded-full shadow-lg" {src} {alt} />
-				</span> -->
-
 				{#if comment?.content}
 					<div class="flex py-1">
 						<div class="pr-1 cursor-help">

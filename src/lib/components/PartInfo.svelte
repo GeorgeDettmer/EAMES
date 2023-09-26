@@ -31,7 +31,8 @@
 				}
 			}
 		`,
-		variables: { partId }
+		variables: { partId },
+		requestPolicy: 'cache-and-network'
 	});
 	$: partInfo = $partInfoStore?.data?.parts_by_pk;
 	$: isGeneric = partInfo?.manufacturer?.toLowerCase() === 'generic';
@@ -67,6 +68,37 @@
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
 {:else if partInfo}
 	<div class="p-1">
+		{#if partLinkVisible}
+			<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
+				{#if isGeneric}
+					<p>{partInfo?.name}</p>
+				{:else}
+					<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
+						>{partInfo?.name}</a
+					>
+				{/if}
+			</div>
+		{/if}
+
+		<div class="mb-1 text-sm font-normal">
+			{#if partInfo?.manufacturer}
+				<p>{partInfo.manufacturer}</p>
+			{/if}
+		</div>
+		<div class="mb-1 text-sm font-light">
+			{partInfo?.description}
+		</div>
+		{#if partInfo?.properties}
+			<p class="font-semibold">Properties:</p>
+			<hr />
+			{#each properties as [name, value], idx}
+				{@const propertyCount = Object.keys(partInfo.properties).length}
+				<p class="text-sm">{name}: {value}</p>
+				{#if idx < propertyCount}
+					<hr />
+				{/if}
+			{/each}
+		{/if}
 		<div class="flex items-center mb-0">
 			{#if partInfo?.image_url && !image}
 				<img src={partInfo.image_url} alt={partInfo?.name} class="w-1/4 p-0 m-0" />
@@ -99,37 +131,6 @@
 
 			<!-- <Button size="xs">Info</Button> -->
 		</div>
-		{#if partLinkVisible}
-			<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
-				{#if isGeneric}
-					<p>{partInfo?.name}</p>
-				{:else}
-					<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
-						>{partInfo?.name}</a
-					>
-				{/if}
-			</div>
-		{/if}
-
-		<div class="mb-1 text-sm font-normal">
-			{#if partInfo?.manufacturer}
-				<p>{partInfo.manufacturer}</p>
-			{/if}
-		</div>
-		<div class="mb-1 text-sm font-light">
-			{partInfo?.description}
-		</div>
-		{#if partInfo?.properties}
-			<p class="font-semibold">Properties:</p>
-			<hr />
-			{#each properties as [name, value], idx}
-				{@const propertyCount = Object.keys(partInfo.properties).length}
-				<p class="text-sm">{name}: {value}</p>
-				{#if idx < propertyCount}
-					<hr />
-				{/if}
-			{/each}
-		{/if}
 		{#if kbVisible && partInfo?.kb}
 			<div>
 				<Hr class="pb-1">

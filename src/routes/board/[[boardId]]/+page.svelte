@@ -16,7 +16,6 @@
 	import { messagesStore } from 'svelte-legos';
 
 	let instructionId = data?.instructionId;
-	//$: boardId = $page?.data?.boardId;
 	$: boardId = data?.boardId;
 
 	let viewer_width = 0;
@@ -291,7 +290,6 @@
 	};
 
 	let visibleLayer: string = $page?.data?.layer || 'TOP';
-	//console.warn('visibleLayer', visibleLayer);
 	let draw_event = (e) => {
 		const stepReference = stepsIncomplete?.[0]?.reference || steps?.[0]?.reference;
 		if (!visibleLayer) {
@@ -528,23 +526,8 @@
 	//INFO: Update CAD highlighting on steps change
 	$: {
 		if (cad && steps) {
+			messagesStore('Changes were made to the CAD/Steps. Updating...', 'info');
 			draw_event();
-		}
-	}
-	$: {
-		if (cad) {
-			/* getRenderers().forEach((r, k) => {
-				const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
-				const x = cad?.start_x ? cad.start_x : 215;
-				const y = cad?.start_y ? cad.start_y : 900;
-				const bb = r.find(`.bounds`)?.[0];
-				const width = bb?.attrs?.width;
-				console.info('UPDATE', k, width, bb);
-
-				r.scaleX(scale);
-				r.scaleY(scale);
-				r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y });
-			}); */
 		}
 	}
 

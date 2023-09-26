@@ -18,31 +18,31 @@
 	const currentBoard = getContext('currentBoard');
 </script>
 
-{#if boardId}
-	<Button
-		color="none"
-		id={'board-' + boardId}
-		class="!p-1 mt-0.5"
-		on:click={(e) => {
-			dispatch('click', {
-				event: e
-			});
-		}}
-	>
-		<div>
-			<div class="flex items-center justify-center {boardId == '0' && 'text-red-600'}">
-				<img class="hidden md:block max-h-10" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
-				<p class="pl-1 md:text-4xl text-xl my-auto">{id}</p>
-			</div>
+<Button
+	color="none"
+	id={'board-' + boardId}
+	class="!p-1 mt-0.5"
+	on:click={(e) => {
+		dispatch('click', {
+			event: e
+		});
+	}}
+>
+	<div>
+		<div class="flex items-center justify-center {boardId == '0' && 'text-red-600'}">
+			<img class="hidden md:block max-h-10" style:filter={'invert(0.5)'} src={barcodeImageUrl} />
 			{#if boardId != '0'}
-				<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">
-					<BoardPopoverContent
-						{boardId}
-						complete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length > 0).length}
-						incomplete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length == 0).length}
-					/>
-				</Popover>
+				<p class="pl-1 md:text-4xl text-xl my-auto">{id}</p>
 			{/if}
 		</div>
-	</Button>
-{/if}
+		{#if boardId != '0'}
+			<Popover placement="bottom" triggeredBy={'#board-' + boardId} class="w-64">
+				<BoardPopoverContent
+					{boardId}
+					complete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length > 0).length}
+					incomplete={$currentBoard?.boardSteps?.filter((s) => s?.signoffs?.length == 0).length}
+				/>
+			</Popover>
+		{/if}
+	</div>
+</Button>

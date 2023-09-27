@@ -5,12 +5,14 @@
 	import List from './KnowledgeBase/List.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { ArrowTopRightOnSquare } from 'svelte-heros-v2';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
 	export let galleryVisible: boolean = false;
 	export let hasInfo = false;
 	export let footprint = {};
+	export let showPopoutButton = true;
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),
@@ -68,18 +70,27 @@
 	<p class="text-red-600">{$partInfoStore.error.message}</p>
 {:else if partInfo}
 	<div class="p-1">
-		{#if partLinkVisible}
-			<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
-				{#if isGeneric}
-					<p>{partInfo?.name}</p>
-				{:else}
-					<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
-						>{partInfo?.name}</a
-					>
-				{/if}
-			</div>
-		{/if}
+		<div class="flex">
+			{#if partLinkVisible}
+				<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
+					{#if isGeneric}
+						<p>{partInfo?.name}</p>
+					{:else}
+						<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
+							>{partInfo?.name}</a
+						>
+					{/if}
+				</div>
+			{/if}
 
+			{#if showPopoutButton}
+				<div class="float-right ml-auto">
+					<a href={window.origin + '/part/' + (partInfo?.name || '')} target="_blank">
+						<ArrowTopRightOnSquare class="text-xs dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100" />
+					</a>
+				</div>
+			{/if}
+		</div>
 		<div class="mb-1 text-sm font-normal">
 			{#if partInfo?.manufacturer}
 				<p>{partInfo.manufacturer}</p>

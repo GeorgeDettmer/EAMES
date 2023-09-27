@@ -26,9 +26,7 @@ export const actions: Actions = {
 			login_token: string;
 		};
 
-		const { error, token } = login_token
-			? await loginToken(login_token)
-			: await loginUsernamePass(username, password);
+		const { error, token } = login_token ? await loginToken(login_token) : await loginUsernamePass(username, password);
 		if (error) {
 			return fail(401, { error });
 		}
@@ -49,6 +47,7 @@ export const actions: Actions = {
 		console.log('USER LOGOUT: ', event.locals.user);
 		event.cookies.delete('AuthorizationToken');
 		event.locals.user = undefined;
-		throw redirect(302, '/login');
+		//throw redirect(302, '/login');
+		return {};
 	}
 };

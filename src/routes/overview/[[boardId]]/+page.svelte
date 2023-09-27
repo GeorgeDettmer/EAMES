@@ -7,5 +7,4 @@
 	let boardId = data?.boardId;
 </script>
 
-{boardId}
 <BoardOverview {boardId} />

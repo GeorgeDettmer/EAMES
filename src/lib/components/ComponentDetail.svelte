@@ -49,26 +49,27 @@
 					class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100 mb-2 "
 				/>
 				{#if showPopoutButton && hasInfo}
-					<a href={window.origin + '/part/' + (component?.component?.device || '')} target="_blank">
+					<!-- <a href={window.origin + '/part/' + (component?.component?.device || '')} target="_blank">
 						<ArrowTopRightOnSquare
 							on:click={() => dispatch('back')}
 							class="dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100"
 						/>
-					</a>
+					</a> -->
 				{/if}
 			</div>
 		</div>
 		{#if Object.keys(json).length > 0}
-			<ViewerFromJson {json} height={250} />
+			<ViewerFromJson {json} height={200} />
 		{/if}
 
 		{#if footprint}
-			<ViewerFromJson json={footprint} height={150} />
+			<ViewerFromJson json={footprint} height={200} />
 		{/if}
 		<Hr />
 
 		<div class:hidden={!hasInfo} class="py-0">
 			<PartInfo
+				{showPopoutButton}
 				partId={component?.component?.device}
 				partLinkVisible={false}
 				kbVisible={(!!kbId || hasInfo) && kbVisible}

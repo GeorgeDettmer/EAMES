@@ -157,12 +157,12 @@
 		<Card size="xl" padding="xl" class={isComplete ? 'ring-4 ring-green-400' : 'ring-4 ring-red-600'}>
 			<div class="flow-root">
 				<div class="flex float-left items-center">
-					<img
+					<!-- <img
 						alt="Board serial number"
 						class="w-10 mr-2 justify-left"
 						style:filter={'invert(0.5)'}
 						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + boardId}
-					/>
+					/> -->
 					<p class="mb-2 md:text-4xl text-xl text-gray-900 dark:text-white justify-left">
 						{padSerial(boardId)}
 					</p>

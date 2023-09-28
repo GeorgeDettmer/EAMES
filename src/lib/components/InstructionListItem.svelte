@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
-	import { XCircle, ChevronDown, ChevronUp } from 'svelte-heros-v2';
+	import { XCircle } from 'svelte-heros-v2';
 	import { Hr, Popover } from 'flowbite-svelte';
 	import { stringToColorClass, classes, randomString } from '$lib/utils';
 
@@ -31,7 +31,7 @@
 		});
 	}
 
-	$: console.log('ListItem:', item);
+	//$: console.log('ListItem:', item);
 	$: active = activeReference == item?.part_id;
 	$: complete = item?.signoffs?.length > 0;
 	$: referenceStep = !!item?.part_id;
@@ -45,6 +45,7 @@
 		: 'bg-opacity-50 hover:bg-opacity-75';
 
 	$: boardId = $page?.data?.boardId;
+	$: backgroundcolor = color.startsWith('#');
 
 	$: _class = `rounded-md w-full my-1 ${bgOpacityClasses} bg-${bgColor} border-${borderColor} ${borderClasses}`;
 </script>
@@ -57,6 +58,7 @@
 	on:wheel|passive={(e) => onMouse(e, item)}
 	on:click={(e) => onMouse(e, item)}
 	on:mousedown={(e) => onMouse(e, item)}
+	style:background-color={backgroundcolor ? color : ''}
 	class={_class}
 >
 	<div class="flex flex-row mx-1 my-2 items-center">

@@ -297,7 +297,7 @@
 		if (!visibleLayer) {
 			visibleLayer = cad?.data?.COMPONENTS?.filter((c) => stepReference === c?.component)?.[0]?.layer;
 		}
-		getRenderers().forEach((r, k) => {
+		/* getRenderers().forEach((r, k) => {
 			const scale = cad?.start_scale ? cad.start_scale / 100 : 0.4;
 			const x = cad?.start_x ? cad.start_x : 215;
 			const y = cad?.start_y ? cad.start_y : 900;
@@ -305,31 +305,30 @@
 			const width = bb?.attrs?.width;
 			//console.info('UPDATE', k, width, bb);
 			//Fill board to screen https://codepen.io/spark25/pen/VwXvZpp
-			/* r.scaleX(scale);
-			r.scaleY(scale);
-			r.setPosition({ x: k === 'TOP' ? x : x * 3, y: y }); */
-		});
+			
+			//fitToScreen(k);
+		}); */
 		steps?.forEach((i) => {
-			if (i?.reference && i?.color) {
-				const isSigned = i?.signoffs?.length > 0;
-				let rendererId = visibleLayer;
-				let group: Group | undefined;
+			if (i?.reference) {
+				const isSigned: boolean = i?.signoffs?.length > 0;
+				const group: Group | undefined = getComponentGroup(i?.reference);
+				const rendererId: string | undefined = group?.attrs?.layer;
 				//TODO: Look to improve this. Below is finding the component group just to find id
 				// Then passing to updateComponent* just for those functions to do that again...
-				getRenderers().forEach((r, id) => {
+				/* getRenderers().forEach((r, id) => {
 					group = getComponentGroup(i?.reference, id);
 					if (group) {
 						rendererId = id;
 						return;
 					}
 				});
-				updateComponentColour(i?.reference, tailwindColorToHex(i?.color || 'orange-500'), rendererId);
-				updateComponentOutline(
-					i?.reference,
-					rendererId,
-					isSigned ? tailwindColorToHex('green-400') : tailwindColorToHex('red-600'),
-					getOutlineSize(isSigned)
-				);
+				let group2 = getComponentGroup(i?.reference)?.attrs?.layer;
+				console.log('LAYERZZZZ:', rendererId, group2); */
+				if (!rendererId) return;
+				if (i?.color) {
+					updateComponentColour(i?.reference, i?.color?.startsWith('#') ? i.color : tailwindColorToHex(i.color), rendererId);
+				}
+				updateComponentOutline(i?.reference, rendererId, isSigned ? '#66bb6a' : '#e53935', 15);
 			}
 		});
 		assembly?.meta?.dnf?.forEach((ref) => {
@@ -342,8 +341,7 @@
 			});
 			updateComponentColour(ref.toUpperCase(), '#bd1313', rendererId);
 		});
-		//console.log('DRAW DONE', e ?? '');
-		/*  */
+		console.log('DRAW DONE', e ?? '');
 	};
 	let pin_event = (e) => {
 		let event = e?.detail?.event;
@@ -373,7 +371,7 @@
 		}
 
 		group?.find(`.outline`)?.forEach((c) => {
-			c.strokeWidth(hover ? c.strokeWidth() * 2 : c.strokeWidth() / 2);
+			c.strokeWidth(hover ? Math.min(c.strokeWidth() * 2, 25) : Math.min(c.strokeWidth() / 2, 25));
 			/* if (opacity) {
 				c.opacity(opacity);
 			} */
@@ -497,10 +495,10 @@
 					//c.fillEnabled(false);
 					c.fill('');
 				});
-				group.find(`.lead`).forEach((c) => {
+				/* group.find(`.lead`).forEach((c) => {
 					//console.log('Update component lead colour:', c);
 					c.fillEnabled(false);
-				});
+				}); */
 				return;
 			}
 			group.find(`.outline`).forEach((c) => {
@@ -509,11 +507,11 @@
 				c.fill(colour);
 				c.opacity(0.75);
 			});
-			group.find(`.lead`).forEach((c) => {
+			/* group.find(`.lead`).forEach((c) => {
 				//console.log('Update component lead colour:', c);
 				c.fillEnabled(false);
 				c.fill(colour);
-			});
+			}); */
 		});
 	};
 
@@ -526,9 +524,14 @@
 	}
 
 	//INFO: Update CAD highlighting on steps change
+	let firstDraw = true;
 	$: {
-		if (cad && steps) {
-			messagesStore('Changes were made to the CAD/Steps. Updating...', 'info');
+		if (steps) {
+			if (firstDraw) {
+				firstDraw = false;
+			} else {
+				messagesStore('Changes were made to instruction steps. Updating...', 'info');
+			}
 			draw_event();
 		}
 	}
@@ -623,7 +626,6 @@
 											on:component_event={component_event}
 											on:contextmenu={(e) => {
 												e.detail.event.evt.preventDefault();
-												console.log(e);
 												console.log('stage', e.detail.event.target instanceof Konva.Stage);
 												if (e.detail.event.target instanceof Konva.Stage) {
 													detailVisible = null;

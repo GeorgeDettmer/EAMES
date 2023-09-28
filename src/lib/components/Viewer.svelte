@@ -55,14 +55,13 @@
 	export const fitToScreen = (rendererId: string) => {
 		const renderer = getRenderers().get(rendererId);
 		if (!renderer) return;
-		console.log('renderer', renderer, rendererId);
 		const layer = renderer?.findOne('.board');
-		console.log(renderer, layer);
 		if (!layer) return;
 		const scale = Math.min(
 			renderer.width() / (layer.getClientRect().width * 1.025),
 			renderer.height() / (layer.getClientRect().height * 1.025)
 		);
+		console.log('fitToScreen', rendererId, scale);
 		renderer.position({
 			x: -layer.getClientRect().x * scale,
 			y: -layer.getClientRect().y * scale

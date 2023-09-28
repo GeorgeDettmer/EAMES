@@ -209,6 +209,7 @@
 			separator: PUBLIC_BARCODE_separator
 		}
 	};
+	console.log('BARCODE CONFIG:', keys);
 	function handleWindowKey(event) {
 		const key = event.key;
 		if (key === keys.config.startKey && !keys.watching) {

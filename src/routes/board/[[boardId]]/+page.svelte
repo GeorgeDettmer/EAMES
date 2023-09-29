@@ -597,7 +597,7 @@
 							<Blockquote border bg class="p-1 flex-auto mb-1 pb-2.5" borderClass="border-l-8 border-gray-400">
 								<div class="flex">
 									<div class="flex-none w-2/3">
-										<P weight="bold" size="lg">No steps assigned for this assembly/board</P>
+										<P weight="bold" size="lg">No assembly steps assigned</P>
 									</div>
 								</div>
 							</Blockquote>

@@ -234,7 +234,6 @@
 					}
 					assembly_id
 					dynamic
-					board_id
 					user {
 						id
 						username

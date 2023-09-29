@@ -12,3 +12,61 @@ export const client = new Client({
 		};
 	}
 });
+
+/*
+subscription MySubscription2 {
+  boards(where: {id: {_in: [35, 36]}}) {
+    id
+    stepsByAssemblyId {
+      id
+      reference
+      instruction {
+        id
+        name
+      }
+    }
+    stepsByBoardId {
+      reference
+      id
+      board_id
+      instruction {
+        id
+        name
+      }
+      user {
+        ...usersFragment
+      }
+    }
+    assembly {
+      id
+      name
+      revision_internal
+      revision_external
+      meta
+      kb
+    }
+    signoffsByBoardId {
+      step {
+        reference
+        instruction {
+          id
+          name
+        }
+      }
+      user {
+        ...usersFragment
+      }
+    }
+  }
+}
+
+fragment usersFragment on users {
+  id
+  username
+  first_name
+  last_name
+  initials
+  color
+  processes
+}
+*/

@@ -571,7 +571,7 @@
 							>
 								<div class="flex">
 									<div class="flex-none w-2/3">
-										<P weight="bold" size="xl"
+										<P weight="bold" size="lg"
 											>{instruction?.name}{instruction?.description ? `: ${instruction?.description}` : ''}</P
 										>
 										<P weight="medium" size="sm">{instruction?.id} ({instruction?.revision})</P>
@@ -590,6 +590,14 @@
 												bind:value={instructionId}
 											/>
 										</Label>
+									</div>
+								</div>
+							</Blockquote>
+						{:else}
+							<Blockquote border bg class="p-1 flex-auto mb-1 pb-2.5" borderClass="border-l-8 border-gray-400">
+								<div class="flex">
+									<div class="flex-none w-2/3">
+										<P weight="bold" size="lg">No steps assigned for this assembly/board</P>
 									</div>
 								</div>
 							</Blockquote>

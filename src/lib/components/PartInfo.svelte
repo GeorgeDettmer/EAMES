@@ -45,7 +45,6 @@
 	$: hasInfo = !!partInfo;
 
 	let kbItems = 0;
-	$: console.log('kbItems', kbItems);
 
 	$: images = partInfo?.images || [];
 	let imageIdx = 0;

@@ -8,7 +8,7 @@
 
 	import InstructionList from '$lib/components/InstructionList.svelte';
 	import Viewer, { getRenderers, getComponentGroup, getComponentGroups, fitToScreen } from '$lib/components/Viewer.svelte';
-	import { getContext, setContext } from 'svelte';
+	import { getContext, setContext, tick } from 'svelte';
 	import ComponentDetail from '$lib/components/ComponentDetail.svelte';
 	import InstructionListHeader from '$lib/components/InstructionListHeader.svelte';
 	import Konva from 'konva';
@@ -408,7 +408,7 @@
 
 	let activeReference = '';
 	let activePin = '';
-	let component_event = (e) => {
+	let component_event = async (e) => {
 		let event = e?.detail?.event;
 		let eventType = event?.type;
 		let detail = e?.detail;
@@ -418,6 +418,7 @@
 				console.log('COMPONENT CLICK: ', component?.component, component, detail);
 				if (event.evt.button === 2) {
 					detailVisible = null;
+					await tick();
 					detailVisible = detail;
 				}
 				if (event.evt.button !== 2) {
@@ -679,7 +680,7 @@
 						{#if detailVisible}
 							<div>
 								<ComponentDetail
-									json={detailVisible.event.target.parent.toJSON()}
+									json={getComponentGroup(detailVisible?.component?.component)?.toJSON()}
 									component={detailVisible}
 									dnf={(assembly?.meta?.dnf || []).includes(detailVisible?.component?.component?.toUpperCase())}
 									on:back={() => {

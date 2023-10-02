@@ -39,7 +39,6 @@
 		stage.add(layer);
 		//stage.scaleY(-1);
 		//stage.scaleX(1);
-		console.log(group);
 		group.findOne('.reference')?.remove();
 		group.find('.outline')?.forEach((o) => {
 			o.strokeWidth(2);
@@ -63,7 +62,7 @@
 		});
 		group_dimensions.add(bbRect);
 		let text_width = new Konva.Text({
-			text: (Math.round((bb.width / 21.7) * 100) / 100).toString(),
+			text: (Math.round((bb.width / 21.7) * 10) / 10).toString(),
 			x: bb.x,
 			y: bb.y,
 			fill: 'gray',
@@ -90,7 +89,7 @@
 		group_dimensions.add(arrow_width);
 
 		let text_height = new Konva.Text({
-			text: (Math.round((bb.height / 21.7) * 100) / 100).toString(),
+			text: (Math.round((bb.height / 21.7) * 10) / 10).toString(),
 			x: bb.x,
 			y: bb.y,
 			rotation: 90,

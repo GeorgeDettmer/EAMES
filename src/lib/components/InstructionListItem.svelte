@@ -126,7 +126,7 @@
 				{/if}
 			</div>
 		</div>
-		{#if item?.user}
+		{#if item?.user || item?.dynamic}
 			<div class="flex-none p-2" id={listItemId + item?.user?.id}>
 				<UserIcon user={item?.user} size="sm" />
 
@@ -136,6 +136,7 @@
 				<ChevronUp />
 			{/if} -->
 			</div>
+
 			<Popover
 				style="z-index: 10000;"
 				placement="left"
@@ -144,9 +145,19 @@
 				class="w-96 text-sm font-light text-gray-500 bg-white dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
 			>
 				<UserOverview userId={item?.user?.id} />
-				<Hr>{item?.created_at}</Hr>
+				<Hr>{new Date(item?.created_at).toLocaleDateString()} {new Date(item?.created_at).toLocaleTimeString()}</Hr>
 				<h1 class="text-lg">{item?.notes}</h1>
 			</Popover>
 		{/if}
 	</div>
+
+	{#if item?.meta?.images?.length > 0}
+		<div class="grid md:grid-cols-2 sm:grid-cols-1">
+			{#each item?.meta?.images as image}
+				<a href={image} target="_blank">
+					<img src={image} class="w-fit" alt={image} />
+				</a>
+			{/each}
+		</div>
+	{/if}
 </div>

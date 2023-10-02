@@ -210,7 +210,15 @@
 		client: urqlClient,
 		query: gql`
 			subscription Steps($assemblyId: bigint!, $boardId: bigint!) {
-				steps(where: { assembly_id: { _eq: $assemblyId } }, order_by: [{ part_id: asc_nulls_first }, { reference: asc }]) {
+				steps(
+					where: {
+						_or: [
+							{ board_id: { _eq: $boardId } }
+							{ _and: { board_id: { _is_null: true } }, assembly_id: { _eq: $assemblyId } }
+						]
+					}
+					order_by: [{ part_id: asc_nulls_first }, { reference: asc }]
+				) {
 					id
 					reference
 					part_id
@@ -219,6 +227,7 @@
 					color
 					position
 					instruction_id
+					board_id
 					signoffs(where: { board_id: { _eq: $boardId } }) {
 						id
 						created_at

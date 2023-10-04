@@ -15,7 +15,7 @@
 					revision_internal
 					created_at
 					updated_at
-					lines {
+					lines(order_by: { part: asc_nulls_last }) {
 						id
 						reference
 						part
@@ -155,7 +155,7 @@
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>
 					{#if job?.quantity}
-						<TableBodyCell>{references?.length * job.quantity}</TableBodyCell>
+						<TableBodyCell>{lineKey ? references?.length * job.quantity : '0'}</TableBodyCell>
 					{/if}
 
 					{#if job?.kit?.kits_items}
@@ -163,7 +163,9 @@
 						<TableBodyCell>
 							<Badge
 								class="mx-0.5"
-								color={kitItemQty < references?.length * job.quantity
+								color={!lineKey
+									? 'blue'
+									: kitItemQty < references?.length * job.quantity
 									? 'red'
 									: kitItemQty > references?.length * job.quantity
 									? 'green'

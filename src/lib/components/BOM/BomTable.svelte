@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { reference } from '@popperjs/core';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 
 	export let bomId: string;
+	export let job;
 
 	$: bomStore = queryStore({
 		client: getContextClient(),
@@ -108,6 +108,8 @@
 	} */
 
 	let openRow: number;
+
+	$: console.log(job);
 </script>
 
 {#if $bomStore.fetching}
@@ -124,14 +126,22 @@
 			<TableHeadCell on:click={() => sortTable('maker')}>Part</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('type')}>References</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('make')}>Qty</TableHeadCell>
+			{#if job?.quantity}
+				<TableHeadCell>Build Qty</TableHeadCell>
+			{/if}
+			{#if job?.kit?.kits_items}
+				<TableHeadCell>Kit Qty</TableHeadCell>
+			{/if}
 		</TableHead>
 		<TableBody class="divide-y">
 			{#each lines.keys() as lineKey, idx}
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
+				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
 				<TableBodyRow
 					class="cursor-pointer"
 					on:click={() => {
+						//if (!line?.partByPart?.id) return;
 						openRow = openRow === idx ? null : idx;
 					}}
 				>
@@ -144,12 +154,43 @@
 						{/each}
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>
+					{#if job?.quantity}
+						<TableBodyCell>{references?.length * job.quantity}</TableBodyCell>
+					{/if}
+
+					{#if job?.kit?.kits_items}
+						{@const kitItemQty = kitItem?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
+						<TableBodyCell>
+							<Badge
+								class="mx-0.5"
+								color={kitItemQty < references?.length * job.quantity
+									? 'red'
+									: kitItemQty > references?.length * job.quantity
+									? 'green'
+									: 'blue'}
+							>
+								{kitItemQty}
+							</Badge>
+						</TableBodyCell>
+					{/if}
 				</TableBodyRow>
 				{#if openRow === idx}
 					<TableBodyRow>
 						<TableBodyCell colspan="4" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 								<PartInfo partId={lineKey} />
+							</div>
+						</TableBodyCell>
+						<TableBodyCell colspan="2" class="p-0 object-right">
+							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
+								{#if job?.kit?.kits_items}
+									{#each kitItem as item, idx}
+										<p>
+											{item.id}: {item.part_id} ({item.quantity}) [{item?.orders_item?.order?.supplier?.name ||
+												'Unknown Supplier'}]
+										</p>
+									{/each}
+								{/if}
 							</div>
 						</TableBodyCell>
 					</TableBodyRow>

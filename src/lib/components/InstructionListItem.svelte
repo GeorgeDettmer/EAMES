@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
-	import { XCircle } from 'svelte-heros-v2';
+	import { ChevronDown, ChevronUp, XCircle } from 'svelte-heros-v2';
 	import { Hr, Popover } from 'flowbite-svelte';
 	import { stringToColorClass, classes, randomString } from '$lib/utils';
 
@@ -129,12 +129,6 @@
 		{#if item?.user || item?.dynamic}
 			<div class="flex-none p-2" id={listItemId + item?.user?.id}>
 				<UserIcon user={item?.user} size="sm" />
-
-				<!-- {#if item?.side === false}
-				<ChevronDown />
-			{:else if item?.side === true}
-				<ChevronUp />
-			{/if} -->
 			</div>
 
 			<Popover
@@ -149,13 +143,18 @@
 				<h1 class="text-lg">{item?.notes}</h1>
 			</Popover>
 		{/if}
+		{#if item?.side === false}
+			<ChevronDown />
+		{:else if item?.side === true}
+			<ChevronUp />
+		{/if}
 	</div>
 
 	{#if item?.meta?.images?.length > 0}
 		<div class="grid md:grid-cols-2 sm:grid-cols-1">
 			{#each item?.meta?.images as image}
 				<a href={image} target="_blank">
-					<img src={image} class="w-fit" alt={image} />
+					<img src={image} class="w-fit hover:border shadow-inner" alt={image} />
 				</a>
 			{/each}
 		</div>

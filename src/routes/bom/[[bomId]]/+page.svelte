@@ -53,6 +53,51 @@
 		variables: { jobId }
 	});
 	$: jobInfo = $jobInfoStore?.data?.jobs_by_pk;
+
+	$: bomStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription bom($bomId: uuid!) {
+				bom_by_pk(id: $bomId) {
+					id
+					name
+					revision_external
+					revision_internal
+					created_at
+					updated_at
+					lines(order_by: { part: asc_nulls_last }) {
+						id
+						reference
+						part
+						created_at
+						updated_at
+						partByPart {
+							id
+							name
+							description
+							manufacturer
+							polarised
+							properties
+							created_at
+							footprint
+							image_url
+							images
+							kb
+							updated_at
+						}
+					}
+					assemblies {
+						id
+						name
+						revision_external
+						revision_internal
+					}
+				}
+			}
+		`,
+		variables: { bomId }
+	});
+	$: bom = $bomStore?.data?.bom_by_pk;
 </script>
 
 {#if jobId}
@@ -63,4 +108,12 @@
 		<em>({jobInfo?.kit?.kits_items?.length} items)</em>
 	</p>
 {/if}
-<BomTable {bomId} job={jobInfo} />
+{#if bom?.assemblies?.length > 0}
+	<p>Used in {bom.assemblies.length} assemblies:</p>
+	{#each bom.assemblies as assembly, idx}
+		<p>{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})</p>
+	{/each}
+{:else}
+	<p>No used in any assemblies</p>
+{/if}
+<BomTable {bom} job={jobInfo} />

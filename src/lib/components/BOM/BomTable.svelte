@@ -1,47 +1,8 @@
 <script lang="ts">
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 
-	export let bomId: string;
+	export let bom;
 	export let job;
-
-	$: bomStore = queryStore({
-		client: getContextClient(),
-		query: gql`
-			query bom($bomId: uuid!) {
-				bom_by_pk(id: $bomId) {
-					id
-					name
-					revision_external
-					revision_internal
-					created_at
-					updated_at
-					lines(order_by: { part: asc_nulls_last }) {
-						id
-						reference
-						part
-						created_at
-						updated_at
-						partByPart {
-							id
-							name
-							description
-							manufacturer
-							polarised
-							properties
-							created_at
-							footprint
-							image_url
-							images
-							kb
-							updated_at
-						}
-					}
-				}
-			}
-		`,
-		variables: { bomId }
-	});
-	$: bom = $bomStore?.data?.bom_by_pk;
 
 	import {
 		Badge,
@@ -119,12 +80,7 @@
 	$: console.log(job);
 </script>
 
-{#if $bomStore.fetching}
-	<p>Loading...</p>
-{:else if $bomStore.error}
-	<h1 class="text-red-600">Part query error</h1>
-	<p class="text-red-600">{$bomStore.error.message}</p>
-{:else if bom}
+{#if bom}
 	<!-- <pre>{JSON.stringify(bom, null, 2)}</pre> -->
 
 	<Table hoverable={true}>
@@ -138,6 +94,7 @@
 			{/if}
 			{#if job?.kit?.kits_items}
 				<TableHeadCell>Kit Qty</TableHeadCell>
+				<TableHeadCell>Kit Attrition</TableHeadCell>
 			{/if}
 		</TableHead>
 		<TableBody class="divide-y">
@@ -145,6 +102,7 @@
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
+				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				<TableBodyRow
 					class="cursor-pointer"
 					on:click={() => {
@@ -162,42 +120,50 @@
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>
 					{#if job?.quantity}
-						<TableBodyCell>{lineKey ? references?.length * job.quantity : '0'}</TableBodyCell>
+						<TableBodyCell>{buildQty}</TableBodyCell>
 					{/if}
 
 					{#if job?.kit?.kits_items}
 						{@const kitItemQty = kitItem?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
+						{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
 						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, references?.length * job.quantity)}>
+							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
 								{kitItemQty}
+							</Badge>
+						</TableBodyCell>
+						<TableBodyCell>
+							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
+								{kitItemQty - buildQty} ({kitItemAttritionPercentage >= 0 ? '+' : '-'}{Math.round(
+									kitItemAttritionPercentage
+								)}%)
 							</Badge>
 						</TableBodyCell>
 					{/if}
 				</TableBodyRow>
 				{#if openRow === idx}
-					<TableBodyRow>
-						<TableBodyCell colspan="4" class="p-0">
+					<TableBodyRow class="h-24">
+						<TableBodyCell colspan="5" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 								<PartInfo partId={lineKey} />
 							</div>
 						</TableBodyCell>
-						<TableBodyCell colspan="2" class="p-0 object-right">
-							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
-								{#if job?.kit?.kits_items}
+						{#if job?.kit?.kits_items}
+							<TableBodyCell colspan="2" class="p-0 object-right">
+								<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 									{#each kitItem as item, idx}
 										<div>
-											<UserIcon user={item?.user}
-												><p>
+											<UserIcon user={item?.user}>
+												<p>
 													({item.quantity}) [{item?.orders_item?.order?.supplier?.name
 														? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
 														: 'Unknown Supplier'}]
-												</p></UserIcon
-											>
+												</p>
+											</UserIcon>
 										</div>
 									{/each}
-								{/if}
-							</div>
-						</TableBodyCell>
+								</div>
+							</TableBodyCell>
+						{/if}
 					</TableBodyRow>
 				{/if}
 			{/each}

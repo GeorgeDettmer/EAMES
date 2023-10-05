@@ -109,6 +109,12 @@
 
 	let openRow: number;
 
+	function qtyColor(qty: number, requiredQty: number) {
+		if (qty === requiredQty) return 'blue';
+		if (qty < requiredQty) return 'red';
+		if (qty > requiredQty) return 'green';
+	}
+
 	$: console.log(job);
 </script>
 
@@ -161,16 +167,7 @@
 					{#if job?.kit?.kits_items}
 						{@const kitItemQty = kitItem?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 						<TableBodyCell>
-							<Badge
-								class="mx-0.5"
-								color={!lineKey
-									? 'blue'
-									: kitItemQty < references?.length * job.quantity
-									? 'red'
-									: kitItemQty > references?.length * job.quantity
-									? 'green'
-									: 'blue'}
-							>
+							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, references?.length * job.quantity)}>
 								{kitItemQty}
 							</Badge>
 						</TableBodyCell>

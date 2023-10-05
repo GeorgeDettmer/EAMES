@@ -31,10 +31,19 @@
 								quantity
 								price
 								order {
+									reference
 									supplier {
 										name
 									}
 								}
+							}
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
 							}
 						}
 					}

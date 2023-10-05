@@ -57,6 +57,7 @@
 	import { writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
 	import PartInfo from '../PartInfo.svelte';
+	import UserIcon from '../UserIcon.svelte';
 
 	let items = [];
 
@@ -184,10 +185,15 @@
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 								{#if job?.kit?.kits_items}
 									{#each kitItem as item, idx}
-										<p>
-											{item.id}: {item.part_id} ({item.quantity}) [{item?.orders_item?.order?.supplier?.name ||
-												'Unknown Supplier'}]
-										</p>
+										<div>
+											<UserIcon user={item?.user}
+												><p>
+													({item.quantity}) [{item?.orders_item?.order?.supplier?.name
+														? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
+														: 'Unknown Supplier'}]
+												</p></UserIcon
+											>
+										</div>
 									{/each}
 								{/if}
 							</div>

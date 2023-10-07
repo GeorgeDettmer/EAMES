@@ -1,20 +1,8 @@
 <script lang="ts">
-	import { getContextClient, gql, queryStore } from '@urql/svelte';
-
 	export let bom;
 	export let job;
 
-	import {
-		Badge,
-		ImagePlaceholder,
-		P,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell
-	} from 'flowbite-svelte';
+	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
 	import PartInfo from '../PartInfo.svelte';
@@ -81,8 +69,6 @@
 </script>
 
 {#if bom}
-	<!-- <pre>{JSON.stringify(bom, null, 2)}</pre> -->
-
 	<Table hoverable={true}>
 		<TableHead>
 			<TableHeadCell on:click={() => sortTable('id')}>#</TableHeadCell>
@@ -111,7 +97,7 @@
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell>{lineKey || ''}</TableBodyCell>
+					<TableBodyCell>{lineKey || 'Not Fitted'}</TableBodyCell>
 
 					<TableBodyCell>
 						{#each references as reference}
@@ -133,9 +119,7 @@
 						</TableBodyCell>
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
-								{kitItemQty - buildQty} ({kitItemAttritionPercentage >= 0 ? '+' : '-'}{Math.round(
-									kitItemAttritionPercentage
-								)}%)
+								{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
 							</Badge>
 						</TableBodyCell>
 					{/if}
@@ -151,14 +135,13 @@
 							<TableBodyCell colspan="2" class="p-0 object-right">
 								<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 									{#each kitItem as item, idx}
-										<div>
-											<UserIcon user={item?.user}>
-												<p>
-													({item.quantity}) [{item?.orders_item?.order?.supplier?.name
-														? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
-														: 'Unknown Supplier'}]
-												</p>
-											</UserIcon>
+										<div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1 align-middle">
+											<UserIcon user={item?.user} />
+											<p class="text-lg mx-1 text-white items-center">
+												({item.quantity}) [{item?.orders_item?.order?.supplier?.name
+													? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
+													: 'Unknown Supplier'}]
+											</p>
 										</div>
 									{/each}
 								</div>

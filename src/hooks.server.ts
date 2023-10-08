@@ -1,18 +1,17 @@
 import type { Handle } from '@sveltejs/kit';
 
-import { JWT_ACCESS_SECRET } from '$env/static/private';
 import jwt from 'jsonwebtoken';
-
 import { findUser } from '$lib/user.model';
 
-import { HASURA_HEALTH_URL } from '$env/static/private';
+import { JWT_ACCESS_SECRET, HASURA_HEALTH_URL } from '$env/static/private';
 const hasuraHealth = async (firstRun: boolean = false) => {
-	if (!HASURA_HEALTH_URL) return;
+	if (!HASURA_HEALTH_URL) {
+		console.error('HASURA_HEALTH_URL not set!');
+		return;
+	}
 	const healthz = await fetch(HASURA_HEALTH_URL);
-	if (healthz.status !== 200) {
+	if (healthz.status !== 200 || firstRun) {
 		console.error('HASURA ENDPOINT ERROR: ', healthz?.statusText, healthz?.status);
-	} else if (firstRun) {
-		console.log('HASURA ENDPOINT HEALTH: ', healthz?.statusText, healthz?.status);
 	}
 };
 hasuraHealth(true);
@@ -27,9 +26,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 			event.cookies.delete('AuthorizationToken');
 			event.locals.user = undefined;
 		} else {
-			const token = authCookie.split(' ')[1];
-
 			try {
+				const token = authCookie.split(' ')[1];
 				const jwtUser = jwt.verify(token, JWT_ACCESS_SECRET);
 				if (typeof jwtUser === 'string') {
 					throw new Error('Something went wrong');

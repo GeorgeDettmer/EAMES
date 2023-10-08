@@ -11,7 +11,8 @@
 		PUBLIC_HASURA_URL,
 		PUBLIC_BARCODE_endKey,
 		PUBLIC_BARCODE_startKey,
-		PUBLIC_BARCODE_separator
+		PUBLIC_BARCODE_separator,
+		PUBLIC_BARCODE_timeout
 	} from '$env/static/public';
 	import type { LayoutData } from './$types';
 
@@ -204,12 +205,13 @@
 		timeStamp: 0,
 		result: '',
 		config: {
-			startKey: PUBLIC_BARCODE_startKey,
-			endKey: PUBLIC_BARCODE_endKey,
-			separator: PUBLIC_BARCODE_separator
+			startKey: PUBLIC_BARCODE_startKey || '|',
+			endKey: PUBLIC_BARCODE_endKey || 'Enter',
+			separator: PUBLIC_BARCODE_separator || '|',
+			timeout: parseInt(PUBLIC_BARCODE_timeout) || 1000
 		}
 	};
-	console.log('BARCODE CONFIG:', keys);
+	console.log('BARCODE CONFIG:', keys.config);
 	function handleWindowKey(event) {
 		const key = event.key;
 		if (key === keys.config.startKey && !keys.watching) {
@@ -231,18 +233,17 @@
 			}
 			if (
 				keys.timeStamp &&
-				new Set(
-					'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.startKey + keys.config.separator
-				).has(key)
+				new Set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.separator).has(key)
 			) {
 				keys.result += key;
 			}
 		}
-		if (keys.timeStamp && event.timeStamp - keys.timeStamp > 5000) {
+		if (keys.timeStamp && event.timeStamp - keys.timeStamp > keys.config.timeout) {
 			console.log('CAPTURE EXPIRED');
 			keys.watching = false;
 			keys.timeStamp = 0;
 			keys.result = '';
+			if (key === keys.config.startKey) handleWindowKey(event);
 		}
 	}
 

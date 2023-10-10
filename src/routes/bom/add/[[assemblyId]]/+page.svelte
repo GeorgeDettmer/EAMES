@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
-	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
+	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
-
+	import { Button } from 'flowbite-svelte';
+	import { messagesStore } from 'svelte-legos';
+	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
 
 	$: assemblyInfoStore = subscriptionStore({
@@ -55,8 +57,8 @@
 
 		const f = e.dataTransfer.files[0];
 		const data = await f.arrayBuffer();
-		const wb = read(data); // parse the array buffer
-		const ws = wb.Sheets?.['BOM']; // get the first worksheet
+		const wb = read(data);
+		const ws = wb.Sheets?.['BOM'];
 		console.log(wb.Sheets);
 		lines = utils.sheet_to_json(ws);
 		html = utils.sheet_to_html(ws);
@@ -68,28 +70,105 @@
 			if (!line.ipn && lines?.[idx - 1]?.ipn) {
 				line.ipn = lines[idx - 1].ipn;
 			}
+			if (!line.Qty && line?.reference) {
+				line.Qty = line?.reference?.split(',')?.length;
+			}
 		});
-
 		let _lines = [];
 		lines.forEach((line) => {
-			let refs = line?.reference?.split(',');
-			console.log('refs', refs);
+			let refs = line?.reference?.split(',')?.map((r) => r.trim());
+			console.log('refs', line.ipn, refs);
 			refs.forEach((ref) => {
-				console.log('ref', ref, line.ipn);
-				_lines.push({ reference: ref, part: line.ipn === 'Not Fitted' ? null : line.ipn });
+				_lines.push({
+					reference: ref,
+					part: line.ipn === 'Not Fitted' ? null : line.ipn,
+					new: partsInLibrary?.includes(line.ipn)
+				});
 			});
 		});
 		if (_lines) {
 			bom.lines = _lines;
 		}
-		/* DO SOMETHING WITH workbook HERE */
 	}
+
+	async function insert() {
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		if (!lines || !files?.accepted[0]?.name || !bom?.lines) {
+			messagesStore('The BOM does not have properly formatted lines', 'warning');
+		}
+		if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert BOMs. You have permission for: ${Object.keys($page?.data?.user?.processes)}`
+			);
+			return;
+		}
+		let mutationResult;
+		let bom_lines = bom?.lines?.map((l) => {
+			console.log(l);
+			return { reference: l?.reference };
+		});
+		console.log('linesz', bom_lines);
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation insertBOM(
+					$data: [bom_lines_insert_input!] = {}
+					$name: String = ""
+					$revision_external: String = ""
+					$revision_internal: Int = 1
+				) {
+					insert_bom_one(
+						object: {
+							lines: { data: $data }
+							name: $name
+							revision_external: $revision_external
+							revision_internal: $revision_internal
+						}
+					) {
+						id
+					}
+				}
+			`,
+			{ data: bom_lines, name: files.accepted[0].name?.split('.xl')?.[0] }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Inserted BOM: ' + mutationResult.data.insert_bom_one.id, 'success');
+		}
+	}
+
+	$: partsInfoStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription partsExist($parts: [String!] = []) {
+				parts(where: { name: { _in: $parts } }) {
+					id
+					name
+				}
+			}
+		`,
+		variables: {
+			parts: lines?.map((l) => {
+				return l?.ipn;
+			})
+		}
+	});
+	$: partsInfo = $partsInfoStore?.data?.parts;
+	$: partsInLibrary = partsInfo?.map((p) => {
+		return p?.id;
+	});
+	$: console.log('partsInLibrary', partsInLibrary);
 </script>
 
 {#if assemblyId}
 	<p>Assembly: {assemblyId} <em>({assemblyInfo?.name})</em></p>
 	{#if assemblyInfo?.bom}
-		BOM ID: {assemblyInfo?.bom?.id}
+		<p>BOM ID: {assemblyInfo?.bom?.id}</p>
 	{/if}
 	{#if assemblyInfo?.jobs?.length > 0}
 		<p>
@@ -103,39 +182,36 @@
 {#if files?.accepted}
 	File: {files.accepted[0].name}
 {/if}
-
+{partsInfo}
 {#if bom?.lines}
-	<BomTable {bom} />
+	<Button outline color="green" on:click={insert}>Insert BOM</Button>
+	<BomTable {bom} {partsInLibrary} />
 {/if}
-
-{#if lines?.length > 0}
-	<table>
-		<thead>
-			<th>Qty</th>
-			<th>References</th>
-			<th>Description</th>
-			<th>IPN</th>
-		</thead>
-		<tbody>
-			{#each lines as p}
-				<tr class:text-red-600={p.ipn == 'Not Fitted'}>
-					<td>{p.Qty || ''}</td>
-					<td>{p.reference || ''}</td>
-					<td>{p.Description || ''}</td>
-					<td>{p.ipn || ''}</td>
-				</tr>
-			{/each}
-		</tbody>
-		<!-- <tfoot>
-		<td colSpan={2}>
-			<button on:click={exportFile}>Export XLSX</button>
-		</td>
-	</tfoot> -->
-	</table>
-{/if}
-
-<div bind:this={tbl}>{@html html}</div>
-
+<div class="my-4">
+	{#if lines?.length > 0}
+		<table>
+			<thead>
+				<th>Qty</th>
+				<th>References</th>
+				<th>Description</th>
+				<th>Part</th>
+			</thead>
+			<tbody>
+				{#each lines as p}
+					{@const refSplit = p.reference?.split(',')}
+					{@const refCount = refSplit?.length}
+					<tr class:bg-slate-500={p.ipn == 'Not Fitted'}>
+						<td class:text-red-600={p.Qty !== refCount}>{refCount}:{p.Qty || ''}</td>
+						<td>{p.reference || ''}</td>
+						<td>{p.Description || ''}</td>
+						<td class:underline={!partsInLibrary?.includes(p.ipn)}>{p.ipn || ''}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
+	<div bind:this={tbl}>{@html html}</div>
+</div>
 {#if !files}
 	<FileDrop
 		on:filedrop={(e) => {

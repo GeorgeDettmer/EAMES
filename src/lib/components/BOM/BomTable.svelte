@@ -1,12 +1,14 @@
 <script lang="ts">
 	export let bom;
 	export let job = {};
+	export let partsInLibrary = [];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import { slide } from 'svelte/transition';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
+	import NewComponent from './NewComponent.svelte';
 
 	let items = [];
 
@@ -93,12 +95,15 @@
 				<TableBodyRow
 					class={`cursor-pointer`}
 					on:click={() => {
-						//if (!line?.partByPart?.id) return;
+						console.log('line click', lineKey, line);
+						if (!lineKey) return;
 						openRow = openRow === idx ? null : idx;
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell>{lineKey || 'Not Fitted'}</TableBodyCell>
+					<TableBodyCell class={`${(partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey)) || 'underline'}`}
+						>{lineKey || 'Not Fitted'}</TableBodyCell
+					>
 
 					<TableBodyCell>
 						{#each references as reference}
@@ -129,7 +134,11 @@
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="5" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
-								<PartInfo partId={lineKey} />
+								{#if partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey)}
+									<PartInfo partId={lineKey} />
+								{:else}
+									<NewComponent name={lineKey} />
+								{/if}
 							</div>
 						</TableBodyCell>
 						{#if job?.kit?.kits_items}

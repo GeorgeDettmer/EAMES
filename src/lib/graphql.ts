@@ -7,7 +7,8 @@ export const client = new Client({
 	fetchOptions: () => {
 		return {
 			headers: {
-				'x-hasura-admin-secret': 'cMJvwCG29qElvQ8mnouvac8BBDI0dCJT'
+				'x-hasura-admin-secret': 'cMJvwCG29qElvQ8mnouvac8BBDI0dCJT',
+				'Bypass-Tunnel-Reminder': '1'
 			}
 		};
 	}

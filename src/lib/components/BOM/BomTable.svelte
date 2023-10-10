@@ -16,7 +16,7 @@
 	$: {
 		if (bom?.lines) {
 			bom.lines.forEach((line) => {
-				console.log(line);
+				//console.log(line);
 				let part = line?.part || null;
 				if (!lines.has(part)) {
 					lines.set(part, []);
@@ -25,7 +25,7 @@
 			});
 			items = lines.keys();
 		}
-		console.log(lines, items);
+		console.log(lines);
 	}
 
 	const sortKey = writable('id'); // default sort key
@@ -67,7 +67,6 @@
 		if (qty > requiredQty) return 'green';
 	}
 
-	$: console.log(job);
 	$: console.log('BOM:', bom);
 	$: console.log('partsInLibrary:', partsInLibrary, partsInLibrary.length);
 </script>
@@ -102,7 +101,7 @@
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell class={`${(partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey)) || 'underline'}`}
+					<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
 						>{lineKey || 'Not Fitted'}</TableBodyCell
 					>
 
@@ -135,10 +134,10 @@
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="5" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
-								{#if partsInLibrary.length > 0 && partsInLibrary.includes(lineKey)}
-									<PartInfo partId={lineKey} />
-								{:else}
+								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
 									<NewComponent name={lineKey} />
+								{:else}
+									<PartInfo partId={lineKey} />
 								{/if}
 							</div>
 						</TableBodyCell>

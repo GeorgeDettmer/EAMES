@@ -46,14 +46,16 @@
 			if (!token) {
 				return {
 					headers: {
-						'X-Hasura-Role': 'anonymous'
+						'X-Hasura-Role': 'anonymous',
+						'Bypass-Tunnel-Reminder': '1'
 					}
 				};
 			}
 			return {
 				headers: {
 					Authorization: token,
-					'X-Hasura-Role': 'user'
+					'X-Hasura-Role': 'user',
+					'Bypass-Tunnel-Reminder': '1'
 				}
 			};
 		} /* {
@@ -104,14 +106,16 @@
 			if (!token) {
 				return {
 					headers: {
-						'X-Hasura-Role': 'anonymous'
+						'X-Hasura-Role': 'anonymous',
+						'Bypass-Tunnel-Reminder': '1'
 					}
 				};
 			}
 			return {
 				headers: {
 					Authorization: token,
-					'X-Hasura-Role': 'user'
+					'X-Hasura-Role': 'user',
+					'Bypass-Tunnel-Reminder': '1'
 				}
 			};
 		}

@@ -105,8 +105,12 @@
 	<p>Job: {jobId}/{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
 
 	<p>
-		Kit: <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + jobInfo?.kit?.id}>{jobInfo?.kit?.id}</a>
-		<em>({jobInfo?.kit?.kits_items?.length} items)</em>
+		{#if jobInfo?.kit}
+			Kit: <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + jobInfo?.kit?.id}>{jobInfo?.kit?.id}</a>
+			<em>({jobInfo?.kit?.kits_items?.length} items)</em>
+		{:else}
+			No kit associated with job
+		{/if}
 	</p>
 {/if}
 {#if bom?.assemblies?.length > 0}

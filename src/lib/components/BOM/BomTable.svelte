@@ -143,7 +143,7 @@
 							</div>
 						</TableBodyCell>
 						{#if job?.kit?.kits_items}
-							<TableBodyCell colspan="2" class="p-0 object-right">
+							<TableBodyCell colspan="3" class="p-0 object-right">
 								<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 									{#each kitItem as item, idx}
 										<div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1 align-middle">

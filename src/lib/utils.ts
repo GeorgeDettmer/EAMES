@@ -107,3 +107,14 @@ export const classes = {
 
 import colors from 'tailwindcss/colors.js';
 export const tailwindColors = colors;
+
+export let expandToRange = (input: string): Array<number> => {
+	let splitInput: Array<String> = input.split('-');
+	if (splitInput.length != 2) return [];
+	let start: number = Number(splitInput[0].replace(/[^0-9]/g, ''));
+	let end: number = Number(splitInput[1].replace(/[^0-9]/g, ''));
+
+	console.log(input, splitInput, start, end);
+
+	return Array.from({ length: (end - start) / 1 }, (value, index) => start + index * 1);
+};

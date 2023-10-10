@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let bom;
-	export let job;
+	export let job = {};
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
@@ -66,6 +66,7 @@
 	}
 
 	$: console.log(job);
+	$: console.log('BOM:', bom);
 </script>
 
 {#if bom}
@@ -90,7 +91,7 @@
 				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				<TableBodyRow
-					class="cursor-pointer"
+					class={`cursor-pointer`}
 					on:click={() => {
 						//if (!line?.partByPart?.id) return;
 						openRow = openRow === idx ? null : idx;
@@ -101,7 +102,7 @@
 
 					<TableBodyCell>
 						{#each references as reference}
-							<Badge class="mx-0.5" color="blue">{reference}</Badge>
+							<Badge class="mx-0.5" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
 						{/each}
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>

@@ -13,6 +13,7 @@
 			subscription jobInfo($jobId: bigint!) {
 				jobs_by_pk(id: $jobId) {
 					quantity
+					batch
 					assembly {
 						name
 						revision_external
@@ -101,7 +102,7 @@
 </script>
 
 {#if jobId}
-	<p>Job: {jobId} <em>({jobInfo?.quantity} boards)</em></p>
+	<p>Job: {jobId}/{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
 
 	<p>
 		Kit: <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + jobInfo?.kit?.id}>{jobInfo?.kit?.id}</a>

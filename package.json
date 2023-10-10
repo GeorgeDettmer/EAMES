@@ -22,6 +22,7 @@
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte": "^2.30.0",
+		"filedrop-svelte": "^0.1.2",
 		"postcss": "^8.4.24",
 		"postcss-load-config": "^4.0.1",
 		"prettier": "^2.8.0",
@@ -41,6 +42,7 @@
 		"@urql/devtools": "^2.0.3",
 		"@urql/svelte": "^4.0.1",
 		"classnames": "^2.3.2",
+		"filesize": "^10.1.0",
 		"flowbite": "^1.6.5",
 		"flowbite-svelte": "^0.37.4",
 		"flowbite-svelte-icons": "^0.4.3",
@@ -51,6 +53,7 @@
 		"simplify-js": "^1.2.4",
 		"svelte-heros-v2": "^0.7.1",
 		"svelte-konva": "^0.3.0",
-		"svelte-legos": "^0.2.2"
+		"svelte-legos": "^0.2.2",
+		"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/xlsx-0.20.0.tgz"
 	}
 }

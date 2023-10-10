@@ -69,6 +69,7 @@
 
 	$: console.log(job);
 	$: console.log('BOM:', bom);
+	$: console.log('partsInLibrary:', partsInLibrary, partsInLibrary.length);
 </script>
 
 {#if bom}
@@ -134,7 +135,7 @@
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="5" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
-								{#if partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey)}
+								{#if partsInLibrary.length > 0 && partsInLibrary.includes(lineKey)}
 									<PartInfo partId={lineKey} />
 								{:else}
 									<NewComponent name={lineKey} />

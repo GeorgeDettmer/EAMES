@@ -82,7 +82,7 @@
 				_lines.push({
 					reference: ref,
 					part: line.ipn === 'Not Fitted' ? null : line.ipn,
-					new: partsInLibrary?.includes(line.ipn)
+					partByPart: { description: line.Description }
 				});
 			});
 		});
@@ -108,7 +108,7 @@
 		let mutationResult;
 		let bom_lines = bom?.lines?.map((l) => {
 			console.log(l);
-			return { reference: l?.reference };
+			return { reference: l?.reference, part: l?.part };
 		});
 		console.log('linesz', bom_lines);
 		mutationResult = await urqlClient.mutation(
@@ -182,7 +182,7 @@
 {#if files?.accepted}
 	File: {files.accepted[0].name}
 {/if}
-{partsInfo}
+
 {#if bom?.lines}
 	<Button outline color="green" on:click={insert}>Insert BOM</Button>
 	<BomTable {bom} {partsInLibrary} />

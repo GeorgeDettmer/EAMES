@@ -76,6 +76,7 @@
 		<TableHead>
 			<TableHeadCell on:click={() => sortTable('id')}>#</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('maker')}>Part</TableHeadCell>
+			<TableHeadCell>Description</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('type')}>References</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('make')}>Qty</TableHeadCell>
 			{#if job?.quantity}
@@ -104,7 +105,7 @@
 					<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
 						>{lineKey || 'Not Fitted'}</TableBodyCell
 					>
-
+					<TableBodyCell>{line?.[0]?.partByPart?.description || ''}</TableBodyCell>
 					<TableBodyCell>
 						{#each references as reference}
 							<Badge class="mx-0.5" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
@@ -135,7 +136,7 @@
 						<TableBodyCell colspan="5" class="p-0">
 							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
-									<NewComponent name={lineKey} />
+									<NewComponent id={lineKey} description={line?.[0]?.description} />
 								{:else}
 									<PartInfo partId={lineKey} />
 								{/if}

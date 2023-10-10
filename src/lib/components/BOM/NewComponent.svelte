@@ -1,12 +1,17 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { getContextClient, gql } from '@urql/svelte';
 	import { Button, Input, Label } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 
-	export let name = '';
-	export let description = '';
-	export let image = '';
+	export let id: String;
+	export let name: String = '';
+	export let description: String = '';
+	export let image: String = '';
+
+	if (!name) {
+		name = id;
+	}
 
 	async function addComponent() {
 		if (!$page?.data?.user) {
@@ -28,13 +33,13 @@
 		const urqlClient = getContextClient();
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertComponent($name: String = "", $description: String = "", $image_url: String = "") {
-					insert_parts_one(object: { name: $name, description: $description, image_url: $image_url }) {
+				mutation insertComponent($id: String!, $name: String = "", $description: String = "", $image_url: String = "") {
+					insert_parts_one(object: { id: $id, name: $name, description: $description, image_url: $image_url }) {
 						id
 					}
 				}
 			`,
-			{ name, description, image_url: image }
+			{ id, name, description, image_url: image }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);

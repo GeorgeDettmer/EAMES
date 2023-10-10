@@ -115,6 +115,6 @@
 		<p>{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})</p>
 	{/each}
 {:else}
-	<p>No used in any assemblies</p>
+	<p>Not used in any assemblies</p>
 {/if}
 <BomTable {bom} job={jobInfo} />

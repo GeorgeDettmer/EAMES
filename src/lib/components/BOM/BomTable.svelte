@@ -138,7 +138,7 @@
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
 									<NewComponent id={lineKey} description={line?.[0]?.description} />
 								{:else}
-									<PartInfo partId={lineKey} />
+									<PartInfo partId={lineKey} kbVisible />
 								{/if}
 							</div>
 						</TableBodyCell>

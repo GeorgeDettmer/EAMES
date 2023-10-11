@@ -112,7 +112,7 @@
 				<TableHeadCell>Kit Attrition</TableHeadCell>
 			{/if}
 		</TableHead>
-		<TableBody class="divide-y">
+		<TableBody>
 			{#each lines.keys() as lineKey, idx}
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
@@ -181,13 +181,21 @@
 						<TableBodyCell colspan="2" class="p-0">
 							{#if job?.assembly?.assemblies_cad}
 								<div class="px-0 py-1 grid grid-cols-2">
-									<Viewer classes="border" data={job?.assembly?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
+									<Viewer
+										classes="border"
+										data={job?.assembly?.assemblies_cad}
+										id="TOP"
+										layerToShow="TOP"
+										height={500}
+										highlightPins={[1]}
+									/>
 									<Viewer
 										classes="border"
 										data={job?.assembly?.assemblies_cad}
 										id="BOTTOM"
 										layerToShow="BOTTOM"
 										height={500}
+										highlightPins={[1]}
 									/>
 								</div>
 							{/if}
@@ -198,24 +206,33 @@
 									<h1>Kit:</h1>
 									<Table>
 										<TableHead>
-											<TableHeadCell>User</TableHeadCell>
-											<TableHeadCell>Qty</TableHeadCell>
-											<TableHeadCell>Supplier</TableHeadCell>
-											<TableHeadCell>Reference</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Reference</TableHeadCell>
 										</TableHead>
-										<TableBody class="divide-y">
+										<TableBody>
 											{#each kitItem as item, idx}
 												<TableBodyRow>
-													<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														<UserIcon user={item?.user} />
 													</TableBodyCell>
-													<TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+														{new Date(item.updated_at).toLocaleDateString()}
+														{new Date(item.updated_at).toLocaleTimeString()}
+													</TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.quantity}
 													</TableBodyCell>
-													<TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.orders_item?.order?.supplier?.name || 'Unknown'}
 													</TableBodyCell>
-													<TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+														£{Math.round((item?.orders_item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0}
+													</TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.orders_item?.order?.supplier?.reference || ''}
 													</TableBodyCell>
 												</TableBodyRow>

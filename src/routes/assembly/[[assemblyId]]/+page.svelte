@@ -79,8 +79,22 @@
 			</div>
 		{/if}
 		{#if assemblyInfo?.assemblies_cad?.data}
-			<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
-			<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="BOTTOM" layerToShow="BOTTOM" height={500} />
+			<Viewer
+				classes="border"
+				data={assemblyInfo?.assemblies_cad}
+				id="TOP"
+				layerToShow="TOP"
+				height={500}
+				highlightPins={[1]}
+			/>
+			<Viewer
+				classes="border"
+				data={assemblyInfo?.assemblies_cad}
+				id="BOTTOM"
+				layerToShow="BOTTOM"
+				height={500}
+				highlightPins={[1]}
+			/>
 		{/if}
 	</div>
 {:else}

@@ -28,10 +28,12 @@
 						id
 						created_at
 						meta
-						kits_items {
+						kits_items(order_by: { updated_at: desc }) {
 							id
 							part_id
 							quantity
+							created_at
+							updated_at
 							orders_item {
 								id
 								quantity

@@ -9,6 +9,7 @@
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
+	import Viewer from '../Viewer.svelte';
 
 	let items = [];
 
@@ -69,6 +70,7 @@
 
 	$: console.log('BOM:', bom);
 	$: console.log('partsInLibrary:', partsInLibrary, partsInLibrary.length);
+	$: console.log('cad:', job?.assembly?.assemblies_cad);
 </script>
 
 {#if bom}
@@ -133,8 +135,8 @@
 				</TableBodyRow>
 				{#if openRow === idx}
 					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="5" class="p-0">
-							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
+						<TableBodyCell colspan="3" class="p-0">
+							<div class="px-1 py-1">
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
 									<NewComponent id={lineKey} description={line?.[0]?.description} />
 								{:else}
@@ -142,9 +144,25 @@
 								{/if}
 							</div>
 						</TableBodyCell>
+						<TableBodyCell colspan="2" class="p-0">
+							<div class="px-1 py-1 grid grid-cols-2">
+								<Viewer
+									highlightComponents={references}
+									data={job?.assembly?.assemblies_cad}
+									layerToShow="TOP"
+									height={500}
+								/>
+								<Viewer
+									highlightComponents={references}
+									data={job?.assembly?.assemblies_cad}
+									layerToShow="BOTTOM"
+									height={500}
+								/>
+							</div>
+						</TableBodyCell>
 						{#if job?.kit?.kits_items}
 							<TableBodyCell colspan="3" class="p-0 object-right">
-								<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
+								<div class="px-1 py-1">
 									{#each kitItem as item, idx}
 										<div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1 align-middle">
 											<UserIcon user={item?.user} />

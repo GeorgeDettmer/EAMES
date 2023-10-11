@@ -92,6 +92,7 @@
 	export let outlinePins: number[] = [];
 	export let featuresDrawn: number = 0;
 	export let drawAllPins: boolean = true;
+	export let highlightComponents: string[] = [];
 
 	const dispatch = createEventDispatcher();
 	let viewer: HTMLDivElement;
@@ -223,7 +224,7 @@
 				verticalAlign: 'center',
 				fontStyle: 'bold',
 				name: 'reference',
-				opacity: 0.5,
+				opacity: 0.75,
 				listening: false
 			});
 			componentFeaturesDrawn++;
@@ -310,6 +311,11 @@
 								component: component
 							});
 						});
+						if (highlightComponents.includes(component?.component)) {
+							mark.fill('blue');
+							mark.opacity(0.5);
+						}
+
 						mark.perfectDrawEnabled(true);
 						mark.fillAfterStrokeEnabled(true);
 						mark.addName('outline');

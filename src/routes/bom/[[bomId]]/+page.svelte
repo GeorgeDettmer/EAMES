@@ -18,6 +18,11 @@
 						name
 						revision_external
 						revision_internal
+						assemblies_cad {
+							id
+							data
+							name
+						}
 					}
 					kit {
 						id

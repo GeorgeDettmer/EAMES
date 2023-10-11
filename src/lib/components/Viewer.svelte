@@ -83,7 +83,7 @@
 	export const name: string = '';
 	export let classes: string = '';
 	export let style: string = '';
-	export let id: number = -1;
+	export let id: string;
 	export let data = {};
 	export let width: number = 0;
 	export let height: number = 0;

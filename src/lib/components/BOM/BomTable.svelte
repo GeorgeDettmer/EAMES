@@ -9,7 +9,7 @@
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
-	import Viewer from '../Viewer.svelte';
+	import Viewer, { getComponentGroup, getComponentGroups } from '../Viewer.svelte';
 
 	let items = [];
 
@@ -68,6 +68,29 @@
 		if (qty > requiredQty) return 'green';
 	}
 
+	let highlightComponents: string[] = [];
+
+	function highlightReferences(references: string[], highlight: boolean = true) {
+		references.forEach((r) => {
+			let group = getComponentGroups(r);
+			console.log('highlightReferences', r, group);
+			group = group?.[0];
+			if (group) {
+				group.find(`.outline`).forEach((c) => {
+					//console.log('Update component colour:', c);
+					c.fillEnabled(true);
+					c.fill(highlight ? 'blue' : '');
+					c.opacity(0.75);
+				});
+			}
+		});
+	}
+
+	function handleReferenceHover(references: string[], hovering: boolean) {
+		console.log('handleReferenceHover', references, hovering);
+		highlightReferences(references, hovering);
+	}
+
 	$: console.log('BOM:', bom);
 	$: console.log('partsInLibrary:', partsInLibrary, partsInLibrary.length);
 	$: console.log('cad:', job?.assembly?.assemblies_cad);
@@ -99,7 +122,9 @@
 					class={`cursor-pointer`}
 					on:click={() => {
 						console.log('line click', lineKey, line);
-						if (!lineKey) return;
+						highlightComponents = references;
+						handleReferenceHover(references, true);
+						//if (!lineKey) return;
 						openRow = openRow === idx ? null : idx;
 					}}
 				>
@@ -110,7 +135,16 @@
 					<TableBodyCell>{line?.[0]?.partByPart?.description || ''}</TableBodyCell>
 					<TableBodyCell>
 						{#each references as reference}
-							<Badge class="mx-0.5" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
+							<span
+								on:mouseenter={() => {
+									handleReferenceHover([reference], true);
+								}}
+								on:mouseleave={() => {
+									handleReferenceHover(references, false);
+								}}
+							>
+								<Badge class="mx-0.5" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
+							</span>
 						{/each}
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>
@@ -145,16 +179,12 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell colspan="2" class="p-0">
-							<div class="px-1 py-1 grid grid-cols-2">
+							<div class="px-0 py-1 grid grid-cols-2">
+								<Viewer classes="border" data={job?.assembly?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
 								<Viewer
-									highlightComponents={references}
+									classes="border"
 									data={job?.assembly?.assemblies_cad}
-									layerToShow="TOP"
-									height={500}
-								/>
-								<Viewer
-									highlightComponents={references}
-									data={job?.assembly?.assemblies_cad}
+									id="BOTTOM"
 									layerToShow="BOTTOM"
 									height={500}
 								/>

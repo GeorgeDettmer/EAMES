@@ -121,7 +121,9 @@
 {#if bom?.assemblies?.length > 0}
 	<p>Used in {bom.assemblies.length} assemblies:</p>
 	{#each bom.assemblies as assembly, idx}
-		<p>{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})</p>
+		<a class="cursor-pointer" target="_blank" href={window.origin + '/assembly/' + assembly?.id}
+			>{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})</a
+		>
 	{/each}
 {:else}
 	<p>Not used in any assemblies</p>

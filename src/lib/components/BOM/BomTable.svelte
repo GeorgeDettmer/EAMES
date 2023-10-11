@@ -143,7 +143,7 @@
 									handleReferenceHover(references, false);
 								}}
 							>
-								<Badge class="mx-0.5" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
+								<Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
 							</span>
 						{/each}
 					</TableBodyCell>
@@ -179,30 +179,57 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell colspan="2" class="p-0">
-							<div class="px-0 py-1 grid grid-cols-2">
-								<Viewer classes="border" data={job?.assembly?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
-								<Viewer
-									classes="border"
-									data={job?.assembly?.assemblies_cad}
-									id="BOTTOM"
-									layerToShow="BOTTOM"
-									height={500}
-								/>
-							</div>
+							{#if job?.assembly?.assemblies_cad}
+								<div class="px-0 py-1 grid grid-cols-2">
+									<Viewer classes="border" data={job?.assembly?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
+									<Viewer
+										classes="border"
+										data={job?.assembly?.assemblies_cad}
+										id="BOTTOM"
+										layerToShow="BOTTOM"
+										height={500}
+									/>
+								</div>
+							{/if}
 						</TableBodyCell>
 						{#if job?.kit?.kits_items}
 							<TableBodyCell colspan="3" class="p-0 object-right">
 								<div class="px-1 py-1">
-									{#each kitItem as item, idx}
-										<div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1 align-middle">
+									<h1>Kit:</h1>
+									<Table>
+										<TableHead>
+											<TableHeadCell>User</TableHeadCell>
+											<TableHeadCell>Qty</TableHeadCell>
+											<TableHeadCell>Supplier</TableHeadCell>
+											<TableHeadCell>Reference</TableHeadCell>
+										</TableHead>
+										<TableBody class="divide-y">
+											{#each kitItem as item, idx}
+												<TableBodyRow>
+													<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium ">
+														<UserIcon user={item?.user} />
+													</TableBodyCell>
+													<TableBodyCell>
+														{item?.quantity}
+													</TableBodyCell>
+													<TableBodyCell>
+														{item?.orders_item?.order?.supplier?.name || 'Unknown'}
+													</TableBodyCell>
+													<TableBodyCell>
+														{item?.orders_item?.order?.supplier?.reference || ''}
+													</TableBodyCell>
+												</TableBodyRow>
+												<!-- <div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1">
 											<UserIcon user={item?.user} />
-											<p class="text-lg mx-1 text-white items-center">
+											<p class="text-lg text-white items-center align-middle mx-auto">
 												({item.quantity}) [{item?.orders_item?.order?.supplier?.name
 													? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
 													: 'Unknown Supplier'}]
 											</p>
-										</div>
-									{/each}
+										</div> -->
+											{/each}
+										</TableBody>
+									</Table>
 								</div>
 							</TableBodyCell>
 						{/if}

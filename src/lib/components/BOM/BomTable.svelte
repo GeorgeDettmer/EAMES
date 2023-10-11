@@ -127,6 +127,13 @@
 						//if (!lineKey) return;
 						openRow = openRow === idx ? null : idx;
 					}}
+					on:mouseenter={() => {
+						console.log('hover');
+						handleReferenceHover(references, true);
+					}}
+					on:mouseleave={() => {
+						handleReferenceHover([], false);
+					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
 					<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
@@ -172,7 +179,7 @@
 						<TableBodyCell colspan="3" class="p-0">
 							<div class="px-1 py-1">
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
-									<NewComponent id={lineKey} description={line?.[0]?.description} />
+									<NewComponent id={lineKey} description={line?.[0]?.partByPart?.description} />
 								{:else}
 									<PartInfo partId={lineKey} kbVisible />
 								{/if}

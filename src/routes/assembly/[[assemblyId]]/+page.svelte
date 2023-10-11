@@ -71,7 +71,7 @@
 {#if assemblyInfo}
 	<div class="px-0 py-1 grid grid-cols-4">
 		{#if assemblyInfo?.bom}
-			<div class="col-span-2">
+			<div class="col-span-2 h-10">
 				<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
 					>{assemblyInfo?.bom?.id}({assemblyInfo?.bom?.name})</a
 				>

@@ -67,7 +67,8 @@
 		<em>({assemblyInfo?.revision_internal}:{assemblyInfo?.revision_internal})</em>
 	</p>
 {/if}
-{#if assemblyInfo?.assemblies_cad?.data}
+
+{#if assemblyInfo}
 	<div class="px-0 py-1 grid grid-cols-4">
 		{#if assemblyInfo?.bom}
 			<div class="col-span-2">
@@ -77,10 +78,11 @@
 				<BomTable bom={assemblyInfo?.bom} />
 			</div>
 		{/if}
-		<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
-		<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="BOTTOM" layerToShow="BOTTOM" height={500} />
+		{#if assemblyInfo?.assemblies_cad?.data}
+			<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="TOP" layerToShow="TOP" height={500} />
+			<Viewer classes="border" data={assemblyInfo?.assemblies_cad} id="BOTTOM" layerToShow="BOTTOM" height={500} />
+		{/if}
 	</div>
 {:else}
-	<p>Not used in any assemblies</p>
+	<p>No info for this assembly</p>
 {/if}
-<!-- <BomTable {bom} job={jobInfo} /> -->

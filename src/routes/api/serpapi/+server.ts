@@ -6,6 +6,8 @@ import { json } from '@sveltejs/kit';
 
 console.log('test');
 
+let cache = {};
+
 export const GET: RequestHandler = async ({ url }) => {
 	/* let api = new URL('https://serpapi.com/search.json');
 	[...url.searchParams.entries()].forEach((param) => {
@@ -20,16 +22,23 @@ export const GET: RequestHandler = async ({ url }) => {
 	} else {
 		console.log('fail', response);
 	} */
-	let options = {};
+	let options: any = {};
 	[...url.searchParams.entries()].forEach((param) => {
 		console.log('p', param[0], param[1]);
 		options[param[0]] = param[1];
 	});
 	options.api_key = PUBLIC_SERPAPI_KEY;
-	if (url.searchParams.get('test')) {
-		return json({});
-	} else {
-		const response = await getJson(options);
-		return json(response);
+	console.log('cache', Object.keys(cache));
+	const q = options?.q;
+	if (q) {
+		if (cache?.[q]) {
+			console.log('is cached', q);
+			return json(cache[q]);
+		} else {
+			console.log('not cached', q);
+			const response = await getJson(options);
+			cache[q] = response;
+			return json(response);
+		}
 	}
 };

@@ -52,7 +52,7 @@
 		mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertComponent($id: String!, $name: String = "", $description: String = "", $image_url: String = "") {
-					insert_parts_one(object: { id: $id, name: $name, description: $description, image_url: $image_url }) {
+					insert_parts_data_one(object: { id: $id, name: $name, description: $description, image_url: $image_url }) {
 						id
 					}
 				}
@@ -64,7 +64,7 @@
 			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Inserted component: ' + mutationResult.data.insert_parts_one.id, 'success');
+			messagesStore('Inserted component: ' + mutationResult.data.insert_parts_data_one.id, 'success');
 		}
 	}
 </script>
@@ -81,7 +81,7 @@
 		<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
 	</div>
 	<div class="my-2 p-4">
-		<Button color="green" size="sm" on:click={addComponent}>Add ➕</Button>
+		<Button color="green" size="sm" on:click={() => addComponent()}>Add ➕</Button>
 		<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}>
 			<Button color="blue" size="sm" class="w-fit h-fit mx-4">Search Octopart 🔎</Button>
 		</a>
@@ -101,7 +101,7 @@
 			<div class="grid grid-cols-6 gap-2 p-2 overflow-x-auto">
 				{#each images as img}
 					<div>
-						<img class="w-28" src={img} on:click={() => (image = img)} />
+						<img class="w-28 cursor-pointer" src={img} on:click={() => (image = img)} />
 					</div>
 				{/each}
 			</div>

@@ -139,6 +139,25 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted BOM: ' + mutationResult.data.insert_bom_one.id, 'success');
+			if (mutationResult?.data?.insert_bom_one?.id) {
+				mutationResult = await urqlClient.mutation(
+					gql`
+						mutation updateAssembly($assemblyId: bigint!, $bomId: uuid!) {
+							update_assemblies_by_pk(pk_columns: { id: $assemblyId }, _set: { bom_id: $bomId }) {
+								bom_id
+							}
+						}
+					`,
+					{ assemblyId, bomId: mutationResult.data.insert_bom_one.id }
+				);
+				if (mutationResult?.error) {
+					console.error('MUTATION ERROR: ', mutationResult);
+					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				} else {
+					console.log('MUTATION RESULT: ', mutationResult);
+					messagesStore(`Set BOM for ${assemblyInfo?.name}`, 'success');
+				}
+			}
 		}
 	}
 
@@ -168,7 +187,9 @@
 {#if assemblyId}
 	<p>Assembly: {assemblyId} <em>({assemblyInfo?.name})</em></p>
 	{#if assemblyInfo?.bom}
-		<p>BOM ID: {assemblyInfo?.bom?.id}</p>
+		<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
+			>BOM ID: {assemblyInfo?.bom?.id}</a
+		>
 	{/if}
 	{#if assemblyInfo?.jobs?.length > 0}
 		<p>

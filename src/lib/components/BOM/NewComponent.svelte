@@ -4,13 +4,24 @@
 	import { Button, Input, Label } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 
-	export let id: String;
-	export let name: String = '';
-	export let description: String = '';
-	export let image: String = '';
+	export let id: string;
+	export let name: string = '';
+	export let description: string = '';
+	export let image: string = '';
+	export let images: string[] = [];
 
 	if (!name) {
 		name = id;
+	}
+
+	async function findImages(searchQuery: string) {
+		let response = await fetch('http://serpapi.com/search.json?q=Apple&engine=google_images&ijn=0');
+		//let result = await response.json();
+		if (response.status === 200) {
+			console.log('success', response);
+		} else {
+			console.log('fail', response);
+		}
 	}
 
 	async function addComponent() {
@@ -64,11 +75,26 @@
 	</div>
 	<div class="my-2">
 		<Button color="green" on:click={addComponent}>Add ➕</Button>
-		<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}
-			><Button color="green" class="w-fit h-fit mx-4">Search Octopart</Button></a
+		<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}>
+			<Button color="green" class="w-fit h-fit mx-4">Search Octopart</Button>
+		</a>
+		<Button
+			color="green"
+			on:click={() => {
+				findImages(name);
+			}}
 		>
+			Find images
+		</Button>
 		{#if image}
 			<img class="w-28 m-2" src={image} />
+		{/if}
+		{#if images}
+			<div class="flex">
+				{#each images as img}
+					<img class="w-28 m-2" src={img} on:click={() => (image = img)} />
+				{/each}
+			</div>
 		{/if}
 	</div>
 </div>

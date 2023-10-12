@@ -79,11 +79,13 @@
 			let refs = line?.reference?.split(',')?.map((r) => r.trim());
 			console.log('refs', line.ipn, refs);
 			refs.forEach((ref) => {
-				_lines.push({
+				let l = {
 					reference: ref,
 					part: line.ipn === 'Not Fitted' ? null : line.ipn,
 					partByPart: { description: line.Description }
-				});
+				};
+				_lines.push(l);
+				console.log('l', l);
 			});
 		});
 		if (_lines) {

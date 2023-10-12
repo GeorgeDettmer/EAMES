@@ -100,9 +100,9 @@
 		//highlightReferences(references, hovering);
 	}
 
-	function handleRowClick(idx: number, references: string[], line, event: MouseEvent) {
+	function handleRowClick(idx: number, references: string[], line, pn: string | null, event: MouseEvent) {
 		console.log('handleRowClick', idx, references, line, event);
-		//if (!lineKey) return;
+		if (!pn) return;
 		if (openRows.includes(idx)) {
 			openRows = openRows.filter((v) => v !== idx);
 			handleReferenceHover(references, false);
@@ -142,7 +142,7 @@
 				<TableBodyRow
 					class={`cursor-pointer`}
 					on:click={(e) => {
-						handleRowClick(idx, references, line, e);
+						handleRowClick(idx, references, line, lineKey, e);
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>

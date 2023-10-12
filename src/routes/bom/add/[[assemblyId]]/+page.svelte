@@ -165,7 +165,7 @@
 		client: getContextClient(),
 		query: gql`
 			subscription partsExist($parts: [String!] = []) {
-				parts(where: { name: { _in: $parts } }) {
+				parts_data(where: { name: { _in: $parts } }) {
 					id
 					name
 				}
@@ -177,7 +177,7 @@
 			})
 		}
 	});
-	$: partsInfo = $partsInfoStore?.data?.parts;
+	$: partsInfo = $partsInfoStore?.data?.parts_data;
 	$: partsInLibrary = partsInfo?.map((p) => {
 		return p?.id;
 	});

@@ -18,7 +18,7 @@
 		client: getContextClient(),
 		query: gql`
 			query partInfo($partId: String!) {
-				parts_by_pk(id: $partId) {
+				parts_data_by_pk(id: $partId) {
 					id
 					name
 					description
@@ -36,7 +36,7 @@
 		variables: { partId },
 		requestPolicy: 'cache-and-network'
 	});
-	$: partInfo = $partInfoStore?.data?.parts_by_pk;
+	$: partInfo = $partInfoStore?.data?.parts_data_by_pk;
 	$: isGeneric = partInfo?.manufacturer?.toLowerCase() === 'generic';
 	$: properties = Object.entries(partInfo?.properties || [])
 		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])

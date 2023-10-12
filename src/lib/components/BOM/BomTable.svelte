@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let bom;
 	export let job = {};
-	export let partsInLibrary = [];
+	export let partsInLibrary: string[] = [];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
@@ -59,8 +59,8 @@
 		});
 		sortItems.set(sorted);
 	} */
-
-	let openRow: number;
+	let highlightedReferences: string[] = [];
+	let openRows: number[] = [];
 
 	function qtyColor(qty: number, requiredQty: number) {
 		if (qty === requiredQty) return 'blue';
@@ -68,15 +68,18 @@
 		if (qty > requiredQty) return 'green';
 	}
 
-	let highlightComponents: string[] = [];
-
 	function highlightReferences(references: string[], highlight: boolean = true) {
+		if (highlight) {
+			highlightedReferences = highlightedReferences.concat(references);
+		} else {
+			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
+		}
+		console.log('highlightedReferences', highlightedReferences);
 		references.forEach((r) => {
 			let group = getComponentGroups(r);
-			console.log('highlightReferences', r, group);
 			group = group?.[0];
 			if (group) {
-				group.find(`.outline`).forEach((c) => {
+				group?.find('.outline')?.forEach((c) => {
 					//console.log('Update component colour:', c);
 					c.fillEnabled(true);
 					c.fill(highlight ? 'blue' : '');
@@ -87,8 +90,26 @@
 	}
 
 	function handleReferenceHover(references: string[], hovering: boolean) {
-		console.log('handleReferenceHover', references, hovering);
-		highlightReferences(references, hovering);
+		//console.log('handleReferenceHover', references, hovering);
+		if (hovering) {
+			highlightedReferences = highlightedReferences.concat(references);
+		} else {
+			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
+		}
+		console.log('handleReferenceHover', highlightedReferences);
+		//highlightReferences(references, hovering);
+	}
+
+	function handleRowClick(idx: number, references: string[], line, event: MouseEvent) {
+		console.log('handleRowClick', idx, references, line, event);
+		//if (!lineKey) return;
+		if (openRows.includes(idx)) {
+			openRows = openRows.filter((v) => v !== idx);
+			handleReferenceHover(references, false);
+		} else {
+			openRows = event.ctrlKey ? [...openRows, idx] : [idx];
+			handleReferenceHover(references, true);
+		}
 	}
 
 	$: console.log('BOM:', bom);
@@ -97,7 +118,7 @@
 </script>
 
 {#if bom}
-	<Table hoverable={true}>
+	<Table hoverable={true} striped={true}>
 		<TableHead>
 			<TableHeadCell on:click={() => sortTable('id')}>#</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('maker')}>Part</TableHeadCell>
@@ -120,19 +141,8 @@
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				<TableBodyRow
 					class={`cursor-pointer`}
-					on:click={() => {
-						console.log('line click', lineKey, line);
-						highlightComponents = references;
-						handleReferenceHover(references, true);
-						//if (!lineKey) return;
-						openRow = openRow === idx ? null : idx;
-					}}
-					on:mouseenter={() => {
-						console.log('hover');
-						handleReferenceHover(references, true);
-					}}
-					on:mouseleave={() => {
-						handleReferenceHover([], false);
+					on:click={(e) => {
+						handleRowClick(idx, references, line, e);
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
@@ -144,10 +154,10 @@
 						{#each references as reference}
 							<span
 								on:mouseenter={() => {
-									handleReferenceHover([reference], true);
+									//handleReferenceHover([reference], true);
 								}}
 								on:mouseleave={() => {
-									handleReferenceHover(references, false);
+									//handleReferenceHover(references, false);
 								}}
 							>
 								<Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
@@ -174,14 +184,15 @@
 						</TableBodyCell>
 					{/if}
 				</TableBodyRow>
-				{#if openRow === idx}
+				<!-- {#if openRow === idx} -->
+				{#if openRows.includes(idx)}
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="3" class="p-0">
 							<div class="px-1 py-1">
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
 									<NewComponent id={lineKey} description={line?.[0]?.partByPart?.description} />
 								{:else}
-									<PartInfo partId={lineKey} kbVisible />
+									<PartInfo partId={lineKey} galleryVisible />
 								{/if}
 							</div>
 						</TableBodyCell>

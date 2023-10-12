@@ -20,7 +20,7 @@
 			image = images[imageIdx];
 		}, imageInterval);
 	});
-	console.log(kbItem);
+	//console.log(kbItem);
 </script>
 
 <div

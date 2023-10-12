@@ -61,42 +61,48 @@
 	$: assemblyInfo = $assemblyInfoStore?.data?.assemblies_by_pk;
 </script>
 
-{#if assemblyId}
-	<p>
-		Assembly: {assemblyId}/{assemblyInfo?.name}
-		<em>({assemblyInfo?.revision_internal}:{assemblyInfo?.revision_internal})</em>
-	</p>
-{/if}
+<div class="max-h-[825px]">
+	{#if assemblyId}
+		<p>
+			Assembly: {assemblyId}/{assemblyInfo?.name}
+			<em>({assemblyInfo?.revision_internal}:{assemblyInfo?.revision_internal})</em>
+		</p>
+	{/if}
 
-{#if assemblyInfo}
-	<div class="px-0 py-1 grid grid-cols-4">
-		{#if assemblyInfo?.bom}
-			<div class="col-span-2 h-10">
-				<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
-					>{assemblyInfo?.bom?.id}({assemblyInfo?.bom?.name})</a
-				>
-				<BomTable bom={assemblyInfo?.bom} />
-			</div>
-		{/if}
-		{#if assemblyInfo?.assemblies_cad?.data}
-			<Viewer
-				classes="border"
-				data={assemblyInfo?.assemblies_cad}
-				id="TOP"
-				layerToShow="TOP"
-				height={500}
-				highlightPins={[1]}
-			/>
-			<Viewer
-				classes="border"
-				data={assemblyInfo?.assemblies_cad}
-				id="BOTTOM"
-				layerToShow="BOTTOM"
-				height={500}
-				highlightPins={[1]}
-			/>
-		{/if}
-	</div>
-{:else}
-	<p>No info for this assembly</p>
-{/if}
+	{#if assemblyInfo}
+		<div class="px-0 py-1 grid grid-cols-4">
+			{#if assemblyInfo?.bom}
+				<div class="col-span-3 h-10">
+					<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
+						>{assemblyInfo?.bom?.id}({assemblyInfo?.bom?.name})</a
+					>
+					<div class="h-screen overflow-y-scroll">
+						<BomTable bom={assemblyInfo?.bom} />
+					</div>
+				</div>
+			{/if}
+			{#if assemblyInfo?.assemblies_cad?.data}
+				<div>
+					<Viewer
+						classes="border"
+						data={assemblyInfo?.assemblies_cad}
+						id="TOP"
+						layerToShow="TOP"
+						height={500}
+						highlightPins={[1]}
+					/>
+					<Viewer
+						classes="border"
+						data={assemblyInfo?.assemblies_cad}
+						id="BOTTOM"
+						layerToShow="BOTTOM"
+						height={500}
+						highlightPins={[1]}
+					/>
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<p>No info for this assembly</p>
+	{/if}
+</div>

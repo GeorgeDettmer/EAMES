@@ -150,11 +150,16 @@
 						<div
 							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +
 								$currentBoard?.boardInfo.job?.id}"
-							on:click={() => goto('/kb/' + $currentBoard?.boardInfo?.assembly?.kb)}
 						>
-							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
-							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
-								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})
+							<a
+								class="cursor-pointer"
+								target="_blank"
+								href={window.origin + '/assembly/' + $currentBoard?.boardInfo?.assembly?.id}
+							>
+								<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
+								{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
+									?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})</a
+							>
 						</div>
 						<Popover placement="bottom" triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id} class="w-64">
 							<JobPopoverContent job={$currentBoard?.boardInfo.job} />

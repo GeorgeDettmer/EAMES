@@ -101,27 +101,31 @@
 			<div class="mb-1 text-sm font-light">
 				{partInfo?.description}
 			</div>
-			<div>
-				{#if partInfo?.properties}
-					<p class="font-semibold">Properties:</p>
-					<hr />
-					{#each properties as [name, value], idx}
-						{@const propertyCount = Object.keys(partInfo.properties).length}
-						<p class="text-sm">{name}: {value}</p>
-						{#if idx < propertyCount}
-							<hr />
-						{/if}
-					{/each}
-				{/if}
+			<div class="grid grid-cols-2">
+				<div>
+					{#if partInfo?.properties}
+						<p class="font-semibold">Properties:</p>
+						<hr />
+						{#each properties as [name, value], idx}
+							{@const propertyCount = Object.keys(partInfo.properties).length}
+							<div>
+								<p class="text-sm">{name}: {value}</p>
+								{#if idx < propertyCount}
+									<hr />
+								{/if}
+							</div>
+						{/each}
+					{/if}
+				</div>
 				<div class="flex items-center mb-0">
 					{#if partInfo?.image_url && !image}
-						<img src={partInfo.image_url} alt={partInfo?.name} class="w-1/4 p-0 m-0 aspect-square max-h-32 max-w-fit" />
+						<img src={partInfo.image_url} alt={partInfo?.name} class=" px-1 m-0 aspect-square max-h-32 max-w-fit" />
 					{/if}
 					{#if image && !galleryVisible}
 						<img
 							src={image}
 							alt={partInfo?.name}
-							class="w-1/4 p-0 m-0 aspect-square max-h-32 max-w-fit"
+							class=" px-1 m-0 aspect-square max-h-32 max-w-fit"
 							on:click={() => {
 								imageIdx++;
 								imageInterval = 2000;

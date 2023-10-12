@@ -15,12 +15,19 @@
 	}
 
 	async function findImages(searchQuery: string) {
-		let response = await fetch('http://serpapi.com/search.json?q=Apple&engine=google_images&ijn=0');
-		//let result = await response.json();
-		if (response.status === 200) {
-			console.log('success', response);
+		const q = encodeURI(searchQuery);
+		if (!q) return;
+		const response = await fetch(`/api/serpapi?q=${q}&engine=google_images&nfpr=1&safe=active`);
+		const result = await response.json();
+		if (result?.images_results) {
+			console.log('image search success', result?.images_results);
+			images = result?.images_results
+				?.map((r) => {
+					return r.original;
+				})
+				?.slice(0, 11);
 		} else {
-			console.log('fail', response);
+			console.log('image search fail', response);
 		}
 	}
 
@@ -73,26 +80,29 @@
 		<Label for="small-input" class="block mb-2">Image</Label>
 		<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
 	</div>
-	<div class="my-2">
-		<Button color="green" on:click={addComponent}>Add ➕</Button>
+	<div class="my-2 p-4">
+		<Button color="green" size="sm" on:click={addComponent}>Add ➕</Button>
 		<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}>
-			<Button color="green" class="w-fit h-fit mx-4">Search Octopart</Button>
+			<Button color="blue" size="sm" class="w-fit h-fit mx-4">Search Octopart 🔎</Button>
 		</a>
 		<Button
-			color="green"
+			color="blue"
+			size="sm"
 			on:click={() => {
 				findImages(name);
 			}}
 		>
-			Find images
+			Find images 📷
 		</Button>
 		{#if image}
 			<img class="w-28 m-2" src={image} />
 		{/if}
 		{#if images}
-			<div class="flex">
+			<div class="grid grid-cols-6 gap-2 p-2 overflow-x-auto">
 				{#each images as img}
-					<img class="w-28 m-2" src={img} on:click={() => (image = img)} />
+					<div>
+						<img class="w-28" src={img} on:click={() => (image = img)} />
+					</div>
 				{/each}
 			</div>
 		{/if}

@@ -55,7 +55,7 @@
 	$: currentKbItem = {};
 	$: modalVisible = false;
 
-	$: console.log($kbInfoStore, kb?.length);
+	//$: console.log($kbInfoStore, kb?.length);
 	$: kbItems = kb?.length || 0;
 </script>
 

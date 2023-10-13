@@ -2,7 +2,7 @@ import { getJson } from 'serpapi';
 
 import type { RequestHandler } from './$types';
 import { PUBLIC_SERPAPI_KEY } from '$env/static/public';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 
 console.log('test');
 
@@ -30,7 +30,8 @@ export const GET: RequestHandler = async ({ url }) => {
 	options.api_key = PUBLIC_SERPAPI_KEY;
 	console.log('cache', Object.keys(cache));
 	const q = options?.q;
-	if (q) {
+	const engine = options?.engine;
+	if (q && engine) {
 		if (cache?.[q]) {
 			console.log('is cached', q);
 			return json(cache[q]);
@@ -41,4 +42,5 @@ export const GET: RequestHandler = async ({ url }) => {
 			return json(response);
 		}
 	}
+	throw error(400, "No 'q' query parameter provided");
 };

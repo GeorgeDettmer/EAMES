@@ -3,7 +3,7 @@
 	import { getContextClient, gql } from '@urql/svelte';
 	import { Button, Input, Label, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-
+	const urqlClient = getContextClient();
 	export let id: string;
 	export let name: string = '';
 	export let description: string = '';
@@ -67,7 +67,7 @@
 		}
 		componentAdding = true;
 		let mutationResult;
-		const urqlClient = getContextClient();
+
 		mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertComponent($id: String!, $name: String = "", $description: String = "", $image_url: String = "") {

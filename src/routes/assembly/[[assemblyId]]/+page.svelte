@@ -61,7 +61,7 @@
 	$: assemblyInfo = $assemblyInfoStore?.data?.assemblies_by_pk;
 </script>
 
-<div class="max-h-[825px]">
+<div class="max-h-[1000px]">
 	{#if assemblyId}
 		<p>
 			Assembly: {assemblyId}/{assemblyInfo?.name}

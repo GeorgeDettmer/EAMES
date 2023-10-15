@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
+	import { getParameterInsensitiveAny } from '$lib/utils';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
-	import { Button } from 'flowbite-svelte';
+	import { Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -67,6 +68,7 @@
 			console.log('data range:', dataRange);
 		}
 		lines.forEach((line, idx) => {
+			let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
 			if (!line.ipn && lines?.[idx - 1]?.ipn) {
 				line.ipn = lines[idx - 1].ipn;
 			}
@@ -76,13 +78,18 @@
 		});
 		let _lines = [];
 		lines.forEach((line) => {
-			let refs = line?.reference?.split(',')?.map((r) => r.trim());
+			let references = getParameterInsensitiveAny(line, ['reference', 'references']);
+			let refs = references?.split(',')?.map((r) => r.trim());
+
 			console.log('refs', line.ipn, refs);
 			refs.forEach((ref) => {
+				let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
+				let description = getParameterInsensitiveAny(line, ['description', 'desc']);
+
 				let l = {
 					reference: ref,
-					part: line.ipn === 'Not Fitted' ? null : line.ipn,
-					partByPart: { description: line.Description }
+					part: pn === 'Not Fitted' ? null : pn,
+					partByPart: { description: description }
 				};
 				_lines.push(l);
 				console.log('l', l);
@@ -174,8 +181,8 @@
 			}
 		`,
 		variables: {
-			parts: lines?.map((l) => {
-				return l?.ipn;
+			parts: bom?.lines?.map((l) => {
+				return l?.part ? l?.part : '';
 			})
 		}
 	});
@@ -183,6 +190,9 @@
 	$: partsInLibrary = partsInfo?.map((p) => {
 		return p?.id;
 	});
+
+	$: partsNotInLibrary = (bom?.lines || [])?.map((l) => l?.part)?.filter((x) => x && !partsInLibrary?.includes(x));
+	$: canAdd = partsNotInLibrary.length === 0;
 	$: console.log('partsInLibrary', partsInLibrary);
 </script>
 
@@ -203,11 +213,47 @@
 	{/if}
 {/if}
 {#if files?.accepted}
-	File: {files.accepted[0].name}
+	<p>File: {files.accepted[0].name}</p>
 {/if}
+<Table hoverable shadow>
+	<TableHead theadClass="bg-slate-200">
+		<TableHeadCell>#</TableHeadCell>
+		<TableHeadCell>Qty</TableHeadCell>
+		<TableHeadCell>References</TableHeadCell>
+		<TableHeadCell>Description</TableHeadCell>
+		<TableHeadCell>Part</TableHeadCell>
+		<TableHeadCell />
+	</TableHead>
+	<TableBody tableBodyClass="divide-y divide-x">
+		{#each lines as p, idx}
+			{@const references = getParameterInsensitiveAny(p, ['reference', 'references'])}
+			{@const quantity = getParameterInsensitiveAny(p, ['quantity', 'quantities', 'qty'])}
+			{@const description = getParameterInsensitiveAny(p, ['description', 'descriptions', 'desc'])}
+			{@const pn = getParameterInsensitiveAny(p, ['ipn', 'pn', 'part', 'parts'])}
+			{@const refSplit = references?.split(',')}
+			{@const refCount = refSplit?.length}
+			<TableBodyRow>
+				<TableBodyCell>{idx + 1}</TableBodyCell>
+				<TableBodyCell tdClass={quantity !== refCount ? 'text-red-600' : ''}>{quantity || ''}</TableBodyCell>
 
+				<TableBodyCell>{`${references} (${refCount})` || ''}</TableBodyCell>
+				<TableBodyCell>{description || ''}</TableBodyCell>
+				<TableBodyCell tdClass={pn !== 'Not Fitted' && partsInLibrary?.includes(pn) ? '' : 'underline'}
+					>{pn || ''}</TableBodyCell
+				>
+				<TableBodyCell>
+					{#if pn !== 'Not Fitted' && partsInLibrary && !partsInLibrary?.includes(pn)}
+						<Button size="xs" outline color={'blue'}>➕</Button>
+					{/if}
+				</TableBodyCell>
+			</TableBodyRow>
+		{/each}
+	</TableBody>
+</Table>
 {#if bom?.lines}
-	<Button outline color="green" on:click={insert}>Insert BOM</Button>
+	<Button outline color={canAdd ? 'green' : 'red'} on:click={insert}>Insert BOM</Button>
+
+	<hr />
 	<BomTable {bom} {partsInLibrary} />
 {/if}
 <div class="my-4">
@@ -221,13 +267,17 @@
 			</thead>
 			<tbody>
 				{#each lines as p}
-					{@const refSplit = p.reference?.split(',')}
+					{@const references = getParameterInsensitiveAny(p, ['reference', 'references'])}
+					{@const quantity = getParameterInsensitiveAny(p, ['quantity', 'quantities', 'qty'])}
+					{@const description = getParameterInsensitiveAny(p, ['description', 'descriptions', 'desc'])}
+					{@const pn = getParameterInsensitiveAny(p, ['ipn', 'pn', 'part', 'parts'])}
+					{@const refSplit = references?.split(',')}
 					{@const refCount = refSplit?.length}
 					<tr class:bg-slate-500={p.ipn == 'Not Fitted'}>
-						<td class:text-red-600={p.Qty !== refCount}>{refCount}:{p.Qty || ''}</td>
-						<td>{p.reference || ''}</td>
-						<td>{p.Description || ''}</td>
-						<td class:underline={!partsInLibrary?.includes(p.ipn)}>{p.ipn || ''}</td>
+						<td class:text-red-600={quantity !== refCount}>{refCount}:{quantity || ''}</td>
+						<td>{references || ''}</td>
+						<td>{description || ''}</td>
+						<td class:underline={partsInLibrary?.includes(pn)}>{pn || ''}</td>
 					</tr>
 				{/each}
 			</tbody>

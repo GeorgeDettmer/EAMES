@@ -118,3 +118,15 @@ export let expandToRange = (input: string): Array<number> => {
 
 	return Array.from({ length: (end - start) / 1 }, (value, index) => start + index * 1);
 };
+
+export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: string[]): any => {
+	return object[
+		Object.keys(object).filter((k) => {
+			return keys.includes(k.toLowerCase());
+		})[0]
+	];
+};
+
+export let getParameterInsensitive = (object: { [x: string]: any }, key: string): any => {
+	return getParameterInsensitiveAny(object, [key]);
+};

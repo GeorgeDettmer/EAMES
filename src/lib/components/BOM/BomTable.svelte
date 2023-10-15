@@ -5,11 +5,10 @@
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
-	import { slide } from 'svelte/transition';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
-	import Viewer, { getComponentGroup, getComponentGroups } from '../Viewer.svelte';
+	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 
 	let items = [];
 

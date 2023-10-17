@@ -134,6 +134,7 @@ export function toRanges(values: string[], separator = '\u2013'): string[] {
 }
 
 export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: string[]): any => {
+	if (!object) return;
 	return object[
 		Object.keys(object).filter((k) => {
 			return keys.includes(k.toLowerCase());

@@ -59,29 +59,52 @@
 		const f = e.dataTransfer.files[0];
 		const data = await f.arrayBuffer();
 		const wb = read(data);
-		const ws = wb.Sheets?.['BOM'];
-		console.log(wb.Sheets);
+		const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
+		if (!ws) {
+			messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
+		}
+		console.log(wb.Sheets, ws);
 		lines = utils.sheet_to_json(ws);
 		html = utils.sheet_to_html(ws);
+		let range = {
+			s: { c: 0, r: 0 },
+			e: { c: 1000, r: 1000 }
+		};
 		if (ws['!autofilter']?.ref) {
-			let dataRange = utils.decode_range(ws['!autofilter']?.ref);
-			console.log('data range:', dataRange);
+			range = utils.decode_range(ws['!autofilter']?.ref);
 		}
+		console.log('data range:', range);
+		let rowsValues = [];
+		const includesAll = (arr, values) => values.every((v) => arr.includes(v));
+		for (let R = range.s.r; R <= range.e.r; ++R) {
+			let rowValues = [];
+			for (let C = range.s.c; C <= range.e.c; ++C) {
+				let cell_address = { c: C, r: R };
+				let cell_ref = utils.encode_cell(cell_address);
+				rowValues.push(ws[cell_ref]?.v);
+			}
+			rowsValues.push(rowValues);
+			console.log('row values:', rowValues);
+			if (includesAll(rowValues, ['MPN', 'Description', 'RefDes', 'Qty'])) {
+				console.log('Header: ', R, rowValues);
+			}
+		}
+		console.log(rowsValues);
 		lines.forEach((line, idx) => {
 			let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
-			if (!line.ipn && lines?.[idx - 1]?.ipn) {
-				line.ipn = lines[idx - 1].ipn;
+			let qty = getParameterInsensitiveAny(line, ['quantity', 'quantities', 'qty']);
+			let references = getParameterInsensitiveAny(line, ['reference', 'references']);
+			if (!pn && getParameterInsensitiveAny(lines?.[idx - 1], ['ipn', 'pn', 'part'])) {
+				line.ipn = getParameterInsensitiveAny(lines?.[idx - 1], ['ipn', 'pn', 'part']);
 			}
-			if (!line.Qty && line?.reference) {
-				line.Qty = line?.reference?.split(',')?.length;
+			if (!qty && references) {
+				line.qty = references?.split(',')?.length;
 			}
 		});
 		let _lines = [];
 		lines.forEach((line) => {
 			let references = getParameterInsensitiveAny(line, ['reference', 'references']);
 			let refs = references?.split(',')?.map((r) => r.trim());
-
-			console.log('refs', line.ipn, refs);
 			refs.forEach((ref) => {
 				let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
 				let description = getParameterInsensitiveAny(line, ['description', 'desc']);
@@ -92,7 +115,6 @@
 					partByPart: { description: description }
 				};
 				_lines.push(l);
-				console.log('l', l);
 			});
 		});
 		if (_lines) {
@@ -215,7 +237,7 @@
 {#if files?.accepted}
 	<p>File: {files.accepted[0].name}</p>
 {/if}
-<Table hoverable shadow>
+<!-- <Table hoverable shadow>
 	<TableHead theadClass="bg-slate-200">
 		<TableHeadCell>#</TableHeadCell>
 		<TableHeadCell>Qty</TableHeadCell>
@@ -256,7 +278,7 @@
 			</TableBodyRow>
 		{/each}
 	</TableBody>
-</Table>
+</Table> -->
 {#if bom?.lines}
 	<Button outline color={canAdd ? 'green' : 'red'} on:click={insert}>Insert BOM</Button>
 

@@ -119,6 +119,20 @@ export let expandToRange = (input: string): Array<number> => {
 	return Array.from({ length: (end - start) / 1 }, (value, index) => start + index * 1);
 };
 
+export function toRanges(values: string[], separator = '\u2013'): string[] {
+	let refsNoPrefix = values?.map((v) => Number(v.replace(/[^0-9]/g, '')));
+	if (!refsNoPrefix) return [];
+	return refsNoPrefix
+		.slice()
+		.sort((p, q) => p - q)
+		.reduce((acc, cur, idx, src) => {
+			if (idx > 0 && cur - src[idx - 1] === 1) acc[acc.length - 1][1] = cur;
+			else acc.push([cur]);
+			return acc;
+		}, [])
+		.map((range) => range.join(separator));
+}
+
 export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: string[]): any => {
 	return object[
 		Object.keys(object).filter((k) => {

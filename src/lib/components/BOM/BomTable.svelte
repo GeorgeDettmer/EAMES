@@ -117,7 +117,7 @@
 </script>
 
 {#if bom}
-	<Table hoverable={true} striped={true}>
+	<Table hoverable shadow>
 		<TableHead>
 			<TableHeadCell on:click={() => sortTable('id')}>#</TableHeadCell>
 			<TableHeadCell on:click={() => sortTable('maker')}>Part</TableHeadCell>
@@ -138,6 +138,7 @@
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
+				{@const description = line?.[0]?.partByPart?.description}
 				<TableBodyRow
 					class={`cursor-pointer`}
 					on:click={(e) => {
@@ -148,20 +149,31 @@
 					<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
 						>{lineKey || 'Not Fitted'}</TableBodyCell
 					>
-					<TableBodyCell>{line?.[0]?.partByPart?.description || ''}</TableBodyCell>
-					<TableBodyCell>
-						{#each references as reference}
-							<span
-								on:mouseenter={() => {
-									//handleReferenceHover([reference], true);
-								}}
-								on:mouseleave={() => {
-									//handleReferenceHover(references, false);
-								}}
-							>
-								<Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}>{reference}</Badge>
-							</span>
-						{/each}
+					<TableBodyCell tdClass="w-1/4">
+						<p class="overflow-hidden text-clip">{description || ''}</p>
+					</TableBodyCell>
+					<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
+						<div
+							class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
+						>
+							{#each references as reference}
+								{@const colour = lineKey ? 'blue' : 'red'}
+								<span
+									class={`hover:shadow m-0.5 h-4 -top-2 -right-2 rounded font-medium inline-flex items-center justify-center px-1 bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
+									on:mouseenter={() => {
+										//handleReferenceHover([reference], true);
+									}}
+									on:mouseleave={() => {
+										//handleReferenceHover(references, false);
+									}}
+								>
+									<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
+								</span>
+								<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
+										>{reference}</Badge
+									> -->
+							{/each}
+						</div>
 					</TableBodyCell>
 					<TableBodyCell>{references?.length}</TableBodyCell>
 					{#if job?.quantity}
@@ -189,7 +201,7 @@
 						<TableBodyCell colspan="3" class="p-0">
 							<div class="px-1 py-1">
 								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
-									<NewComponent id={lineKey} description={line?.[0]?.partByPart?.description} />
+									<NewComponent id={lineKey} {description} />
 								{:else}
 									<PartInfo partId={lineKey} galleryVisible />
 								{/if}

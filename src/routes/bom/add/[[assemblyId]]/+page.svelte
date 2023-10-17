@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
-	import { getParameterInsensitiveAny } from '$lib/utils';
+	import { getParameterInsensitiveAny, toRanges } from '$lib/utils';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
@@ -232,11 +232,18 @@
 			{@const pn = getParameterInsensitiveAny(p, ['ipn', 'pn', 'part', 'parts'])}
 			{@const refSplit = references?.split(',')}
 			{@const refCount = refSplit?.length}
+			{@const refRange = toRanges(references?.split(',')) || [references]}
+
 			<TableBodyRow>
 				<TableBodyCell>{idx + 1}</TableBodyCell>
 				<TableBodyCell tdClass={quantity !== refCount ? 'text-red-600' : ''}>{quantity || ''}</TableBodyCell>
 
-				<TableBodyCell>{`${references} (${refCount})` || ''}</TableBodyCell>
+				<TableBodyCell tdClass="overflow-x-auto">
+					<div class="grid">
+						<div>{refRange}</div>
+						<div>{`${references}  (${refCount})` || ''}</div>
+					</div>
+				</TableBodyCell>
 				<TableBodyCell>{description || ''}</TableBodyCell>
 				<TableBodyCell tdClass={pn !== 'Not Fitted' && partsInLibrary?.includes(pn) ? '' : 'underline'}
 					>{pn || ''}</TableBodyCell

@@ -10,6 +10,20 @@
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
 
+	const _config = {
+		bom: {
+			headings: {
+				part: ['ipn', 'pn', 'part', 'mpn'],
+				description: ['description', 'desc'],
+				quantity: ['quantity', 'quantities', 'qty'],
+				references: ['reference', 'references', 'refdes']
+			},
+			template: {
+				default: ['MPN', 'Description', 'RefDes', 'Qty']
+			}
+		}
+	};
+
 	$: assemblyInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
@@ -76,7 +90,7 @@
 		console.log('data range:', range);
 		let rowsValues = [];
 		const includesAll = (arr, values) => values.every((v) => arr.includes(v));
-		for (let R = range.s.r; R <= range.e.r; ++R) {
+		/* for (let R = range.s.r; R <= range.e.r; ++R) {
 			let rowValues = [];
 			for (let C = range.s.c; C <= range.e.c; ++C) {
 				let cell_address = { c: C, r: R };
@@ -88,14 +102,46 @@
 			if (includesAll(rowValues, ['MPN', 'Description', 'RefDes', 'Qty'])) {
 				console.log('Header: ', R, rowValues);
 			}
-		}
+		} */
 		console.log(rowsValues);
+		console.log(
+			'lines:',
+			lines,
+			Object.values(lines?.[0]),
+			includesAll(Object.values(lines?.[0]), _config.bom.template.default)
+		);
+		console.log('headings:', Object.values(_config.bom.headings));
+		let isKeyed: boolean = Object.values(_config.bom.headings)
+			.map((h) => {
+				return Object.keys(lines?.[0]).some((v) => h.includes(v.toLowerCase()));
+			})
+			.every((v) => v === true);
+		console.log('keyed:', isKeyed);
+		if (!isKeyed) {
+			let headerIdx = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
+			let newLines = lines.slice(headerIdx);
+			let keys = newLines[0];
+			newLines = lines.slice(headerIdx + 1);
+			keys = Object.values(keys);
+			lines = newLines.map((l, idx) => {
+				let newLine = {};
+				Object.values(l).forEach((v, i) => {
+					let newKey = keys[i];
+					if (Object.keys(newLine).includes(newKey)) return;
+					newLine[newKey] = v;
+				});
+				return newLine;
+			});
+
+			console.log('keys:', keys);
+		}
+		console.log('new lines:', lines);
 		lines.forEach((line, idx) => {
-			let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
-			let qty = getParameterInsensitiveAny(line, ['quantity', 'quantities', 'qty']);
-			let references = getParameterInsensitiveAny(line, ['reference', 'references']);
-			if (!pn && getParameterInsensitiveAny(lines?.[idx - 1], ['ipn', 'pn', 'part'])) {
-				line.ipn = getParameterInsensitiveAny(lines?.[idx - 1], ['ipn', 'pn', 'part']);
+			let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
+			let qty = getParameterInsensitiveAny(line, _config.bom.headings.quantity);
+			let references = getParameterInsensitiveAny(line, _config.bom.headings.references);
+			if (!pn && getParameterInsensitiveAny(lines?.[idx - 1], _config.bom.headings.part)) {
+				line.ipn = getParameterInsensitiveAny(lines?.[idx - 1], _config.bom.headings.part);
 			}
 			if (!qty && references) {
 				line.qty = references?.split(',')?.length;
@@ -103,11 +149,11 @@
 		});
 		let _lines = [];
 		lines.forEach((line) => {
-			let references = getParameterInsensitiveAny(line, ['reference', 'references']);
+			let references = getParameterInsensitiveAny(line, _config.bom.headings.references);
 			let refs = references?.split(',')?.map((r) => r.trim());
 			refs.forEach((ref) => {
-				let pn = getParameterInsensitiveAny(line, ['ipn', 'pn', 'part']);
-				let description = getParameterInsensitiveAny(line, ['description', 'desc']);
+				let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
+				let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
 
 				let l = {
 					reference: ref,
@@ -170,7 +216,7 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted BOM: ' + mutationResult.data.insert_bom_one.id, 'success');
-			if (mutationResult?.data?.insert_bom_one?.id) {
+			if (assemblyId && mutationResult?.data?.insert_bom_one?.id) {
 				mutationResult = await urqlClient.mutation(
 					gql`
 						mutation updateAssembly($assemblyId: bigint!, $bomId: uuid!) {
@@ -296,10 +342,10 @@
 			</thead>
 			<tbody>
 				{#each lines as p}
-					{@const references = getParameterInsensitiveAny(p, ['reference', 'references'])}
-					{@const quantity = getParameterInsensitiveAny(p, ['quantity', 'quantities', 'qty'])}
-					{@const description = getParameterInsensitiveAny(p, ['description', 'descriptions', 'desc'])}
-					{@const pn = getParameterInsensitiveAny(p, ['ipn', 'pn', 'part', 'parts'])}
+					{@const references = getParameterInsensitiveAny(p, _config.bom.headings.references)}
+					{@const quantity = getParameterInsensitiveAny(p, _config.bom.headings.quantity)}
+					{@const description = getParameterInsensitiveAny(p, _config.bom.headings.description)}
+					{@const pn = getParameterInsensitiveAny(p, _config.bom.headings.part)}
 					{@const refSplit = references?.split(',')}
 					{@const refCount = refSplit?.length}
 					<tr class:bg-slate-500={p.ipn == 'Not Fitted'}>

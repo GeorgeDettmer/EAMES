@@ -191,7 +191,7 @@
 							Sign in
 						{/if}
 					</p>
-					<div class:hidden={false}>
+					<div class:hidden={true}>
 						<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
 							<div class="bg-blue-700 overflow-hidden" role="progressbar" style={`height: ${(1000 / 100) * 5}%`} />
 						</div>

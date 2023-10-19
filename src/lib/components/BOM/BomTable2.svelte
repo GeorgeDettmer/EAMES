@@ -3,7 +3,7 @@
 	export let job = {};
 	export let partsInLibrary: string[] = [];
 
-	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
@@ -11,6 +11,7 @@
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import BomTableLine from './BomTableLine.svelte';
 	import { getJsonBySearchId } from 'serpapi';
+	import { datetimeFormat } from '$lib/utils';
 
 	let items = [];
 
@@ -184,7 +185,7 @@
 									<Table>
 										<TableHead>
 											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
+											<!-- <TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell> -->
 											<TableHeadCell padding="px-1 py-1">Reference</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
@@ -194,12 +195,15 @@
 											{#each orderItems as item, idx}
 												<TableBodyRow>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														<UserIcon user={item?.user} />
+														<UserIcon size="xs" user={item?.user}>{item?.user?.username}</UserIcon>
+														<Tooltip placement="right">
+															{datetimeFormat(item.created_at)}
+														</Tooltip>
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														{new Date(item.created_at).toLocaleDateString()}
-														{new Date(item.created_at).toLocaleTimeString()}
-													</TableBodyCell>
+													<!-- <TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+														<p>{new Date(item.created_at).toLocaleDateString()}</p>
+														<p>{new Date(item.created_at).toLocaleTimeString()}</p>
+													</TableBodyCell> -->
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.order?.supplier?.reference || ''}
 													</TableBodyCell>
@@ -229,15 +233,12 @@
 												<td />
 												<td />
 												<td />
-												<td />
+												<!-- <td /> -->
 												<td>
-													{orderItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
+													{orderItems?.reduce((a, v) => a + v.quantity, 0)}
 												</td>
 												<td>
-													£{orderItems?.reduce(
-														(accumulator, currentValue) => accumulator + currentValue.price * currentValue.quantity,
-														0
-													)}
+													£{orderItems?.reduce((a, v) => a + v.price * v.quantity, 0)}
 												</td>
 											</tr>
 										</tfoot>

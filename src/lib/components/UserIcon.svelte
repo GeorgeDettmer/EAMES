@@ -38,7 +38,9 @@
 				{/if}
 			</Avatar>
 		{/if}
-		<slot />
+		<div class="ml-1">
+			<slot />
+		</div>
 	</Button>
 {:else}
 	<Avatar

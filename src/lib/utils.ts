@@ -142,6 +142,20 @@ export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: str
 	];
 };
 
+export let datetimeFormat = (datetime: string): string => {
+	const d = new Date(datetime);
+	let time = d.toLocaleTimeString([], {
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+	let date = d.toLocaleDateString([], {
+		day: '2-digit',
+		month: '2-digit',
+		year: '2-digit'
+	});
+	return time + ' ' + date;
+};
+
 export let getParameterInsensitive = (object: { [x: string]: any }, key: string): any => {
 	return getParameterInsensitiveAny(object, [key]);
 };

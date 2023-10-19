@@ -2,7 +2,7 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
-
+	import { mediaQuery } from 'svelte-legos';
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import PartInfo from '../PartInfo.svelte';
@@ -12,6 +12,7 @@
 	import BomTableLine from './BomTableLine.svelte';
 	import { getJsonBySearchId } from 'serpapi';
 	import { datetimeFormat } from '$lib/utils';
+	import { fade } from 'svelte/transition';
 
 	let items = [];
 
@@ -120,9 +121,9 @@
 </script>
 
 {#if bom}
-	<Table hoverable shadow>
-		<TableHead>
-			<TableHeadCell colspan="5">BOM</TableHeadCell>
+	<Table shadow>
+		<TableHead theadClass="bg-slate-300">
+			<TableHeadCell colspan="5">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</TableHeadCell>
 			{#if job?.id}
 				<TableHeadCell>Job</TableHeadCell>
 			{/if}
@@ -131,7 +132,7 @@
 				<TableHeadCell colspan="2">Order</TableHeadCell>
 			{/if}
 		</TableHead>
-		<TableHead>
+		<TableHead theadClass="bg-slate-200">
 			<TableHeadCell>#</TableHeadCell>
 			<TableHeadCell>Part</TableHeadCell>
 			<TableHeadCell>Description</TableHeadCell>
@@ -162,6 +163,7 @@
 					{references}
 					{inLibrary}
 					{orderItems}
+					highlighted={openRows.includes(idx)}
 					on:click={(e) => {
 						handleRowClick(idx, references, line, lineKey, e);
 					}}
@@ -195,7 +197,11 @@
 											{#each orderItems as item, idx}
 												<TableBodyRow>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														<UserIcon size="xs" user={item?.user}>{item?.user?.username}</UserIcon>
+														<UserIcon size="xs" user={item?.user}>
+															{#if mediaQuery('(min-width: 1024px)')}
+																{item?.user?.username}
+															{/if}
+														</UserIcon>
 														<Tooltip placement="right">
 															{datetimeFormat(item.created_at)}
 														</Tooltip>
@@ -228,7 +234,7 @@
 										</div> -->
 											{/each}
 										</TableBody>
-										<tfoot class="rounded-sm">
+										<tfoot class="rounded-sm text-xs">
 											<tr class="font-semibold text-gray-900 dark:text-white dark:bg-gray-500 bg-gray-100">
 												<td />
 												<td />
@@ -245,6 +251,8 @@
 									</Table>
 								</div>
 							</TableBodyCell>
+						{:else}
+							<TableBodyCell colspan="3" class="p-0 object-right" />
 						{/if}
 					</TableBodyRow>
 				{/if}

@@ -16,7 +16,7 @@
 	import AccordionItem from './AccordionItem.svelte';
 	import { CheckCircle, XCircle } from 'svelte-heros-v2';
 	import { gql, getContextClient, subscriptionStore } from '@urql/svelte';
-	import { padSerial } from '$lib/utils';
+	import { padString } from '$lib/utils';
 	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import { page } from '$app/stores';
@@ -77,7 +77,7 @@
 				<div class="flow-root">
 					<div class="flex float-left items-center">
 						<p class="mb-2 md:text-4xl text-xl text-gray-900 dark:text-white justify-left">
-							{padSerial(boardId)}
+							{padString(boardId)}
 						</p>
 					</div>
 					<div class="flex float-right items-center ml-auto">
@@ -198,7 +198,7 @@
 						src={'http://bwipjs-api.metafloor.com/?bcid=datamatrix&text=' + boardId}
 					/> -->
 					<p class="mb-2 md:text-4xl text-xl text-gray-900 dark:text-white justify-left">
-						{padSerial(boardId)}
+						{padString(boardId)}
 					</p>
 				</div>
 				<div class="flex float-right items-center ml-auto">

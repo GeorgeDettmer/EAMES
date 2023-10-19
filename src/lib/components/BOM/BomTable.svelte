@@ -9,6 +9,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	let items = [];
 
@@ -87,7 +88,7 @@
 			}
 		});
 	}
-
+	const dispatch = createEventDispatcher();
 	function handleReferenceHover(references: string[], hovering: boolean) {
 		//console.log('handleReferenceHover', references, hovering);
 		if (hovering) {
@@ -101,6 +102,7 @@
 
 	function handleRowClick(idx: number, references: string[], line, pn: string | null, event: MouseEvent) {
 		console.log('handleRowClick', idx, references, line, event);
+		dispatch('row_click', { idx, references, line, event });
 		if (!pn) return;
 		if (openRows.includes(idx)) {
 			openRows = openRows.filter((v) => v !== idx);

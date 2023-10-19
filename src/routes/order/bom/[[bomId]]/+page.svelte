@@ -2,6 +2,8 @@
 	export let data;
 	import { page } from '$app/stores';
 	import BomTable2 from '$lib/components/BOM/BomTable2.svelte';
+	import OrdersList from '$lib/components/Orders/OrdersList.svelte';
+	import { padString } from '$lib/utils.js';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 
 	$: bomId = $page?.data?.bomId;
@@ -24,6 +26,9 @@
 							data
 							name
 						}
+					}
+					customer {
+						name
 					}
 					kit {
 						id
@@ -83,6 +88,37 @@
 							color
 						}
 					}
+					jobs_orders {
+						id
+						order {
+							orders_items {
+								id
+								created_at
+								order_id
+								part
+								part_id
+								partByPartId {
+									description
+									name
+								}
+								price
+								quantity
+								user {
+									id
+									username
+									first_name
+									last_name
+									initials
+									color
+								}
+							}
+							id
+							supplier {
+								id
+								name
+							}
+						}
+					}
 				}
 			}
 		`,
@@ -139,8 +175,7 @@
 </script>
 
 {#if jobId}
-	<p>Job: {jobId}/{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
-
+	<p>Job: {jobInfo?.customer?.name} {jobId}-{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
 	<p>
 		{#if jobInfo?.kit}
 			Kit: <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + jobInfo?.kit?.id}>{jobInfo?.kit?.id}</a>
@@ -153,12 +188,30 @@
 {#if bom?.assemblies?.length > 0}
 	<p>Used in {bom.assemblies.length} assemblies:</p>
 	{#each bom.assemblies as assembly, idx}
-		<a class="cursor-pointer" target="_blank" href={window.origin + '/assembly/' + assembly?.id}
-			>{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})</a
-		>
+		<a class="cursor-pointer" target="_blank" href={window.origin + '/assembly/' + assembly?.id}>
+			{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})
+		</a>
 	{/each}
 {:else}
 	<p>Not used in any assemblies</p>
+{/if}
+{#if jobInfo?.jobs_orders}
+	<OrdersList orders={jobInfo?.jobs_orders} />
+	<!-- <div class="flex-row">
+		{#each jobInfo?.jobs_orders as order}
+			{@const colour = 'blue'}
+			<div
+				class={`hover:shadow m-1 h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
+			>
+				<div class="overflow-hidden">
+					<p>{order?.order?.supplier?.name} ({padString(String(order?.id))})</p>
+					<p class="float-right">{order?.order?.orders_items?.length}</p>
+				</div>
+			</div>
+		{/each}
+	</div> -->
+{:else}
+	<p>No orders associated with this job</p>
 {/if}
 
 {#if bom}

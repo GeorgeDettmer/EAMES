@@ -3,7 +3,7 @@
 	import { Button, Popover } from 'flowbite-svelte';
 
 	import BoardPopoverContent from './BoardPopoverContent.svelte';
-	import { padSerial } from '$lib/utils';
+	import { padString } from '$lib/utils';
 
 	export let boardId: string = '0';
 	export let barcodeType: string = 'datamatrix';
@@ -11,7 +11,7 @@
 		window.location.origin + window.location.pathname
 	}`;
 
-	$: id = padSerial(boardId);
+	$: id = padString(boardId);
 
 	const dispatch = createEventDispatcher();
 

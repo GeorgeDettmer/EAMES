@@ -10,6 +10,7 @@
 	export let references: string[] = [];
 	export let inLibrary: boolean = false;
 	export let buildQty: number = 0;
+	export let highlighted: boolean = false;
 	export let orderItems = [];
 
 	function qtyColor(qty: number, requiredQty: number) {
@@ -22,7 +23,7 @@
 </script>
 
 <TableBodyRow
-	class={`cursor-pointer`}
+	class={`cursor-pointer hover:bg-gray-100 ${highlighted ? 'bg-slate-100' : ''}`}
 	on:click={(e) => {
 		dispatch('click', e);
 	}}

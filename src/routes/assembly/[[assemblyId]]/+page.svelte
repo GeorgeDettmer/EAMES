@@ -2,7 +2,7 @@
 	export let data;
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
-	import Viewer from '$lib/components/Viewer.svelte';
+	import Viewer, { getComponentGroups } from '$lib/components/Viewer.svelte';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 
 	$: assemblyId = $page?.data?.assemblyId;
@@ -59,6 +59,38 @@
 		variables: { assemblyId }
 	});
 	$: assemblyInfo = $assemblyInfoStore?.data?.assemblies_by_pk;
+	let highlightedReferences: string[] = [];
+	function highlightReferences(references: string[], highlight: boolean = true) {
+		if (highlight) {
+			highlightedReferences = highlightedReferences.concat(references);
+		} else {
+			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
+		}
+		console.log('highlightedReferences', highlightedReferences);
+		references.forEach((r) => {
+			let group = getComponentGroups(r);
+			group = group?.[0];
+			if (group) {
+				group?.find('.outline')?.forEach((c) => {
+					//console.log('Update component colour:', c);
+					c.fillEnabled(true);
+					c.fill(highlight ? 'blue' : '');
+					c.opacity(0.75);
+				});
+			}
+		});
+	}
+
+	function handleReferenceHover(references: string[], hovering: boolean) {
+		//console.log('handleReferenceHover', references, hovering);
+		if (hovering) {
+			highlightedReferences = highlightedReferences.concat(references);
+		} else {
+			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
+		}
+		console.log('handleReferenceHover', highlightedReferences);
+		//highlightReferences(references, hovering);
+	}
 </script>
 
 <div class="max-h-[1000px]">
@@ -77,7 +109,12 @@
 						>{assemblyInfo?.bom?.id}({assemblyInfo?.bom?.name})</a
 					>
 					<div class="h-screen overflow-y-scroll">
-						<BomTable bom={assemblyInfo?.bom} />
+						<BomTable
+							bom={assemblyInfo?.bom}
+							on:row_click={(e) => {
+								highlightReferences(e?.detail?.references);
+							}}
+						/>
 					</div>
 				</div>
 			{/if}

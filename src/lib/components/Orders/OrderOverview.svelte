@@ -5,12 +5,12 @@
 	import { mediaQuery } from 'svelte-legos';
 	import UserIcon from '../UserIcon.svelte';
 
-	export let orderId: string;
+	export let orderId: number;
 
 	$: orderStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription order($orderId: uuid!) {
+			subscription order($orderId: bigint!) {
 				erp_orders_by_pk(id: $orderId) {
 					orders_items {
 						id

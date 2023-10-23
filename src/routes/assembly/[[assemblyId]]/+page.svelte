@@ -73,7 +73,7 @@
 			if (group) {
 				group?.find('.outline')?.forEach((c) => {
 					//console.log('Update component colour:', c);
-					c.fillEnabled(true);
+					c.fillEnabled(highlight);
 					c.fill(highlight ? 'blue' : '');
 					c.opacity(0.75);
 				});
@@ -81,15 +81,16 @@
 		});
 	}
 
-	function handleReferenceHover(references: string[], hovering: boolean) {
-		//console.log('handleReferenceHover', references, hovering);
-		if (hovering) {
-			highlightedReferences = highlightedReferences.concat(references);
-		} else {
-			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
+	function handleRowClick(e: CustomEvent) {
+		const detail = e.detail;
+		if (detail) {
+			const references = detail?.references;
+			if (references) {
+				const highlighted = references?.filter((v) => highlightedReferences.includes(v))?.length !== 0;
+				console.log('highlighted', highlighted);
+				highlightReferences(references, !highlighted);
+			}
 		}
-		console.log('handleReferenceHover', highlightedReferences);
-		//highlightReferences(references, hovering);
 	}
 </script>
 
@@ -112,7 +113,7 @@
 						<BomTable
 							bom={assemblyInfo?.bom}
 							on:row_click={(e) => {
-								highlightReferences(e?.detail?.references);
+								handleRowClick(e);
 							}}
 						/>
 					</div>

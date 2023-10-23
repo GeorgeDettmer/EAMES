@@ -106,10 +106,10 @@
 		if (!pn) return;
 		if (openRows.includes(idx)) {
 			openRows = openRows.filter((v) => v !== idx);
-			handleReferenceHover(references, false);
+			//handleReferenceHover(references, false);
 		} else {
 			openRows = event.ctrlKey ? [...openRows, idx] : [idx];
-			handleReferenceHover(references, true);
+			//handleReferenceHover(references, true);
 		}
 	}
 

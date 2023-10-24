@@ -4,6 +4,7 @@
 	import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Tooltip } from 'flowbite-svelte';
 	import { mediaQuery } from 'svelte-legos';
 	import UserIcon from '../UserIcon.svelte';
+	import OrdersListItem from './OrdersListItem.svelte';
 
 	export let orderId: number;
 
@@ -49,9 +50,14 @@
 	$: console.log('order:', order);
 </script>
 
+<OrdersListItem {order}>
+	<!-- 	<UserIcon size="sm" user={orderItems[0]?.user}>
+		{orderItems[0]?.user?.first_name}
+		{orderItems[0]?.user?.last_name}
+	</UserIcon> -->
+</OrdersListItem>
+
 {#if order}
-	{order?.supplier?.name}
-	{order?.id}
 	<Table>
 		<TableHead>
 			<TableHeadCell>User</TableHeadCell>

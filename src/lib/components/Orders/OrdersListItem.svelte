@@ -39,4 +39,5 @@
 			<p class="float-right">{orderItemCount}</p>
 		</div>
 	</div>
+	<slot />
 </div>

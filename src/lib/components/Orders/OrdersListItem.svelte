@@ -6,8 +6,8 @@
 	export let activeOrderId: number = -1;
 	export let color: string = '';
 
-	let orderItemCount = order?.orders_items?.length;
-	color = color === '' ? (orderItemCount > 0 ? 'blue' : 'yellow') : color;
+	$: orderItemCount = order?.orders_items?.length;
+	$: color = color === '' ? (orderItemCount > 0 ? 'blue' : 'yellow') : color;
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -28,7 +28,12 @@
 			<p class="float-right">{padString(String(order?.id), 5)}</p>
 		</div>
 		<div>
-			<p>£{order?.orders_items?.reduce((a, v) => a + v.price, 0)}</p>
+			<p>
+				{new Intl.NumberFormat('en-GB', {
+					style: 'currency',
+					currency: 'GBP'
+				}).format(order?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))}
+			</p>
 		</div>
 		<div>
 			<p class="float-right">{orderItemCount}</p>

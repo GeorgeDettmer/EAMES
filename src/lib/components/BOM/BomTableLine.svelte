@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
+	import { json } from '@sveltejs/kit';
 
 	export let rowIndex: number = -1;
 	export let pn: string | undefined;
@@ -49,6 +50,16 @@
 	{#if orderItems.length > 0}
 		{@const kitItemQty = orderItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 		{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
+		{@const suppliers = orderItems?.map((o) => o?.order?.supplier?.name)}
+		<TableBodyCell>
+			{#each suppliers as supplier}
+				<div class="py-0.5">
+					<Badge class="mx-0.5" color={'blue'}>
+						{supplier}
+					</Badge>
+				</div>
+			{/each}
+		</TableBodyCell>
 		<TableBodyCell>
 			<Badge class="mx-0.5" color={!pn ? 'blue' : qtyColor(kitItemQty, buildQty)}>
 				{kitItemQty}

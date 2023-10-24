@@ -10,7 +10,6 @@
 	import NewComponent from './NewComponent.svelte';
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import BomTableLine from './BomTableLine.svelte';
-	import { getJsonBySearchId } from 'serpapi';
 	import { datetimeFormat } from '$lib/utils';
 	import { fade } from 'svelte/transition';
 
@@ -129,7 +128,7 @@
 			{/if}
 
 			{#if job?.orders_items}
-				<TableHeadCell colspan="2">Order</TableHeadCell>
+				<TableHeadCell colspan="3">Order</TableHeadCell>
 			{/if}
 		</TableHead>
 		<TableHead theadClass="bg-slate-200">
@@ -142,6 +141,7 @@
 				<TableHeadCell>Qty</TableHeadCell>
 			{/if}
 			{#if job?.orders_items}
+				<TableHeadCell>Supplier</TableHeadCell>
 				<TableHeadCell>Qty</TableHeadCell>
 				<TableHeadCell>Attrition</TableHeadCell>
 			{/if}
@@ -181,7 +181,7 @@
 							</div>
 						</TableBodyCell>
 						{#if orderItems?.length > 0}
-							<TableBodyCell colspan="3" class="p-0 object-right">
+							<TableBodyCell colspan="4" class="p-0 object-right">
 								<div class="px-1 py-1">
 									<h1>Orders:</h1>
 									<Table>
@@ -221,7 +221,10 @@
 													</TableBodyCell>
 
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														£{Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0}
+														{new Intl.NumberFormat('en-GB', {
+															style: 'currency',
+															currency: 'GBP'
+														}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 													</TableBodyCell>
 												</TableBodyRow>
 												<!-- <div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1">
@@ -244,7 +247,10 @@
 													{orderItems?.reduce((a, v) => a + v.quantity, 0)}
 												</td>
 												<td>
-													£{orderItems?.reduce((a, v) => a + v.price * v.quantity, 0)}
+													{new Intl.NumberFormat('en-GB', {
+														style: 'currency',
+														currency: 'GBP'
+													}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 												</td>
 											</tr>
 										</tfoot>

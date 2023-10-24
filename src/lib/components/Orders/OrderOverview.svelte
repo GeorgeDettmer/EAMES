@@ -80,7 +80,10 @@
 					</TableBodyCell>
 
 					<TableBodyCell>
-						£{Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0}
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 					</TableBodyCell>
 				</TableBodyRow>
 			{:else}
@@ -95,7 +98,10 @@
 				{orderItems?.reduce((a, v) => a + v.quantity, 0)}
 			</TableBodyCell>
 			<TableBodyCell>
-				£{orderItems?.reduce((a, v) => a + v.price * v.quantity, 0)}
+				{new Intl.NumberFormat('en-GB', {
+					style: 'currency',
+					currency: 'GBP'
+				}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 			</TableBodyCell>
 		</TableHead>
 	</Table>

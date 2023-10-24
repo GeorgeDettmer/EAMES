@@ -17,6 +17,6 @@
 
 <div class="flex-row">
 	{#each orders as { order }}
-		<OrdersListItem {order} bind:modalVisible bind:activeOrderId color={'red'} />
+		<OrdersListItem {order} bind:modalVisible bind:activeOrderId />
 	{/each}
 </div>

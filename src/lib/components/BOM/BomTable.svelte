@@ -261,7 +261,12 @@
 														{item?.orders_item?.order?.supplier?.name || 'Unknown'}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														£{Math.round((item?.orders_item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0}
+														{new Intl.NumberFormat('en-GB', {
+															style: 'currency',
+															currency: 'GBP'
+														}).format(
+															Math.round((item?.orders_item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0
+														)}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.orders_item?.order?.supplier?.reference || ''}

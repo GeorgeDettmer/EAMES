@@ -73,5 +73,6 @@
 	{:else}
 		<TableBodyCell />
 		<TableBodyCell />
+		<TableBodyCell />
 	{/if}
 </TableBodyRow>

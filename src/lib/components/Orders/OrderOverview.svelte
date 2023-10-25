@@ -39,6 +39,14 @@
 						id
 						name
 					}
+					user {
+						id
+						username
+						first_name
+						last_name
+						initials
+						color
+					}
 				}
 			}
 		`,
@@ -50,12 +58,15 @@
 	$: console.log('order:', order);
 </script>
 
-<OrdersListItem {order}>
-	<!-- 	<UserIcon size="sm" user={orderItems[0]?.user}>
-		{orderItems[0]?.user?.first_name}
-		{orderItems[0]?.user?.last_name}
-	</UserIcon> -->
-</OrdersListItem>
+<div class="flex">
+	<div><OrdersListItem {order} interactive={false} /></div>
+	<div class="pt-2 pl-2">
+		<UserIcon size="sm" user={order?.user}>
+			{order?.user?.first_name}
+			{order?.user?.last_name}
+		</UserIcon>
+	</div>
+</div>
 
 {#if order}
 	<Table>

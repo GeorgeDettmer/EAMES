@@ -51,11 +51,24 @@
 		{@const kitItemQty = orderItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 		{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
 		{@const suppliers = orderItems?.map((o) => o?.order?.supplier?.name)}
+		{@const costs = orderItems?.map((o) => o?.price * o?.quantity)}
 		<TableBodyCell>
 			{#each suppliers as supplier}
 				<div class="py-0.5">
 					<Badge class="mx-0.5" color={'blue'}>
 						{supplier}
+					</Badge>
+				</div>
+			{/each}
+		</TableBodyCell>
+		<TableBodyCell>
+			{#each costs as cost}
+				<div class="py-0.5">
+					<Badge class="mx-0.5" color={'blue'}>
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(cost)}
 					</Badge>
 				</div>
 			{/each}
@@ -71,6 +84,7 @@
 			</Badge>
 		</TableBodyCell>
 	{:else}
+		<TableBodyCell />
 		<TableBodyCell />
 		<TableBodyCell />
 		<TableBodyCell />

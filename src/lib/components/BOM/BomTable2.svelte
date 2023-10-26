@@ -128,7 +128,7 @@
 			{/if}
 
 			{#if job?.orders_items}
-				<TableHeadCell colspan="3">Order</TableHeadCell>
+				<TableHeadCell colspan="4">Order</TableHeadCell>
 			{/if}
 		</TableHead>
 		<TableHead theadClass="bg-slate-200">
@@ -142,6 +142,7 @@
 			{/if}
 			{#if job?.orders_items}
 				<TableHeadCell>Supplier</TableHeadCell>
+				<TableHeadCell>Cost</TableHeadCell>
 				<TableHeadCell>Qty</TableHeadCell>
 				<TableHeadCell>Attrition</TableHeadCell>
 			{/if}
@@ -181,7 +182,7 @@
 							</div>
 						</TableBodyCell>
 						{#if orderItems?.length > 0}
-							<TableBodyCell colspan="4" class="p-0 object-right">
+							<TableBodyCell colspan="5" class="p-0 object-right">
 								<div class="px-1 py-1">
 									<h1>Orders:</h1>
 									<Table>
@@ -258,7 +259,7 @@
 								</div>
 							</TableBodyCell>
 						{:else}
-							<TableBodyCell colspan="3" class="p-0 object-right" />
+							<TableBodyCell colspan="5" class="p-0 object-right" />
 						{/if}
 					</TableBodyRow>
 				{/if}

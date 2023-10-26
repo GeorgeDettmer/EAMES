@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import BomTable2 from '$lib/components/BOM/BomTable2.svelte';
 	import OrdersList from '$lib/components/Orders/OrdersList.svelte';
+	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import { padString } from '$lib/utils.js';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 
@@ -171,7 +172,11 @@
 	});
 	$: bom = $bomStore?.data?.bom_by_pk;
 
-	$: console.log('wag1:', jobInfo, bom);
+	$: allOrderItems = jobInfo?.jobs_orders
+		?.map(({ order }) => {
+			return order?.orders_items;
+		})
+		?.flat();
 </script>
 
 {#if jobId}
@@ -196,20 +201,39 @@
 	<p>Not used in any assemblies</p>
 {/if}
 {#if jobInfo?.jobs_orders}
-	<OrdersList orders={jobInfo?.jobs_orders} />
-	<!-- <div class="flex-row">
-		{#each jobInfo?.jobs_orders as order}
-			{@const colour = 'blue'}
+	<div class="flex">
+		<div class="float-left">
+			<OrdersList orders={jobInfo?.jobs_orders} />
+		</div>
+		<div class="items-end">
 			<div
-				class={`hover:shadow m-1 h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
+				class={'hover:shadow-lg m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center ' +
+					(allOrderItems.length > 0
+						? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
+						: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 ')}
 			>
-				<div class="overflow-hidden">
-					<p>{order?.order?.supplier?.name} ({padString(String(order?.id))})</p>
-					<p class="float-right">{order?.order?.orders_items?.length}</p>
+				<div class="overflow-hidden grid grid-cols-2">
+					<div>
+						<p class="font-bold invisible">TOTAL</p>
+					</div>
+					<div>
+						<p class="float-right" />
+					</div>
+					<div>
+						<p>
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(allOrderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
+						</p>
+					</div>
+					<div>
+						<p class="float-right">{allOrderItems?.length || 0}</p>
+					</div>
 				</div>
 			</div>
-		{/each}
-	</div> -->
+		</div>
+	</div>
 {:else}
 	<p>No orders associated with this job</p>
 {/if}

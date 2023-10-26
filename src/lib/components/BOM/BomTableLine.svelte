@@ -15,7 +15,7 @@
 	export let orderItems = [];
 
 	function qtyColor(qty: number, requiredQty: number) {
-		if (qty === requiredQty) return 'blue';
+		if (qty === requiredQty) return 'yellow';
 		if (qty < requiredQty) return 'red';
 		if (qty > requiredQty) return 'green';
 	}
@@ -84,6 +84,7 @@
 			</Badge>
 		</TableBodyCell>
 	{:else}
+		<TableBodyCell />
 		<TableBodyCell />
 		<TableBodyCell />
 		<TableBodyCell />

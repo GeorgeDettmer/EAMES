@@ -189,7 +189,7 @@
 										<TableHead>
 											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
 											<!-- <TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell> -->
-											<TableHeadCell padding="px-1 py-1">Reference</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Order ID</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
@@ -212,7 +212,7 @@
 														<p>{new Date(item.created_at).toLocaleTimeString()}</p>
 													</TableBodyCell> -->
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														{item?.order?.supplier?.reference || ''}
+														{item?.order?.id || ''}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.order?.supplier?.name || 'Unknown'}

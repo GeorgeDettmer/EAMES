@@ -3,8 +3,6 @@
 	import { page } from '$app/stores';
 	import BomTable2 from '$lib/components/BOM/BomTable2.svelte';
 	import OrdersList from '$lib/components/Orders/OrdersList.svelte';
-	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
-	import { padString } from '$lib/utils.js';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 
 	$: bomId = $page?.data?.bomId;
@@ -75,6 +73,7 @@
 						price
 						quantity
 						order {
+							id
 							reference
 							supplier {
 								name

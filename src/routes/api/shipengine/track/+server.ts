@@ -12,13 +12,26 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	if (!trackingNumber || !carrierCode) throw error(400, "No 'tracking_number' or 'carrier' query parameter provided");
 	console.log('Tracking request: ', carrierCode, trackingNumber);
+	let cacheId = `${carrierCode}_${trackingNumber}`;
+	let cached = cache?.[cacheId];
+	if (cached) {
+		let cacheTimestamp = cached?._cachedTimestamp;
+		if (cacheTimestamp && Date.now() - cacheTimestamp < 60000) {
+			console.log('Tracking status:');
+			console.log('CACHED', (Date.now() - cacheTimestamp) / 1000);
+			console.log(cached?.statusCode, cached?.statusDescription);
+			return json(cached);
+		}
+	}
 	const shipengine = new ShipEngine(SHIPENGINE_API_KEY);
 	try {
 		const result = await shipengine.trackUsingCarrierCodeAndTrackingNumber({ carrierCode, trackingNumber });
 
 		console.log('Tracking status:');
 		console.log(result?.statusCode, result?.statusDescription);
-
+		cache[cacheId] = result;
+		cache[cacheId]._cachedTimestamp = Date.now();
+		console.log('Cached at:', cache[cacheId]._cachedTimestamp);
 		return json(result);
 	} catch (e) {
 		console.log('Error tracking shipment: ', e?.message);

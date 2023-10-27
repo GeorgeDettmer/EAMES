@@ -37,7 +37,7 @@
 	<TableBodyCell class={`${inLibrary ? 'underline' : ''}`}>
 		{pn || 'Not Fitted'}
 	</TableBodyCell>
-	<TableBodyCell tdClass="w-1/4">
+	<TableBodyCell tdClass="w-1/6">
 		<p class="overflow-hidden text-clip">{description}</p>
 	</TableBodyCell>
 	<BomTableLineReferences {references} {pn} />

@@ -4,6 +4,7 @@
 	import BomTable2 from '$lib/components/BOM/BomTable2.svelte';
 	import OrdersList from '$lib/components/Orders/OrdersList.svelte';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
+	import { Blockquote, Hr, P } from 'flowbite-svelte';
 
 	$: bomId = $page?.data?.bomId;
 	$: jobId = $page?.data?.jobId;
@@ -178,7 +179,27 @@
 		?.flat();
 </script>
 
-{#if jobId}
+{#if bom}
+	<Blockquote border bg class="p-1 flex-auto mb-1 pb-2.5 " borderClass={`border-l-8 border-gray-400`}>
+		<P weight="bold" size="lg">{bom?.name}</P>
+		<P weight="medium" size="sm">{bom?.id} ({bom?.revision_internal}:{bom?.revision_external})</P>
+		{#if jobId}
+			<Hr />
+			<p>{jobInfo?.customer?.name} {jobId}-{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
+		{/if}
+		{#if bom?.assemblies?.length > 0}
+			{#each bom.assemblies as assembly, idx}
+				<a class="cursor-pointer" target="_blank" href={window.origin + '/assembly/' + assembly?.id}>
+					{idx + 1}: {assembly.name} ({assembly.revision_external}:{assembly.revision_internal})
+				</a>
+			{/each}
+		{:else}
+			<p>Not used in any assemblies</p>
+		{/if}
+	</Blockquote>
+{/if}
+
+<!-- {#if jobId}
 	<p>Job: {jobInfo?.customer?.name} {jobId}-{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
 	<p>
 		{#if jobInfo?.kit}
@@ -198,13 +219,14 @@
 	{/each}
 {:else}
 	<p>Not used in any assemblies</p>
-{/if}
+{/if} -->
+
 {#if jobInfo?.jobs_orders}
 	<div class="flex">
 		<div class="float-left">
 			<OrdersList orders={jobInfo?.jobs_orders} />
 		</div>
-		<div class="items-end">
+		<div class="w-auto ml-auto">
 			<div
 				class={'hover:shadow-lg m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center ' +
 					(allOrderItems.length > 0

@@ -10,7 +10,7 @@
 
 <TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
 	<div
-		class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
+		class="flex p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
 	>
 		{#each references as reference}
 			{@const colour = pn ? 'blue' : 'red'}

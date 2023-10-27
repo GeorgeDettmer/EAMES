@@ -1,7 +1,17 @@
 <script lang="ts">
 	import { datetimeFormat } from '$lib/utils';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
-	import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Tooltip } from 'flowbite-svelte';
+	import {
+		Table,
+		TableHead,
+		TableHeadCell,
+		TableBody,
+		TableBodyRow,
+		TableBodyCell,
+		Tooltip,
+		Popover,
+		Badge
+	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
 	import { stringToArray } from 'konva/lib/shapes/Text';
@@ -9,6 +19,7 @@
 	import { onMount } from 'svelte';
 
 	export let orderId: number;
+	export let showRecieved: boolean = false;
 
 	$: orderStore = subscriptionStore({
 		client: getContextClient(),
@@ -37,6 +48,18 @@
 							last_name
 							initials
 							color
+						}
+						orders_items_receiveds {
+							id
+							quantity
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
 						}
 					}
 
@@ -91,6 +114,7 @@
 			track(order?.tracking?.tracking_number, order?.tracking?.carrier_code).then((t) => (tracking = t));
 		}
 	}
+	$: console.log('tr', tracking);
 </script>
 
 {#if order}
@@ -102,38 +126,52 @@
 				{order?.user?.last_name}
 			</UserIcon>
 		</div>
-		<div class="align-middle float-right mx-auto">
+		<!-- <div class="pt-4 pr-11 ml-auto">
 			<a target="_blank" href={order?.tracking?.tracking_url}>
-				{#if tracking?.statusCode === 'DE'}
-					<img
-						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-						width="32"
-						height="32"
-						src="https://img.icons8.com/windows/32/delivered-box.png"
-						alt="delivered-box"
-					/>
-				{:else if tracking?.statusCode === 'EX'}
-					<img
-						style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-						width="32"
-						height="32"
-						src="https://img.icons8.com/windows/32/package--v2.png"
-						alt="package--v2"
-					/>
-				{:else if tracking?.statusCode === 'IT'}
-					<img
-						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-						width="30"
-						height="30"
-						src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-						alt="delivery--v1"
-					/>
-				{:else}
-					<img width="32" height="32" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-				{/if}
-				<p class="font-semibold">{tracking?.statusDescription || ''}</p>
+				<div class="flex">
+					<p class="font-semibold pt-0.5 pr-2">{tracking?.statusDescription || ''}</p>
+					{#if tracking?.statusCode === 'DE'}
+						<img
+							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+							width="32"
+							height="32"
+							src="https://img.icons8.com/windows/32/delivered-box.png"
+							alt="delivered-box"
+						/>
+					{:else if tracking?.statusCode === 'EX'}
+						<img
+							style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+							width="32"
+							height="32"
+							src="https://img.icons8.com/windows/32/package--v2.png"
+							alt="package--v2"
+						/>
+					{:else if tracking?.statusCode === 'IT'}
+						<img
+							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
+							width="30"
+							height="30"
+							src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
+							alt="delivery--v1"
+						/>
+					{:else}
+						<img width="32" height="32" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
+					{/if}
+				</div>
+				<Popover placement={'left'}>
+					{#if tracking?.events?.[0]}
+						<p>
+							{tracking?.events?.[0]?.description}
+							<em>({datetimeFormat(tracking?.events?.[0]?.occurredAt)})</em>
+						</p>
+						<p>{tracking?.events?.[0]?.cityLocality}, {tracking?.events?.[0]?.countryCode}</p>
+						{#if tracking?.events?.[0]?.signer}
+							<p>Signed: {tracking?.events?.[0]?.signer}</p>
+						{/if}
+					{/if}
+				</Popover>
 			</a>
-		</div>
+		</div> -->
 	</div>
 	<Table>
 		<TableHead>
@@ -143,7 +181,59 @@
 			<TableHeadCell>Part</TableHeadCell>
 			<TableHeadCell>Qty</TableHeadCell>
 			<TableHeadCell>Cost</TableHeadCell>
-			<TableHeadCell />
+			<TableHeadCell>
+				<a target="_blank" href={order?.tracking?.tracking_url}>
+					<div class="flex">
+						{#if tracking?.statusCode === 'DE'}
+							<img
+								style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+								width="24"
+								height="24"
+								src="https://img.icons8.com/windows/32/delivered-box.png"
+								alt="delivered-box"
+							/>
+						{:else if tracking?.statusCode === 'EX'}
+							<img
+								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+								width="24"
+								height="24"
+								src="https://img.icons8.com/windows/32/package--v2.png"
+								alt="package--v2"
+							/>
+						{:else if tracking?.statusCode === 'IT'}
+							<img
+								style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
+								width="24"
+								height="24"
+								src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
+								alt="delivery--v1"
+							/>
+						{:else}
+							<img width="24" height="24" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
+						{/if}
+						<p class="font-semibold pt-1 pl-2">{tracking?.statusDescription || ''}</p>
+					</div>
+					<Popover placement={'left'}>
+						{#if tracking?.events?.[0]}
+							<p>
+								{tracking?.statusDescription}
+								<em>({datetimeFormat(tracking?.events?.[0]?.occurredAt)})</em>
+							</p>
+							<p>
+								{tracking?.events?.[0]?.description}
+							</p>
+							<p>{tracking?.events?.[0]?.cityLocality}, {tracking?.events?.[0]?.countryCode}</p>
+							{#if tracking?.events?.[0]?.signer}
+								<p>Signed: {tracking?.events?.[0]?.signer}</p>
+							{/if}
+						{/if}
+					</Popover>
+				</a>
+			</TableHeadCell>
+			{#if showRecieved}
+				<TableHeadCell>Recieved</TableHeadCell>
+			{/if}
+			<slot name="head" />
 		</TableHead>
 		<TableBody>
 			{#each orderItems as item, idx}
@@ -165,7 +255,9 @@
 						{item?.part || ''}
 					</TableBodyCell>
 					<TableBodyCell>
-						{item?.quantity}
+						<Badge class="mx-0.5" color={'blue'}>
+							{item?.quantity}
+						</Badge>
 					</TableBodyCell>
 
 					<TableBodyCell>
@@ -176,35 +268,50 @@
 					</TableBodyCell>
 					<TableBodyCell>
 						<a target="_blank" href={item?.tracking?.tracking_url || order?.tracking?.tracking_url}>
-							{#if itemTracking?.statusCode === 'DE'}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/delivered-box.png"
-									alt="delivered-box"
-								/>
-							{:else if itemTracking?.statusCode === 'EX'}
-								<img
-									style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/package--v2.png"
-									alt="package--v2"
-								/>
-							{:else if itemTracking?.statusCode === 'IT'}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-									alt="delivery--v1"
-								/>
-							{:else}
-								<img width="24" height="24" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-							{/if}
+							<div class="flex">
+								{#if itemTracking?.statusCode === 'DE'}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/delivered-box.png"
+										alt="delivered-box"
+									/>
+								{:else if itemTracking?.statusCode === 'EX'}
+									<img
+										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/package--v2.png"
+										alt="package--v2"
+									/>
+								{:else if itemTracking?.statusCode === 'IT'}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
+										alt="delivery--v1"
+									/>
+								{:else}
+									<img width="24" height="24" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
+								{/if}
+								<p class="font-semibold pt-1 pl-2 w-5 uppercase text-xs">{tracking?.statusDescription || ''}</p>
+							</div>
 						</a>
 					</TableBodyCell>
+					{#if showRecieved}
+						{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+						<TableBodyCell>
+							<Badge
+								class="mx-0.5"
+								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
+							>
+								{recievedQty}
+							</Badge>
+						</TableBodyCell>
+					{/if}
+					<slot name="body" />
 				</TableBodyRow>
 			{:else}
 				<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
@@ -225,6 +332,10 @@
 				}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 			</TableBodyCell>
 			<TableBodyCell />
+			{#if showRecieved}
+				<TableBodyCell />
+			{/if}
+			<slot name="foot" />
 		</TableHead>
 	</Table>
 {/if}

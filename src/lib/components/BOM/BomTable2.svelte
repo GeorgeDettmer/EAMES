@@ -11,7 +11,6 @@
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import BomTableLine from './BomTableLine.svelte';
 	import { datetimeFormat } from '$lib/utils';
-	import { fade } from 'svelte/transition';
 
 	let items = [];
 
@@ -172,7 +171,7 @@
 				<!-- {#if openRow === idx} -->
 				{#if openRows.includes(idx)}
 					<TableBodyRow class="h-24 shadow-inner">
-						<TableBodyCell colspan="5" class="p-0">
+						<TableBodyCell colspan="3" class="p-0">
 							<div class="px-1 py-1">
 								{#if inLibrary}
 									<NewComponent id={lineKey} {description} />
@@ -181,8 +180,9 @@
 								{/if}
 							</div>
 						</TableBodyCell>
+						<TableBodyCell colspan="3" />
 						{#if orderItems?.length > 0}
-							<TableBodyCell colspan="5" class="p-0 object-right">
+							<TableBodyCell colspan="4" class="p-0 object-right">
 								<div class="px-1 py-1">
 									<h1>Orders:</h1>
 									<Table>

@@ -10,13 +10,18 @@
 		TableBodyCell,
 		Tooltip,
 		Popover,
-		Badge
+		Badge,
+		Button,
+		Modal
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
-	import { stringToArray } from 'konva/lib/shapes/Text';
-	import { stringify } from 'postcss';
-	import { onMount } from 'svelte';
+
+	import TrackingStatus from './TrackingStatus.svelte';
+	import { green } from 'tailwindcss/colors';
+	import ReceivingStatus from './ReceivingStatus.svelte';
+	import ReceiveQuantity from './ReceiveQuantity.svelte';
+	import { mediaQuery, messagesStore } from 'svelte-legos';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -28,6 +33,16 @@
 				erp_orders_by_pk(id: $orderId) {
 					id
 					tracking
+					received_at
+					received_user_id
+					userByReceivedUserId {
+						id
+						username
+						first_name
+						last_name
+						initials
+						color
+					}
 					orders_items {
 						id
 						tracking
@@ -52,6 +67,8 @@
 						orders_items_receiveds {
 							id
 							quantity
+							created_at
+							updated_at
 							user {
 								id
 								username
@@ -62,7 +79,6 @@
 							}
 						}
 					}
-
 					supplier {
 						id
 						name
@@ -82,40 +98,64 @@
 	});
 	$: order = $orderStore?.data?.erp_orders_by_pk;
 	$: orderItems = order?.orders_items;
+	$: totalRecieved = orderItems?.reduce(
+		(a1, item) => item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0) + a1,
+		0
+	);
+	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
 
 	$: console.log('order:', order);
 
-	async function track(tracking: string, carrier: string) {
-		const response = await fetch(`/api/shipengine/track?tracking_number=${tracking}&carrier_code=${carrier}`);
-		const result = await response.json();
-		if (result?.statusCode) {
-			console.log('tracking request success', result);
-			return result;
-		} else {
-			console.log('tracking request fail', response);
-		}
-	}
-
-	$: {
-		if (orderItems) {
-			orderItems?.forEach((item, idx) => {
-				const trackingNumber = item?.tracking?.tracking_number;
-				const carrier = item?.tracking?.carrier_code;
-				if (trackingNumber && carrier) {
-					track(trackingNumber, carrier).then((t) => (item.tracking._result = t));
-				}
-			});
-		}
-	}
-
-	let tracking = true;
-	$: {
-		if (order?.tracking?.tracking_number && order?.tracking?.carrier_code) {
-			track(order?.tracking?.tracking_number, order?.tracking?.carrier_code).then((t) => (tracking = t));
-		}
-	}
-	$: console.log('tr', tracking);
+	let recieveModal = false;
+	let orderItemSelected;
+	let orderItemSelectedQty = 0;
 </script>
+
+<Modal autoclose bind:open={recieveModal}>
+	<div>
+		<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} />
+
+		{#if orderItemSelected?.orders_items_receiveds}
+			<div class="mt-6">
+				<Table>
+					<TableHead>
+						<TableHeadCell>User</TableHeadCell>
+						<TableHeadCell>Time/Date</TableHeadCell>
+						<TableHeadCell>Quantity</TableHeadCell>
+					</TableHead>
+
+					{#each orderItemSelected?.orders_items_receiveds as received}
+						<TableBodyRow>
+							<TableBodyCell tdClass=" font-sm ">
+								<UserIcon size="xs" user={received?.user}>
+									{#if mediaQuery('(min-width: 1024px)')}
+										{received?.user?.username || 'Unknown'}
+									{/if}
+								</UserIcon>
+								<Tooltip placement="right">
+									{#if received?.user?.first_name}
+										{received?.user?.first_name}
+										{received?.user?.last_name}
+									{:else}
+										Unknown user...
+									{/if}
+								</Tooltip>
+							</TableBodyCell>
+							<TableBodyCell tdClass=" font-sm ">
+								{datetimeFormat(received.updated_at)}
+							</TableBodyCell>
+							<TableBodyCell tdClass=" font-sm ">
+								{received?.quantity}
+							</TableBodyCell>
+						</TableBodyRow>
+					{:else}
+						<TableBodyCell colspan="3">No receipts for this order item</TableBodyCell>
+					{/each}
+				</Table>
+			</div>
+		{/if}
+	</div>
+</Modal>
 
 {#if order}
 	<div class="flex">
@@ -126,52 +166,6 @@
 				{order?.user?.last_name}
 			</UserIcon>
 		</div>
-		<!-- <div class="pt-4 pr-11 ml-auto">
-			<a target="_blank" href={order?.tracking?.tracking_url}>
-				<div class="flex">
-					<p class="font-semibold pt-0.5 pr-2">{tracking?.statusDescription || ''}</p>
-					{#if tracking?.statusCode === 'DE'}
-						<img
-							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-							width="32"
-							height="32"
-							src="https://img.icons8.com/windows/32/delivered-box.png"
-							alt="delivered-box"
-						/>
-					{:else if tracking?.statusCode === 'EX'}
-						<img
-							style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-							width="32"
-							height="32"
-							src="https://img.icons8.com/windows/32/package--v2.png"
-							alt="package--v2"
-						/>
-					{:else if tracking?.statusCode === 'IT'}
-						<img
-							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-							width="30"
-							height="30"
-							src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-							alt="delivery--v1"
-						/>
-					{:else}
-						<img width="32" height="32" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-					{/if}
-				</div>
-				<Popover placement={'left'}>
-					{#if tracking?.events?.[0]}
-						<p>
-							{tracking?.events?.[0]?.description}
-							<em>({datetimeFormat(tracking?.events?.[0]?.occurredAt)})</em>
-						</p>
-						<p>{tracking?.events?.[0]?.cityLocality}, {tracking?.events?.[0]?.countryCode}</p>
-						{#if tracking?.events?.[0]?.signer}
-							<p>Signed: {tracking?.events?.[0]?.signer}</p>
-						{/if}
-					{/if}
-				</Popover>
-			</a>
-		</div> -->
 	</div>
 	<Table>
 		<TableHead>
@@ -179,67 +173,19 @@
 			<TableHeadCell>Time/Date</TableHeadCell>
 			<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
 			<TableHeadCell>Part</TableHeadCell>
-			<TableHeadCell>Qty</TableHeadCell>
+			<TableHeadCell>Order Qty</TableHeadCell>
 			<TableHeadCell>Cost</TableHeadCell>
-			<TableHeadCell>
-				<a target="_blank" href={order?.tracking?.tracking_url}>
-					<div class="flex">
-						{#if tracking?.statusCode === 'DE'}
-							<img
-								style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-								width="24"
-								height="24"
-								src="https://img.icons8.com/windows/32/delivered-box.png"
-								alt="delivered-box"
-							/>
-						{:else if tracking?.statusCode === 'EX'}
-							<img
-								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-								width="24"
-								height="24"
-								src="https://img.icons8.com/windows/32/package--v2.png"
-								alt="package--v2"
-							/>
-						{:else if tracking?.statusCode === 'IT'}
-							<img
-								style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-								width="24"
-								height="24"
-								src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-								alt="delivery--v1"
-							/>
-						{:else}
-							<img width="24" height="24" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-						{/if}
-						<p class="font-semibold pt-1 pl-2">{tracking?.statusDescription || ''}</p>
-					</div>
-					<Popover placement={'left'}>
-						{#if tracking?.events?.[0]}
-							<p>
-								{tracking?.statusDescription}
-								<em>({datetimeFormat(tracking?.events?.[0]?.occurredAt)})</em>
-							</p>
-							<p>
-								{tracking?.events?.[0]?.description}
-							</p>
-							<p>{tracking?.events?.[0]?.cityLocality}, {tracking?.events?.[0]?.countryCode}</p>
-							{#if tracking?.events?.[0]?.signer}
-								<p>Signed: {tracking?.events?.[0]?.signer}</p>
-							{/if}
-						{/if}
-					</Popover>
-				</a>
-			</TableHeadCell>
+			<TableHeadCell />
+			<TableHeadCell />
 			{#if showRecieved}
-				<TableHeadCell>Recieved</TableHeadCell>
+				<TableHeadCell>Recieved Qty</TableHeadCell>
 			{/if}
 			<slot name="head" />
 		</TableHead>
 		<TableBody>
 			{#each orderItems as item, idx}
-				{@const itemTracking = item?.tracking?._result || tracking}
 				<TableBodyRow class="p-0 object-right">
-					<TableBodyCell tdClass="px-0 py-0 whitespace-nowrap font-sm ">
+					<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
 						<UserIcon size="xs" user={item?.user}>
 							{item?.user?.first_name}
 							{item?.user?.last_name}
@@ -267,41 +213,19 @@
 						}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 					</TableBodyCell>
 					<TableBodyCell>
-						<a target="_blank" href={item?.tracking?.tracking_url || order?.tracking?.tracking_url}>
-							<div class="flex">
-								{#if itemTracking?.statusCode === 'DE'}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/delivered-box.png"
-										alt="delivered-box"
-									/>
-								{:else if itemTracking?.statusCode === 'EX'}
-									<img
-										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/package--v2.png"
-										alt="package--v2"
-									/>
-								{:else if itemTracking?.statusCode === 'IT'}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-										alt="delivery--v1"
-									/>
-								{:else}
-									<img width="24" height="24" src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-								{/if}
-								<p class="font-semibold pt-1 pl-2 w-5 uppercase text-xs">{tracking?.statusDescription || ''}</p>
-							</div>
-						</a>
+						<TrackingStatus tracking={item?.tracking || order?.tracking} />
+					</TableBodyCell>
+					<TableBodyCell>
+						<ReceivingStatus
+							order={item}
+							receiveds={item?.orders_items_receiveds}
+							isReceived={item?.quantity === item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+						/>
 					</TableBodyCell>
 					{#if showRecieved}
 						{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+						{@const remaining = item?.quantity - recievedQty}
+
 						<TableBodyCell>
 							<Badge
 								class="mx-0.5"
@@ -309,6 +233,27 @@
 							>
 								{recievedQty}
 							</Badge>
+							<!-- <Badge
+								class="mx-0.5"
+								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
+							>
+								<span class="mr-1">➖</span>{recievedQty}<span class="ml-1">➕</span>
+							</Badge> -->
+							<span
+								class="cursor-not-allowed"
+								class:cursor-pointer={remaining}
+								on:click={() => {
+									/* if (!remaining) {
+										messagesStore('No more of this item remaining to receive', 'warning');
+										return;
+									} */
+									recieveModal = true;
+									orderItemSelectedQty = remaining;
+									orderItemSelected = item;
+								}}
+							>
+								➕
+							</span>
 						</TableBodyCell>
 					{/if}
 					<slot name="body" />
@@ -323,7 +268,7 @@
 			<TableBodyCell />
 			<!-- 			<TableBodyCell /> -->
 			<TableBodyCell>
-				{orderItems?.reduce((a, v) => a + v.quantity, 0)}
+				<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 			</TableBodyCell>
 			<TableBodyCell>
 				{new Intl.NumberFormat('en-GB', {
@@ -332,8 +277,13 @@
 				}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 			</TableBodyCell>
 			<TableBodyCell />
+			<TableBodyCell />
 			{#if showRecieved}
-				<TableBodyCell />
+				<TableBodyCell>
+					<Badge class="mx-0.5" color={totalRecieved === totalOrdered ? 'green' : 'yellow'}>
+						{totalRecieved}
+					</Badge>
+				</TableBodyCell>
 			{/if}
 			<slot name="foot" />
 		</TableHead>

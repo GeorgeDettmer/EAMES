@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { client } from './graphql';
 
 import { generateRandomString, validate } from '$lib/utils';
+import { json } from '@sveltejs/kit';
 
 const _getUserByUsername = `#graphql
 	query getUserByUsername($username: String!) {
@@ -74,7 +75,10 @@ export const findUser = async (username: string) => {
 };
 export const getUserFromToken = async (token: string) => {
 	const tokenQuery = await client.query(_getUserByToken, { token: token });
-
+	if (tokenQuery?.error) {
+		console.error('GraphQL query error', tokenQuery.error.message);
+		return { error: `GraphQL query error ` + tokenQuery.error.message };
+	}
 	const user = tokenQuery?.data?.users_tokens?.[0]?.users_tokens_user;
 	if (!user) {
 		return { error: `No user found for token (${token})` };

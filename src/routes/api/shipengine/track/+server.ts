@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import { SHIPENGINE_API_KEY } from '$env/static/private';
 import { error, json } from '@sveltejs/kit';
 
-let cache = {}; //TODO: cache api responses
+let cache = {}; //TODO: cache api responses in DB
 
 export const GET: RequestHandler = async ({ url }) => {
 	const trackingNumber = url.searchParams.get('tracking_number');
@@ -16,7 +16,8 @@ export const GET: RequestHandler = async ({ url }) => {
 	let cached = cache?.[cacheId];
 	if (cached) {
 		let cacheTimestamp = cached?._cachedTimestamp;
-		if (cacheTimestamp && Date.now() - cacheTimestamp < 60000) {
+		//TODO: configurable cache 3.6e6 is 1hr
+		if (cacheTimestamp && Date.now() - cacheTimestamp < 3.6e6) {
 			console.log('Tracking status:');
 			console.log('CACHED', (Date.now() - cacheTimestamp) / 1000);
 			console.log(cached?.statusCode, cached?.statusDescription);

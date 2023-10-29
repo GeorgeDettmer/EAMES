@@ -11,7 +11,7 @@
 	$: console.log('activeOrderId', activeOrderId);
 </script>
 
-<Modal id="ordermodal" bind:open={modalVisible} size="lg" autoclose={true} outsideclose={true}>
+<Modal id="ordermodal" bind:open={modalVisible} size="xl" autoclose={true} outsideclose={true}>
 	<OrderOverview orderId={activeOrderId} />
 </Modal>
 

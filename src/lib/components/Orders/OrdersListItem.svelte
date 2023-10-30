@@ -23,16 +23,18 @@
 		}}
 		class:cursor-pointer={interactive}
 		class={classes +
-			(orderItemCount > 0
+			(!order?.id
+				? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300 '
+				: orderItemCount > 0
 				? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
 				: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 ')}
 	>
-		<div class="overflow-hidden grid grid-cols-2">
+		<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 			<div>
 				<p class="font-bold">{order?.supplier?.name}</p>
 			</div>
 			<div>
-				<p class="float-right">{padString(String(order?.id), 5)}</p>
+				<p class="float-right">{padString(String(order?.id || ''), 5)}</p>
 			</div>
 			<div>
 				<p>

@@ -288,4 +288,6 @@
 			<slot name="foot" />
 		</TableHead>
 	</Table>
+{:else}
+	<p>No order info</p>
 {/if}

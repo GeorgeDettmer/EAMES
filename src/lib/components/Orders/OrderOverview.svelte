@@ -118,7 +118,7 @@
 		{#if orderItemSelected?.orders_items_receiveds}
 			<div class="mt-6">
 				<Table>
-					<TableHead>
+					<TableHead theadClass="uppercase text-center">
 						<TableHeadCell>User</TableHeadCell>
 						<TableHeadCell>Time/Date</TableHeadCell>
 						<TableHeadCell>Quantity</TableHeadCell>
@@ -126,7 +126,7 @@
 
 					{#each orderItemSelected?.orders_items_receiveds as received}
 						<TableBodyRow>
-							<TableBodyCell tdClass=" font-sm ">
+							<TableBodyCell tdClass=" font-sm text-center">
 								<UserIcon size="xs" user={received?.user}>
 									{#if mediaQuery('(min-width: 1024px)')}
 										{received?.user?.username || 'Unknown'}
@@ -141,10 +141,10 @@
 									{/if}
 								</Tooltip>
 							</TableBodyCell>
-							<TableBodyCell tdClass=" font-sm ">
+							<TableBodyCell tdClass=" font-sm text-center">
 								{datetimeFormat(received.updated_at)}
 							</TableBodyCell>
-							<TableBodyCell tdClass=" font-sm ">
+							<TableBodyCell tdClass=" font-sm text-center">
 								{received?.quantity}
 							</TableBodyCell>
 						</TableBodyRow>
@@ -216,11 +216,7 @@
 						<TrackingStatus tracking={item?.tracking || order?.tracking} />
 					</TableBodyCell>
 					<TableBodyCell>
-						<ReceivingStatus
-							order={item}
-							receiveds={item?.orders_items_receiveds}
-							isReceived={item?.quantity === item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
-						/>
+						<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
 					</TableBodyCell>
 					{#if showRecieved}
 						{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}

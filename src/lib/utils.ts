@@ -144,11 +144,11 @@ export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: str
 
 export let datetimeFormat = (datetime: string): string => {
 	const d = new Date(datetime);
-	let time = d.toLocaleTimeString([], {
+	let time = d.toLocaleTimeString('en-GB', {
 		hour: '2-digit',
 		minute: '2-digit'
 	});
-	let date = d.toLocaleDateString([], {
+	let date = d.toLocaleDateString('en-GB', {
 		day: '2-digit',
 		month: '2-digit',
 		year: '2-digit'

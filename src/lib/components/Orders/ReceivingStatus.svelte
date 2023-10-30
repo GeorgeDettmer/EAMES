@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Popover } from 'flowbite-svelte';
+	import { Popover, Table, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import TrackingStatus from './TrackingStatus.svelte';
 	import { datetimeFormat } from '$lib/utils';
 	import UserIcon from '../UserIcon.svelte';
+	import { mediaQuery } from 'svelte-legos';
 
 	export let order;
 	export let isReceived: boolean = false;
@@ -55,18 +56,42 @@
 			<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
 		{/if}
 	</div>
-	<Popover placement={'left'}>
-		{#if order?.received_at}
-			<p>
-				Recieved
-				<em>({datetimeFormat(order?.received_at)})</em>
-			</p>
-			{#if order?.userByReceivedUserId}
-				<UserIcon size="sm" user={order?.userByReceivedUserId}>
-					{order?.userByReceivedUserId?.first_name}
-					{order?.userByReceivedUserId?.last_name}
-				</UserIcon>
-			{/if}
-		{/if}
-	</Popover>
+	{#if receiveds.length > 0}
+		<Popover placement={'left'}>
+			<Table>
+				<TableHead theadClass="uppercase text-center font-xs">
+					<TableHeadCell>User</TableHeadCell>
+					<TableHeadCell>Time/Date</TableHeadCell>
+					<TableHeadCell>Quantity</TableHeadCell>
+				</TableHead>
+				{#each receiveds as received}
+					<TableBodyRow>
+						<TableBodyCell tdClass=" font-xs text-center ">
+							<UserIcon size="xs" user={received?.user}>
+								{#if mediaQuery('(min-width: 1024px)')}
+									{received?.user?.username || 'Unknown'}
+								{/if}
+							</UserIcon>
+							<Tooltip placement="right">
+								{#if received?.user?.first_name}
+									{received?.user?.first_name}
+									{received?.user?.last_name}
+								{:else}
+									Unknown
+								{/if}
+							</Tooltip>
+						</TableBodyCell>
+						<TableBodyCell tdClass=" font-xs text-center">
+							{datetimeFormat(received.updated_at)}
+						</TableBodyCell>
+						<TableBodyCell tdClass=" font-xs text-center">
+							{received?.quantity}
+						</TableBodyCell>
+					</TableBodyRow>
+				{:else}
+					<TableBodyCell colspan="3">No receipts for this order item</TableBodyCell>
+				{/each}
+			</Table>
+		</Popover>
+	{/if}
 {/if}

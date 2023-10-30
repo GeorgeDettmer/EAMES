@@ -62,7 +62,7 @@
 		return objects;
 	}
 
-	let importText: string = ''; /* `Item	Qty/Unit	Part Number Description	Delivery Date	Unit Price	Ext Price
+	let importText: string = `Item	Qty/Unit	Part Number Description	Delivery Date	Unit Price	Ext Price
 1	110	3582887	ASAP	£0.14	£15.84
 2	90	3582814	ASAP	£0.00	£0.44
 3	70	3581351	ASAP	£0.03	£1.79
@@ -75,9 +75,9 @@
 15	60	1469793	ASAP	£0.01	£0.60
 16	70	2563621	ASAP	£0.04	£2.58
 18	70	2838469	ASAP	£0.08	£5.32
-`; */
+`;
 	let showImport: boolean = false;
-	let imported: any[] = excelToObjects(importText);
+	let imported: any[] = excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
 	$: console.log(order);
 
 	function fillOrderFromImport() {
@@ -131,7 +131,7 @@
 				name="message"
 				bind:value={importText}
 				on:change={() => {
-					imported = excelToObjects(importText);
+					imported = excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
 					console.log('import:', imported);
 				}}
 			/>

@@ -31,12 +31,30 @@
 					kb
 					footprint
 				}
+				parts_by_pk(id: $partId) {
+					id
+					name
+					level
+					part_data {
+						id
+						name
+						description
+						properties
+						image_url
+						images
+						manufacturer
+						created_at
+						updated_at
+						kb
+						footprint
+					}
+				}
 			}
 		`,
 		variables: { partId },
 		requestPolicy: 'cache-and-network'
 	});
-	$: partInfo = $partInfoStore?.data?.parts_data_by_pk;
+	$: partInfo = $partInfoStore?.data?.parts_by_pk?.part_data || $partInfoStore?.data?.parts_data_by_pk;
 	$: isGeneric = partInfo?.manufacturer?.toLowerCase() === 'generic';
 	$: properties = Object.entries(partInfo?.properties || [])
 		?.map((p) => [p[0].toUpperCase(), String(p[1]).toUpperCase()])
@@ -72,7 +90,10 @@
 		<div class="p-1">
 			<div class="flex">
 				{#if partLinkVisible}
-					<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>
+					<div
+						class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}
+						class:italic={!$partInfoStore?.data?.parts_data_by_pk}
+					>
 						{#if isGeneric}
 							<p>{partInfo?.name}</p>
 						{:else}

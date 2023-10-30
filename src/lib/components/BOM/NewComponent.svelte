@@ -74,6 +74,9 @@
 					insert_parts_data_one(object: { id: $id, name: $name, description: $description, image_url: $image_url }) {
 						id
 					}
+					insert_parts_one(object: { id: $id, name: $name, part_data_id: $id }) {
+						id
+					}
 				}
 			`,
 			{ id, name, description, image_url: image }

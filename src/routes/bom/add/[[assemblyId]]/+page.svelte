@@ -185,7 +185,7 @@
 		let mutationResult;
 		let bom_lines = bom?.lines?.map((l) => {
 			console.log(l);
-			return { reference: l?.reference, part: l?.part };
+			return { reference: l?.reference, part: l?.part, description: l?.partByPart?.description };
 		});
 		console.log('linesz', bom_lines);
 		mutationResult = await urqlClient.mutation(

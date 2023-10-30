@@ -3,11 +3,11 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
-	import { json } from '@sveltejs/kit';
 
 	export let rowIndex: number = -1;
 	export let pn: string | undefined;
 	export let description: string = '';
+	export let lineDescription: string = '';
 	export let references: string[] = [];
 	export let inLibrary: boolean = false;
 	export let buildQty: number = 0;
@@ -38,7 +38,11 @@
 		{pn || 'Not Fitted'}
 	</TableBodyCell>
 	<TableBodyCell tdClass="w-1/6">
-		<p class="overflow-hidden text-clip">{description}</p>
+		<p class="overflow-hidden text-clip">{description || ''}</p>
+		{#if lineDescription && lineDescription !== description}
+			<p class="overflow-hidden text-clip italic text-xs">{lineDescription}</p>
+		{/if}
+		<!-- <p class="overflow-hidden text-clip">{description}</p> -->
 	</TableBodyCell>
 	<BomTableLineReferences {references} {pn} />
 	<TableBodyCell>{references?.length}</TableBodyCell>

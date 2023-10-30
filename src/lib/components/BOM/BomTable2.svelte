@@ -154,6 +154,7 @@
 				{@const orderItems = job?.orders_items?.filter((i) => i.part_id === lineKey)}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
+				{@const lineDescription = line?.[0]?.description}
 				{@const inLibrary = partsInLibrary.length > 0 && partsInLibrary.includes(lineKey)}
 				<BomTableLine
 					pn={lineKey}
@@ -163,6 +164,7 @@
 					{references}
 					{inLibrary}
 					{orderItems}
+					{lineDescription}
 					highlighted={openRows.includes(idx)}
 					on:click={(e) => {
 						handleRowClick(idx, references, line, lineKey, e);

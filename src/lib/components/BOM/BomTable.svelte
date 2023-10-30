@@ -153,6 +153,9 @@
 					>
 					<TableBodyCell tdClass="w-1/4">
 						<p class="overflow-hidden text-clip">{description || ''}</p>
+						{#if line?.[0]?.description && line?.[0]?.description !== description}
+							<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
+						{/if}
 					</TableBodyCell>
 					<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
 						<div

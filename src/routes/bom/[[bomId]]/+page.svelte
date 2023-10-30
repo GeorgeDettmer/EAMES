@@ -77,6 +77,7 @@
 						id
 						reference
 						part
+						description
 						created_at
 						updated_at
 						partByPart {

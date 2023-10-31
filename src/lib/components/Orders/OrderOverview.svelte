@@ -22,9 +22,11 @@
 	import ReceivingStatus from './ReceivingStatus.svelte';
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
+	import { setContext } from 'svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
+	export let showHeader: boolean = true;
 
 	$: orderStore = subscriptionStore({
 		client: getContextClient(),
@@ -158,17 +160,20 @@
 </Modal>
 
 {#if order}
-	<div class="flex">
-		<div><OrdersListItem {order} interactive={false} /></div>
-		<div class="pt-2 pl-2">
-			<UserIcon size="sm" user={order?.user}>
-				{order?.user?.first_name}
-				{order?.user?.last_name}
-			</UserIcon>
+	{#if showHeader}
+		<div class="flex">
+			<div><OrdersListItem {order} interactive={false} /></div>
+			<div class="pt-2 pl-2">
+				<UserIcon size="sm" user={order?.user}>
+					{order?.user?.first_name}
+					{order?.user?.last_name}
+				</UserIcon>
+			</div>
 		</div>
-	</div>
+	{/if}
 	<Table>
 		<TableHead>
+			<TableHeadCell>#</TableHeadCell>
 			<TableHeadCell>User</TableHeadCell>
 			<TableHeadCell>Time/Date</TableHeadCell>
 			<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
@@ -185,6 +190,9 @@
 		<TableBody>
 			{#each orderItems as item, idx}
 				<TableBodyRow class="p-0 object-right">
+					<TableBodyCell>
+						<p>{idx + 1}</p>
+					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
 						<UserIcon size="xs" user={item?.user}>
 							{item?.user?.first_name}
@@ -262,7 +270,7 @@
 			<TableBodyCell />
 			<TableBodyCell />
 			<TableBodyCell />
-			<!-- 			<TableBodyCell /> -->
+			<TableBodyCell />
 			<TableBodyCell>
 				<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 			</TableBodyCell>

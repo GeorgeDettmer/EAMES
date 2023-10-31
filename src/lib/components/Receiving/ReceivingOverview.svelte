@@ -1,0 +1,95 @@
+<script lang="ts">
+	import { padString } from '$lib/utils';
+	import { queryStore, getContextClient, gql } from '@urql/svelte';
+	import { Accordion, AccordionItem, Toggle } from 'flowbite-svelte';
+	import OrderOverview from '../Orders/OrderOverview.svelte';
+	import OrdersListItem from '../Orders/OrdersListItem.svelte';
+
+	$: ordersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query orders {
+				erp_orders(where: { orders_items_aggregate: { count: { predicate: { _gt: 0 } } } }, order_by: { id: desc }) {
+					id
+					reference
+					created_at
+					received_at
+					received_user_id
+					supplier {
+						name
+					}
+					user {
+						id
+						first_name
+						last_name
+						initials
+						color
+					}
+					userByReceivedUserId {
+						id
+						first_name
+						last_name
+						initials
+						color
+					}
+					jobs_orders {
+						job_id
+					}
+					orders_items {
+						id
+						created_at
+						order_id
+						part
+						part_id
+						tracking
+						partByPartId {
+							description
+							name
+						}
+						price
+						quantity
+						orders_items_receiveds {
+							quantity
+						}
+					}
+				}
+			}
+		`,
+		variables: {}
+	});
+	$: orders = $ordersStore?.data?.erp_orders;
+	$: ordersFiltered = incompleteFilter
+		? orders?.filter(
+				(o) =>
+					o.orders_items?.filter((i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0))
+						?.length !== 0
+		  )
+		: orders;
+
+	let incompleteFilter = true;
+</script>
+
+<Toggle color="blue" bind:checked={incompleteFilter}>Show incomplete only</Toggle>
+<div class="p-4">
+	{#if orders}
+		<Accordion multiple flush>
+			{#each ordersFiltered as order}
+				<AccordionItem paddingFlush="p-0" paddingDefault="p-0">
+					<div slot="header" class="grid grid-cols-2">
+						<OrdersListItem {order} />
+						<div class="my-auto">
+							<p>
+								Unrecieved lines: {order.orders_items?.filter(
+									(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
+								)?.length}
+							</p>
+						</div>
+					</div>
+					<div class="p-1">
+						<OrderOverview orderId={order?.id} showRecieved showHeader={false} />
+					</div>
+				</AccordionItem>
+			{/each}
+		</Accordion>
+	{/if}
+</div>

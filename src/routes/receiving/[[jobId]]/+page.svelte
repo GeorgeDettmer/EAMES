@@ -7,6 +7,7 @@
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import { padString } from '$lib/utils';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
+	import ReceivingOverview from '$lib/components/Receiving/ReceivingOverview.svelte';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -131,15 +132,19 @@
 	$: console.log('slice', jobId, jobId?.slice(2));
 </script>
 
-{#if jobId.startsWith('PO')}
-	<OrderOverview orderId={jobId?.slice(2)} showRecieved />
+{#if jobId}
+	{#if jobId.startsWith('PO')}
+		<OrderOverview orderId={jobId?.slice(2)} showRecieved />
+	{:else}
+		<Accordion multiple flush>
+			{#each orders as { order }}
+				<AccordionItem open={expandedOrders.includes(order?.id)}>
+					<span slot="header">{order?.supplier?.name} ({padString(String(order?.id), 5)})</span>
+					<OrderOverview orderId={order?.id} showRecieved />
+				</AccordionItem>
+			{/each}
+		</Accordion>
+	{/if}
 {:else}
-	<Accordion multiple flush>
-		{#each orders as { order }}
-			<AccordionItem open={expandedOrders.includes(order?.id)}>
-				<span slot="header">{order?.supplier?.name} ({padString(String(order?.id), 5)})</span>
-				<OrderOverview orderId={order?.id} showRecieved />
-			</AccordionItem>
-		{/each}
-	</Accordion>
+	<ReceivingOverview />
 {/if}

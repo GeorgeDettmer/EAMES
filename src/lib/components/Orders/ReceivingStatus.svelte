@@ -5,7 +5,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import { mediaQuery } from 'svelte-legos';
 
-	export let order;
+	export let order = {};
 	export let isReceived: boolean = false;
 
 	export let receiveds = [];

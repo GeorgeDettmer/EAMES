@@ -12,7 +12,9 @@
 </script>
 
 <Modal id="ordermodal" bind:open={modalVisible} size="xl" autoclose={true} outsideclose={true}>
-	<OrderOverview orderId={activeOrderId} />
+	<div class="p-2">
+		<OrderOverview orderId={activeOrderId} />
+	</div>
 </Modal>
 
 <div class="flex-row">

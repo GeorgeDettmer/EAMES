@@ -18,7 +18,7 @@
 	import OrdersListItem from './OrdersListItem.svelte';
 
 	import TrackingStatus from './TrackingStatus.svelte';
-	import { green } from 'tailwindcss/colors';
+	import { green, purple } from 'tailwindcss/colors';
 	import ReceivingStatus from './ReceivingStatus.svelte';
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
@@ -111,6 +111,14 @@
 	let recieveModal = false;
 	let orderItemSelected;
 	let orderItemSelectedQty = 0;
+
+	let trackings = [];
+
+	let currentRowIdx;
+
+	function tableKeypress(e: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }): any {
+		console.log(e.key);
+	}
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
@@ -161,137 +169,147 @@
 
 {#if order}
 	{#if showHeader}
-		<div class="flex">
-			<div><OrdersListItem {order} interactive={false} /></div>
-			<div class="pt-2 pl-2">
-				<UserIcon size="sm" user={order?.user}>
-					{order?.user?.first_name}
-					{order?.user?.last_name}
-				</UserIcon>
+		<div class="grid grid-cols-2">
+			<div class="flex">
+				<div><OrdersListItem {order} interactive={false} /></div>
+				<div class="pt-2 pl-2">
+					<UserIcon size="sm" user={order?.user}>
+						{order?.user?.first_name}
+						{order?.user?.last_name}
+					</UserIcon>
+				</div>
 			</div>
 		</div>
 	{/if}
-	<Table>
-		<TableHead>
-			<TableHeadCell>#</TableHeadCell>
-			<TableHeadCell>User</TableHeadCell>
-			<TableHeadCell>Time/Date</TableHeadCell>
-			<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
-			<TableHeadCell>Part</TableHeadCell>
-			<TableHeadCell>Order Qty</TableHeadCell>
-			<TableHeadCell>Cost</TableHeadCell>
-			<TableHeadCell />
-			<TableHeadCell />
-			{#if showRecieved}
-				<TableHeadCell>Recieved Qty</TableHeadCell>
-			{/if}
-			<slot name="head" />
-		</TableHead>
-		<TableBody>
-			{#each orderItems as item, idx}
-				<TableBodyRow class="p-0 object-right">
-					<TableBodyCell>
-						<p>{idx + 1}</p>
-					</TableBodyCell>
-					<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
-						<UserIcon size="xs" user={item?.user}>
-							{item?.user?.first_name}
-							{item?.user?.last_name}
-						</UserIcon>
-					</TableBodyCell>
-					<TableBodyCell>
-						<p>{datetimeFormat(item.created_at)}</p>
-					</TableBodyCell>
-					<!-- 					<TableBodyCell>
+	<div on:keydown={(e) => tableKeypress(e)}>
+		<Table>
+			<TableHead>
+				<TableHeadCell>#</TableHeadCell>
+				<TableHeadCell>User</TableHeadCell>
+				<TableHeadCell>Time/Date</TableHeadCell>
+				<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
+				<TableHeadCell>Part</TableHeadCell>
+				<TableHeadCell>Order Qty</TableHeadCell>
+				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell />
+
+				<TableHeadCell />
+
+				{#if showRecieved}
+					<TableHeadCell>Recieved Qty</TableHeadCell>
+				{/if}
+				<slot name="head" />
+			</TableHead>
+			<TableBody>
+				{#each orderItems as item, idx}
+					<TableBodyRow class="p-0 object-right" color={idx === currentRowIdx ? 'blue' : undefined}>
+						<TableBodyCell>
+							<p>{idx + 1}</p>
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
+							<UserIcon size="xs" user={item?.user}>
+								{item?.user?.first_name}
+								{item?.user?.last_name}
+							</UserIcon>
+						</TableBodyCell>
+						<TableBodyCell>
+							<p>{datetimeFormat(item.created_at)}</p>
+						</TableBodyCell>
+						<!-- 					<TableBodyCell>
 						{item?.order?.supplier?.reference || ''}
 					</TableBodyCell> -->
-					<TableBodyCell>
-						{item?.part || ''}
-					</TableBodyCell>
-					<TableBodyCell>
-						<Badge class="mx-0.5" color={'blue'}>
-							{item?.quantity}
-						</Badge>
-					</TableBodyCell>
-
-					<TableBodyCell>
-						{new Intl.NumberFormat('en-GB', {
-							style: 'currency',
-							currency: 'GBP'
-						}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
-					</TableBodyCell>
-					<TableBodyCell>
-						<TrackingStatus tracking={item?.tracking || order?.tracking} />
-					</TableBodyCell>
-					<TableBodyCell>
-						<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
-					</TableBodyCell>
-					{#if showRecieved}
-						{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
-						{@const remaining = item?.quantity - recievedQty}
+						<TableBodyCell>
+							{item?.part || ''}
+						</TableBodyCell>
+						<TableBodyCell>
+							<Badge class="mx-0.5" color={'blue'}>
+								{item?.quantity}
+							</Badge>
+						</TableBodyCell>
 
 						<TableBodyCell>
-							<Badge
-								class="mx-0.5"
-								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
-							>
-								{recievedQty}
-							</Badge>
-							<!-- <Badge
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
+						</TableBodyCell>
+						<TableBodyCell>
+							<TrackingStatus tracking={item?.tracking || order?.tracking} bind:trackingResult={trackings[idx]} />
+						</TableBodyCell>
+						<TableBodyCell>
+							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
+						</TableBodyCell>
+						{#if showRecieved}
+							{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+							{@const remaining = item?.quantity - recievedQty}
+
+							<TableBodyCell>
+								<Badge
+									class="mx-0.5"
+									color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
+								>
+									{recievedQty}
+								</Badge>
+								<!-- <Badge
 								class="mx-0.5"
 								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
 							>
 								<span class="mr-1">➖</span>{recievedQty}<span class="ml-1">➕</span>
 							</Badge> -->
-							<span
-								class="cursor-not-allowed"
-								class:cursor-pointer={remaining}
-								on:click={() => {
-									/* if (!remaining) {
+								<span
+									class="cursor-not-allowed"
+									class:cursor-pointer={remaining}
+									on:click={() => {
+										/* if (!remaining) {
 										messagesStore('No more of this item remaining to receive', 'warning');
 										return;
 									} */
-									recieveModal = true;
-									orderItemSelectedQty = remaining;
-									orderItemSelected = item;
-								}}
-							>
-								➕
-							</span>
-						</TableBodyCell>
-					{/if}
-					<slot name="body" />
-				</TableBodyRow>
-			{:else}
-				<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
-			{/each}
-		</TableBody>
-		<TableHead>
-			<TableBodyCell />
-			<TableBodyCell />
-			<TableBodyCell />
-			<TableBodyCell />
-			<TableBodyCell>
-				<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
-			</TableBodyCell>
-			<TableBodyCell>
-				{new Intl.NumberFormat('en-GB', {
-					style: 'currency',
-					currency: 'GBP'
-				}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
-			</TableBodyCell>
-			<TableBodyCell />
-			<TableBodyCell />
-			{#if showRecieved}
+										recieveModal = true;
+										orderItemSelectedQty = remaining;
+										orderItemSelected = item;
+									}}
+								>
+									➕
+								</span>
+							</TableBodyCell>
+						{/if}
+						<slot name="body" />
+					</TableBodyRow>
+				{:else}
+					<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
+				{/each}
+			</TableBody>
+			<TableHead>
+				<TableBodyCell />
+				<TableBodyCell />
+				<TableBodyCell />
+				<TableBodyCell />
 				<TableBodyCell>
-					<Badge class="mx-0.5" color={totalRecieved === totalOrdered ? 'green' : 'yellow'}>
-						{totalRecieved}
-					</Badge>
+					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 				</TableBodyCell>
-			{/if}
-			<slot name="foot" />
-		</TableHead>
-	</Table>
+				<TableBodyCell>
+					{new Intl.NumberFormat('en-GB', {
+						style: 'currency',
+						currency: 'GBP'
+					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
+				</TableBodyCell>
+				<TableBodyCell>
+					<TrackingStatus isDelivered={trackings.filter((t) => t?.statusCode === 'DE').length === orderItems.length} />
+				</TableBodyCell>
+				<TableBodyCell>
+					<ReceivingStatus isReceived={totalRecieved === totalOrdered} />
+				</TableBodyCell>
+				{#if showRecieved}
+					<TableBodyCell>
+						<Badge class="mx-0.5" color={totalRecieved === totalOrdered ? 'green' : 'yellow'}>
+							{totalRecieved}
+						</Badge>
+					</TableBodyCell>
+				{/if}
+				<slot name="foot" />
+			</TableHead>
+		</Table>
+	</div>
 {:else}
 	<p>No order info</p>
 {/if}

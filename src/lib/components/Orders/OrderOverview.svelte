@@ -18,11 +18,9 @@
 	import OrdersListItem from './OrdersListItem.svelte';
 
 	import TrackingStatus from './TrackingStatus.svelte';
-	import { green, purple } from 'tailwindcss/colors';
 	import ReceivingStatus from './ReceivingStatus.svelte';
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
-	import { setContext } from 'svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;

@@ -71,8 +71,6 @@
 		return { value: assembly, name: `${assembly?.name} (${assembly?.revision_external})` };
 	});
 
-	$: console.log(allAssemblies);
-
 	function validate(type: string) {
 		if (type === 'id') {
 			console.log(type, id);

@@ -71,23 +71,23 @@
 	<div class="grid md:grid-cols-2 gap-2 gap-y-1">
 		<div class="flex">
 			<div class="w-2/3">
-				<Label for="large-input">Job</Label>
-				<Input id="large-input" size="lg" placeholder={nextId} type="number" bind:value={id} />
+				<Label>Job</Label>
+				<Input size="lg" placeholder={nextId} type="number" bind:value={id} />
 			</div>
 			<div class="w-1/3">
-				<Label for="large-input">Batch</Label>
-				<Input id="large-input" size="lg" placeholder={null} type="number" bind:value={batch} />
+				<Label>Batch</Label>
+				<Input size="lg" placeholder={null} type="number" bind:value={batch} />
 			</div>
 		</div>
 		<div class="flex">
 			<div class="w-2/3" />
 			<div class="">
-				<Label for="default-input">Quantity</Label>
-				<Input id="large-input" size="lg" placeholder={1} type="number" bind:value={quantity} />
+				<Label>Quantity</Label>
+				<Input size="lg" placeholder={1} type="number" bind:value={quantity} />
 			</div>
 		</div>
 		<div class="">
-			<Label for="default-input">Customer</Label>
+			<Label>Customer</Label>
 			<Select items={customers} bind:value={customer} placeholder="Select customer" />
 		</div>
 		<div class="my-auto">
@@ -97,11 +97,11 @@
 		</div>
 		<div>
 			<div class="">
-				<Label for="default-input">Assemblies</Label>
+				<Label>Assemblies</Label>
 				{#if assemblies}
 					<Select items={assemblies} bind:value={assembly} placeholder="Select assembly" />
 				{:else}
-					<Input id="large-input" size="lg" type="text" />
+					<Input size="lg" type="text" />
 				{/if}
 			</div>
 		</div>

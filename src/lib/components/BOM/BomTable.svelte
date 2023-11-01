@@ -129,15 +129,12 @@
 			{#if visibleColumns.includes('description')}
 				<TableHeadCell>Description</TableHeadCell>
 			{/if}
-
 			{#if visibleColumns.includes('references')}
 				<TableHeadCell>References</TableHeadCell>
 			{/if}
-
 			{#if visibleColumns.includes('quantity')}
 				<TableHeadCell>Qty</TableHeadCell>
 			{/if}
-
 			{#if job?.quantity}
 				<TableHeadCell>Build Qty</TableHeadCell>
 			{/if}
@@ -160,39 +157,51 @@
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
-						>{lineKey || 'Not Fitted'}</TableBodyCell
-					>
-					<TableBodyCell tdClass="w-1/4">
-						<p class="overflow-hidden text-clip">{description || ''}</p>
-						{#if line?.[0]?.description && line?.[0]?.description !== description}
-							<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
-						{/if}
-					</TableBodyCell>
-					<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
-						<div
-							class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
+					{#if visibleColumns.includes('part')}
+						<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
+							>{lineKey || 'Not Fitted'}</TableBodyCell
 						>
-							{#each references as reference}
-								{@const colour = lineKey ? 'blue' : 'red'}
-								<span
-									class={`hover:shadow m-0.5 h-4 -top-2 -right-2 rounded font-medium inline-flex items-center justify-center px-1 bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
-									on:mouseenter={() => {
-										//handleReferenceHover([reference], true);
-									}}
-									on:mouseleave={() => {
-										//handleReferenceHover(references, false);
-									}}
-								>
-									<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
-								</span>
-								<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
+					{/if}
+
+					{#if visibleColumns.includes('description')}
+						<TableBodyCell tdClass="w-1/4">
+							<p class="overflow-hidden text-clip">{description || ''}</p>
+							{#if line?.[0]?.description && line?.[0]?.description !== description}
+								<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
+							{/if}
+						</TableBodyCell>
+					{/if}
+
+					{#if visibleColumns.includes('references')}
+						<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
+							<div
+								class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
+							>
+								{#each references as reference}
+									{@const colour = lineKey ? 'blue' : 'red'}
+									<span
+										class={`hover:shadow m-0.5 h-4 -top-2 -right-2 rounded font-medium inline-flex items-center justify-center px-1 bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
+										on:mouseenter={() => {
+											//handleReferenceHover([reference], true);
+										}}
+										on:mouseleave={() => {
+											//handleReferenceHover(references, false);
+										}}
+									>
+										<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
+									</span>
+									<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
 										>{reference}</Badge
 									> -->
-							{/each}
-						</div>
-					</TableBodyCell>
-					<TableBodyCell>{references?.length}</TableBodyCell>
+								{/each}
+							</div>
+						</TableBodyCell>
+					{/if}
+
+					{#if visibleColumns.includes('quantity')}
+						<TableBodyCell>{references?.length}</TableBodyCell>
+					{/if}
+
 					{#if job?.quantity}
 						<TableBodyCell>{buildQty}</TableBodyCell>
 					{/if}
@@ -224,8 +233,9 @@
 								{/if}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell colspan="2" class="p-0">
-							{#if job?.assembly?.assemblies_cad}
+
+						{#if job?.assembly?.assemblies_cad}
+							<TableBodyCell colspan="2" class="p-0">
 								<div class="px-0 py-1 grid grid-cols-2">
 									<Viewer
 										classes="border"
@@ -244,8 +254,8 @@
 										highlightPins={[1]}
 									/>
 								</div>
-							{/if}
-						</TableBodyCell>
+							</TableBodyCell>
+						{/if}
 						{#if job?.kit?.kits_items}
 							<TableBodyCell colspan="3" class="p-0 object-right">
 								<div class="px-1 py-1">

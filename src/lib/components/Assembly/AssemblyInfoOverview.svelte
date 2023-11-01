@@ -93,14 +93,7 @@
 	}
 </script>
 
-<div class="max-h-[1000px]">
-	{#if assemblyId}
-		<p>
-			Assembly: {assemblyId}/{assemblyInfo?.name}
-			<em>({assemblyInfo?.revision_internal}:{assemblyInfo?.revision_internal})</em>
-		</p>
-	{/if}
-
+<div class="max-h-[400px]">
 	{#if assemblyInfo}
 		<div class="px-0 py-1 grid grid-cols-4">
 			{#if assemblyInfo?.bom}
@@ -108,7 +101,7 @@
 					<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
 						>{assemblyInfo?.bom?.id}({assemblyInfo?.bom?.name})</a
 					>
-					<div class="h-screen overflow-y-scroll">
+					<div class="overflow-y-scroll">
 						<BomTable
 							visibleColumns={bomColumns}
 							bom={assemblyInfo?.bom}

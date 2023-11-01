@@ -28,13 +28,23 @@
 							count
 						}
 					}
-					jobs {
+					jobs(distinct_on: assembly_id) {
 						id
 						batch
 						assembly {
 							id
 							name
 							revision_external
+							bom {
+								id
+								revision_external
+								revision_internal
+								lines_aggregate(where: { part: { _is_null: false } }) {
+									aggregate {
+										count(columns: part, distinct: true)
+									}
+								}
+							}
 						}
 					}
 				}
@@ -105,12 +115,19 @@
 				{/if}
 			</div>
 		</div>
+		<div class="my-auto">
+			{#if assembly}
+				{#if assembly?.bom?.lines_aggregate?.aggregate?.count}
+					<Badge color="blue" large>{assembly?.bom?.lines_aggregate?.aggregate?.count}</Badge>
+				{/if}
+			{/if}
+		</div>
 	</div>
 
 	<div />
 </div>
 <div class="pt-4 max-h-500px mx-auto">
 	{#if assembly?.id}
-		<AssemblyInfoOverview assemblyId={assembly.id} />
+		<!-- <AssemblyInfoOverview assemblyId={assembly.id} /> -->
 	{/if}
 </div>

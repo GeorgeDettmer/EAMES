@@ -5,4 +5,6 @@
 	export let data: PageData;
 </script>
 
-<AddJob />
+<div class="p-2 bg-slate-500">
+	<AddJob />
+</div>

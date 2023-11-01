@@ -32,16 +32,11 @@
 			subscription order($orderId: bigint!) {
 				erp_orders_by_pk(id: $orderId) {
 					id
-					tracking
-					received_at
-					received_user_id
-					userByReceivedUserId {
-						id
-						username
-						first_name
-						last_name
-						initials
-						color
+					jobs_orders {
+						job {
+							id
+							batch
+						}
 					}
 					orders_items {
 						id
@@ -177,6 +172,28 @@
 					</UserIcon>
 				</div>
 			</div>
+			<div class="my-auto ml-auto">
+				{#each order?.jobs_orders as { job }}
+					<div
+						class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+					>
+						<div class="overflow-hidden grid grid-cols-2 gap-x-2">
+							<div>
+								<p class="font-bold">{job?.id}</p>
+							</div>
+							<div>
+								<p class="float-right" />
+							</div>
+							<div>
+								<p />
+							</div>
+							<div>
+								<p class="float-right">{order?.jobs_orders?.length}</p>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
 		</div>
 	{/if}
 	<div on:keydown={(e) => tableKeypress(e)}>
@@ -232,7 +249,9 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell>
-							<TrackingStatus tracking={item?.tracking || order?.tracking} bind:trackingResult={trackings[idx]} />
+							{#each item?.tracking || [item?.tracking?.[0]] as t}
+								<TrackingStatus tracking={t || order?.tracking} bind:trackingResult={trackings[idx]} />
+							{/each}
 						</TableBodyCell>
 						<TableBodyCell>
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
@@ -242,32 +261,26 @@
 							{@const remaining = item?.quantity - recievedQty}
 
 							<TableBodyCell>
-								<Badge
-									class="mx-0.5"
-									color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
-								>
-									{recievedQty}
-								</Badge>
-								<!-- <Badge
-								class="mx-0.5"
-								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
-							>
-								<span class="mr-1">➖</span>{recievedQty}<span class="ml-1">➕</span>
-							</Badge> -->
 								<span
-									class="cursor-not-allowed"
-									class:cursor-pointer={remaining}
+									class="cursor-pointer"
 									on:click={() => {
-										/* if (!remaining) {
-										messagesStore('No more of this item remaining to receive', 'warning');
-										return;
-									} */
 										recieveModal = true;
 										orderItemSelectedQty = remaining;
 										orderItemSelected = item;
 									}}
 								>
-									➕
+									<Badge class="mx-0.5" color={!recievedQty ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}>
+										{recievedQty}
+									</Badge>
+									<!-- <Badge
+								class="mx-0.5"
+								color={item?.quantity === 0 ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}
+							>
+								<span class="mr-1">➖</span>{recievedQty}<span class="ml-1">➕</span>
+							</Badge> -->
+									{#if item?.quantity !== recievedQty}
+										<span> ➕ </span>
+									{/if}
 								</span>
 							</TableBodyCell>
 						{/if}
@@ -299,7 +312,7 @@
 				</TableBodyCell>
 				{#if showRecieved}
 					<TableBodyCell>
-						<Badge class="mx-0.5" color={totalRecieved === totalOrdered ? 'green' : 'yellow'}>
+						<Badge class="mx-0.5" color={!totalRecieved ? 'red' : totalOrdered === totalRecieved ? 'green' : 'yellow'}>
 							{totalRecieved}
 						</Badge>
 					</TableBodyCell>

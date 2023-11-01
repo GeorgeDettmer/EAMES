@@ -51,7 +51,6 @@
 							supplier {
 								name
 							}
-							tracking
 						}
 						user {
 							id
@@ -89,7 +88,6 @@
 								}
 								price
 								quantity
-								tracking
 								user {
 									id
 									username
@@ -111,7 +109,6 @@
 									}
 								}
 							}
-							tracking
 							id
 							supplier {
 								id

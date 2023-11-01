@@ -34,7 +34,7 @@
 			name: 'Farnell'
 		},
 		user_id: user.id,
-		user: user
+		user
 	};
 
 	function excelToObjects(stringData) {
@@ -111,14 +111,17 @@
 <div class="p-2">
 	<div class="p-2 grid grid-cols-2">
 		<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>
+
 		<div class="ml-auto">
-			<Button
-				color="green"
-				size="xs"
-				on:click={() => {
-					fillOrderFromImport();
-				}}>Import...</Button
-			>
+			{#if showImport}
+				<Button
+					color="green"
+					size="xs"
+					on:click={() => {
+						fillOrderFromImport();
+					}}>Import...</Button
+				>
+			{/if}
 		</div>
 	</div>
 

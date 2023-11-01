@@ -56,7 +56,7 @@
 		} */
 		orderAdding = true;
 		let mutationResult;
-
+		console.log('sid', supplier, order.supplier.id);
 		mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertOrder($supplier_id: String!, $user_id: uuid!) {
@@ -99,6 +99,33 @@
 			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
+			if (mutationResult?.error) {
+				console.error('MUTATION ERROR: ', mutationResult);
+				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+			} else {
+				console.log('MUTATION RESULT: ', mutationResult);
+				//goto('/order/' + order.id, { invalidateAll: true, replaceState: true });
+			}
+			console.log('job id---', job);
+			if (job?.id) {
+				mutationResult = await urqlClient.mutation(
+					gql`
+						mutation createJobOrder($job_id: bigint!, $order_id: bigint!) {
+							insert_erp_jobs_orders_one(object: { job_id: $job_id, order_id: $order_id }) {
+								id
+							}
+						}
+					`,
+					{ order_id: order.id, job_id: job.id }
+				);
+				if (mutationResult?.error) {
+					console.error('MUTATION ERROR: ', mutationResult);
+					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				} else {
+					console.log('MUTATION RESULT: ', mutationResult);
+				}
+			}
+
 			goto('/order/' + order.id, { invalidateAll: true, replaceState: true });
 		}
 		orderAdding = false;
@@ -136,40 +163,48 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	$: console.log(suppliers);
+	$: console.log('suppliers', suppliers);
 
 	$: showSupplierSelect = false; //!order?.supplier_id;
-	$: supplier = suppliers?.filter((s) => s.id === selectedSupplierId);
+	$: supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
 
-	let selectedSupplierId = suppliers?.[0]?.id;
-	$: order.suppier_id;
-	$: console.log(selectedSupplierId, supplier);
+	$: {
+		if (suppliers) {
+			order.supplier_id = suppliers?.[0]?.id;
+			order.supplier = suppliers?.[0];
+		}
+	}
+
+	let selectedSupplierId;
+	$: console.log('supplier', selectedSupplierId, supplier);
+
+	let jobListVisible = false;
 </script>
 
 {#if order}
 	<div class="grid grid-cols-2">
 		<div class="flex">
-			{#if showSupplierSelect}
-				<div class="w-fit">
-					<Select
-						size="sm"
-						placeholder=""
-						items={suppliers?.map((s) => {
-							return { value: s.id, name: s.name };
-						})}
-						bind:value={selectedSupplierId}
-						on:change={() => {
-							showSupplierSelect = false;
-							order.supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
-							order.supplier_id = order.supplier.id;
-						}}
-					/>
-				</div>
-			{:else}
-				<div class="cursor-pointer" on:click={() => (showSupplierSelect = true)}>
-					<OrdersListItem {order} interactive={false} />
-				</div>
-			{/if}
+			<div class="cursor-pointer" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
+				<OrdersListItem {order} interactive={false}>
+					{#if showSupplierSelect}
+						<div class="pl-4 w-fit" on:click|stopPropagation={() => {}}>
+							<Select
+								size="sm"
+								placeholder=""
+								items={suppliers?.map((s) => {
+									return { value: s.id, name: s.name };
+								})}
+								bind:value={selectedSupplierId}
+								on:change={() => {
+									showSupplierSelect = false;
+									order.supplier = supplier;
+									order.supplier_id = supplier.id;
+								}}
+							/>
+						</div>
+					{/if}
+				</OrdersListItem>
+			</div>
 			<div class="pt-2 pl-2">
 				<UserIcon size="sm" user={order?.user}>
 					{order?.user?.first_name}
@@ -178,9 +213,11 @@
 			</div>
 		</div>
 		<div class="flex flex-row ml-auto my-auto gap-1">
-			<div>
-				<Toggle color="blue" checked={true}>Associate job...</Toggle>
-				<Select items={jobs} bind:value={job} placeholder="Select job" />
+			<div class="flex p-4 gap-4">
+				{#if jobListVisible}
+					<Select items={jobs} bind:value={job} placeholder="Select job" />
+				{/if}
+				<Toggle color="blue" bind:checked={jobListVisible}>Job</Toggle>
 			</div>
 			<div class="my-auto">
 				<Button

@@ -18,16 +18,11 @@
 					erp_orders(order_by: { created_at: desc }) {
 						id
 						created_at
-						tracking
-						received_at
-						received_user_id
-						userByReceivedUserId {
-							id
-							username
-							first_name
-							last_name
-							initials
-							color
+						jobs_orders {
+							job {
+								id
+								batch
+							}
 						}
 						orders_items {
 							id

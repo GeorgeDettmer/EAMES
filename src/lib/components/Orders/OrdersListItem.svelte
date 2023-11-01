@@ -9,7 +9,7 @@
 
 	$: orderItemCount = order?.orders_items?.length;
 	$: color = color === '' ? (orderItemCount > 0 ? 'blue' : 'yellow') : color;
-	let classes = ' hover:shadow-lg m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center ';
+	let classes = '  m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center ';
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -22,6 +22,7 @@
 			modalVisible = true;
 		}}
 		class:cursor-pointer={interactive}
+		class:hover:shadow-lg={interactive}
 		class={classes +
 			(!order?.id
 				? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300 '
@@ -34,7 +35,7 @@
 				<p class="font-bold">{order?.supplier?.name}</p>
 			</div>
 			<div>
-				<p class="float-right">{padString(String(order?.id || ''), 5)}</p>
+				<p class="float-right">PO{padString(String(order?.id || ''), 5)}</p>
 			</div>
 			<div>
 				<p>

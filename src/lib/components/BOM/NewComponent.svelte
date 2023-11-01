@@ -4,7 +4,7 @@
 	import { Button, Input, Label, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
-	export let id: string;
+	export let id: string = '';
 	export let name: string = '';
 	export let description: string = '';
 	export let image: string = '';
@@ -64,6 +64,9 @@
 				)}`
 			);
 			return;
+		}
+		if (!id) {
+			id = name;
 		}
 		componentAdding = true;
 		let mutationResult;

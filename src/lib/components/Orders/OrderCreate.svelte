@@ -13,14 +13,15 @@
 		ButtonGroup,
 		Dropdown,
 		DropdownItem,
-		Select
+		Select,
+		Toggle
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
 	import { ChevronDownSolid, SearchOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
-	import { getContextClient, gql, queryStore } from '@urql/svelte';
+	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderOverview from './OrderOverview.svelte';
 	import { goto } from '$app/navigation';
 
@@ -103,6 +104,25 @@
 		orderAdding = false;
 	}
 
+	$: jobsStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription order {
+				jobs(order_by: { id: desc }) {
+					id
+					batch
+					customer {
+						name
+					}
+				}
+			}
+		`
+	});
+	$: jobs = $jobsStore?.data?.jobs?.map((j) => {
+		return { value: j, name: `${j.id} (${j.batch})` };
+	});
+	let job;
+
 	$: suppliersStore = queryStore({
 		client: getContextClient(),
 		query: gql`
@@ -157,8 +177,12 @@
 				</UserIcon>
 			</div>
 		</div>
-		<div class="flex">
-			<div class="ml-auto my-auto">
+		<div class="flex flex-row ml-auto my-auto gap-1">
+			<div>
+				<Toggle color="blue" checked={true}>Associate job...</Toggle>
+				<Select items={jobs} bind:value={job} placeholder="Select job" />
+			</div>
+			<div class="my-auto">
 				<Button
 					color="green"
 					size="sm"

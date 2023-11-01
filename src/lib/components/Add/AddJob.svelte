@@ -102,13 +102,7 @@
 
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertJob(
-					$id: bigint!
-					$customer_id: bigint!
-					$batch: Int = 0
-					$quantity: Int
-					$assembly_id: bigint = Null
-				) {
+				mutation insertJob($id: bigint!, $customer_id: bigint!, $batch: Int = 0, $quantity: Int, $assembly_id: bigint) {
 					insert_jobs_one(
 						object: { id: $id, customer_id: $customer_id, batch: $batch, quantity: $quantity, assembly_id: $assembly_id }
 					) {

@@ -2,6 +2,7 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
+	export let visibleColumns: string[];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
@@ -121,11 +122,22 @@
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
-			<TableHeadCell on:click={() => sortTable('id')}>#</TableHeadCell>
-			<TableHeadCell on:click={() => sortTable('maker')}>Part</TableHeadCell>
-			<TableHeadCell>Description</TableHeadCell>
-			<TableHeadCell on:click={() => sortTable('type')}>References</TableHeadCell>
-			<TableHeadCell on:click={() => sortTable('make')}>Qty</TableHeadCell>
+			<TableHeadCell>#</TableHeadCell>
+			{#if visibleColumns.includes('part')}
+				<TableHeadCell>Part</TableHeadCell>
+			{/if}
+			{#if visibleColumns.includes('description')}
+				<TableHeadCell>Description</TableHeadCell>
+			{/if}
+
+			{#if visibleColumns.includes('references')}
+				<TableHeadCell>References</TableHeadCell>
+			{/if}
+
+			{#if visibleColumns.includes('quantity')}
+				<TableHeadCell>Qty</TableHeadCell>
+			{/if}
+
 			{#if job?.quantity}
 				<TableHeadCell>Build Qty</TableHeadCell>
 			{/if}

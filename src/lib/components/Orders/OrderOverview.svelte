@@ -216,7 +216,15 @@
 			</TableHead>
 			<TableBody>
 				{#each orderItems as item, idx}
-					<TableBodyRow class="p-0 object-right" color={idx === currentRowIdx ? 'blue' : undefined}>
+					{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+					<TableBodyRow
+						class="p-0 object-right"
+						color={recievedQty > 0 && recievedQty < item?.quantity
+							? 'yellow'
+							: recievedQty >= item?.quantity
+							? 'green'
+							: 'default'}
+					>
 						<TableBodyCell>
 							<p>{idx + 1}</p>
 						</TableBodyCell>
@@ -266,7 +274,6 @@
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
 						</TableBodyCell>
 						{#if showRecieved}
-							{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
 							{@const remaining = item?.quantity - recievedQty}
 
 							<TableBodyCell>

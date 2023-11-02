@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { carrier_codes, datetimeFormat, supplier_export } from '$lib/utils';
+	import { carrier_codes, carrier_urls, datetimeFormat, supplier_export } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -104,8 +104,12 @@
 			items.forEach((i) => {
 				i.order_id = mutationResult?.data?.insert_erp_orders_one?.id;
 				if (!i?.tracking) {
+					orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
 					i.tracking = [orderTracking];
+				} else {
+					i?.tracking?.map((t) => (t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number)));
 				}
+				console.log('tracking set:', i?.tracking);
 			});
 			mutationResult = await urqlClient.mutation(
 				gql`

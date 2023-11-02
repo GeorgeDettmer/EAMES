@@ -161,6 +161,10 @@ export let getParameterInsensitive = (object: { [x: string]: any }, key: string)
 };
 
 export let carrier_codes = ['ups', 'fedex', 'dhl'];
+export let carrier_urls = {
+	ups: (t) => `https://www.ups.com/track?track=yes&trackNums=${t}`,
+	fedex: (t) => `https://www.fedex.com/fedextrack/?tracknumbers=${t}`
+};
 
 export let downloadFileFromText = (blob: Blob, name: string) => {
 	let a = document.createElement('a');

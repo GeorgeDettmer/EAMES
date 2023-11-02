@@ -17,7 +17,7 @@
 		carrier_code: string;
 	}
 	export let tracking: TrackingDetails | null = null;
-	export let isDelivered: boolean = false;
+	export let isDelivered: boolean | undefined = undefined;
 	async function track(tracking: string, carrier: string) {
 		if (!tracking || !carrier) return {};
 		let cacheId = `${carrier}_${tracking}`;
@@ -44,17 +44,30 @@
 	}
 </script>
 
-{#if isDelivered}
-	<div class="flex">
-		<img
-			style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-			width="24"
-			height="24"
-			src="https://img.icons8.com/windows/32/delivered-box.png"
-			alt="delivered-box"
-		/>
-		<p class="font-semibold pt-1 pl-2 uppercase text-xs">Delivered</p>
-	</div>
+{#if isDelivered !== undefined}
+	{#if isDelivered}
+		<div class="flex">
+			<img
+				style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+				width="24"
+				height="24"
+				src="https://img.icons8.com/windows/32/delivered-box.png"
+				alt="delivered-box"
+			/>
+			<p class="font-semibold pt-1 pl-2 uppercase text-xs">Delivered</p>
+		</div>
+	{:else}
+		<div class="flex">
+			<img
+				style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
+				width="24"
+				height="24"
+				src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
+				alt="delivery--v1"
+			/>
+			<p class="font-semibold pt-1 pl-2 uppercase text-xs">In Transit</p>
+		</div>
+	{/if}
 {:else if trackingResult?.statusCode}
 	<a target="_blank" href={tracking?.tracking_url}>
 		<div class="flex">

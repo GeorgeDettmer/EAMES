@@ -223,8 +223,12 @@
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
 							<UserIcon size="xs" user={item?.user}>
-								{item?.user?.first_name}
-								{item?.user?.last_name}
+								{#if item?.user}
+									{item?.user?.first_name}
+									{item?.user?.last_name}
+								{:else}
+									Unknown
+								{/if}
 							</UserIcon>
 						</TableBodyCell>
 						<TableBodyCell>

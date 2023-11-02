@@ -24,15 +24,26 @@
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderOverview from './OrderOverview.svelte';
 	import { goto } from '$app/navigation';
+	import { Plus, PlusCircle } from 'svelte-heros-v2';
 
 	export let order;
 	export let user = order?.user;
+	export let allowAddLine: boolean = true;
 
-	$: orderItems = order?.orders_items;
+	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
 
 	function remove(idx: number) {
 		order.orders_items = orderItems.toSpliced(idx, 1);
+	}
+	function add() {
+		order.orders_items = orderItems.push({
+			part: 'test part',
+			price: 0.1,
+			quantity: 10,
+			user_id: user.id,
+			created_at: new Date().toISOString()
+		});
 	}
 	const urqlClient = getContextClient();
 	let orderAdding = false;
@@ -238,9 +249,9 @@
 	{:else}
 		<Table>
 			<TableHead>
+				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>User</TableHeadCell>
 				<TableHeadCell>Time/Date</TableHeadCell>
-				<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
 				<TableHeadCell>Unit Cost</TableHeadCell>
@@ -252,6 +263,9 @@
 			<TableBody>
 				{#each orderItems as item, idx}
 					<TableBodyRow class="p-0 object-right">
+						<TableBodyCell>
+							{idx + 1}
+						</TableBodyCell>
 						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
 							<UserIcon size="xs" user={item?.user || order?.user}>
 								{item?.user?.first_name || order?.user?.first_name}
@@ -319,7 +333,15 @@
 				{/each}
 			</TableBody>
 			<TableHead>
-				<TableBodyCell />
+				<TableBodyCell>
+					<span
+						on:click={() => {
+							add();
+						}}
+					>
+						<Plus size="20" class="hover:text-green-600 cursor-pointer" />
+					</span>
+				</TableBodyCell>
 				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell>
@@ -333,6 +355,7 @@
 						currency: 'GBP'
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
+				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
 				<slot name="foot" />

@@ -62,6 +62,8 @@
 	}
 
 	let menu = [
+		{ name: 'Order', href: '/order/create' },
+		{ name: 'Receive', href: '/receiving' },
 		{ name: 'About', href: '/about' },
 		{ name: 'Help', href: '/help' },
 		{ name: 'Report Issue', href: '/report/issue' }

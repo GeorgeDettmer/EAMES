@@ -65,19 +65,24 @@
 	{#if orders}
 		<Accordion multiple flush>
 			{#each ordersFiltered as order}
+				{@const linesToRecieve = order.orders_items?.filter(
+					(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
+				)?.length}
 				<AccordionItem paddingFlush="p-0" paddingDefault="p-0">
 					<div slot="header" class="grid grid-cols-2">
-						<OrdersListItem {order} />
-						<div class="my-auto">
-							<p>
-								Unrecieved lines: {order.orders_items?.filter(
-									(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
-								)?.length}
-							</p>
-						</div>
+						<OrdersListItem {order}>
+							<div class="pl-4">
+								<div
+									class:bg-red-600={linesToRecieve > 0}
+									class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
+								>
+									<p class="text-white">{linesToRecieve > 0 ? linesToRecieve : '✅'}</p>
+								</div>
+							</div>
+						</OrdersListItem>
 					</div>
 					<div class="p-1">
-						<OrderOverview orderId={order?.id} showRecieved showHeader={false} />
+						<OrderOverview orderId={order?.id} showRecieved showHeader={true} />
 					</div>
 				</AccordionItem>
 			{/each}

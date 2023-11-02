@@ -2,12 +2,13 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	import { AccordionItem, Accordion, Button, TableBodyCell, TableHeadCell } from 'flowbite-svelte';
+	import { AccordionItem, Accordion, Indicator } from 'flowbite-svelte';
 	import { page } from '$app/stores';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import { padString } from '$lib/utils';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
 	import ReceivingOverview from '$lib/components/Receiving/ReceivingOverview.svelte';
+	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
+	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -23,6 +24,9 @@
 						name
 						revision_external
 						revision_internal
+						bom {
+							id
+						}
 						assemblies_cad {
 							id
 							data
@@ -124,20 +128,52 @@
 	$: jobInfo = $jobInfoStore?.data?.jobs_by_pk;
 	$: orders = jobInfo?.jobs_orders || [];
 
-	let expandedOrders: number[] = [];
-
-	$: console.log('slice', jobId, jobId?.slice(2));
+	$: incompleteOrders = orders?.filter(
+		(o) =>
+			o?.orders_items?.filter((i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0))
+				?.length === 0
+	);
+	$: console.log('incompleteOrders', incompleteOrders);
 </script>
 
 {#if jobId}
 	{#if jobId.startsWith('PO')}
 		<OrderOverview orderId={jobId?.slice(2)} showRecieved />
 	{:else if orders}
+		{#if jobInfo}
+			<JobOverview job={jobInfo}>
+				<div class="pl-4">
+					<div
+						class:bg-red-600={incompleteOrders > 0}
+						class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
+					>
+						<p class="text-white">{incompleteOrders > 0 ? incompleteOrders : '✅'}</p>
+					</div>
+				</div>
+			</JobOverview>
+		{/if}
+
 		<Accordion multiple flush>
 			{#each orders as { order }}
-				<AccordionItem open={expandedOrders.includes(order?.id)}>
-					<span slot="header">{order?.supplier?.name} ({padString(String(order?.id), 5)})</span>
-					<OrderOverview orderId={order?.id} showRecieved />
+				{@const linesToRecieve = order.orders_items?.filter(
+					(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
+				)?.length}
+				<AccordionItem paddingFlush="p-0" paddingDefault="p-0">
+					<div slot="header" class="grid grid-cols-2">
+						<OrdersListItem {order}>
+							<div class="pl-4">
+								<div
+									class:bg-red-600={linesToRecieve > 0}
+									class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
+								>
+									<p class="text-white">{linesToRecieve > 0 ? linesToRecieve : '✅'}</p>
+								</div>
+							</div>
+						</OrdersListItem>
+					</div>
+					<div class="p-1">
+						<OrderOverview orderId={order?.id} showRecieved showHeader={false} />
+					</div>
 				</AccordionItem>
 			{/each}
 		</Accordion>

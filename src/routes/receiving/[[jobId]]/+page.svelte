@@ -132,7 +132,7 @@
 {#if jobId}
 	{#if jobId.startsWith('PO')}
 		<OrderOverview orderId={jobId?.slice(2)} showRecieved />
-	{:else}
+	{:else if orders}
 		<Accordion multiple flush>
 			{#each orders as { order }}
 				<AccordionItem open={expandedOrders.includes(order?.id)}>
@@ -141,6 +141,8 @@
 				</AccordionItem>
 			{/each}
 		</Accordion>
+	{:else}
+		No orders for job {jobId}
 	{/if}
 {:else}
 	<ReceivingOverview />

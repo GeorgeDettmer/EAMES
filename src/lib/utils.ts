@@ -159,3 +159,49 @@ export let datetimeFormat = (datetime: string): string => {
 export let getParameterInsensitive = (object: { [x: string]: any }, key: string): any => {
 	return getParameterInsensitiveAny(object, [key]);
 };
+
+export let carrier_codes = ['ups', 'fedex', 'dhl'];
+
+export let downloadFileFromText = (blob: Blob, name: string) => {
+	let a = document.createElement('a');
+	a.hidden = true;
+	document.body.append(a);
+	a.download = name;
+	a.href = URL.createObjectURL(blob);
+	a.click();
+	a.remove();
+};
+
+export let supplier_export = {
+	DIGIKEY: (order, type: string = 'EXPORT'): string => {
+		console.log('EXPORT', order);
+		let orderItems = order?.orders_items;
+		if (type === 'EXPORT') {
+			const header =
+				'Index,Quantity,Part Number,Manufacturer Part Number,Description,Customer Reference,Available,Backorder,Unit Price,Extended Price GBP';
+
+			let csv = header + '\n';
+			let items = [];
+			orderItems?.forEach((i, idx) => {
+				items.push([idx, i?.quantity, i?.spn, i?.part, '', order?.id]);
+				csv += [idx, i?.quantity, i?.spn, i?.part, '', order?.id].join(',') + '\n';
+			});
+			downloadFileFromText(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'Basket_DigiKey_' + order?.id + '.csv');
+		}
+		return '';
+	},
+	FARNELL: (order, type: string = 'EXPORT'): string => {
+		console.log('EXPORT', order);
+		let orderItems = order?.orders_items;
+		if (type === 'EXPORT') {
+			const header = 'Part Number,Quantity,Line Note';
+
+			let csv = header + '\n';
+			orderItems?.forEach((i, idx) => {
+				csv += [i?.spn, i?.quantity, ''].join(',') + '\n';
+			});
+			downloadFileFromText(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'Basket_Farnell_' + order?.id);
+		}
+		return '';
+	}
+};

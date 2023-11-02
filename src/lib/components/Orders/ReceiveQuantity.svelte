@@ -7,6 +7,7 @@
 
 	export let orderItemId: string;
 	export let quantity: number = 0;
+	export let recieveModal;
 
 	let quantityAdding = false;
 	async function addQuantity() {
@@ -49,6 +50,16 @@
 		quantityAdding = false;
 	}
 </script>
+
+<svelte:window
+	on:keydown={(e) => {
+		console.log(e);
+		if (e.key === 'Enter') {
+			addQuantity();
+			recieveModal = false;
+		}
+	}}
+/>
 
 <div class="flex">
 	<div>

@@ -45,6 +45,7 @@
 						order_id
 						part
 						part_id
+						spn
 						partByPartId {
 							description
 							name
@@ -116,7 +117,7 @@
 
 <Modal autoclose bind:open={recieveModal}>
 	<div>
-		<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} />
+		<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} bind:recieveModal />
 
 		{#if orderItemSelected?.orders_items_receiveds}
 			<div class="mt-6">
@@ -200,9 +201,7 @@
 		<Table>
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
-				<TableHeadCell>User</TableHeadCell>
-				<TableHeadCell>Time/Date</TableHeadCell>
-				<!-- 			<TableHeadCell>Reference</TableHeadCell> -->
+				<TableHeadCell>Buyer</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
 				<TableHeadCell>Cost</TableHeadCell>
@@ -221,7 +220,7 @@
 						<TableBodyCell>
 							<p>{idx + 1}</p>
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
+						<TableBodyCell>
 							<UserIcon size="xs" user={item?.user}>
 								{#if item?.user}
 									{item?.user?.first_name}
@@ -230,15 +229,17 @@
 									Unknown
 								{/if}
 							</UserIcon>
+							<Popover>
+								<p class="text-xs italic">{datetimeFormat(item.created_at)}</p>
+							</Popover>
 						</TableBodyCell>
 						<TableBodyCell>
-							<p>{datetimeFormat(item.created_at)}</p>
-						</TableBodyCell>
-						<!-- 					<TableBodyCell>
-						{item?.order?.supplier?.reference || ''}
-					</TableBodyCell> -->
-						<TableBodyCell>
-							{item?.part || ''}
+							<div>
+								<p>{item?.part}</p>
+								{#if item?.spn}
+									<p class="text-xs italic">{item?.spn}</p>
+								{/if}
+							</div>
 						</TableBodyCell>
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={'blue'}>
@@ -253,9 +254,13 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell>
-							{#each item?.tracking || [item?.tracking?.[0]] as t}
-								<TrackingStatus tracking={t || order?.tracking} bind:trackingResult={trackings[idx]} />
-							{/each}
+							{#if item?.tracking?.length > 0}
+								{#each item?.tracking || [item?.tracking?.[0]] as t}
+									<TrackingStatus tracking={t} bind:trackingResult={trackings[idx]} />
+								{/each}
+							{:else}
+								<TrackingStatus bind:trackingResult={trackings[idx]} />
+							{/if}
 						</TableBodyCell>
 						<TableBodyCell>
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
@@ -295,7 +300,6 @@
 				{/each}
 			</TableBody>
 			<TableHead>
-				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />

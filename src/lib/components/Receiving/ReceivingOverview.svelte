@@ -1,31 +1,22 @@
 <script lang="ts">
 	import { padString } from '$lib/utils';
-	import { queryStore, getContextClient, gql } from '@urql/svelte';
+	import { queryStore, getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import { Accordion, AccordionItem, Toggle } from 'flowbite-svelte';
 	import OrderOverview from '../Orders/OrderOverview.svelte';
 	import OrdersListItem from '../Orders/OrdersListItem.svelte';
 
-	$: ordersStore = queryStore({
+	$: ordersStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			query orders {
+			subscription orders {
 				erp_orders(where: { orders_items_aggregate: { count: { predicate: { _gt: 0 } } } }, order_by: { id: desc }) {
 					id
 					reference
 					created_at
-					received_at
-					received_user_id
 					supplier {
 						name
 					}
 					user {
-						id
-						first_name
-						last_name
-						initials
-						color
-					}
-					userByReceivedUserId {
 						id
 						first_name
 						last_name

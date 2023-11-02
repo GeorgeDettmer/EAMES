@@ -7,6 +7,10 @@
 	import {
 		Button,
 		Checkbox,
+		Dropdown,
+		DropdownItem,
+		Label,
+		Select,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -16,6 +20,8 @@
 		Textarea,
 		Toggle
 	} from 'flowbite-svelte';
+	import { messagesStore } from 'svelte-legos';
+	import { quadInOut } from 'svelte/easing';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -36,7 +42,7 @@
 		user_id: user.id,
 		user
 	};
-
+	let headers = {};
 	function excelToObjects(stringData) {
 		let objects = [];
 		//split into rows
@@ -59,10 +65,21 @@
 			}
 		}
 		console.log('excelToObjects', objects);
+		headers = {};
+		objects
+			?.map((l) => Object.keys(l))
+			?.flat()
+			?.forEach((h) => {
+				if (h?.[0] && h?.[0] !== '_') {
+					headers[h] = '';
+				}
+			});
+		console.log('headers', headers);
+
 		return objects;
 	}
 
-	let importText: string = `Item	Qty/Unit	Part Number Description	Delivery Date	Unit Price	Ext Price
+	let importText: string = ''; /* `Item	Qty/Unit	Part Number Description	Delivery Date	Unit Price	Ext Price
 1	110	3582887	ASAP	£0.14	£15.84
 2	90	3582814	ASAP	£0.00	£0.44
 3	70	3581351	ASAP	£0.03	£1.79
@@ -75,25 +92,33 @@
 15	60	1469793	ASAP	£0.01	£0.60
 16	70	2563621	ASAP	£0.04	£2.58
 18	70	2838469	ASAP	£0.08	£5.32
-`;
+`; */
 	let showImport: boolean = false;
-	let imported: any[] = excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
+	let imported: any[] = []; //excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
 	$: console.log(order);
 
 	function fillOrderFromImport() {
 		showImport = false;
 		let order_items = [];
-		imported.forEach((line) => {
+		imported.forEach((line, idx) => {
 			if (!line?._import) {
 				console.log('line skip', line);
 				return;
 			}
 			console.log('line add', line);
 			if (line) {
+				let part = line?.[orderItemProperties['part']];
+				let spn = line?.[orderItemProperties['spn']];
+				let price = Number(line?.[orderItemProperties['price']]?.replace(/[^0-9\.-]+/g, '')) || 0;
+				if (!part || !price) {
+					messagesStore(`Import failed for line ${idx}. Missing part number or price`);
+					return;
+				}
 				order_items.push({
-					part: line?.['Part Number Description'],
-					price: Number(line?.['Unit Price']?.replace(/[^0-9\.-]+/g, '')) || 0,
-					quantity: Number(line?.['Qty/Unit']),
+					part,
+					spn,
+					price,
+					quantity: Number(line?.[orderItemProperties['quantity']]),
 					created_at: new Date(),
 					user_id: $page?.data?.user?.id
 				});
@@ -105,6 +130,21 @@
 	function removeFromImport(idx: number) {
 		imported = imported.toSpliced(idx, 1);
 	}
+
+	$: console.log('headers:', orderItemProperties);
+
+	let orderItemProperties = {
+		part: 'MPN',
+		quantity: 'Order',
+		price: 'Unit(£)',
+		spn: 'Purchased Part',
+		supplier: 'Supplier'
+	};
+
+	/* let headers: string[] = imported
+		?.map((l) => Object.keys(l))
+		.flat()
+		.filter((h) => h?.[0] !== '_'); */
 </script>
 
 <OrderCreate {order} />
@@ -127,17 +167,40 @@
 
 	{#if showImport}
 		<div class="grid grid-cols-2">
-			<Textarea
-				id="po-paste"
-				placeholder="Paste PO details here"
-				rows="6"
-				name="message"
-				bind:value={importText}
-				on:change={() => {
-					imported = excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
-					console.log('import:', imported);
-				}}
-			/>
+			<div>
+				<Textarea
+					id="po-paste"
+					placeholder="Import...."
+					rows="6"
+					name="message"
+					bind:value={importText}
+					on:change={() => {
+						imported =
+							excelToObjects(importText); /* .filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']); */
+						console.log('import:', imported);
+					}}
+				/>
+				<div class="grid grid-cols-2 gap-2">
+					{#each Object.keys(orderItemProperties) as header}
+						<div class="flex mt-2">
+							<div class="my-auto">
+								<p
+									class:underline={header !== 'spn'}
+									class=" mr-2 w-2/3 text-lg uppercase font-bold dark:text-white text-right"
+								>
+									{header}
+								</p>
+							</div>
+
+							<Select
+								class="w-1/3"
+								items={[{ value: null, name: '' }, ...Object.keys(headers)?.map((h) => ({ value: h, name: h }))]}
+								bind:value={orderItemProperties[header]}
+							/>
+						</div>
+					{/each}
+				</div>
+			</div>
 			<Table>
 				<TableHead>
 					<TableHeadCell>#</TableHeadCell>
@@ -158,11 +221,22 @@
 				</TableHead>
 				<TableBody>
 					{#each imported as line, idx}
-						<TableBodyRow>
+						{@const quantity = line[orderItemProperties['quantity']]}
+						{@const part = line[orderItemProperties['part']]}
+						{@const spn = line[orderItemProperties['spn']]}
+						{@const price = line[orderItemProperties['price']]}
+						<TableBodyRow color={!quantity || !part || !price ? 'red' : 'default'}>
 							<TableBodyCell>{idx + 1}</TableBodyCell>
-							<TableBodyCell>{line['Qty/Unit']}</TableBodyCell>
-							<TableBodyCell>{line['Part Number Description']}</TableBodyCell>
-							<TableBodyCell>{line['Unit Price']}</TableBodyCell>
+							<TableBodyCell>{quantity}</TableBodyCell>
+							<TableBodyCell>
+								<div>
+									<p>{part}</p>
+									{#if spn}
+										<p class="text-xs italic">{spn}</p>
+									{/if}
+								</div>
+							</TableBodyCell>
+							<TableBodyCell>{price}</TableBodyCell>
 							<TableBodyCell>
 								<Checkbox bind:checked={line._import} />
 							</TableBodyCell>

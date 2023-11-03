@@ -6,7 +6,7 @@ export const load: PageServerLoad = (event) => {
 	const user = event.locals.user;
 
 	if (user) {
-		throw redirect(302, '/');
+		//throw redirect(302, '/');
 	}
 };
 
@@ -48,7 +48,7 @@ export const actions: Actions = {
 		console.log('USER LOGOUT: ', event.locals.user);
 		event.cookies.delete('AuthorizationToken');
 		event.locals.user = undefined;
-		//throw redirect(302, '/login');
+		throw redirect(302, '/login');
 		return {};
 	}
 };

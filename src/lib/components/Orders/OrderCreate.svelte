@@ -187,6 +187,7 @@
 				erp_suppliers(order_by: { orders_aggregate: { count: desc } }) {
 					id
 					name
+					names
 				}
 			}
 		`,
@@ -200,8 +201,16 @@
 
 	$: {
 		if (suppliers) {
-			order.supplier_id = suppliers?.[0]?.id;
-			order.supplier = suppliers?.[0];
+			let sup = suppliers?.[0];
+			if (!order?.supplier?.supplier_id && order?.supplier?.name) {
+				let suppliersMatch = suppliers?.filter((s) => s.names?.includes(order?.supplier?.name?.toLowerCase()))?.[0];
+				console.log('suppliersMatch', suppliersMatch);
+				if (suppliersMatch) {
+					sup = suppliersMatch;
+				}
+			}
+			order.supplier_id = sup?.id;
+			order.supplier = sup;
 		}
 	}
 

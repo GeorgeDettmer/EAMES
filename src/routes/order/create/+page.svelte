@@ -36,7 +36,6 @@
 		orders_items: [],
 		/* supplier_id: 'FARNELL', */
 		supplier: {
-			id: 'FARNELL',
 			name: 'Farnell'
 		},
 		user_id: user.id,
@@ -64,7 +63,7 @@
 				objects.push(o);
 			}
 		}
-		console.log('excelToObjects', objects);
+		console.log('parsedObjects:', objects);
 		headers = {};
 		objects
 			?.map((l) => Object.keys(l))
@@ -98,32 +97,46 @@
 	$: console.log(order);
 
 	function fillOrderFromImport() {
+		let toImport = imported?.filter((l) => l?._import !== false);
+		console.log('toImport', toImport, imported);
+		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
+		if (importSuppliers.size > 1) {
+			messagesStore(`Currently only import for 1 supplier is supported. Suppliers: ${[...importSuppliers.values()]}`);
+			return;
+		}
 		showImport = false;
 		let order_items = [];
-		imported.forEach((line, idx) => {
-			if (!line?._import) {
-				console.log('line skip', line);
-				return;
-			}
-			console.log('line add', line);
+		toImport.forEach((line, idx) => {
+			//console.log('line add', line);
 			if (line) {
 				let part = line?.[orderItemProperties['part']];
 				let spn = line?.[orderItemProperties['spn']];
 				let price = Number(line?.[orderItemProperties['price']]?.replace(/[^0-9\.-]+/g, '')) || 0;
-				if (!part || !price) {
-					messagesStore(`Import failed for line ${idx}. Missing part number or price`);
+				let quantity = Number(line?.[orderItemProperties['quantity']]);
+				console.log({ part, spn, price, quantity });
+				if (!part) {
+					messagesStore(`Import failed for line ${idx + 1}. Missing part number or price`, 'error');
 					return;
+				}
+
+				if (!quantity) {
+					messagesStore(`Import failed for line ${idx + 1}. Quantity is 0`, 'error');
+					return;
+				}
+				if (!price) {
+					messagesStore(`Line ${idx + 1} has 0 price`);
 				}
 				order_items.push({
 					part,
 					spn,
 					price,
-					quantity: Number(line?.[orderItemProperties['quantity']]),
+					quantity: quantity,
 					created_at: new Date(),
 					user_id: $page?.data?.user?.id
 				});
 			}
 		});
+		order.supplier.name = toImport?.[0]?.[orderItemProperties['supplier']];
 		order.orders_items = order_items;
 	}
 
@@ -175,8 +188,7 @@
 					name="message"
 					bind:value={importText}
 					on:change={() => {
-						imported =
-							excelToObjects(importText); /* .filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']); */
+						imported = excelToObjects(importText);
 						console.log('import:', imported);
 					}}
 				/>
@@ -207,6 +219,7 @@
 					<TableHeadCell>Qty</TableHeadCell>
 					<TableHeadCell>Part</TableHeadCell>
 					<TableHeadCell>Unit Price</TableHeadCell>
+					<TableHeadCell>Supplier</TableHeadCell>
 					<TableHeadCell>
 						<Checkbox
 							checked={true}
@@ -225,6 +238,7 @@
 						{@const part = line[orderItemProperties['part']]}
 						{@const spn = line[orderItemProperties['spn']]}
 						{@const price = line[orderItemProperties['price']]}
+						{@const supplier = line[orderItemProperties['supplier']]}
 						<TableBodyRow color={!quantity || !part || !price ? 'red' : 'default'}>
 							<TableBodyCell>{idx + 1}</TableBodyCell>
 							<TableBodyCell>{quantity}</TableBodyCell>
@@ -237,6 +251,7 @@
 								</div>
 							</TableBodyCell>
 							<TableBodyCell>{price}</TableBodyCell>
+							<TableBodyCell>{supplier}</TableBodyCell>
 							<TableBodyCell>
 								<Checkbox bind:checked={line._import} />
 							</TableBodyCell>

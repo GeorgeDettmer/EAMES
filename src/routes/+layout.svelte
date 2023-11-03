@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.postcss';
+	import { scanStore } from '$lib/stores';
 	import { messagesStore } from 'svelte-legos';
 	import { deserialize } from '$app/forms';
 	import { getContext, setContext } from 'svelte';
@@ -186,22 +187,23 @@
 			logout();
 			return;
 		}
-		const page: string = window.location.pathname.split('/')?.[1] || '';
-		console.log('SCAN', barcode, 'PAGE: ', page);
-		if (page === 'board') {
+		const currentPage: string = window.location.pathname.split('/')?.[1] || '';
+		console.log('SCAN', barcode, 'PAGE: ', currentPage);
+		if (currentPage === 'board') {
 			const sn = parseInt(barcode);
 			if (!sn) return;
 			goto('/board/' + sn, { invalidateAll: true, replaceState: true });
 			return;
 		}
-		if (page === 'part') {
+		if (currentPage === 'part') {
 			goto('/part/' + barcode, { invalidateAll: true, replaceState: true });
 			return;
 		}
-		if (page === '' || page === 'overview') {
+		if (currentPage === '' || currentPage === 'overview') {
 			goto('/overview/' + barcode, { invalidateAll: true, replaceState: true });
 			return;
 		}
+		scanStore.set(barcode);
 		console.log('SCAN', 'UNHANDLED');
 	}
 	let keys = {

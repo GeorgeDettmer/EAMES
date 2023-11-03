@@ -9,6 +9,8 @@
 	import ReceivingOverview from '$lib/components/Receiving/ReceivingOverview.svelte';
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
+	import { scanStore } from '$lib/stores';
+	import { derived } from 'svelte/store';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -134,6 +136,26 @@
 				?.length === 0
 	);
 	$: console.log('incompleteOrders', incompleteOrders);
+
+	$: console.log('scanStore', $scanStore);
+
+	let scanPartTokens;
+	$: {
+		if ($scanStore) {
+			let r = $scanStore?.match(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)(?<QTY>(Q).*)(?<UNDEFINED>(9D).*)/);
+			/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
+			console.log('scanPartTokens', r.groups);
+			scanPartTokens = {
+				spn: r?.groups?.SPN?.slice(2),
+				mpn: r?.groups?.MPN?.slice(3),
+				qty: Number(r?.groups?.QTY?.slice(1))
+			};
+			console.log('scanPartTokens', scanPartTokens);
+			scanStore.set('');
+			if (scanPartTokens?.mpn) {
+			}
+		}
+	}
 </script>
 
 {#if jobId}

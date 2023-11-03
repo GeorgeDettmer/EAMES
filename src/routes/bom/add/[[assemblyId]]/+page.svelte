@@ -158,6 +158,7 @@
 				let l = {
 					reference: ref,
 					part: pn === 'Not Fitted' ? null : pn,
+					description,
 					partByPart: { description: description }
 				};
 				_lines.push(l);
@@ -185,7 +186,7 @@
 		let mutationResult;
 		let bom_lines = bom?.lines?.map((l) => {
 			console.log(l);
-			return { reference: l?.reference, part: l?.part, description: l?.partByPart?.description };
+			return { reference: l?.reference, part: l?.part, description: l?.description };
 		});
 		console.log('linesz', bom_lines);
 		mutationResult = await urqlClient.mutation(

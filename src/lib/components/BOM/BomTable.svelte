@@ -2,7 +2,7 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
-	export let visibleColumns: string[];
+	export let visibleColumns: string[] = ['part', 'description', 'references', 'quantity'];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
@@ -123,16 +123,16 @@
 	<Table hoverable shadow>
 		<TableHead>
 			<TableHeadCell>#</TableHeadCell>
-			{#if visibleColumns.includes('part')}
+			{#if visibleColumns?.includes('part')}
 				<TableHeadCell>Part</TableHeadCell>
 			{/if}
-			{#if visibleColumns.includes('description')}
+			{#if visibleColumns?.includes('description')}
 				<TableHeadCell>Description</TableHeadCell>
 			{/if}
-			{#if visibleColumns.includes('references')}
+			{#if visibleColumns?.includes('references')}
 				<TableHeadCell>References</TableHeadCell>
 			{/if}
-			{#if visibleColumns.includes('quantity')}
+			{#if visibleColumns?.includes('quantity')}
 				<TableHeadCell>Qty</TableHeadCell>
 			{/if}
 			{#if job?.quantity}
@@ -157,13 +157,13 @@
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					{#if visibleColumns.includes('part')}
-						<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary.includes(lineKey) ? 'underline' : ''}`}
+					{#if visibleColumns?.includes('part')}
+						<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''}`}
 							>{lineKey || 'Not Fitted'}</TableBodyCell
 						>
 					{/if}
 
-					{#if visibleColumns.includes('description')}
+					{#if visibleColumns?.includes('description')}
 						<TableBodyCell tdClass="w-1/4">
 							<p class="overflow-hidden text-clip">{description || ''}</p>
 							{#if line?.[0]?.description && line?.[0]?.description !== description}
@@ -172,7 +172,7 @@
 						</TableBodyCell>
 					{/if}
 
-					{#if visibleColumns.includes('references')}
+					{#if visibleColumns?.includes('references')}
 						<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
 							<div
 								class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
@@ -198,7 +198,7 @@
 						</TableBodyCell>
 					{/if}
 
-					{#if visibleColumns.includes('quantity')}
+					{#if visibleColumns?.includes('quantity')}
 						<TableBodyCell>{references?.length}</TableBodyCell>
 					{/if}
 
@@ -222,11 +222,11 @@
 					{/if}
 				</TableBodyRow>
 				<!-- {#if openRow === idx} -->
-				{#if openRows.includes(idx)}
+				{#if openRows?.includes(idx)}
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="3" class="p-0">
 							<div class="px-1 py-1">
-								{#if partsInLibrary.length > 0 && !partsInLibrary.includes(lineKey)}
+								{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
 									<NewComponent id={lineKey} {description} />
 								{:else}
 									<PartInfo partId={lineKey} galleryVisible />

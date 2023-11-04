@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { ArrowTopRightOnSquare } from 'svelte-heros-v2';
+	import ViewerFromJson from './ViewerFromJSON.svelte';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
@@ -13,6 +14,7 @@
 	export let hasInfo = false;
 	export let footprint = {};
 	export let showPopoutButton = true;
+	export let showFootprint = false;
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),
@@ -168,6 +170,9 @@
 							</div>
 						{/if}
 					</div>
+					{#if showFootprint}
+						<ViewerFromJson json={footprint} height={200} />
+					{/if}
 				</div>
 				<slot />
 				<!-- <Button size="xs">Info</Button> -->

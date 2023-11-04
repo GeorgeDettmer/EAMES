@@ -229,7 +229,7 @@
 								{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
 									<NewComponent id={lineKey} {description} />
 								{:else}
-									<PartInfo partId={lineKey} galleryVisible />
+									<PartInfo partId={lineKey} galleryVisible showFootprint />
 								{/if}
 							</div>
 						</TableBodyCell>

@@ -28,7 +28,7 @@
 			stage.destroy();
 		};
 	});
-
+	console.log('footprint json', json);
 	function draw() {
 		stage.width(window_width);
 		layer = new Konva.Layer();

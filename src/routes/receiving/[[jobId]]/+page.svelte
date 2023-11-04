@@ -145,6 +145,7 @@
 			let r = $scanStore?.match(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)(?<QTY>(Q).*)(?<UNDEFINED>(9D).*)/);
 			/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
 			console.log('scanPartTokens', r.groups);
+			//TODO: Fix regex not to include prefixes is capture groups...
 			scanPartTokens = {
 				spn: r?.groups?.SPN?.slice(2),
 				mpn: r?.groups?.MPN?.slice(3),
@@ -153,9 +154,25 @@
 			console.log('scanPartTokens', scanPartTokens);
 			scanStore.set('');
 			if (scanPartTokens?.mpn) {
+				let ordersContainingPart = orders.filter(
+					({ order }) => order.orders_items.filter((i) => i?.part === scanPartTokens?.mpn).length > 0
+				);
+				//TODO: Redo all this binding of values, its a mess
+				accordionState = orders.map(({ order }) => {
+					let items = order.orders_items.filter((i) => i?.part === scanPartTokens?.mpn);
+					let item = items?.[0];
+					if (item) {
+						item._qty = scanPartTokens.qty;
+					}
+					return item?.id ? item : false;
+				});
+				console.log('ordersContainingPart', ordersContainingPart);
 			}
 		}
 	}
+	$: console.log('orders', orders);
+
+	let accordionState = [];
 </script>
 
 {#if jobId}
@@ -174,13 +191,13 @@
 				</div>
 			</JobOverview>
 		{/if}
-
 		<Accordion multiple flush>
-			{#each orders as { order }}
+			{#each orders as { order }, idx}
 				{@const linesToRecieve = order.orders_items?.filter(
 					(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
 				)?.length}
-				<AccordionItem paddingFlush="p-0" paddingDefault="p-0">
+
+				<AccordionItem paddingFlush="p-0" paddingDefault="p-0" bind:open={accordionState[idx]}>
 					<div slot="header" class="grid grid-cols-2">
 						<OrdersListItem {order}>
 							<div class="pl-4">
@@ -194,7 +211,16 @@
 						</OrdersListItem>
 					</div>
 					<div class="p-1">
-						<OrderOverview orderId={order?.id} showRecieved showHeader={false} />
+						<!-- TODO: Redo all bindings -->
+						<OrderOverview
+							orderId={order?.id}
+							showRecieved
+							showHeader={false}
+							highlightOrderItem={accordionState[idx]}
+							bind:orderItemSelected={accordionState[idx]}
+							orderItemSelectedQty={scanPartTokens?.qty}
+							bind:recieveModal={accordionState[idx].id}
+						/>
 					</div>
 				</AccordionItem>
 			{/each}

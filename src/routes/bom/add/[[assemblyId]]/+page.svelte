@@ -177,15 +177,19 @@
 		if (!lines || !files?.accepted[0]?.name || !bom?.lines) {
 			messagesStore('The BOM does not have properly formatted lines', 'warning');
 		}
-		if (!$page?.data?.user?.processes['eng']) {
+		if (!$page?.data?.user?.processes?.['eng']) {
 			alert(
-				`You do not have permission to insert BOMs. You have permission for: ${Object.keys($page?.data?.user?.processes)}`
+				`You do not have permission to insert BOMs. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes || {}
+				)}`
 			);
 			return;
 		}
 		let mutationResult;
 		let bom_lines = bom?.lines?.map((l) => {
-			console.log(l);
+			if (!l?.part) {
+				console.log('eee', l);
+			}
 			return { reference: l?.reference, part: l?.part, description: l?.description };
 		});
 		console.log('linesz', bom_lines);

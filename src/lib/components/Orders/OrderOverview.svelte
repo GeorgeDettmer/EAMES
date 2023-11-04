@@ -21,6 +21,7 @@
 	import ReceivingStatus from './ReceivingStatus.svelte';
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
+	import { page } from '$app/stores';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -102,9 +103,10 @@
 
 	$: console.log('order:', order);
 
-	let recieveModal = false;
-	let orderItemSelected;
-	let orderItemSelectedQty = 0;
+	export let recieveModal = false;
+	export let orderItemSelected = {};
+	export let orderItemSelectedQty = 0;
+	export let highlightOrderItem = {};
 
 	let trackings = [];
 
@@ -112,6 +114,42 @@
 
 	function tableKeypress(e: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }): any {
 		console.log(e.key);
+	}
+	const urqlClient = getContextClient();
+
+	async function removeRecieved(received) {
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		/* if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert components. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes
+				)}`
+			);
+			return;
+		} */
+		let mutationResult;
+
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation removeRecieved($id: uuid!) {
+					delete_erp_orders_items_received_by_pk(id: $id) {
+						id
+					}
+				}
+			`,
+			{ id: received?.id }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			recieveModal = false;
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Removed receipt: ' + mutationResult.data.delete_erp_orders_items_received_by_pk.id, 'success');
+		}
 	}
 </script>
 
@@ -126,9 +164,10 @@
 						<TableHeadCell>User</TableHeadCell>
 						<TableHeadCell>Time/Date</TableHeadCell>
 						<TableHeadCell>Quantity</TableHeadCell>
+						<TableHeadCell />
 					</TableHead>
 
-					{#each orderItemSelected?.orders_items_receiveds as received}
+					{#each orderItemSelected?.orders_items_receiveds as received, idx}
 						<TableBodyRow>
 							<TableBodyCell tdClass=" font-sm text-center">
 								<UserIcon size="xs" user={received?.user}>
@@ -151,6 +190,17 @@
 							<TableBodyCell tdClass=" font-sm text-center">
 								{received?.quantity}
 							</TableBodyCell>
+							<TableBodyCell tdClass=" font-sm text-center"
+								><span
+									class="cursor-pointer"
+									on:click={() => {
+										//orderItemSelected.orders_items_receiveds[idx] = undefined;
+										removeRecieved(received);
+									}}
+								>
+									❌
+								</span></TableBodyCell
+							>
 						</TableBodyRow>
 					{:else}
 						<TableBodyCell colspan="3">No receipts for this order item</TableBodyCell>
@@ -210,7 +260,7 @@
 				<TableHeadCell />
 
 				{#if showRecieved}
-					<TableHeadCell>Recieved Qty</TableHeadCell>
+					<TableHeadCell>Received Qty</TableHeadCell>
 				{/if}
 				<slot name="head" />
 			</TableHead>
@@ -219,7 +269,9 @@
 					{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
 					<TableBodyRow
 						class="p-0 object-right"
-						color={recievedQty > 0 && recievedQty < item?.quantity
+						color={false
+							? 'blue'
+							: recievedQty > 0 && recievedQty < item?.quantity
 							? 'yellow'
 							: recievedQty >= item?.quantity
 							? 'green'
@@ -242,7 +294,7 @@
 							</Popover>
 						</TableBodyCell>
 						<TableBodyCell>
-							<div>
+							<div class={highlightOrderItem?.id === item?.id ? 'bg-blue-500 p-0.5 border rounded' : ''}>
 								<p>{item?.part}</p>
 								{#if item?.spn}
 									<p class="text-xs italic">{item?.spn}</p>

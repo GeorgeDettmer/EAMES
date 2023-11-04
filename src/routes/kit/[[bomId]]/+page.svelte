@@ -112,7 +112,7 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell colspan="2" class="p-0 object-right">
-							<div class="px-2 py-3" transition:slide={{ duration: 300, axis: 'y' }}>
+							<div class="" transition:slide={{ duration: 300, axis: 'y' }}>
 								<p>
 									{item.id}: {item.part_id} ({item.quantity}) [{item?.orders_item?.order?.supplier?.name
 										? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`

@@ -239,19 +239,19 @@
 						{@const spn = line[orderItemProperties['spn']]}
 						{@const price = line[orderItemProperties['price']]}
 						{@const supplier = line[orderItemProperties['supplier']]}
-						<TableBodyRow color={!quantity || !part || !price ? 'red' : 'default'}>
+						<TableBodyRow color={!line._import ? 'yellow' : !quantity || !part || !price ? 'red' : 'green'}>
 							<TableBodyCell>{idx + 1}</TableBodyCell>
-							<TableBodyCell>{quantity}</TableBodyCell>
+							<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
 							<TableBodyCell>
 								<div>
-									<p>{part}</p>
+									<p>{part ? part : 'undefined'}</p>
 									{#if spn}
 										<p class="text-xs italic">{spn}</p>
 									{/if}
 								</div>
 							</TableBodyCell>
-							<TableBodyCell>{price}</TableBodyCell>
-							<TableBodyCell>{supplier}</TableBodyCell>
+							<TableBodyCell>{price ? price : 'undefined'}</TableBodyCell>
+							<TableBodyCell>{supplier ? supplier : 'undefined'}</TableBodyCell>
 							<TableBodyCell>
 								<Checkbox bind:checked={line._import} />
 							</TableBodyCell>

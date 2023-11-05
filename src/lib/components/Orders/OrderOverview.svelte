@@ -22,6 +22,7 @@
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import { page } from '$app/stores';
+	import PartInfo from '../PartInfo.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -107,6 +108,7 @@
 	export let orderItemSelected = {};
 	export let orderItemSelectedQty = 0;
 	export let highlightOrderItem = {};
+	export let highlightOrderItems = [];
 
 	let trackings = [];
 
@@ -154,9 +156,19 @@
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
+	{@const recievedQty = orderItemSelected?.orders_items_receiveds?.reduce((a, v) => a + (v?.quantity || 0), 0)}
 	<div>
-		<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} bind:recieveModal />
+		<div class="grid grid-cols-2">
+			<div>
+				<p>{orderItemSelected?.part}</p>
+				{#if orderItemSelected?.spn}
+					<p>{orderItemSelected?.spn}</p>
+				{/if}
+			</div>
+			<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} bind:recieveModal />
+		</div>
 
+		<PartInfo partId={orderItemSelected?.part} />
 		{#if orderItemSelected?.orders_items_receiveds}
 			<div class="mt-6">
 				<Table>
@@ -169,7 +181,7 @@
 
 					{#each orderItemSelected?.orders_items_receiveds as received, idx}
 						<TableBodyRow>
-							<TableBodyCell tdClass=" font-sm text-center">
+							<TableBodyCell tdClass="font-sm text-center">
 								<UserIcon size="xs" user={received?.user}>
 									{#if mediaQuery('(min-width: 1024px)')}
 										{received?.user?.username || 'Unknown'}
@@ -184,14 +196,14 @@
 									{/if}
 								</Tooltip>
 							</TableBodyCell>
-							<TableBodyCell tdClass=" font-sm text-center">
+							<TableBodyCell tdClass="font-sm text-center">
 								{datetimeFormat(received.updated_at)}
 							</TableBodyCell>
-							<TableBodyCell tdClass=" font-sm text-center">
+							<TableBodyCell tdClass="font-sm text-center">
 								{received?.quantity}
 							</TableBodyCell>
-							<TableBodyCell tdClass=" font-sm text-center"
-								><span
+							<TableBodyCell tdClass="font-sm text-center">
+								<span
 									class="cursor-pointer"
 									on:click={() => {
 										//orderItemSelected.orders_items_receiveds[idx] = undefined;
@@ -199,12 +211,20 @@
 									}}
 								>
 									❌
-								</span></TableBodyCell
-							>
+								</span>
+							</TableBodyCell>
 						</TableBodyRow>
 					{:else}
 						<TableBodyCell colspan="3">No receipts for this order item</TableBodyCell>
 					{/each}
+					<TableHead>
+						<TableBodyCell />
+						<TableBodyCell />
+						<TableBodyCell tdClass="font-sm text-center font-bold">
+							{recievedQty}/{orderItemSelected?.quantity}
+						</TableBodyCell>
+						<TableBodyCell />
+					</TableHead>
 				</Table>
 			</div>
 		{/if}
@@ -297,7 +317,12 @@
 							</Popover>
 						</TableBodyCell>
 						<TableBodyCell>
-							<div class={highlightOrderItem?.id === item?.id ? 'bg-blue-500 p-0.5 border rounded' : ''}>
+							<div
+								class={highlightOrderItem?.id === item?.id ||
+								highlightOrderItems?.filter((i) => i?.id === item?.id)?.length > 0
+									? 'bg-blue-500 p-0.5 border rounded'
+									: ''}
+							>
 								<p>{item?.part}</p>
 								{#if item?.spn}
 									<p class="text-xs italic">{item?.spn}</p>

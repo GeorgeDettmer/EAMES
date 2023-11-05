@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	const ENABLE_LOCAL_CACHE = false;
 	onMount(() => {
-		console.log('local cache:', trackCache);
+		//console.log('local cache:', trackCache);
 	});
 
 	interface TrackingDetails {
@@ -27,9 +27,9 @@
 		const response = await fetch(`/api/shipengine/track?tracking_number=${tracking}&carrier_code=${carrier}`);
 		const result = await response.json();
 		if (result?.statusCode) {
-			console.log('tracking request success', tracking, carrier, result);
+			//console.log('tracking request success', tracking, carrier, result);
 			trackCache.set(cacheId, await result);
-			console.log('local cached', cacheId, trackCache.get(cacheId));
+			//console.log('local cached', cacheId, trackCache.get(cacheId));
 			return result;
 		} else {
 			console.log('tracking request fail', tracking, carrier, response);

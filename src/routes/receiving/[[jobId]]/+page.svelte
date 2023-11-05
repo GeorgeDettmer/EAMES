@@ -143,9 +143,11 @@
 	let scanPartTokens;
 	$: {
 		if ($scanStore) {
-			let r = $scanStore?.match(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)(?<QTY>(Q).*)(?<UNDEFINED>(9D).*)/);
+			let r = $scanStore
+				?.toLowerCase()
+				?.match(/(?<CON>(06k).*)(?<MPN>(p1p).*)(?<SPN>(3p).*)(?<QTY>(q).*)(?<UNDEFINED>(9d).*)/);
 			/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
-			console.log('scanPartTokens', r.groups);
+			console.log('scanPartTokens', r?.groups);
 			//TODO: Fix regex not to include prefixes is capture groups...
 			scanPartTokens = {
 				spn: r?.groups?.SPN?.slice(2),
@@ -156,18 +158,30 @@
 			scanStore.set('');
 			if (scanPartTokens?.mpn) {
 				let ordersContainingPart = orders.filter(
-					({ order }) => order.orders_items.filter((i) => i?.part === scanPartTokens?.mpn).length > 0
+					({ order }) => order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn).length > 0
 				);
 				//TODO: Redo all this binding of values, its a mess
-				accordionState = orders.map(({ order }) => {
-					let items = order.orders_items.filter((i) => i?.part === scanPartTokens?.mpn);
+				/* accordionState = orders.map(({ order }) => {
+					let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
 					let item = items?.[0];
 					if (item) {
-						item._qty = scanPartTokens.qty;
+						order._open = true;
+						if (scanPartTokens?.qty) {
+							item._qty = scanPartTokens.qty;
+						}
 					}
 					return item?.id ? item : false;
-				});
-				console.log('ordersContainingPart', ordersContainingPart);
+				}); */
+				highlightOrderItems = orders
+					.map(({ order }, idx) => {
+						let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
+						let item = items?.[0];
+						console.log('i', items, item);
+						accordionState[idx] = item;
+						return items;
+					})
+					?.flat();
+				console.log('ordersContainingPart', ordersContainingPart, 'highlightOrderItems', highlightOrderItems);
 				messagesStore(`Part scanned. ${scanPartTokens?.mpn} found in ${ordersContainingPart?.length} order(s)`);
 			}
 		}
@@ -175,6 +189,9 @@
 	$: console.log('orders', orders);
 
 	let accordionState = [];
+	$: console.log('accordionState', accordionState);
+
+	let highlightOrderItems = [];
 </script>
 
 {#if jobId}
@@ -214,7 +231,7 @@
 					</div>
 					<div class="p-1">
 						<!-- TODO: Redo all bindings -->
-						<OrderOverview
+						<!-- <OrderOverview
 							orderId={order?.id}
 							showRecieved
 							showHeader={false}
@@ -222,14 +239,22 @@
 							bind:orderItemSelected={accordionState[idx]}
 							orderItemSelectedQty={scanPartTokens?.qty}
 							bind:recieveModal={accordionState[idx].id}
+						/> -->
+						<OrderOverview
+							orderId={order?.id}
+							showRecieved
+							showHeader={false}
+							bind:highlightOrderItems
+							bind:orderItemSelected={accordionState[idx]}
+							orderItemSelectedQty={scanPartTokens?.qty}
 						/>
 					</div>
 				</AccordionItem>
+			{:else}
+				No orders associated with this job number
 			{/each}
 		</Accordion>
-	{:else}
-		No orders for job {jobId}
-	{/if}
+	{:else}{/if}
 {:else}
 	<ReceivingOverview />
 {/if}

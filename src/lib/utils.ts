@@ -105,6 +105,7 @@ export const classes = {
 	popover: ' cursor-pointer decoration-1 decoration-dotted underline hover:decoration-2 '
 };
 
+import { messagesStore } from 'svelte-legos';
 import colors from 'tailwindcss/colors.js';
 export const tailwindColors = colors;
 
@@ -176,11 +177,56 @@ export let downloadFileFromText = (blob: Blob, name: string) => {
 	a.remove();
 };
 
+export function copyToClipboard(text: string) {
+	return new Promise((resolve, reject) => {
+		if (
+			typeof navigator !== 'undefined' &&
+			typeof navigator.clipboard !== 'undefined' &&
+			navigator.permissions !== 'undefined'
+		) {
+			const type = 'text/plain';
+			const blob = new Blob([text], { type });
+			const data = [new ClipboardItem({ [type]: blob })];
+			navigator.permissions.query({ name: 'clipboard-write' }).then((permission) => {
+				if (permission.state === 'granted' || permission.state === 'prompt') {
+					navigator.clipboard.write(data).then(resolve, reject).catch(reject);
+				} else {
+					reject(new Error('Permission not granted!'));
+				}
+			});
+		} else if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
+			var textarea = document.createElement('textarea');
+			textarea.textContent = text;
+			textarea.style.position = 'fixed';
+			textarea.style.width = '2em';
+			textarea.style.height = '2em';
+			textarea.style.padding = 0;
+			textarea.style.border = 'none';
+			textarea.style.outline = 'none';
+			textarea.style.boxShadow = 'none';
+			textarea.style.background = 'transparent';
+			document.body.appendChild(textarea);
+			textarea.focus();
+			textarea.select();
+			try {
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
+				resolve();
+			} catch (e) {
+				document.body.removeChild(textarea);
+				reject(e);
+			}
+		} else {
+			reject(new Error('None of copying methods are supported by this browser!'));
+		}
+	});
+}
+
 export let supplier_export = {
-	DIGIKEY: (order, type: string = 'EXPORT'): string => {
-		console.log('EXPORT', order);
-		let orderItems = order?.orders_items;
-		if (type === 'EXPORT') {
+	DIGIKEY: {
+		EXPORT: (order) => {
+			console.log('EXPORT', order);
+			let orderItems = order?.orders_items;
 			const header =
 				'Index,Quantity,Part Number,Manufacturer Part Number,Description,Customer Reference,Available,Backorder,Unit Price,Extended Price GBP';
 
@@ -190,22 +236,52 @@ export let supplier_export = {
 				items.push([idx, i?.quantity, i?.spn, i?.part, '', order?.id]);
 				csv += [idx, i?.quantity, i?.spn, i?.part, '', order?.id].join(',') + '\n';
 			});
-			downloadFileFromText(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'Basket_DigiKey_' + order?.id + '.csv');
+			downloadFileFromText(
+				new Blob([csv], { type: 'text/plain;charset=utf-8' }),
+				'Basket_DigiKey_' + (order?.id || new Date().toISOString()) + '.csv'
+			);
+		},
+		CLIPBOARD: async (order) => {
+			let csv = '';
+			order?.orders_items?.forEach((i, idx) => {
+				csv += [i?.quantity, i?.spn, ''].join(',') + '\n';
+			});
+			await copyToClipboard(csv);
+			messagesStore('Copied basket to clipboard');
 		}
-		return '';
 	},
-	FARNELL: (order, type: string = 'EXPORT'): string => {
-		console.log('EXPORT', order);
-		let orderItems = order?.orders_items;
-		if (type === 'EXPORT') {
+	FARNELL: {
+		EXPORT: (order) => {
+			console.log('EXPORT', order);
+			let orderItems = order?.orders_items;
 			const header = 'Part Number,Quantity,Line Note';
 
 			let csv = header + '\n';
 			orderItems?.forEach((i, idx) => {
 				csv += [i?.spn, i?.quantity, ''].join(',') + '\n';
 			});
-			downloadFileFromText(new Blob([csv], { type: 'text/plain;charset=utf-8' }), 'Basket_Farnell_' + order?.id);
+			downloadFileFromText(
+				new Blob([csv], { type: 'text/plain;charset=utf-8' }),
+				'Basket_Farnell_' + (order?.id || new Date().toISOString())
+			);
+		},
+		CLIPBOARD: async (order) => {
+			let csv = '';
+			order?.orders_items?.forEach((i, idx) => {
+				csv += [i?.spn, i?.quantity, ''].join(',') + '\n';
+			});
+			await copyToClipboard(csv);
+			messagesStore('Copied basket to clipboard');
 		}
-		return '';
+	},
+	RS: {
+		CLIPBOARD: async (order) => {
+			let csv = '';
+			order?.orders_items?.forEach((i, idx) => {
+				csv += [i?.spn, i?.quantity, ''].join(',') + '\n';
+			});
+			await copyToClipboard(csv);
+			messagesStore('Copied basket to clipboard');
+		}
 	}
 };

@@ -369,8 +369,8 @@
 			<div class="cursor-pointer" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
 				<OrdersListItem {order} interactive={false}>
 					{#if showSupplierSelect}
-						<div class="pl-2 w-fit flex" on:click|stopPropagation={() => {}}>
-							<div class="pl-2">
+						<div class=" w-fit flex" on:click|stopPropagation={() => {}}>
+							<div class="pl-2 my-auto">
 								<Select
 									size="sm"
 									placeholder=""
@@ -385,15 +385,19 @@
 									}}
 								/>
 							</div>
-							{#if orderItems.length > 0 && Object.keys(supplier_export).includes(selectedSupplierId)}
-								<div
-									class="my-auto pl-2"
-									on:click={() => {
-										supplier_export[selectedSupplierId](order);
-									}}
-								>
-									<BarsArrowDown class="hover:text-green-600" size="30" />
-								</div>
+							{#if Object.keys(supplier_export).includes(selectedSupplierId)}
+								{#each Object.keys(supplier_export[selectedSupplierId]) as type}
+									<Button
+										size="sm"
+										class="my-auto hover:text-green-600 text-sm"
+										on:click={() => {
+											supplier_export[selectedSupplierId][type](order);
+										}}
+									>
+										<BarsArrowDown size="20" />
+										{type}
+									</Button>
+								{/each}
 							{/if}
 						</div>
 					{/if}

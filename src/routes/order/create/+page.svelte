@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import OrderCreate from '$lib/components/Orders/OrderCreate.svelte';
 	import {
+		Alert,
 		Button,
 		Checkbox,
 		Dropdown,
@@ -22,6 +23,7 @@
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { quadInOut } from 'svelte/easing';
+	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -153,6 +155,11 @@
 		spn: 'Purchased Part',
 		supplier: 'Supplier'
 	};
+
+	$: missingImportData = imported?.map(
+		(i) => ['part', 'quantity', 'price'].filter((k) => !i?.[orderItemProperties[k]])?.length !== 0
+	);
+	$: console.log('missingImportData', missingImportData);
 </script>
 
 <OrderCreate {order} />
@@ -160,14 +167,15 @@
 	<div class="p-2 grid grid-cols-2">
 		<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>
 
-		<div class="ml-auto">
+		<div class="ml-auto flex">
 			{#if showImport}
 				<Button
 					color="green"
 					size="xs"
+					disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
 					on:click={() => {
 						fillOrderFromImport();
-					}}>Import...</Button
+					}}>Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...</Button
 				>
 			{/if}
 		</div>
@@ -207,6 +215,26 @@
 						</div>
 					{/each}
 				</div>
+				{#if missingImportData.includes(true)}
+					<div class="p-2">
+						<Alert class="!items-start" color="red">
+							<span slot="icon">
+								<InfoCircleSolid slot="icon" class="w-4 h-4" />
+								<span class="sr-only">Info</span>
+							</span>
+							<p class="font-medium">
+								Ensure that the below lines have part, quantity and price defined or remove them from the import:
+							</p>
+							<ul class="mt-1.5 ml-4 list-disc list-inside">
+								{#each missingImportData as missing, idx}
+									{#if missing}
+										<li class:line-through={!imported[idx]?._import}>Line {idx + 1} is missing required import data</li>
+									{/if}
+								{/each}
+							</ul>
+						</Alert>
+					</div>
+				{/if}
 			</div>
 			<Table>
 				<TableHead>

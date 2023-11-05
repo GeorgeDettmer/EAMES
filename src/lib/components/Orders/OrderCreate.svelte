@@ -199,7 +199,7 @@
 	$: showSupplierSelect = false; //!order?.supplier_id;
 	$: supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
 
-	$: {
+	/* $: {
 		if (suppliers) {
 			let sup = suppliers?.[0];
 			if (!order?.supplier?.supplier_id && order?.supplier?.name) {
@@ -212,7 +212,7 @@
 			order.supplier_id = sup?.id;
 			order.supplier = sup;
 		}
-	}
+	} */
 
 	let selectedSupplierId;
 	$: console.log('supplier', selectedSupplierId, supplier);

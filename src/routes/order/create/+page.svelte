@@ -35,9 +35,7 @@
 	$: order = {
 		orders_items: [],
 		/* supplier_id: 'FARNELL', */
-		supplier: {
-			name: 'Farnell'
-		},
+		supplier: {},
 		user_id: user.id,
 		user
 	};
@@ -101,7 +99,9 @@
 		console.log('toImport', toImport, imported);
 		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
 		if (importSuppliers.size > 1) {
-			messagesStore(`Currently only import for 1 supplier is supported. Suppliers: ${[...importSuppliers.values()]}`);
+			messagesStore(
+				`Currently only import for 1 supplier at a time is supported. Suppliers: ${[...importSuppliers.values()]}`
+			);
 			return;
 		}
 		showImport = false;
@@ -153,11 +153,6 @@
 		spn: 'Purchased Part',
 		supplier: 'Supplier'
 	};
-
-	/* let headers: string[] = imported
-		?.map((l) => Object.keys(l))
-		.flat()
-		.filter((h) => h?.[0] !== '_'); */
 </script>
 
 <OrderCreate {order} />

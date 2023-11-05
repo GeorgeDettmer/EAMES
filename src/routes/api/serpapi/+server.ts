@@ -1,12 +1,12 @@
 import { getJson } from 'serpapi';
-
+import { serpapiCache } from '../cache';
 import type { RequestHandler } from './$types';
 import { PUBLIC_SERPAPI_KEY } from '$env/static/public';
 import { error, json } from '@sveltejs/kit';
 
 console.log('test');
 
-let cache = {};
+//let cache = {};
 
 export const GET: RequestHandler = async ({ url }) => {
 	/* let api = new URL('https://serpapi.com/search.json');
@@ -32,13 +32,13 @@ export const GET: RequestHandler = async ({ url }) => {
 	const q = options?.q;
 	const engine = options?.engine;
 	if (q && engine) {
-		if (cache?.[q]) {
+		if (serpapiCache.get(q)) {
 			console.log('is cached', q);
-			return json(cache[q]);
+			return json(serpapiCache.get(q));
 		} else {
 			console.log('not cached', q);
 			const response = await getJson(options);
-			cache[q] = response;
+			serpapiCache.set(q, response);
 			return json(response);
 		}
 	}

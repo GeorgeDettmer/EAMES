@@ -225,8 +225,10 @@
 			</div>
 			<div class="my-auto ml-auto">
 				{#each order?.jobs_orders as { job }}
-					<div
+					<a
 						class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+						href={window.origin + '/receiving/' + (job?.id || '')}
+						target="_blank"
 					>
 						<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 							<div>
@@ -242,7 +244,7 @@
 								<p class="float-right">{order?.jobs_orders?.length}</p>
 							</div>
 						</div>
-					</div>
+					</a>
 				{/each}
 			</div>
 		</div>
@@ -254,7 +256,8 @@
 				<TableHeadCell>Buyer</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
-				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell>Unit Price</TableHeadCell>
+				<TableHeadCell>Total Price</TableHeadCell>
 				<TableHeadCell />
 
 				<TableHeadCell />
@@ -306,7 +309,12 @@
 								{item?.quantity}
 							</Badge>
 						</TableBodyCell>
-
+						<TableBodyCell>
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(item?.price || 0)}
+						</TableBodyCell>
 						<TableBodyCell>
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
@@ -365,6 +373,7 @@
 				<TableBodyCell>
 					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 				</TableBodyCell>
+				<TableBodyCell />
 				<TableBodyCell>
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',

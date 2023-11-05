@@ -423,7 +423,7 @@
 						addOrder();
 					}}
 				>
-					Submit
+					Create order
 				</Button>
 			</div>
 		</div>

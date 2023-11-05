@@ -6,7 +6,7 @@
 	import { datetimeFormat } from '$lib/utils';
 	import { Popover, Spinner } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-
+	const ENABLE_LOCAL_CACHE = false;
 	onMount(() => {
 		console.log('local cache:', trackCache);
 	});
@@ -21,7 +21,7 @@
 	async function track(tracking: string, carrier: string) {
 		if (!tracking || !carrier) return {};
 		let cacheId = `${carrier}_${tracking}`;
-		if (trackCache.has(cacheId)) {
+		if (ENABLE_LOCAL_CACHE && trackCache.has(cacheId)) {
 			return trackCache.get(cacheId);
 		}
 		const response = await fetch(`/api/shipengine/track?tracking_number=${tracking}&carrier_code=${carrier}`);

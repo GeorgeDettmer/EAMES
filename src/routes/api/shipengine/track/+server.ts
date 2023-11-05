@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	let cached = trackingCache.get(cacheId);
 	if (cached) {
 		let cacheTimestamp = cached?._cachedTimestamp;
-		//TODO: configurable cache 3.6e6 is 1hr
+		//TODO: configurable cache expiry
 		if (cacheTimestamp && (Date.now() - cacheTimestamp) / 1000 < 60) {
 			console.log('Tracking status:');
 			console.log('CACHED', (Date.now() - cacheTimestamp) / 1000);

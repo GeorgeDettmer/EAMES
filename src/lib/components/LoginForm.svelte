@@ -48,7 +48,7 @@
 		client: getContextClient(),
 		query: gql`
 			query users {
-				users(where: { active: { _eq: true } }) {
+				users(where: { active: { _eq: true } }, order_by: { username: asc }) {
 					id
 					username
 					first_name
@@ -82,30 +82,16 @@
 			</datalist>
 			<Label class="space-y-2" for="username">
 				<span class:text-gray-400={userPassDisabled}>Username</span>
-				<Input
-					list="usernames"
-					type="text"
-					name="username"
-					disabled={userPassDisabled}
-					bind:value={username}
-				/>
+				<Input list="usernames" type="text" name="username" disabled={userPassDisabled} bind:value={username} />
 			</Label>
 		{/if}
 		{#if allowPassword || allowPasscode}
 			<Label class="space-y-2" for="password">
 				<span class:text-gray-400={userPassDisabled}
-					>{allowPasscode && allowPassword
-						? 'Password/Passcode'
-						: allowPasscode
-						? 'Passcode'
-						: 'Password'}</span
+					>{allowPasscode && allowPassword ? 'Password/Passcode' : allowPasscode ? 'Passcode' : 'Password'}</span
 				>
 				<Input
-					style={showPassword
-						? !allowPassword
-							? '-webkit-text-security: none;'
-							: 'none'
-						: '-webkit-text-security: disc;'}
+					style={showPassword ? (!allowPassword ? '-webkit-text-security: none;' : 'none') : '-webkit-text-security: disc;'}
 					type="text"
 					name="password"
 					disabled={userPassDisabled}
@@ -148,11 +134,7 @@
 									stroke-linejoin="round"
 									d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
 								/>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 							</svg>
 						{:else}
 							<svg
@@ -180,12 +162,7 @@
 	{#if allowToken}
 		<Label class="space-y-2" for="login_token">
 			<span class:text-gray-400={tokenDisabled}>Token</span>
-			<Input
-				type={showToken ? 'text' : 'password'}
-				name="login_token"
-				disabled={tokenDisabled}
-				bind:value={token}
-			>
+			<Input type={showToken ? 'text' : 'password'} name="login_token" disabled={tokenDisabled} bind:value={token}>
 				<button
 					tabindex="-1"
 					slot="left"
@@ -206,11 +183,7 @@
 								stroke-linejoin="round"
 								d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
 							/>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-							/>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 						</svg>
 					{:else}
 						<svg
@@ -279,8 +252,7 @@
 	<button
 		bind:this={submitButton}
 		type="submit"
-		class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-		>Login</button
+		class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Login</button
 	>
 	{#if $page.form?.error}
 		<Alert color="red">

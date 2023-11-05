@@ -23,6 +23,7 @@
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
+	import { tick } from 'svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -165,7 +166,12 @@
 					<p>{orderItemSelected?.spn}</p>
 				{/if}
 			</div>
-			<ReceiveQuantity orderItemId={orderItemSelected?.id} quantity={orderItemSelectedQty} bind:recieveModal />
+			<ReceiveQuantity
+				orderItemId={orderItemSelected?.id}
+				quantity={orderItemSelectedQty}
+				orderItem={orderItemSelected}
+				bind:recieveModal
+			/>
 		</div>
 
 		<PartInfo partId={orderItemSelected?.part} />
@@ -365,9 +371,9 @@
 								<span
 									class="cursor-pointer"
 									on:click={() => {
-										recieveModal = true;
 										orderItemSelectedQty = remaining;
 										orderItemSelected = item;
+										recieveModal = true;
 									}}
 								>
 									<Badge class="mx-0.5" color={!recievedQty ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}>

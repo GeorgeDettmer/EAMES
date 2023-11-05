@@ -5,6 +5,7 @@
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 
+	export let orderItem;
 	export let orderItemId: string;
 	export let quantity: number = 0;
 	export let recieveModal;
@@ -12,6 +13,11 @@
 	let quantityAdding = false;
 	async function addQuantity() {
 		if (quantityAdding) return;
+		//TODO: Fix quantity control
+		/* if (recievedQty >= orderItem.quantity || recievedQty + quantity > orderItem.quantity) {
+			messagesStore('Quantity over order total', 'warning');
+			return;
+		} */
 		if (!$page?.data?.user) {
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
@@ -49,6 +55,8 @@
 		}
 		quantityAdding = false;
 	}
+
+	$: recievedQty = orderItem?.orders_items_receiveds?.reduce((a, v) => a + (v?.quantity || 0), 0);
 </script>
 
 <svelte:window

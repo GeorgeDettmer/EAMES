@@ -12,6 +12,8 @@
 	import { scanStore } from '$lib/stores';
 	import { derived } from 'svelte/store';
 	import { messagesStore } from 'svelte-legos';
+	import { ChevronDoubleDown, ChevronDoubleUp } from 'svelte-heros-v2';
+	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -133,8 +135,8 @@
 
 	$: incompleteOrders = orders?.filter(
 		(o) =>
-			o?.orders_items?.filter((i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0))
-				?.length === 0
+			o?.order?.orders_items?.filter((i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0))
+				?.length !== 0
 	);
 	$: console.log('incompleteOrders', incompleteOrders);
 
@@ -192,6 +194,12 @@
 	$: console.log('accordionState', accordionState);
 
 	let highlightOrderItems = [];
+
+	function toggleAccordions(open: boolean | undefined = undefined) {
+		accordionState.forEach((v, i) => {
+			accordionState[i] = open === undefined ? !accordionState[i] : open;
+		});
+	}
 </script>
 
 {#if jobId}
@@ -199,16 +207,37 @@
 		<OrderOverview orderId={jobId?.slice(2)} showRecieved />
 	{:else if orders}
 		{#if jobInfo}
-			<JobOverview job={jobInfo}>
-				<div class="pl-4">
-					<div
-						class:bg-red-600={incompleteOrders > 0}
-						class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
-					>
-						<p class="text-white">{incompleteOrders > 0 ? incompleteOrders : '✅'}</p>
-					</div>
+			<div class="flex">
+				<div class="w-full">
+					<JobOverview job={jobInfo}>
+						<div class="pl-4">
+							<div
+								class:bg-red-600={incompleteOrders?.length > 0}
+								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
+							>
+								<p class="text-white">{incompleteOrders?.length > 0 ? incompleteOrders?.length : '✅'}</p>
+							</div>
+						</div>
+					</JobOverview>
 				</div>
-			</JobOverview>
+				<div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
+					<ChevronDoubleUp
+						on:click={() => {
+							toggleAccordions(false);
+						}}
+					/>
+					<EllipseHorizontalSolid
+						on:click={() => {
+							toggleAccordions();
+						}}
+					/>
+					<ChevronDoubleDown
+						on:click={() => {
+							toggleAccordions(true);
+						}}
+					/>
+				</div>
+			</div>
 		{/if}
 		<Accordion multiple flush>
 			{#each orders as { order }, idx}

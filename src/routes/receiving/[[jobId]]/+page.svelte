@@ -11,6 +11,7 @@
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 	import { scanStore } from '$lib/stores';
 	import { derived } from 'svelte/store';
+	import { messagesStore } from 'svelte-legos';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -167,6 +168,7 @@
 					return item?.id ? item : false;
 				});
 				console.log('ordersContainingPart', ordersContainingPart);
+				messagesStore(`Part scanned. ${scanPartTokens?.mpn} found in ${ordersContainingPart?.length} order(s)`);
 			}
 		}
 	}

@@ -148,8 +148,9 @@
 			{#each lines.keys() as lineKey, idx}
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
-				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
-				{@const kitItems = job?.jobs_kits?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey)).flat()}
+				{@const kitItems = job?.jobs_kits
+					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
+					.flat()}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
@@ -269,9 +270,10 @@
 						{#if kitItems}
 							<TableBodyCell colspan="3" class="p-0 object-right">
 								<div class="px-1 py-1">
-									<h1>Kit():</h1>
+									<h1>Kit:</h1>
 									<Table>
 										<TableHead>
+											<TableHeadCell padding="px-1 py-1">Kit</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
@@ -282,6 +284,9 @@
 										<TableBody>
 											{#each kitItems as item, idx}
 												<TableBodyRow>
+													<TableBodyCell>
+														{job?.jobs_kits?.findIndex((jk) => jk.kit.id === item.kit_id) + 1}
+													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														<UserIcon user={item?.user} size="sm" />
 														<Tooltip placement="left">
@@ -289,8 +294,7 @@
 														</Tooltip>
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														{new Date(item.updated_at).toLocaleDateString()}
-														{new Date(item.updated_at).toLocaleTimeString()}
+														{datetimeFormat(item.updated_at)}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{item?.quantity}

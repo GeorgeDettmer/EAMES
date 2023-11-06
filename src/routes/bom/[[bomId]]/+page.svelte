@@ -36,6 +36,7 @@
 								quantity
 								created_at
 								updated_at
+								kit_id
 								orders_item {
 									id
 									quantity
@@ -69,6 +70,7 @@
 							quantity
 							created_at
 							updated_at
+							kit_id
 							orders_item {
 								id
 								quantity

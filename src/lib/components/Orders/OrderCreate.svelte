@@ -515,26 +515,28 @@
 						</TableBodyCell>
 						<TableBodyCell>
 							{#each item?.tracking || [] as track}
-								<ButtonGroup size="sm">
-									<Input
-										defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
-										type="text"
-										placeholder="Carrier code"
-										size="sm"
-										bind:value={track.carrier_code}
-									/>
-									<Input
-										defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-										type="text"
-										placeholder="Tracking number"
-										size="sm"
-										bind:value={track.tracking_number}
-									/>
+								<div>
+									<ButtonGroup size="sm">
+										<Input
+											defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
+											type="text"
+											placeholder="Carrier code"
+											size="sm"
+											bind:value={track.carrier_code}
+										/>
+										<Input
+											defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
+											type="text"
+											placeholder="Tracking number"
+											size="sm"
+											bind:value={track.tracking_number}
+										/>
 
-									<Button color="primary" class="!p-2.5" disabled>
-										<Link size="10" class="w-5 h-5" />
-									</Button>
-								</ButtonGroup>
+										<Button color="primary" class="!p-2.5" disabled>
+											<Link size="10" class="w-5 h-5" />
+										</Button>
+									</ButtonGroup>
+								</div>
 							{:else}
 								<ButtonGroup size="sm">
 									<Input

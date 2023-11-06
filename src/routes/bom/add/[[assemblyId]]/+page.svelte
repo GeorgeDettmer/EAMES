@@ -59,12 +59,7 @@
 	let lines = [];
 	let html = '';
 	let tbl;
-	function exportFile() {
-		const ws = utils.json_to_sheet(lines);
-		const wb = utils.book_new();
-		utils.book_append_sheet(wb, ws, 'Data');
-		writeFileXLSX(wb, 'SheetJSSvelteAoO.xlsx');
-	}
+
 	let bom = {};
 	async function handleDropAsync(e) {
 		e.stopPropagation();
@@ -167,6 +162,7 @@
 		if (_lines) {
 			bom.lines = _lines;
 		}
+		console.log('bom.lines', bom?.lines);
 	}
 
 	async function insert() {

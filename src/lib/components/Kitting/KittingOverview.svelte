@@ -15,17 +15,18 @@
 		Modal
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
-	import OrdersListItem from './OrdersListItem.svelte';
+	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 
-	import TrackingStatus from './TrackingStatus.svelte';
-	import ReceivingStatus from './ReceivingStatus.svelte';
-	import ReceiveQuantity from './ReceiveQuantity.svelte';
+	import TrackingStatus from '$lib/components/Orders/TrackingStatus.svelte';
+	import ReceivingStatus from '$lib/components/Orders/ReceivingStatus.svelte';
+	import ReceiveQuantity from '$lib/components/Receiving/ReceivingOverview.svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
+	import KitQuantity from './KitQuantity.svelte';
 
 	export let orderId: number;
-	export let showRecieved: boolean = false;
+	export let showKitted: boolean = false;
 	export let showHeader: boolean = true;
 
 	$: orderStore = subscriptionStore({
@@ -40,6 +41,7 @@
 							batch
 						}
 					}
+
 					orders_items {
 						id
 						tracking
@@ -61,6 +63,20 @@
 							last_name
 							initials
 							color
+						}
+						kits_items {
+							id
+							quantity
+							created_at
+							updated_at
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
 						}
 						orders_items_receiveds {
 							id
@@ -96,13 +112,24 @@
 	});
 	$: order = $orderStore?.data?.erp_orders_by_pk;
 	$: orderItems = order?.orders_items;
-	$: totalRecieved = orderItems?.reduce(
-		(a1, item) => item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0) + a1,
-		0
-	);
+	$: totalRecieved = orderItems?.reduce((a1, item) => item?.kits_items?.reduce((a, v) => a + v.quantity, 0) + a1, 0);
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
 
-	$: console.log('order:', order);
+	$: kitsStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription kits($jobId: bigint!) {
+				material_jobs_kits(where: { job_id: { _eq: $jobId } }) {
+					kit {
+						id
+					}
+				}
+			}
+		`,
+		variables: { jobId: orderId }
+	});
+	$: kits = $kitsStore?.data?.material_jobs_kits || [];
+	$: console.log('kits:', kits);
 
 	export let recieveModal = false;
 	export let orderItemSelected = {};
@@ -165,16 +192,11 @@
 					<p>{orderItemSelected?.spn}</p>
 				{/if}
 			</div>
-			<ReceiveQuantity
-				orderItemId={orderItemSelected?.id}
-				quantity={orderItemSelectedQty}
-				orderItem={orderItemSelected}
-				bind:recieveModal
-			/>
+			<KitQuantity orderItemId={orderItemSelected?.id} {kits} quantity={orderItemSelectedQty} />
 		</div>
 
 		<PartInfo partId={orderItemSelected?.part} />
-		{#if orderItemSelected?.orders_items_receiveds}
+		{#if orderItemSelected?.kits_items}
 			<div class="mt-6">
 				<Table>
 					<TableHead theadClass="uppercase text-center">
@@ -184,7 +206,7 @@
 						<TableHeadCell />
 					</TableHead>
 
-					{#each orderItemSelected?.orders_items_receiveds as received, idx}
+					{#each orderItemSelected?.kits_items as received, idx}
 						<TableBodyRow>
 							<TableBodyCell tdClass="font-sm text-center">
 								<UserIcon size="xs" user={received?.user}>
@@ -287,21 +309,21 @@
 
 				<TableHeadCell />
 
-				{#if showRecieved}
-					<TableHeadCell>Received Qty</TableHeadCell>
+				{#if showKitted}
+					<TableHeadCell>Kitted Qty</TableHeadCell>
 				{/if}
 				<slot name="head" />
 			</TableHead>
 			<TableBody>
 				{#each orderItems as item, idx}
-					{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+					{@const kittedQty = item?.kits_items?.reduce((a, v) => a + v.quantity, 0)}
 					<TableBodyRow
 						class="p-0 object-right"
 						color={false
 							? 'blue'
-							: recievedQty > 0 && recievedQty < item?.quantity
+							: kittedQty > 0 && kittedQty < item?.quantity
 							? 'yellow'
-							: recievedQty >= item?.quantity
+							: kittedQty >= item?.quantity
 							? 'green'
 							: 'default'}
 					>
@@ -363,8 +385,8 @@
 						<TableBodyCell>
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
 						</TableBodyCell>
-						{#if showRecieved}
-							{@const remaining = item?.quantity - recievedQty}
+						{#if showKitted}
+							{@const remaining = item?.quantity - kittedQty}
 
 							<TableBodyCell>
 								<span
@@ -375,8 +397,8 @@
 										recieveModal = true;
 									}}
 								>
-									<Badge class="mx-0.5" color={!recievedQty ? 'red' : item?.quantity === recievedQty ? 'green' : 'yellow'}>
-										{recievedQty}
+									<Badge class="mx-0.5" color={!kittedQty ? 'red' : item?.quantity === kittedQty ? 'green' : 'yellow'}>
+										{kittedQty}
 									</Badge>
 									<!-- <Badge
 								class="mx-0.5"
@@ -384,7 +406,7 @@
 							>
 								<span class="mr-1">➖</span>{recievedQty}<span class="ml-1">➕</span>
 							</Badge> -->
-									{#if item?.quantity !== recievedQty}
+									{#if item?.quantity !== kittedQty}
 										<span> ➕ </span>
 									{/if}
 								</span>
@@ -416,7 +438,7 @@
 				<TableBodyCell>
 					<ReceivingStatus isReceived={totalRecieved === totalOrdered} />
 				</TableBodyCell>
-				{#if showRecieved}
+				{#if showKitted}
 					<TableBodyCell>
 						<Badge class="mx-0.5" color={!totalRecieved ? 'red' : totalOrdered === totalRecieved ? 'green' : 'yellow'}>
 							{totalRecieved}

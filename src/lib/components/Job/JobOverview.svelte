@@ -37,9 +37,14 @@
 		<slot />
 	</div>
 	{#if open}
-		<div class="flex pt-5 rounded bg-slate-400 dark:bg-slate-600">
+		<div class="pt-5 rounded bg-slate-400 dark:bg-slate-600">
 			<p>Job info......</p>
-			<p>{job?.assembly?.name}</p>
+			<div><a href={`${window.origin}/assembly/${job?.assembly?.id}`} target="_blank">{job?.assembly?.name}</a></div>
+			<div>
+				<a href={`${window.origin}/bom/${job?.assembly?.bom?.id}?jobId=${job?.id}`} target="_blank">
+					BOM ({job?.assembly?.bom?.lines_aggregate?.aggregate?.count} lines)
+				</a>
+			</div>
 		</div>
 	{/if}
 </div>

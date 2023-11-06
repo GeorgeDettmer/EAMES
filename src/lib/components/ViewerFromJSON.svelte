@@ -14,19 +14,21 @@
 	let window_width;
 	let window_height;
 	onMount(() => {
-		stage = new Konva.Stage({
-			container: viewer,
-			width: 10,
-			height: height,
-			draggable: true
-		});
+		if (json) {
+			stage = new Konva.Stage({
+				container: viewer,
+				width: 10,
+				height: height,
+				draggable: true
+			});
 
-		draw();
+			draw();
 
-		return () => {
-			console.log('destroy: ViewerFromJSON');
-			stage.destroy();
-		};
+			return () => {
+				console.log('destroy: ViewerFromJSON');
+				stage.destroy();
+			};
+		}
 	});
 	console.log('footprint json', json);
 	function draw() {

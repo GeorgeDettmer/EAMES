@@ -24,6 +24,41 @@
 							name
 						}
 					}
+					jobs_kits {
+						kit {
+							id
+							created_at
+							meta
+							kits_items(order_by: { updated_at: desc }) {
+								id
+								part_id
+								part
+								quantity
+								created_at
+								updated_at
+								orders_item {
+									id
+									quantity
+									price
+									order {
+										id
+										reference
+										supplier {
+											name
+										}
+									}
+								}
+								user {
+									id
+									username
+									first_name
+									last_name
+									initials
+									color
+								}
+							}
+						}
+					}
 					kit {
 						id
 						created_at
@@ -39,6 +74,7 @@
 								quantity
 								price
 								order {
+									id
 									reference
 									supplier {
 										name
@@ -107,17 +143,30 @@
 		variables: { bomId }
 	});
 	$: bom = $bomStore?.data?.bom_by_pk;
+
+	$: jobKits = jobInfo?.jobs_kits?.map((jk) => jk.kit);
 </script>
 
 {#if jobId}
 	<p>Job: {jobId}/{jobInfo?.batch} <em>({jobInfo?.quantity} boards)</em></p>
 
-	<p>
+	<!-- <p>
 		{#if jobInfo?.kit}
 			Kit: <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + jobInfo?.kit?.id}>{jobInfo?.kit?.id}</a>
 			<em>({jobInfo?.kit?.kits_items?.length} items)</em>
 		{:else}
 			No kit associated with job
+		{/if}
+	</p> -->
+
+	<p>
+		{#if jobKits}
+			{#each jobKits as kit}
+				Kit(s): <a class="cursor-pointer" target="_blank" href={window.origin + '/kit/' + kit?.id}>{kit?.id}</a>
+				<em>({kit?.kits_items?.length || 0} items)</em>
+			{/each}
+		{:else}
+			No kits associated with job
 		{/if}
 	</p>
 {/if}

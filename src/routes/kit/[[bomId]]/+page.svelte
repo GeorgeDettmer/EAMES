@@ -22,10 +22,8 @@
 						created_at
 						updated_at
 						quantity
+						part
 						part_id
-						part {
-							id
-						}
 						orders_item {
 							id
 							quantity
@@ -94,12 +92,12 @@
 				<TableBodyRow
 					class="cursor-pointer"
 					on:click={() => {
-						if (!item?.part?.id) return;
+						//if (!item?.part?.id) return;
 						openRow = openRow === idx ? null : idx;
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell>{item?.part_id}</TableBodyCell>
+					<TableBodyCell>{item?.part}</TableBodyCell>
 					<TableBodyCell>{item?.quantity}</TableBodyCell>
 					<TableBodyCell>{item?.orders_item?.order?.supplier?.name || 'Unknown'}</TableBodyCell>
 					<TableBodyCell>£{item?.orders_item?.price * item?.quantity || '-.-'}</TableBodyCell>

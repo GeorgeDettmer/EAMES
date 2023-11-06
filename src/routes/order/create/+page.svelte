@@ -120,7 +120,6 @@
 					messagesStore(`Import failed for line ${idx + 1}. Missing part number or price`, 'error');
 					return;
 				}
-
 				if (!quantity) {
 					messagesStore(`Import failed for line ${idx + 1}. Quantity is 0`, 'error');
 					return;

@@ -4,13 +4,14 @@
 	export let partsInLibrary: string[] = [];
 	export let visibleColumns: string[] = ['part', 'description', 'references', 'quantity'];
 
-	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { datetimeFormat } from '$lib/utils';
 
 	let items = [];
 
@@ -138,7 +139,7 @@
 			{#if job?.quantity}
 				<TableHeadCell>Build Qty</TableHeadCell>
 			{/if}
-			{#if job?.kit?.kits_items}
+			{#if job?.jobs_kits}
 				<TableHeadCell>Kit Qty</TableHeadCell>
 				<TableHeadCell>Kit Attrition</TableHeadCell>
 			{/if}
@@ -148,9 +149,18 @@
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const kitItem = job?.kit?.kits_items?.filter((i) => i.part_id === lineKey)}
+				{@const kitItems = job?.jobs_kits?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey)).flat()}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
+				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
 				<TableBodyRow
+					color={false
+						? 'blue'
+						: kittedQty > 0 && kittedQty < buildQty
+						? 'yellow'
+						: kittedQty >= buildQty
+						? 'green'
+						: 'default'}
 					class={`cursor-pointer`}
 					on:click={(e) => {
 						handleRowClick(idx, references, line, lineKey, e);
@@ -206,8 +216,8 @@
 						<TableBodyCell>{buildQty}</TableBodyCell>
 					{/if}
 
-					{#if job?.kit?.kits_items}
-						{@const kitItemQty = kitItem?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
+					{#if job?.jobs_kits}
+						{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 						{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
@@ -236,7 +246,7 @@
 
 						{#if job?.assembly?.assemblies_cad}
 							<TableBodyCell colspan="2" class="p-0">
-								<div class="px-0 py-1 grid grid-cols-2">
+								<!-- <div class="px-0 py-1 grid grid-cols-2">
 									<Viewer
 										classes="border"
 										data={job?.assembly?.assemblies_cad}
@@ -253,13 +263,13 @@
 										height={500}
 										highlightPins={[1]}
 									/>
-								</div>
+								</div> -->
 							</TableBodyCell>
 						{/if}
-						{#if job?.kit?.kits_items}
+						{#if kitItems}
 							<TableBodyCell colspan="3" class="p-0 object-right">
 								<div class="px-1 py-1">
-									<h1>Kit:</h1>
+									<h1>Kit():</h1>
 									<Table>
 										<TableHead>
 											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
@@ -267,13 +277,16 @@
 											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Reference</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
 										</TableHead>
 										<TableBody>
-											{#each kitItem as item, idx}
+											{#each kitItems as item, idx}
 												<TableBodyRow>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														<UserIcon user={item?.user} />
+														<UserIcon user={item?.user} size="sm" />
+														<Tooltip placement="left">
+															{datetimeFormat(item.updated_at)}
+														</Tooltip>
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
 														{new Date(item.updated_at).toLocaleDateString()}
@@ -294,7 +307,13 @@
 														)}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														{item?.orders_item?.order?.supplier?.reference || ''}
+														{#if item?.orders_item?.order?.id}
+															<a href={`${window.origin}/order/${item?.orders_item?.order?.id}`} target="_blank">
+																{item?.orders_item?.order?.id}
+															</a>
+														{:else}
+															N/A
+														{/if}
 													</TableBodyCell>
 												</TableBodyRow>
 												<!-- <div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1">

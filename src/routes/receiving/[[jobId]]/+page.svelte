@@ -10,7 +10,6 @@
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 	import { scanStore } from '$lib/stores';
-	import { derived } from 'svelte/store';
 	import { messagesStore } from 'svelte-legos';
 	import { ChevronDoubleDown, ChevronDoubleUp } from 'svelte-heros-v2';
 	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
@@ -26,11 +25,17 @@
 					quantity
 					batch
 					assembly {
+						id
 						name
 						revision_external
 						revision_internal
 						bom {
 							id
+							lines_aggregate {
+								aggregate {
+									count
+								}
+							}
 						}
 						assemblies_cad {
 							id

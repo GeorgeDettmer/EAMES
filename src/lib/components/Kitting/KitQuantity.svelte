@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { getContextClient, gql } from '@urql/svelte';
+	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import { Button, Input, Label, Radio, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
@@ -8,20 +8,7 @@
 	export let orderItemId: string;
 	export let quantity: number = 0;
 	export let part_id: string | undefined = undefined;
-
-	$: jobInfoStore = subscriptionStore({
-		client: getContextClient(),
-		query: gql`
-			subscription jobKits($jobId: bigint!) {
-				material_jobs_kits(where: { job_id: { _eq: $jobId } }) {
-					id
-					kit_id
-				}
-			}
-		`,
-		variables: { jobId }
-	});
-	$: jobKits = $jobInfoStore?.data?.material_jobs_kits || [];
+	export let kits: string[] | undefined = undefined;
 
 	let quantityAdding = false;
 	async function addQuantity() {
@@ -66,14 +53,15 @@
 </script>
 
 <div class="flex">
+	{JSON.stringify(kits)}
 	<div>
 		<Label for="small-input" class="block mb-2">Quantity</Label>
 		<Input id="small-input" size="sm" placeholder="Kit quantity" bind:value={quantity} />
 		<ul
 			class="items-center w-full rounded-lg border border-gray-200 sm:flex dark:bg-gray-800 dark:border-gray-600 divide-x divide-gray-200 dark:divide-gray-600"
 		>
-			{#each jobKits as kit}
-				<li class="w-full"><Radio name="hor-list" class="p-3">{kit.kit_id}</Radio></li>
+			{#each kits as kit}
+				<li class="w-full"><Radio name="hor-list" class="p-3">{kit.id}</Radio></li>
 			{:else}
 				<Button>Create new kit</Button>
 			{/each}

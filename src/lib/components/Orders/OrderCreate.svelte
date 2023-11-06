@@ -104,7 +104,9 @@
 			items.forEach((i) => {
 				i.order_id = mutationResult?.data?.insert_erp_orders_one?.id;
 				if (!i?.tracking) {
-					orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
+					if (carrier_urls?.[orderTracking?.carrier_code]) {
+						orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
+					}
 					i.tracking = [orderTracking];
 				} else {
 					i?.tracking?.map((t) => (t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number)));

@@ -27,7 +27,7 @@
 	</div>
 {:else}
 	<div class="flex">
-		{#if recievedQuantity === orderQuantity || order?.received_at}
+		{#if recievedQuantity >= orderQuantity || order?.received_at}
 			<img
 				style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
 				width="24"

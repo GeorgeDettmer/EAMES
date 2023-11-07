@@ -63,7 +63,7 @@
 				objects.push(o);
 			}
 		}
-		console.log('parsedObjects:', objects);
+		//console.log('parsedObjects:', objects);
 		headers = {};
 		objects
 			?.map((l) => Object.keys(l))
@@ -73,28 +73,15 @@
 					headers[h] = '';
 				}
 			});
-		console.log('headers', headers);
+		//console.log('headers', headers);
 
 		return objects;
 	}
 
-	let importText: string = ''; /* `Item	Qty/Unit	Part Number Description	Delivery Date	Unit Price	Ext Price
-1	110	3582887	ASAP	£0.14	£15.84
-2	90	3582814	ASAP	£0.00	£0.44
-3	70	3581351	ASAP	£0.03	£1.79
-4	90	1414581	ASAP	£0.01	£0.88
-5	70	2525047	ASAP	£0.02	£1.58
-7	90	1800798	ASAP	£0.01	£0.88
-8	30	2774580	ASAP	£0.07	£2.05
-12	30	3405200	ASAP	£0.32	£9.63
-13	110	1469683	ASAP	£0.00	£0.39
-15	60	1469793	ASAP	£0.01	£0.60
-16	70	2563621	ASAP	£0.04	£2.58
-18	70	2838469	ASAP	£0.08	£5.32
-`; */
+	let importText: string = '';
 	let showImport: boolean = false;
 	let imported: any[] = []; //excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
-	$: console.log(order);
+	$: console.log('ORDER:', order);
 
 	function fillOrderFromImport() {
 		let toImport = imported?.filter((l) => l?._import !== false);
@@ -115,7 +102,7 @@
 				let spn = line?.[orderItemProperties['spn']];
 				let price = Number(line?.[orderItemProperties['price']]?.replace(/[^0-9\.-]+/g, '')) || 0;
 				let quantity = Number(line?.[orderItemProperties['quantity']]);
-				console.log({ part, spn, price, quantity });
+				//console.log({ part, spn, price, quantity });
 				if (!part) {
 					messagesStore(`Import failed for line ${idx + 1}. Missing part number or price`, 'error');
 					return;
@@ -145,7 +132,7 @@
 		imported = imported.toSpliced(idx, 1);
 	}
 
-	$: console.log('headers:', orderItemProperties);
+	//$: console.log('headers:', orderItemProperties);
 
 	let orderItemProperties = {
 		part: 'MPN',
@@ -158,7 +145,7 @@
 	$: missingImportData = imported?.map(
 		(i) => ['part', 'quantity', 'price'].filter((k) => !i?.[orderItemProperties[k]])?.length !== 0
 	);
-	$: console.log('missingImportData', missingImportData);
+	//$: console.log('missingImportData', missingImportData);
 </script>
 
 <OrderCreate {order} />
@@ -191,7 +178,7 @@
 					bind:value={importText}
 					on:change={() => {
 						imported = excelToObjects(importText);
-						console.log('import:', imported);
+						//console.log('import:', imported);
 					}}
 				/>
 				<div class="grid grid-cols-2 gap-2">

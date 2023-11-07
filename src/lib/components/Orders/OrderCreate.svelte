@@ -35,7 +35,7 @@
 
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
-	$: console.log('orderItems', orderItems);
+	//$: console.log('orderItems', orderItems);
 
 	function remove(idx: number) {
 		order.orders_items = orderItems.toSpliced(idx, 1);
@@ -196,10 +196,18 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	$: console.log('suppliers', suppliers);
 
 	$: showSupplierSelect = false; //!order?.supplier_id;
-	$: supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
+
+	/* $: {
+		if (suppliers && !order?.supplier?.supplier_id) {
+			let supplier = suppliers[0];
+			order.supplier.name = supplier.name;
+			order.supplier.names = supplier.names;
+			order.supplier.id = supplier.id;
+			order.supplier_id = supplier.id;
+		}
+	} */
 
 	/* $: {
 		if (suppliers) {
@@ -209,15 +217,16 @@
 				console.log('suppliersMatch', suppliersMatch);
 				if (suppliersMatch) {
 					sup = suppliersMatch;
+					selectedSupplierId = sup?.id;
+					order.supplier_id = sup?.id;
+					order.supplier = sup;
+					supplier = sup;
 				}
 			}
-			order.supplier_id = sup?.id;
-			order.supplier = sup;
 		}
 	} */
 
 	let selectedSupplierId;
-	$: console.log('supplier', selectedSupplierId, supplier);
 
 	let jobListVisible = false;
 	let addLineModal = false;
@@ -229,6 +238,8 @@
 	let newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
 
 	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
+
+	$: console.log(order);
 </script>
 
 <Modal bind:open={addLineModal} size="lg">
@@ -382,8 +393,12 @@
 									bind:value={selectedSupplierId}
 									on:change={() => {
 										//showSupplierSelect = false;
-										order.supplier = supplier;
-										order.supplier_id = supplier.id;
+										let supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
+										console.log(supplier);
+										order.supplier.name = supplier.name;
+										order.supplier.names = supplier.names;
+										order.supplier.id = supplier.id;
+										order.supplier_id = supplier?.id;
 									}}
 								/>
 							</div>

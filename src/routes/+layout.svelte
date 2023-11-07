@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { scanStore } from '$lib/stores';
-	import { messagesStore } from 'svelte-legos';
+	import { intervalFnStore, messagesStore } from 'svelte-legos';
 	import { deserialize } from '$app/forms';
 	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
@@ -13,11 +13,25 @@
 		PUBLIC_BARCODE_endKey,
 		PUBLIC_BARCODE_startKey,
 		PUBLIC_BARCODE_separator,
-		PUBLIC_BARCODE_timeout
+		PUBLIC_BARCODE_timeout,
+		PUBLIC_HASURA_HEALTH_URL
 	} from '$env/static/public';
 	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
+	import { onlineStore } from 'svelte-legos';
+
+	const isOnline = onlineStore();
+	let networkIssuesModal = false;
+
+	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(async () => {
+		const response = await fetch(PUBLIC_HASURA_HEALTH_URL);
+		const ok = response.status === 200;
+		if (!ok) {
+			console.error('Network error', response);
+			networkIssuesModal = true;
+		}
+	}, 10000);
 
 	const gqlUrl = PUBLIC_HASURA_URL;
 	const gqlWs = 'ws://' + gqlUrl.split('://')[1];
@@ -130,6 +144,8 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import Barcode from '$lib/components/Barcode.svelte';
+	import { Alert, Modal } from 'flowbite-svelte';
+	import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
 
 	const currentBoard = writable({});
 	setContext('currentBoard', currentBoard);
@@ -271,6 +287,19 @@
 	</script>
 	<title>EAMES {getContext('windowTitle')}</title>
 </svelte:head>
+
+<Modal bind:open={networkIssuesModal}>
+	<Alert class="!items-start">
+		<span slot="icon">
+			<ExclamationCircleOutline slot="icon" class="w-4 h-4" />
+			<span class="sr-only">Network Error</span>
+		</span>
+		<p class="font-medium">Network error detected:</p>
+		<ul class="mt-1.5 ml-4 list-disc list-inside">
+			<li>Contact support</li>
+		</ul>
+	</Alert>
+</Modal>
 
 <Navbar />
 

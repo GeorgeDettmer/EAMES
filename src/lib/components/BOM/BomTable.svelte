@@ -201,6 +201,7 @@
 									>
 										<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
 									</span>
+									<Tooltip>{reference}</Tooltip>
 									<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
 										>{reference}</Badge
 									> -->

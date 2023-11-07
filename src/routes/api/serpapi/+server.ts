@@ -28,7 +28,6 @@ export const GET: RequestHandler = async ({ url }) => {
 		options[param[0]] = param[1];
 	});
 	options.api_key = PUBLIC_SERPAPI_KEY;
-	console.log('cache', Object.keys(cache));
 	const q = options?.q;
 	const engine = options?.engine;
 	if (q && engine) {

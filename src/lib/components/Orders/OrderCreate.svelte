@@ -186,7 +186,7 @@
 		client: getContextClient(),
 		query: gql`
 			query suppliers {
-				erp_suppliers(order_by: { orders_aggregate: { count: desc } }) {
+				erp_suppliers(order_by: { name: asc }) {
 					id
 					name
 					names
@@ -226,7 +226,8 @@
 		}
 	} */
 
-	let selectedSupplierId;
+	export let selectedSupplierId: undefined | string = undefined;
+	$: supplier = suppliers?.filter((s) => s?.id === selectedSupplierId)?.[0];
 
 	let jobListVisible = false;
 	let addLineModal = false;
@@ -394,7 +395,7 @@
 									on:change={() => {
 										//showSupplierSelect = false;
 										let supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
-										console.log(supplier);
+										//console.log(supplier);
 										order.supplier.name = supplier.name;
 										order.supplier.names = supplier.names;
 										order.supplier.id = supplier.id;

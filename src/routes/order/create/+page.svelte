@@ -22,8 +22,8 @@
 		Toggle
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-	import { quadInOut } from 'svelte/easing';
 	import { InfoCircleSolid } from 'flowbite-svelte-icons';
+	import { getContextClient, gql, queryStore } from '@urql/svelte';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -124,7 +124,13 @@
 				});
 			}
 		});
-		order.supplier.name = toImport?.[0]?.[orderItemProperties['supplier']];
+		let importSuppierName = toImport?.[0]?.[orderItemProperties['supplier']];
+		let importSupplier = suppliers?.filter((s) => s.names?.includes(importSuppierName?.toLowerCase()))?.[0];
+		selectedSupplierId = importSupplier?.id;
+		order.supplier_id = selectedSupplierId;
+		order.supplier.id = importSupplier?.id;
+		order.supplier.name = importSupplier?.name;
+		order.supplier.names = importSupplier?.names;
 		order.orders_items = order_items;
 	}
 
@@ -145,10 +151,35 @@
 	$: missingImportData = imported?.map(
 		(i) => ['part', 'quantity', 'price'].filter((k) => !i?.[orderItemProperties[k]])?.length !== 0
 	);
+
+	$: suppliersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query suppliers {
+				erp_suppliers(order_by: { orders_aggregate: { count: desc } }) {
+					id
+					name
+					names
+				}
+			}
+		`,
+		variables: {}
+	});
+	$: suppliers = $suppliersStore?.data?.erp_suppliers;
+	$: {
+		if (!selectedSupplierId && suppliers) {
+			selectedSupplierId = suppliers?.[0]?.id;
+			order.supplier_id = selectedSupplierId;
+			order.supplier.id = selectedSupplierId;
+			order.supplier.name = suppliers?.[0]?.name;
+			order.supplier.names = suppliers?.[0]?.names;
+		}
+	}
+	let selectedSupplierId = undefined;
 	//$: console.log('missingImportData', missingImportData);
 </script>
 
-<OrderCreate {order} />
+<OrderCreate {order} bind:selectedSupplierId />
 <div class="p-2">
 	<div class="p-2 grid grid-cols-2">
 		<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>

@@ -237,6 +237,8 @@
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
 	let orderLineDelete = {};
+
+	let kbItems;
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
@@ -588,8 +590,10 @@
 	</div>
 	{#if order?.kb}
 		<div class="mt-4">
-			<p>Notes:</p>
-			<List kbId={order?.kb} />
+			{#if kbItems}
+				<p>Notes:</p>
+			{/if}
+			<List kbId={order?.kb} bind:kbItems />
 		</div>
 	{/if}
 {:else}

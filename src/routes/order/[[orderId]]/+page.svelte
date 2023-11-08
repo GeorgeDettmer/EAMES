@@ -48,6 +48,13 @@
 								initials
 								color
 							}
+							orders_items_receiveds_aggregate {
+								aggregate {
+									sum {
+										quantity
+									}
+								}
+							}
 							orders_items_receiveds {
 								id
 								quantity
@@ -96,6 +103,11 @@
 					id
 					name
 					names
+					orders_aggregate {
+						aggregate {
+							count
+						}
+					}
 				}
 			}
 		`,
@@ -104,29 +116,46 @@
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
 	let selectedSupplierId = null;
 	let showMyOrdersOnly = $page?.data?.me;
+	let showIncompleteOnly = false;
+	let showCompleteOnly = false;
 	$: console.log(selectedSupplierId);
-	$: orders = showMyOrdersOnly
-		? $ordersStore?.data?.erp_orders.filter((o) => o.user_id === $page?.data?.user?.id)
+	$: orders = showIncompleteOnly
+		? $ordersStore?.data?.erp_orders.filter(
+				(o) =>
+					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length > 0
+		  )
+		: showCompleteOnly
+		? $ordersStore?.data?.erp_orders.filter(
+				(o) =>
+					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
+		  )
 		: $ordersStore?.data?.erp_orders;
 </script>
 
-{#if $suppliersStore.error}
+{#if $suppliersStore?.error}
 	{JSON.stringify($suppliersStore.error)}
 {/if}
-
+{#if $ordersStore?.fetching}
+	Loading results...
+{/if}
 {#if orderId}
 	<OrderOverview {orderId} />
 {:else if orders}
 	<div class="grid grid-cols-6">
 		<div class="col-span-1 my-auto">
-			<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders only</Toggle>
+			<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
+			<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
+			<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
 		</div>
 		<div class="col-span-1">
 			<Label for="small-input">Supplier</Label>
 			<Select
 				size="sm"
 				placeholder=""
-				items={[{ value: null, name: 'All' }, ...suppliers?.map((s) => ({ value: s.id, name: s.name }))]}
+				items={[
+					{ value: null, name: 'All' },
+					...suppliers?.map((s) => ({ value: s.id, name: `${s.name}  (${s.orders_aggregate.aggregate.count})` }))
+				]}
 				bind:value={selectedSupplierId}
 				on:change={() => {
 					//showSupplierSelect = false;

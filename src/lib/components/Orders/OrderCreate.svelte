@@ -247,7 +247,7 @@
 	<div class="py-4">
 		<div class="grid grid-cols-4 gap-2">
 			<div class="col-span-2">
-				<Label for="small-input">Part</Label>
+				<Label for="small-input">Part/Item</Label>
 				<Input id="small-input" size="sm" placeholder="Part" bind:value={newPart} />
 			</div>
 			<div class="col-span-2">
@@ -393,7 +393,7 @@
 									})}
 									bind:value={selectedSupplierId}
 									on:change={() => {
-										//showSupplierSelect = false;
+										showSupplierSelect = false;
 										let supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
 										//console.log(supplier);
 										order.supplier.name = supplier.name;

@@ -102,7 +102,7 @@
 			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Inserted job: ' + mutationResult.data.insert_erp_suppliers_one.id, 'success');
+			messagesStore('Inserted supplier: ' + mutationResult.data.insert_erp_suppliers_one.id, 'success');
 			id = '';
 			name = '';
 			addedIds = [...addedIds, mutationResult.data.insert_erp_suppliers_one.id];

@@ -47,7 +47,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 					color: user.color,
 					processes: user.processes,
 					first_name: user.first_name,
-					last_name: user.last_name
+					last_name: user.last_name,
+					permissions: user.permissions
 				};
 				console.log('hooks', event.locals.user);
 			} catch (error) {

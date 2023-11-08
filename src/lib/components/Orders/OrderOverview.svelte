@@ -12,7 +12,8 @@
 		Popover,
 		Badge,
 		Button,
-		Modal
+		Modal,
+		Alert
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
@@ -23,6 +24,8 @@
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
+	import { goto } from '$app/navigation';
+	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -94,6 +97,7 @@
 		`,
 		variables: { orderId }
 	});
+	let order;
 	$: order = $orderStore?.data?.erp_orders_by_pk;
 	$: orderItems = order?.orders_items;
 	$: totalRecieved = orderItems?.reduce(
@@ -151,6 +155,80 @@
 			recieveModal = false;
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Removed receipt: ' + mutationResult.data.delete_erp_orders_items_received_by_pk.id, 'success');
+		}
+	}
+
+	async function removeLine(orderItem) {
+		//orderItems[idx] = undefined;
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		/* if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert components. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes
+				)}`
+			);
+			return;
+		} */
+		let mutationResult;
+
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation removeRecieved($id: uuid!) {
+					delete_erp_orders_items_by_pk(id: $id) {
+						id
+					}
+				}
+			`,
+			{ id: orderItem?.id }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Removed order line: ' + mutationResult.data.delete_erp_orders_items_by_pk.id, 'success');
+		}
+	}
+	let orderDeleteModal = false;
+	async function remove(order) {
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		/* if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert components. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes
+				)}`
+			);
+			return;
+		} */
+		let mutationResult;
+
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation removeOrder($id: bigint!) {
+					delete_erp_orders_by_pk(id: $id) {
+						id
+					}
+				}
+			`,
+			{ id: order?.id }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			if (mutationResult.data.delete_erp_orders_by_pk?.id) {
+				messagesStore('Removed order: ' + mutationResult.data.delete_erp_orders_by_pk.id, 'success');
+				goto('/order');
+			} else {
+				messagesStore('Failed order remove... Premission denied', 'warning');
+			}
 		}
 	}
 </script>
@@ -236,6 +314,30 @@
 	</div>
 </Modal>
 
+<Modal autoclose size="sm" bind:open={orderDeleteModal}>
+	<Alert class="!items-start" color="red">
+		<span slot="icon">
+			<InfoCircleSolid slot="icon" class="w-4 h-4" />
+			<span class="sr-only">Warning</span>
+		</span>
+		<p class="font-semibold">This will delete this order & all {order.orders_items?.length} order lines permanently</p>
+
+		{#if orderItems?.filter((i) => i.orders_items_receiveds?.length > 0)?.length > 0}
+			<p class="font-medium">
+				This will also delete receipts for {orderItems?.filter((i) => i.orders_items_receiveds?.length)?.length} order lines
+			</p>
+		{/if}
+	</Alert>
+	<Button
+		color="red"
+		on:click={() => {
+			remove(order);
+		}}
+	>
+		Delete
+	</Button>
+</Modal>
+
 {#if order}
 	{#if showHeader}
 		<div class="grid grid-cols-2">
@@ -284,12 +386,23 @@
 				<TableHeadCell>Unit Price</TableHeadCell>
 				<TableHeadCell>Total Price</TableHeadCell>
 				<TableHeadCell />
-
 				<TableHeadCell />
-
 				{#if showRecieved}
 					<TableHeadCell>Received Qty</TableHeadCell>
 				{/if}
+				<TableHeadCell>
+					<Button
+						disabled={!order?.orders_items
+							?.flat()
+							?.map((i) => i?.user?.id)
+							?.includes($page?.data?.user?.id) && order?.user?.id !== $page?.data?.user?.id}
+						on:click={() => {
+							orderDeleteModal = true;
+						}}
+					>
+						❌
+					</Button>
+				</TableHeadCell>
 				<slot name="head" />
 			</TableHead>
 			<TableBody>
@@ -390,6 +503,16 @@
 								</span>
 							</TableBodyCell>
 						{/if}
+						<TableBodyCell>
+							<Button
+								disabled={item?.user?.id !== $page?.data?.user?.id && order?.user?.id !== $page?.data?.user?.id}
+								on:click={() => {
+									removeLine(item);
+								}}
+							>
+								❌
+							</Button>
+						</TableBodyCell>
 						<slot name="body" />
 					</TableBodyRow>
 				{:else}
@@ -423,6 +546,7 @@
 						</Badge>
 					</TableBodyCell>
 				{/if}
+				<TableBodyCell />
 				<slot name="foot" />
 			</TableHead>
 		</Table>

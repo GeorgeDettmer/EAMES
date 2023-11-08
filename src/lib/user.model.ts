@@ -18,6 +18,7 @@ const _getUserByUsername = `#graphql
 			passcode
 			color
 			processes
+			permissions
 		}
 	}
 `;

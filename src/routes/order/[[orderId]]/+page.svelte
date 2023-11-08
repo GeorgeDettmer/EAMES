@@ -139,26 +139,28 @@
 		{#each orders as order}
 			{@const jobsOrders = order?.jobs_orders || []}
 			<!-- {#if selectedSupplierId === null || selectedSupplierId === order.supplier_id} -->
-			<a href={window.origin + '/order/' + order?.id} target="_blank">
-				<OrdersListItem {order}>
-					<div class="ml-5 w-auto">
-						<UserIcon size="xs" user={order?.user}>
-							{order?.user?.first_name}
-							{order?.user?.last_name}
-						</UserIcon>
-					</div>
-					<div class="ml-5">
-						{jobsOrders?.length}
-					</div>
-				</OrdersListItem>
-				{#if jobsOrders?.length > 0}
-					<Tooltip placement="right">
-						{#each jobsOrders as jo}
-							<p>{jo.job.id}</p>
-						{/each}
-					</Tooltip>
-				{/if}
-			</a>
+			<div>
+				<a href={window.origin + '/order/' + order?.id} target="_blank">
+					<OrdersListItem {order}>
+						<div class="ml-5 w-auto">
+							<UserIcon size="xs" user={order?.user}>
+								{order?.user?.first_name}
+								{order?.user?.last_name}
+							</UserIcon>
+						</div>
+						<div class="ml-5">
+							{jobsOrders?.length}
+						</div>
+					</OrdersListItem>
+					{#if jobsOrders?.length > 0}
+						<Tooltip placement="right">
+							{#each jobsOrders as jo}
+								<p>{jo.job.id}</p>
+							{/each}
+						</Tooltip>
+					{/if}
+				</a>
+			</div>
 			<!-- {/if} -->
 		{:else}
 			<p>No orders found for your search criteria</p>

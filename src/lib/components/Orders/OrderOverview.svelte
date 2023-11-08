@@ -26,6 +26,7 @@
 	import PartInfo from '../PartInfo.svelte';
 	import { goto } from '$app/navigation';
 	import { InfoCircleSolid } from 'flowbite-svelte-icons';
+	import List from '../KnowledgeBase/List.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -37,6 +38,7 @@
 			subscription order($orderId: bigint!) {
 				erp_orders_by_pk(id: $orderId) {
 					id
+					kb
 					jobs_orders {
 						job {
 							id
@@ -192,7 +194,7 @@
 			messagesStore('Removed order line: ' + mutationResult.data.delete_erp_orders_items_by_pk.id, 'success');
 		}
 	}
-	let orderDeleteModal = false;
+
 	async function remove(order) {
 		if (!$page?.data?.user) {
 			messagesStore('You must be logged in to perform this action', 'warning');
@@ -231,6 +233,10 @@
 			}
 		}
 	}
+
+	let orderDeleteModal = false;
+	let orderLineDeleteModal = false;
+	let orderLineDelete = {};
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
@@ -314,28 +320,56 @@
 	</div>
 </Modal>
 
-<Modal autoclose size="sm" bind:open={orderDeleteModal}>
-	<Alert class="!items-start" color="red">
-		<span slot="icon">
-			<InfoCircleSolid slot="icon" class="w-4 h-4" />
-			<span class="sr-only">Warning</span>
-		</span>
-		<p class="font-semibold">This will delete this order & all {order.orders_items?.length} order lines permanently</p>
+<Modal outsideclose autoclose size="sm" bind:open={orderDeleteModal}>
+	<div class="flex pt-6">
+		<Button
+			color="red"
+			on:click={() => {
+				remove(order);
+			}}
+		>
+			Delete
+		</Button>
+		<Alert class="!items-start" color="red">
+			<span slot="icon">
+				<InfoCircleSolid slot="icon" class="w-4 h-4" />
+				<span class="sr-only">Warning</span>
+			</span>
+			<p class="font-semibold">This will delete this order & all {order.orders_items?.length} order lines permanently</p>
 
-		{#if orderItems?.filter((i) => i.orders_items_receiveds?.length > 0)?.length > 0}
-			<p class="font-medium">
-				This will also delete receipts for {orderItems?.filter((i) => i.orders_items_receiveds?.length)?.length} order lines
-			</p>
-		{/if}
-	</Alert>
-	<Button
-		color="red"
-		on:click={() => {
-			remove(order);
-		}}
-	>
-		Delete
-	</Button>
+			{#if orderItems?.filter((i) => i.orders_items_receiveds?.length > 0)?.length > 0}
+				<p class="font-medium">
+					This will also delete receipts for {orderItems?.filter((i) => i.orders_items_receiveds?.length)?.length} order lines
+				</p>
+			{/if}
+		</Alert>
+	</div>
+</Modal>
+
+<Modal outsideclose autoclose size="sm" bind:open={orderLineDeleteModal}>
+	<div class="flex pt-6">
+		<Button
+			color="red"
+			on:click={() => {
+				removeLine(orderLineDelete);
+			}}
+		>
+			Delete
+		</Button>
+		<Alert class="!items-start" color="red">
+			<span slot="icon">
+				<InfoCircleSolid slot="icon" class="w-4 h-4" />
+				<span class="sr-only">Warning</span>
+			</span>
+			<p class="font-bold text-lg">This will delete this order line from the order permanently</p>
+
+			{#if orderLineDelete.orders_items_receiveds?.length > 0}
+				<p class="font-semibold">
+					This will also delete {orderLineDelete.orders_items_receiveds?.length} receipts for this order line
+				</p>
+			{/if}
+		</Alert>
+	</div>
 </Modal>
 
 {#if order}
@@ -507,7 +541,8 @@
 							<Button
 								disabled={item?.user?.id !== $page?.data?.user?.id && order?.user?.id !== $page?.data?.user?.id}
 								on:click={() => {
-									removeLine(item);
+									orderLineDeleteModal = true;
+									orderLineDelete = item;
 								}}
 							>
 								❌
@@ -551,6 +586,12 @@
 			</TableHead>
 		</Table>
 	</div>
+	{#if order?.kb}
+		<div class="mt-4">
+			<p>Notes:</p>
+			<List kbId={order?.kb} />
+		</div>
+	{/if}
 {:else}
 	<p>No order info</p>
 {/if}

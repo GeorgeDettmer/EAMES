@@ -19,6 +19,7 @@
 				query orders($supplierIdCriteria: String_comparison_exp = {}, $userIdCriteria: uuid_comparison_exp = {}) {
 					erp_orders(order_by: { created_at: desc }, where: { supplier_id: $supplierIdCriteria, user_id: $userIdCriteria }) {
 						id
+						kb
 						created_at
 						jobs_orders {
 							job {

@@ -33,7 +33,7 @@
 				<UserIcon user={kbItem?.user} size="sm" />
 			</div>
 		{/if}
-		<div class="float-left mb-3 text-sm font-normal text-gray-700 dark:text-gray-400 leading-tight">
+		<div class="ml-4 my-auto float-left text-sm font-normal text-gray-700 dark:text-gray-400 leading-tight">
 			{@html kbItem?.content}
 		</div>
 		<!-- <h5 class="mb-2 text-sm font-bold tracking-tight text-gray-900 dark:text-white">

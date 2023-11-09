@@ -5,17 +5,54 @@
 	export let data: PageData;
 
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
-	$: name = 'Not Fitted';
+	import {
+		Button,
+		Hr,
+		Input,
+		Modal,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell
+	} from 'flowbite-svelte';
+	import { datetimeFormat } from '$lib/utils';
+
+	$: allPackagesQueryStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query allPackages {
+				mydbpackview_14_package_base(limit: 10000, order_by: { modifiedtime: desc }) {
+					name
+					modifiedtime
+					phs_min_lenght
+					phs_nom_lenght
+					phs_max_lenght
+					phs_min_width
+					phs_nom_width
+					phs_max_width
+					phs_min_height
+					phs_nom_height
+					phs_max_height
+					ztoolset
+					hydratoolset
+					algorithm
+					cameraset
+					pinnoofupperleft
+				}
+			}
+		`,
+		requestPolicy: 'cache-and-network'
+	});
+	$: name = '';
 	$: packageHistoryQueryStore = queryStore({
 		client: getContextClient(),
 		query: gql`
 			query history($name: String = "Not Fitted") {
-				mycronic_tpsys_packages(
-					where: { name: { _ilike: $name } }
-					order_by: { modifiedcount: desc }
-				) {
+				mycronic_tpsys_packages(where: { name: { _ilike: $name } }, order_by: { modifiedcount: desc }) {
 					changed_at
-					id
+					history_id
 					name
 					modifiedtime
 					modifiedcount
@@ -76,43 +113,120 @@
 			name: name
 		}
 	});
-	$: console.log($packageHistoryQueryStore.data);
+	$: packageHistory = $packageHistoryQueryStore?.data?.mycronic_tpsys_packages || [];
+	$: historyEntries = packageHistory.length;
+	$: allPackages = $allPackagesQueryStore?.data?.mydbpackview_14_package_base || [];
+	$: allPackagesFiltered = allPackages?.filter((p) =>
+		nameSearch ? p.name.toLowerCase().includes(nameSearch.toLowerCase()) : true
+	);
+	$: console.log(packageHistory);
 
-	function compare(obj1, obj2) {
-		//console.log('COMPARE:', Object.keys(obj1), Object.keys(obj2));
-		if (!obj1 || !obj2) return {};
-		let newObj = {};
-		Object.keys(obj1).forEach((key) => {
-			if (key == 'changed_at') return;
-			if (obj1[key] !== obj2[key]) {
-				newObj[key] = [obj1[key], obj2[key]];
-			}
-		});
-		return newObj;
-	}
+	let nameSearch = '';
+	let openRowIdx = -1;
+	let showHistory = false;
 </script>
 
-<input id="search" type="text" />
-<input
-	type="button"
-	value="Search"
-	on:click={() => {
-		name = document.getElementById('search').value || '';
-		console.log(name);
-	}}
-/>
-<h1><a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + name} target="_blank">{name}</a></h1>
-<h3>History: ({$packageHistoryQueryStore?.data?.mycronic_tpsys_packages?.length})</h3>
-{#if $packageHistoryQueryStore.fetching}
-	<p>Loading...</p>
-{:else if $packageHistoryQueryStore.error}
-	<p>Error! {$packageHistoryQueryStore.error.message}</p>
+<Modal autoclose outsideclose size="lg" bind:open={showHistory}>
+	<div class="grid grid-cols-1">
+		{#if $packageHistoryQueryStore.fetching}
+			<p>Loading package history...</p>
+		{:else if $packageHistoryQueryStore.error}
+			<p>Error! {$packageHistoryQueryStore.error.message}</p>
+		{:else}
+			{#each packageHistory as history, idx}
+				{@const previous = packageHistory?.[idx + 1]}
+
+				{#if !previous}
+					<Hr class="my-6">CREATED</Hr>
+				{/if}
+				<Hr>{datetimeFormat(history.modifiedtime)} ({history.history_id}:{historyEntries - idx - 1})</Hr>
+				<div class="grid">
+					{#each Object.keys(history) as historyKey}
+						{#if !['history_id', 'modifiedcount', '__typename', 'changed_at', 'modifiedtime'].includes(historyKey)}
+							<p
+								class={previous === undefined
+									? 'bg-green-500 text-black'
+									: previous?.[historyKey] !== history?.[historyKey]
+									? 'bg-red-600 text-black'
+									: ''}
+							>
+								{historyKey}: {previous !== undefined && previous?.[historyKey] !== history?.[historyKey]
+									? previous?.[historyKey] + ' ⏩ '
+									: ''}{history[historyKey]}
+							</p>
+						{/if}
+					{/each}
+				</div>
+			{/each}
+		{/if}
+	</div>
+</Modal>
+
+{#if $allPackagesQueryStore.fetching}
+	<p>Loading packages...</p>
+{:else if $allPackagesQueryStore.error}
+	<p>Error! {$allPackagesQueryStore.error.message}</p>
 {:else}
-	{#each $packageHistoryQueryStore?.data?.mycronic_tpsys_packages as pkg, idx}
-		{@const comparison = compare(
-			$packageHistoryQueryStore?.data?.mycronic_tpsys_packages[idx + 1] || pkg,
-			pkg
-		)}
+	<Input bind:value={nameSearch} placeholder="Search by package name" />
+	<Table>
+		<TableHead>
+			<TableHeadCell>{allPackagesFiltered.length}</TableHeadCell>
+			<TableHeadCell>Name</TableHeadCell>
+			<TableHeadCell>Last modified</TableHeadCell>
+		</TableHead>
+		<TableBody>
+			{#each allPackagesFiltered as pkg, idx}
+				<TableBodyRow
+					class="cursor-pointer"
+					on:click={() => {
+						if (openRowIdx === idx) {
+							openRowIdx = -1;
+							return;
+						}
+						name = pkg.name;
+						openRowIdx = idx;
+					}}
+				>
+					<TableBodyCell>{idx + 1}</TableBodyCell>
+					<TableBodyCell>{pkg.name}</TableBodyCell>
+					<TableBodyCell>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell>
+				</TableBodyRow>
+				{#if openRowIdx === idx}
+					<TableBodyRow class="h-24 shadow-inner">
+						<TableBodyCell>
+							<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
+								{pkg?.name}
+							</a>
+						</TableBodyCell>
+						<TableBodyCell class="p-0">
+							<div class="px-1 py-1 grid grid-cols-2">
+								<div>
+									<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
+									<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
+									<p>Height(mm): {pkg.phs_nom_height / 1000}({pkg.phs_min_height / 1000}/{pkg.phs_max_height / 1000})</p>
+								</div>
+								<div>
+									<p>Centering type: {pkg.algorithm}</p>
+									<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
+									<p>Cameras: {pkg.cameraset}</p>
+								</div>
+							</div>
+						</TableBodyCell>
+						<TableBodyCell>
+							<div class="px-1 py-1 mx-auto">
+								<p>Changes in history: {packageHistory.length}</p>
+								<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
+									Show history
+								</Button>
+							</div>
+						</TableBodyCell>
+					</TableBodyRow>
+				{/if}
+			{/each}
+		</TableBody>
+	</Table>
+	<!-- {#each $packageHistoryQueryStore?.data?.mycronic_tpsys_packages as pkg, idx}
+		{@const comparison = compare($packageHistoryQueryStore?.data?.mycronic_tpsys_packages[idx + 1] || pkg, pkg)}
 		{@const comparisonKeys = Object.keys(comparison)}
 		{#if !comparisonKeys.length}
 			<table>
@@ -138,17 +252,16 @@
 				{#each comparisonKeys as key}
 					<td
 						><center
-							><span style="color: orange">{comparison[key][0]}</span><br />⏬<br /><span
-								style="color: green">{comparison[key][1]}</span
+							><span style="color: orange">{comparison[key][0]}</span><br />⏬<br /><span style="color: green"
+								>{comparison[key][1]}</span
 							></center
 						></td
 					>
 				{/each}
 			</tr>
 		</table>
-		<!-- <pre>{JSON.stringify(pkg)}</pre> -->
 		<hr />
-	{/each}
+	{/each} -->
 {/if}
 
 <style>

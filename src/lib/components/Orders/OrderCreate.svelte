@@ -82,13 +82,13 @@
 		console.log('sid', supplier, order.supplier.id);
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertOrder($supplier_id: String!, $user_id: uuid!) {
-					insert_erp_orders_one(object: { supplier_id: $supplier_id, user_id: $user_id }) {
+				mutation insertOrder($supplier_id: String!, $user_id: uuid!, $reference: String) {
+					insert_erp_orders_one(object: { supplier_id: $supplier_id, user_id: $user_id, reference: $reference }) {
 						id
 					}
 				}
 			`,
-			{ supplier_id: order.supplier_id, user_id: order.user_id }
+			{ supplier_id: order.supplier_id, user_id: order.user_id, reference: order.reference }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -378,8 +378,8 @@
 </Modal>
 
 {#if order}
-	<div class="grid grid-cols-2">
-		<div class="flex">
+	<div class="grid grid-cols-4">
+		<div class="flex col-span-3">
 			<div class="cursor-pointer" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
 				<OrdersListItem {order} interactive={false}>
 					{#if showSupplierSelect}
@@ -404,19 +404,29 @@
 								/>
 							</div>
 							{#if Object.keys(supplier_export).includes(selectedSupplierId)}
-								{#each Object.keys(supplier_export[selectedSupplierId]) as type}
-									<Button
-										size="sm"
-										class="my-auto hover:text-green-600 text-sm"
-										on:click={() => {
-											supplier_export[selectedSupplierId][type](order);
-										}}
-									>
-										<BarsArrowDown size="20" />
-										{type}
-									</Button>
-								{/each}
+								<div class="grid grid-rows-2 gap-y-1 my-auto">
+									{#each Object.keys(supplier_export[selectedSupplierId]) as type}
+										<div class="-my-2">
+											<Button
+												size="sm"
+												class=" hover:text-green-600 text-sm"
+												on:click={() => {
+													supplier_export[selectedSupplierId][type](order);
+												}}
+											>
+												<BarsArrowDown size="20" />
+												<p class="text-xs">{type}</p>
+											</Button>
+										</div>
+									{/each}
+								</div>
 							{/if}
+							<div class="w-24 my-auto ml-2">
+								<Label defaultClass="text-xs font-medium block">
+									Reference:
+									<Input bind:value={order.reference} size="sm" />
+								</Label>
+							</div>
 						</div>
 					{/if}
 				</OrdersListItem>

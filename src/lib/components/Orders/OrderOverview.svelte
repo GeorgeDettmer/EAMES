@@ -39,6 +39,7 @@
 				erp_orders_by_pk(id: $orderId) {
 					id
 					kb
+					reference
 					jobs_orders {
 						job {
 							id

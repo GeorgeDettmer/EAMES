@@ -5,7 +5,7 @@
 	import type { PageData } from './$types';
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
-	import { Label, Select, Toggle, Tooltip } from 'flowbite-svelte';
+	import { Input, Label, Select, Toggle, Tooltip } from 'flowbite-svelte';
 	import { getJsonBySearchId } from 'serpapi';
 
 	export let data: PageData;
@@ -16,9 +16,17 @@
 		ordersStore = queryStore({
 			client: getContextClient(),
 			query: gql`
-				query orders($supplierIdCriteria: String_comparison_exp = {}, $userIdCriteria: uuid_comparison_exp = {}) {
-					erp_orders(order_by: { created_at: desc }, where: { supplier_id: $supplierIdCriteria, user_id: $userIdCriteria }) {
+				query orders(
+					$supplierIdCriteria: String_comparison_exp = {}
+					$userIdCriteria: uuid_comparison_exp = {}
+					$orderReferenceCriteria: String_comparison_exp = {}
+				) {
+					erp_orders(
+						order_by: { created_at: desc }
+						where: { supplier_id: $supplierIdCriteria, user_id: $userIdCriteria, reference: $orderReferenceCriteria }
+					) {
 						id
+						reference
 						kb
 						created_at
 						jobs_orders {
@@ -89,7 +97,8 @@
 			`,
 			variables: {
 				supplierIdCriteria: selectedSupplierId ? { _eq: selectedSupplierId } : {},
-				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {}
+				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
+				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {}
 			},
 			requestPolicy: 'cache-and-network'
 		});
@@ -113,11 +122,12 @@
 		`,
 		variables: {}
 	});
-	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	let selectedSupplierId = null;
+	$: suppliers = $suppliersStore?.data?.erp_suppliers || [];
+	let selectedSupplierId = '';
 	let showMyOrdersOnly = $page?.data?.me;
 	let showIncompleteOnly = false;
 	let showCompleteOnly = false;
+	let orderReferenceSearch = '';
 	$: console.log(selectedSupplierId);
 	$: orders = showIncompleteOnly
 		? $ordersStore?.data?.erp_orders.filter(
@@ -129,7 +139,7 @@
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
 		  )
-		: $ordersStore?.data?.erp_orders;
+		: $ordersStore?.data?.erp_orders || [];
 </script>
 
 {#if $suppliersStore?.error}
@@ -140,7 +150,7 @@
 {/if}
 {#if orderId}
 	<OrderOverview {orderId} />
-{:else if orders}
+{:else}
 	<div class="grid grid-cols-6">
 		<div class="col-span-1 my-auto">
 			<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
@@ -157,43 +167,44 @@
 					...suppliers?.map((s) => ({ value: s.id, name: `${s.name}  (${s.orders_aggregate.aggregate.count})` }))
 				]}
 				bind:value={selectedSupplierId}
-				on:change={() => {
-					//showSupplierSelect = false;
-					let supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
-				}}
 			/>
 		</div>
+		<div class="col-span-1">
+			<Label for="small-input">Reference</Label>
+			<Input size="md" placeholder="" bind:value={orderReferenceSearch} />
+		</div>
 	</div>
-
-	<div class="grid grid-cols-2">
-		{#each orders as order}
-			{@const jobsOrders = order?.jobs_orders || []}
-			<!-- {#if selectedSupplierId === null || selectedSupplierId === order.supplier_id} -->
-			<div>
-				<a href={window.origin + '/order/' + order?.id} target="_blank">
-					<OrdersListItem {order}>
-						<div class="ml-5 w-auto">
-							<UserIcon size="xs" user={order?.user}>
-								{order?.user?.first_name}
-								{order?.user?.last_name}
-							</UserIcon>
-						</div>
-						<div class="ml-5">
-							{jobsOrders?.length}
-						</div>
-					</OrdersListItem>
-					{#if jobsOrders?.length > 0}
-						<Tooltip placement="right">
-							{#each jobsOrders as jo}
-								<p>{jo.job.id}</p>
-							{/each}
-						</Tooltip>
-					{/if}
-				</a>
-			</div>
-			<!-- {/if} -->
-		{:else}
-			<p>No orders found for your search criteria</p>
-		{/each}
-	</div>
+	{#if orders}
+		<div class="grid grid-cols-2">
+			{#each orders as order}
+				{@const jobsOrders = order?.jobs_orders || []}
+				<!-- {#if selectedSupplierId === null || selectedSupplierId === order.supplier_id} -->
+				<div>
+					<a href={window.origin + '/order/' + order?.id} target="_blank">
+						<OrdersListItem {order}>
+							<div class="ml-5 w-auto">
+								<UserIcon size="xs" user={order?.user}>
+									{order?.user?.first_name}
+									{order?.user?.last_name}
+								</UserIcon>
+							</div>
+							<div class="ml-5">
+								{jobsOrders?.length}
+							</div>
+						</OrdersListItem>
+						{#if jobsOrders?.length > 0}
+							<Tooltip placement="right">
+								{#each jobsOrders as jo}
+									<p>{jo.job.id}</p>
+								{/each}
+							</Tooltip>
+						{/if}
+					</a>
+				</div>
+				<!-- {/if} -->
+			{:else}
+				<p>No orders found for your search criteria</p>
+			{/each}
+		</div>
+	{/if}
 {/if}

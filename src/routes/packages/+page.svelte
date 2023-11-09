@@ -176,64 +176,75 @@
 {:else if $allPackagesQueryStore.error}
 	<p>Error! {$allPackagesQueryStore.error.message}</p>
 {:else}
-	<Input bind:value={nameSearch} placeholder="Search by package name" />
-	<Table>
-		<TableHead>
-			<TableHeadCell>{allPackagesFiltered.length}</TableHeadCell>
-			<TableHeadCell>Name</TableHeadCell>
-			<TableHeadCell>Last modified</TableHeadCell>
-		</TableHead>
-		<TableBody>
-			{#each allPackagesFiltered as pkg, idx}
-				<TableBodyRow
-					class="cursor-pointer"
-					on:click={() => {
-						if (openRowIdx === idx) {
-							openRowIdx = -1;
-							return;
-						}
-						name = pkg.name;
-						openRowIdx = idx;
-					}}
-				>
-					<TableBodyCell>{idx + 1}</TableBodyCell>
-					<TableBodyCell>{pkg.name}</TableBodyCell>
-					<TableBodyCell>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell>
-				</TableBodyRow>
-				{#if openRowIdx === idx}
-					<TableBodyRow class="h-24 shadow-inner">
-						<TableBodyCell>
-							<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
-								{pkg?.name}
-							</a>
-						</TableBodyCell>
-						<TableBodyCell class="p-0">
-							<div class="px-1 py-1 grid grid-cols-2">
-								<div>
-									<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
-									<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
-									<p>Height(mm): {pkg.phs_nom_height / 1000}({pkg.phs_min_height / 1000}/{pkg.phs_max_height / 1000})</p>
-								</div>
-								<div>
-									<p>Centering type: {pkg.algorithm}</p>
-									<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
-									<p>Cameras: {pkg.cameraset}</p>
-								</div>
-							</div>
-						</TableBodyCell>
-						<TableBodyCell>
-							<div class="px-1 py-1 mx-auto">
-								<p>Changes in history: {packageHistory.length}</p>
-								<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
-									Show history
-								</Button>
-							</div>
-						</TableBodyCell>
-					</TableBodyRow>
-				{/if}
-			{/each}
-		</TableBody>
-	</Table>
+	<div class="mt-2">
+		<div>
+			<Table hoverable>
+				<TableHead theadClass="text-xs uppercase">
+					<TableHeadCell>{allPackagesFiltered.length}</TableHeadCell>
+					<TableHeadCell>
+						<div class="flex">
+							<p class="my-auto pr-4">Name</p>
+							<Input bind:value={nameSearch} placeholder="Search by package name" size="sm" />
+						</div>
+					</TableHeadCell>
+					<TableHeadCell>Last modified</TableHeadCell>
+				</TableHead>
+				<TableBody>
+					{#each allPackagesFiltered as pkg, idx}
+						<TableBodyRow
+							class="cursor-pointer"
+							on:click={() => {
+								if (openRowIdx === idx) {
+									openRowIdx = -1;
+									return;
+								}
+								name = pkg.name;
+								openRowIdx = idx;
+							}}
+						>
+							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{pkg.name}</TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
+								>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell
+							>
+						</TableBodyRow>
+						{#if openRowIdx === idx}
+							<TableBodyRow class="h-24 shadow-inner">
+								<TableBodyCell>
+									<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
+										{pkg?.name}
+									</a>
+								</TableBodyCell>
+								<TableBodyCell class="p-0">
+									<div class="px-1 py-1 grid grid-cols-2">
+										<div>
+											<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
+											<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
+											<p>Height(mm): {pkg.phs_nom_height / 1000}({pkg.phs_min_height / 1000}/{pkg.phs_max_height / 1000})</p>
+										</div>
+										<div>
+											<p>Centering type: {pkg.algorithm}</p>
+											<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
+											<p>Cameras: {pkg.cameraset}</p>
+										</div>
+									</div>
+								</TableBodyCell>
+								<TableBodyCell>
+									<div class="px-1 py-1 mx-auto">
+										<p>Changes in history: {packageHistory.length}</p>
+										<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
+											Show history
+										</Button>
+									</div>
+								</TableBodyCell>
+							</TableBodyRow>
+						{/if}
+					{/each}
+				</TableBody>
+			</Table>
+		</div>
+	</div>
+
 	<!-- {#each $packageHistoryQueryStore?.data?.mycronic_tpsys_packages as pkg, idx}
 		{@const comparison = compare($packageHistoryQueryStore?.data?.mycronic_tpsys_packages[idx + 1] || pkg, pkg)}
 		{@const comparisonKeys = Object.keys(comparison)}

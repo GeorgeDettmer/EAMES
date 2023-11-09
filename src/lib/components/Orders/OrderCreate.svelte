@@ -422,10 +422,10 @@
 								</div>
 							{/if}
 							<div class="w-24 my-auto ml-2">
-								<Label defaultClass="text-xs font-medium block">
-									Reference:
-									<Input bind:value={order.reference} size="sm" />
-								</Label>
+								<!-- <Label defaultClass="text-xs font-medium block">
+									Reference: -->
+								<Input bind:value={order.reference} placeholder="Reference" size="sm" />
+								<!-- </Label> -->
 							</div>
 						</div>
 					{/if}

@@ -133,31 +133,40 @@
 		{:else if $packageHistoryQueryStore.error}
 			<p>Error! {$packageHistoryQueryStore.error.message}</p>
 		{:else}
-			{#each packageHistory as history, idx}
-				{@const previous = packageHistory?.[idx + 1]}
+			<div>
+				<div class="sticky top-0 bg-slate-400 rounded-sm mx-auto z-50 my-2">
+					<p class="text-center font-medium text-gray-900 bg-white dark:bg-gray-900 dark:text-white">
+						{allPackages?.[openRowIdx]?.name}
+					</p>
+				</div>
+				<div class="overflow-y-auto">
+					{#each packageHistory as history, idx}
+						{@const previous = packageHistory?.[idx + 1]}
 
-				{#if !previous}
-					<Hr class="my-6">CREATED</Hr>
-				{/if}
-				<Hr>{datetimeFormat(history.modifiedtime)} ({history.history_id}:{historyEntries - idx - 1})</Hr>
-				<div class="grid">
-					{#each Object.keys(history) as historyKey}
-						{#if !['history_id', 'modifiedcount', '__typename', 'changed_at', 'modifiedtime'].includes(historyKey)}
-							<p
-								class={previous === undefined
-									? 'bg-green-500 text-black'
-									: previous?.[historyKey] !== history?.[historyKey]
-									? 'bg-red-600 text-black'
-									: ''}
-							>
-								{historyKey}: {previous !== undefined && previous?.[historyKey] !== history?.[historyKey]
-									? previous?.[historyKey] + ' ⏩ '
-									: ''}{history[historyKey]}
-							</p>
+						{#if !previous}
+							<Hr class="my-6">CREATED</Hr>
 						{/if}
+						<Hr>{datetimeFormat(history.modifiedtime)} ({history.history_id}:{historyEntries - idx - 1})</Hr>
+						<div class="grid">
+							{#each Object.keys(history) as historyKey}
+								{#if !['name', 'history_id', 'modifiedcount', '__typename', 'changed_at', 'modifiedtime'].includes(historyKey)}
+									<p
+										class={previous === undefined
+											? 'bg-green-500 text-black'
+											: previous?.[historyKey] !== history?.[historyKey]
+											? 'bg-red-600 text-black'
+											: ''}
+									>
+										{historyKey}: {previous !== undefined && previous?.[historyKey] !== history?.[historyKey]
+											? previous?.[historyKey] + ' ⏩ '
+											: ''}{history[historyKey]}
+									</p>
+								{/if}
+							{/each}
+						</div>
 					{/each}
 				</div>
-			{/each}
+			</div>
 		{/if}
 	</div>
 </Modal>

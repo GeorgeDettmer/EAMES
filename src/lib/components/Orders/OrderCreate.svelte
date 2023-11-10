@@ -109,7 +109,11 @@
 					}
 					i.tracking = [orderTracking];
 				} else {
-					i?.tracking?.map((t) => (t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number)));
+					i?.tracking?.map((t) => {
+						if (carrier_urls?.[orderTracking?.carrier_code]) {
+							t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number);
+						}
+					});
 				}
 				console.log('tracking set:', i?.tracking);
 			});

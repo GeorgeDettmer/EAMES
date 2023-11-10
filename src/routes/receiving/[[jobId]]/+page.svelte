@@ -124,6 +124,7 @@
 								}
 							}
 							id
+							reference
 							supplier {
 								id
 								name

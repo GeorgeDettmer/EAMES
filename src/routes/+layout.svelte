@@ -25,10 +25,20 @@
 	let networkIssuesModal = false;
 
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(async () => {
-		const response = await fetch(PUBLIC_HASURA_HEALTH_URL);
+		const response = await fetch(PUBLIC_HASURA_HEALTH_URL, {
+			headers: {
+				'Bypass-Tunnel-Reminder': 'true'
+			}
+		});
 		const ok = response.status === 200;
 		if (!ok) {
 			console.error('Network error', response);
+			networkIssuesModal = true;
+		}
+		const responseSveltekit = await fetch('/api/health');
+		const responseSveltekitOk = response.status === 200;
+		if (!responseSveltekitOk) {
+			console.error('Network Sveltekit error', responseSveltekit);
 			networkIssuesModal = true;
 		}
 	}, 10000);
@@ -297,6 +307,9 @@
 		<p class="font-medium">Network error detected:</p>
 		<ul class="mt-1.5 ml-4 list-disc list-inside">
 			<li>Contact support</li>
+			{#if isOnline}
+				<li>Network connected but a database access error occured</li>
+			{/if}
 		</ul>
 	</Alert>
 </Modal>

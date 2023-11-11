@@ -26,33 +26,36 @@ export const handle: Handle = async ({ event, resolve }) => {
 			event.cookies.delete('AuthorizationToken');
 			event.locals.user = undefined;
 		} else {
-			try {
-				const token = authCookie.split(' ')[1];
-				const jwtUser = jwt.verify(token, JWT_ACCESS_SECRET);
-				if (typeof jwtUser === 'string') {
-					throw new Error('Something went wrong');
-				}
+			if (event.url.pathname.startsWith('/api')) {
+			} else {
+				try {
+					const token = authCookie.split(' ')[1];
+					const jwtUser = jwt.verify(token, JWT_ACCESS_SECRET);
+					if (typeof jwtUser === 'string') {
+						throw new Error('Something went wrong');
+					}
 
-				const user = await findUser(jwtUser?.username);
-				if (!user) {
-					throw new Error('User not found');
-				}
+					const user = await findUser(jwtUser?.username);
+					if (!user) {
+						throw new Error('User not found');
+					}
 
-				event.locals.user = {
-					id: user.id,
-					username: user.username,
-					firstname: user.first_name,
-					lastname: user.last_name,
-					initials: user.initials,
-					color: user.color,
-					processes: user.processes,
-					first_name: user.first_name,
-					last_name: user.last_name,
-					permissions: user.permissions
-				};
-				console.log('hooks', event.locals.user);
-			} catch (error) {
-				console.error('hooks', error);
+					event.locals.user = {
+						id: user.id,
+						username: user.username,
+						firstname: user.first_name,
+						lastname: user.last_name,
+						initials: user.initials,
+						color: user.color,
+						processes: user.processes,
+						first_name: user.first_name,
+						last_name: user.last_name,
+						permissions: user.permissions
+					};
+					console.log('hooks', event.locals.user);
+				} catch (error) {
+					console.error('hooks', error);
+				}
 			}
 		}
 	}

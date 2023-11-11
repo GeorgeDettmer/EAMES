@@ -69,8 +69,15 @@
 		{ name: 'Help', href: '/help', icon: QuestionCircleSolid },
 		{ name: 'Report Issue', href: '/report/issue', icon: ExclamationCircleSolid }
 	];
-	import { FileEditSolid, QuestionCircleSolid, ExclamationCircleSolid } from 'flowbite-svelte-icons';
-	import { FastLayer } from 'konva/lib/FastLayer';
+	import {
+		FileEditSolid,
+		QuestionCircleSolid,
+		ExclamationCircleSolid,
+		ClipboardCheckSolid,
+		ShoppingCartSolid,
+		CheckPlusCircleSolid,
+		DropboxSolid
+	} from 'flowbite-svelte-icons';
 	let menus = {
 		purchasing: [
 			{
@@ -84,7 +91,7 @@
 			},
 			{
 				name: 'Suppliers',
-				icon: FileEditSolid,
+				icon: ShoppingCartSolid,
 				items: [
 					{ name: 'All Suppliers', href: '/suppliers' },
 					{ name: 'Create new supplier', href: '/add/supplier' }
@@ -94,22 +101,22 @@
 		stores: [
 			{
 				name: 'Receive',
-				icon: FileEditSolid,
+				icon: ClipboardCheckSolid,
 				items: [{ name: 'All To Receive', href: '/receiving' }]
 			},
 			{
-				name: 'Suppliers',
-				icon: FileEditSolid,
+				name: 'Kitting',
+				icon: DropboxSolid,
 				items: [
-					{ name: 'All Suppliers', href: '/suppliers' },
-					{ name: 'Create new supplier', href: '/add/supplier' }
+					{ name: 'All kits', href: '/kitting/kits' },
+					{ name: 'Kit items', href: '/kitting' }
 				]
 			}
 		],
 		production: [
 			{
 				name: 'Board',
-				icon: FileEditSolid,
+				icon: CheckPlusCircleSolid,
 				href: '/board/25'
 			}
 		],

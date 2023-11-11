@@ -129,7 +129,7 @@
 								</SidebarDropdownWrapper>
 							{:else}
 								{#each item.items as subitem}
-									{#if subitem.name.toLowerCase().includes(search.toLowerCase())}
+									{#if search && subitem.name.toLowerCase().includes(search.toLowerCase())}
 										<SidebarItem
 											href={subitem?.href}
 											label={item.name + ' | ' + subitem.name}
@@ -140,6 +140,21 @@
 									{/if}
 								{/each}
 							{/if}
+						{:else if search !== undefined && search && item.name.toLowerCase().includes(search.toLowerCase())}
+							<SidebarItem
+								href={item?.href}
+								label={item.name}
+								{spanClass}
+								on:click={(e) => {
+									onItemClick(e, item);
+								}}
+							>
+								<svelte:fragment slot="icon">
+									{#if item?.icon}
+										<svelte:component this={item.icon} />
+									{/if}
+								</svelte:fragment>
+							</SidebarItem>
 						{:else}
 							<SidebarItem
 								href={item?.href}
@@ -158,7 +173,9 @@
 						{/if}
 					{/each}
 				</SidebarGroup>
-			{:else}{/each}
+			{:else}
+				<p>No menu items configured...</p>
+			{/each}
 		</SidebarWrapper>
 	</Sidebar>
 </Drawer>

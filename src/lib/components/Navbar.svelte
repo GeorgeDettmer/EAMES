@@ -13,6 +13,7 @@
 	import { getContext } from 'svelte';
 	import JobPopoverContent from './JobPopoverContent.svelte';
 	import { goto } from '$app/navigation';
+	import NavDrawer from './Navbar/NavDrawer.svelte';
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -61,14 +62,73 @@
 		}
 	}
 
+	let navDrawerHidden: boolean = true;
+	let navDrawerSearch: undefined | string = undefined;
+
 	let menu = [
-		{ name: 'Order', href: '/order/create' },
-		{ name: 'Receive', href: '/receiving' },
-		{ name: 'About', href: '/about' },
-		{ name: 'Help', href: '/help' },
-		{ name: 'Report Issue', href: '/report/issue' }
+		{ name: 'Help', href: '/help', icon: QuestionCircleSolid },
+		{ name: 'Report Issue', href: '/report/issue', icon: ExclamationCircleSolid }
 	];
+	import { FileEditSolid, QuestionCircleSolid, ExclamationCircleSolid } from 'flowbite-svelte-icons';
+	import { FastLayer } from 'konva/lib/FastLayer';
+	let menus = {
+		purchasing: [
+			{
+				name: 'Orders',
+				icon: FileEditSolid,
+				items: [
+					{ name: 'All Orders', href: '/order' },
+					{ name: 'All My Orders', href: '/order?me' },
+					{ name: 'Create Order', href: '/order/create' }
+				]
+			},
+			{
+				name: 'Suppliers',
+				icon: FileEditSolid,
+				items: [
+					{ name: 'All Suppliers', href: '/suppliers' },
+					{ name: 'Create new supplier', href: '/add/supplier' }
+				]
+			}
+		],
+		stores: [
+			{
+				name: 'Receive',
+				icon: FileEditSolid,
+				items: [{ name: 'All To Receive', href: '/receiving' }]
+			},
+			{
+				name: 'Suppliers',
+				icon: FileEditSolid,
+				items: [
+					{ name: 'All Suppliers', href: '/suppliers' },
+					{ name: 'Create new supplier', href: '/add/supplier' }
+				]
+			}
+		],
+		production: [
+			{
+				name: 'Board',
+				icon: FileEditSolid,
+				href: '/board/25'
+			}
+		],
+		'': menu
+	};
 </script>
+
+<svelte:window
+	on:keydown={(e) => {
+		if (e.key === '`') {
+			console.log(e, 'Draw visible:', !navDrawerHidden);
+			e.preventDefault();
+			navDrawerHidden = !navDrawerHidden;
+			if (!navDrawerHidden) {
+				navDrawerSearch = '';
+			}
+		}
+	}}
+/>
 
 {#if showDebug_page}<pre>{JSON.stringify($page, null, 2)}</pre>{/if}
 <Modal id="userInfo" bind:open={userInfoVisible} size="md" autoclose={true} outsideclose={true}>
@@ -100,12 +160,13 @@
 	</form>
 </Modal>
 
+<NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus />
 <div class="relative px-0">
 	<Navbar navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
 		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>
-			<img src={logo} class="" alt="EASL" />
+			<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
 		</div>
-		<MegaMenu full items={menu} let:item class="bg-slate-200">
+		<!-- <MegaMenu full items={menu} let:item class="bg-slate-200">
 			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500">{item.name}</a>
 
 			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
@@ -116,10 +177,10 @@
 						</p>
 						<div class="flex">
 							<Button color="blue" class="pr-10">Continue...</Button>
-							<!-- 							<div
+							<div
 								class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
 								style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
-							/> -->
+							/>
 						</div>
 					</div>
 				{/if}
@@ -129,7 +190,7 @@
 					</p>
 				</div>
 			</a>
-		</MegaMenu>
+		</MegaMenu> -->
 
 		<div class="ml-1 sm:ml-10 flex-auto outline-gray-500">
 			<div class="flex">

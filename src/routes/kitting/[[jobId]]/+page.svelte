@@ -107,7 +107,14 @@
 							orders_items {
 								id
 								created_at
-								order_id
+								updated_at
+								order {
+									id
+									supplier {
+										id
+										name
+									}
+								}
 								part
 								part_id
 								partByPartId {

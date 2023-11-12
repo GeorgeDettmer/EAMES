@@ -9,7 +9,8 @@
 		'quantity',
 		'build_quantity',
 		'order_quantity',
-		'received_quantity'
+		'received_quantity',
+		'kit_button'
 	];
 
 	import {
@@ -32,6 +33,8 @@
 	import { datetimeFormat } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import ReceiveItem from '../Receiving/ReceiveItem.svelte';
+	import KitItem from '../Kitting/KitItem.svelte';
+	import { PlusOutline } from 'flowbite-svelte-icons';
 
 	let items = [];
 
@@ -108,12 +111,13 @@
 	$: console.log('BOM:', bom);
 	$: console.log('JOB:', job);
 
-	let receieveModal = false;
+	let receiveModal = false;
+	let activeLine = {};
 </script>
 
-<!-- <Modal autoclose bind:open={recieveModal}>
-	<ReceiveItem />
-</Modal> -->
+<Modal autoclose bind:open={receiveModal} size="lg">
+	<KitItem orderItems={activeLine?.orderItems} kitItems={activeLine?.kitItems} part={activeLine?.line?.[0]?.part} />
+</Modal>
 
 {#if bom}
 	<Table hoverable shadow>
@@ -143,6 +147,9 @@
 			{#if job?.jobs_kits}
 				<TableHeadCell>Kit Qty</TableHeadCell>
 				<TableHeadCell>Kit Attrition</TableHeadCell>
+			{/if}
+			{#if visibleColumns?.includes('kit_button')}
+				<TableHeadCell />
 			{/if}
 		</TableHead>
 		<TableBody>
@@ -213,19 +220,9 @@
 							?.reduce((a, v) => a + v, 0)}
 
 						<TableBodyCell>
-							<span
-								class="cursor-pointer"
-								on:click|stopPropagation={(e) => {
-									e.preventDefault();
-								}}
-							>
-								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
-									{receivedItemQty}
-								</Badge>
-								{#if orderItemQty !== receivedItemQty}
-									<span> ➕ </span>
-								{/if}
-							</span>
+							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
+								{receivedItemQty}
+							</Badge>
 						</TableBodyCell>
 					{/if}
 
@@ -243,6 +240,21 @@
 							</Badge>
 						</TableBodyCell>
 					{/if}
+					{#if visibleColumns?.includes('kit_button')}
+						<TableBodyCell>
+							<div
+								class="cursor-pointer"
+								on:click|stopPropagation={(e) => {
+									activeLine = { line, orderItems, kitItems };
+									receiveModal = true;
+									console.log('activeLine', activeLine);
+									e.preventDefault();
+								}}
+							>
+								<PlusOutline />
+							</div>
+						</TableBodyCell>
+					{/if}
 				</TableBodyRow>
 				<!-- {#if openRow === idx} -->
 				{#if openRows?.includes(idx)}
@@ -256,8 +268,9 @@
 								{/if}
 							</div>
 						</TableBodyCell>
+						<TableBodyCell colspan="3" />
 						{#if kitItems}
-							<TableBodyCell colspan="3" class="p-0 object-right">
+							<TableBodyCell colspan="5" class="p-0 object-right">
 								<div class="px-1 py-1">
 									<h1>Kit:</h1>
 									<Table>

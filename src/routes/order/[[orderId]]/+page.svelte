@@ -5,7 +5,7 @@
 	import type { PageData } from './$types';
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
-	import { Input, Label, Select, Toggle, Tooltip } from 'flowbite-svelte';
+	import { Input, Label, Select, Spinner, Toggle, Tooltip } from 'flowbite-svelte';
 	import { getJsonBySearchId } from 'serpapi';
 
 	export let data: PageData;
@@ -145,9 +145,7 @@
 {#if $suppliersStore?.error}
 	{JSON.stringify($suppliersStore.error)}
 {/if}
-{#if $ordersStore?.fetching}
-	Loading results...
-{/if}
+
 {#if orderId}
 	<OrderOverview {orderId} />
 {:else}
@@ -173,7 +171,13 @@
 			<Label for="small-input">Reference</Label>
 			<Input size="md" placeholder="" bind:value={orderReferenceSearch} />
 		</div>
+		{#if $ordersStore?.fetching}
+			<div class="my-auto pl-2">
+				<Spinner color="blue" />
+			</div>
+		{/if}
 	</div>
+
 	{#if orders}
 		<div class="grid grid-cols-2">
 			{#each orders as order}

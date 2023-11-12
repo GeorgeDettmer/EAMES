@@ -8,7 +8,7 @@
 	export let orderItem;
 	export let orderItemId: string;
 	export let quantity: number = 0;
-	export let recieveModal;
+	export let recieveModal = undefined;
 
 	let quantityAdding = false;
 	async function addQuantity() {

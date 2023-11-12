@@ -46,47 +46,7 @@
 					customer {
 						name
 					}
-					orders_items {
-						id
-						created_at
-						order_id
-						part
-						part_id
-						tracking
-						partByPartId {
-							description
-							name
-						}
-						price
-						quantity
-						order {
-							id
-							reference
-							supplier {
-								name
-							}
-						}
-						user {
-							id
-							username
-							first_name
-							last_name
-							initials
-							color
-						}
-						orders_items_receiveds {
-							id
-							quantity
-							user {
-								id
-								username
-								first_name
-								last_name
-								initials
-								color
-							}
-						}
-					}
+
 					jobs_orders {
 						id
 						order {

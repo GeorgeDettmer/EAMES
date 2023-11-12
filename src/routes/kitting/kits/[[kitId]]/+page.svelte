@@ -20,6 +20,7 @@
 	import { ChevronDoubleDown, ChevronDoubleUp } from 'svelte-heros-v2';
 	import { EllipseHorizontalSolid, PlusSolid } from 'flowbite-svelte-icons';
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
+	import KitList from '$lib/components/Kitting/KitList.svelte';
 
 	export let data: PageData;
 
@@ -33,7 +34,7 @@
 		client: getContextClient(),
 		query: gql`
 			query kits($id: uuid_comparison_exp = {}) {
-				erp_kits(where: { _or: { id: $id } }) {
+				erp_kits(where: { _or: { id: $id } }, order_by: { created_at: desc }) {
 					id
 					kits_items {
 						id
@@ -204,8 +205,8 @@
 			/>
 		</div>
 	</div>
-
-	<Accordion multiple>
+	<KitList {kits} bind:accordionState bind:highlightAccordionIdx />
+	<!-- 	<Accordion multiple>
 		{#each kits as kit, kit_idx}
 			{@const kits_items = kit?.kits_items || []}
 			<AccordionItem paddingFlush="p-0" paddingDefault="p-4" bind:open={accordionState[kit_idx]}>
@@ -281,5 +282,5 @@
 				</Table>
 			</AccordionItem>
 		{/each}
-	</Accordion>
+	</Accordion> -->
 {/if}

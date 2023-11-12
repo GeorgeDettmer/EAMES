@@ -2,18 +2,16 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	import { AccordionItem, Accordion, Indicator } from 'flowbite-svelte';
 	import { page } from '$app/stores';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
-	import ReceivingOverview from '$lib/components/Receiving/ReceivingOverview.svelte';
-	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 	import { scanStore } from '$lib/stores';
 	import { messagesStore } from 'svelte-legos';
 	import { ChevronDoubleDown, ChevronDoubleUp } from 'svelte-heros-v2';
 	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
-	import KittingOverview from '$lib/components/Kitting/KittingOverview.svelte';
+	import KitList from '$lib/components/Kitting/KitList.svelte';
+	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -25,6 +23,9 @@
 					id
 					quantity
 					batch
+					customer {
+						name
+					}
 					assembly {
 						id
 						name
@@ -37,54 +38,66 @@
 									count
 								}
 							}
+							lines(order_by: { part: asc_nulls_last, reference: asc_nulls_last }) {
+								id
+								reference
+								part
+								description
+								created_at
+								updated_at
+								partByPart {
+									id
+									name
+									description
+									manufacturer
+									polarised
+									properties
+									created_at
+									footprint
+									image_url
+									images
+									kb
+									updated_at
+								}
+							}
 						}
 						assemblies_cad {
 							id
-							data
 							name
 						}
 					}
-					customer {
-						name
-					}
-					orders_items {
-						id
-						created_at
-						order_id
-						part
-						part_id
-						tracking
-						partByPartId {
-							description
-							name
-						}
-						price
-						quantity
-						order {
+					jobs_kits {
+						kit {
 							id
-							reference
-							supplier {
-								name
-							}
-						}
-						user {
-							id
-							username
-							first_name
-							last_name
-							initials
-							color
-						}
-						orders_items_receiveds {
-							id
-							quantity
-							user {
+							created_at
+							kits_items {
 								id
-								username
-								first_name
-								last_name
-								initials
-								color
+								kit_id
+								quantity
+								part
+								part_id
+								created_at
+								updated_at
+								user {
+									id
+									username
+									first_name
+									last_name
+									initials
+									color
+								}
+								orders_item {
+									id
+									price
+									quantity
+									order {
+										id
+										reference
+										supplier {
+											name
+										}
+									}
+								}
 							}
 						}
 					}
@@ -138,13 +151,8 @@
 	});
 	$: jobInfo = $jobInfoStore?.data?.jobs_by_pk;
 	$: orders = jobInfo?.jobs_orders || [];
-
-	$: incompleteOrders = orders?.filter(
-		(o) =>
-			o?.order?.orders_items?.filter((i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0))
-				?.length !== 0
-	);
-	$: console.log('incompleteOrders', incompleteOrders);
+	$: kits = jobInfo?.jobs_kits?.map((jk) => jk.kit) || [];
+	$: console.log('kits', kits);
 
 	$: console.log('scanStore', $scanStore);
 
@@ -196,7 +204,7 @@
 	}
 	$: console.log('orders', orders);
 
-	let accordionState = [];
+	let accordionState: boolean[] = [];
 	$: console.log('accordionState', accordionState);
 
 	let highlightOrderItems = [];
@@ -217,14 +225,14 @@
 			<div class="flex">
 				<div class="w-full">
 					<JobOverview job={jobInfo}>
-						<div class="pl-4">
+						<!-- <div class="pl-4">
 							<div
 								class:bg-red-600={incompleteOrders?.length > 0}
 								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
 							>
 								<p class="text-white">{incompleteOrders?.length > 0 ? incompleteOrders?.length : '✅'}</p>
 							</div>
-						</div>
+						</div> -->
 					</JobOverview>
 				</div>
 				<div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
@@ -246,51 +254,11 @@
 				</div>
 			</div>
 		{/if}
-		<Accordion multiple flush>
-			{#each orders as { order }, idx}
-				{@const linesToRecieve = order.orders_items?.filter(
-					(i) => i.quantity !== i.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)
-				)?.length}
-
-				<AccordionItem paddingFlush="p-0" paddingDefault="p-0" bind:open={accordionState[idx]}>
-					<div slot="header" class="grid grid-cols-2">
-						<OrdersListItem {order}>
-							<div class="pl-4">
-								<div
-									class:bg-red-600={linesToRecieve > 0}
-									class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
-								>
-									<p class="text-white">{linesToRecieve > 0 ? linesToRecieve : '✅'}</p>
-								</div>
-							</div>
-						</OrdersListItem>
-					</div>
-					<div class="p-1">
-						<!-- TODO: Redo all bindings -->
-						<!-- <OrderOverview
-							orderId={order?.id}
-							showRecieved
-							showHeader={false}
-							highlightOrderItem={accordionState[idx]}
-							bind:orderItemSelected={accordionState[idx]}
-							orderItemSelectedQty={scanPartTokens?.qty}
-							bind:recieveModal={accordionState[idx].id}
-						/> -->
-						<KittingOverview
-							orderId={order?.id}
-							showKitted
-							showHeader={false}
-							bind:highlightOrderItems
-							bind:orderItemSelected={accordionState[idx]}
-							orderItemSelectedQty={scanPartTokens?.qty}
-						/>
-					</div>
-				</AccordionItem>
-			{:else}
-				No orders associated with this job number
-			{/each}
-		</Accordion>
+		<KitList {kits} bind:accordionState />
+		{#if jobInfo?.assembly?.bom}
+			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
+		{/if}
 	{:else}{/if}
 {:else}
-	<ReceivingOverview />
+	TODO: kitting dashboard
 {/if}

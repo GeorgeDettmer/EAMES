@@ -2,9 +2,27 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
-	export let visibleColumns: string[] = ['part', 'description', 'references', 'quantity'];
+	export let visibleColumns: string[] = [
+		'part',
+		'description',
+		'references',
+		'quantity',
+		'build_quantity',
+		'order_quantity',
+		'received_quantity'
+	];
 
-	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
+	import {
+		Badge,
+		Modal,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Tooltip
+	} from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
@@ -12,55 +30,27 @@
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { datetimeFormat } from '$lib/utils';
+	import BomTableLineReferences from './BomTableLineReferences.svelte';
+	import ReceiveItem from '../Receiving/ReceiveItem.svelte';
 
 	let items = [];
 
 	let lines = new Map();
-	$: {
-		if (bom?.lines) {
-			bom.lines.forEach((line) => {
-				//console.log(line);
-				let part = line?.part || null;
-				if (!lines.has(part)) {
-					lines.set(part, []);
-				}
-				lines.get(part).push(line);
-			});
-			items = lines.keys();
-		}
-		console.log(lines);
-	}
-
-	const sortKey = writable('id'); // default sort key
-	const sortDirection = writable(1); // default sort direction (ascending)
-	const sortItems = writable(items.slice()); // make a copy of the items array
-
-	// Define a function to sort the items
-	const sortTable = (key) => {
-		// If the same key is clicked, reverse the sort direction
-		if ($sortKey === key) {
-			sortDirection.update((val) => -val);
-		} else {
-			sortKey.set(key);
-			sortDirection.set(1);
-		}
-	};
-
 	/* $: {
-		const key = $sortKey;
-		const direction = $sortDirection;
-		const sorted = [...$sortItems].sort((a, b) => {
-			const aVal = a[key];
-			const bVal = b[key];
-			if (aVal < bVal) {
-				return -direction;
-			} else if (aVal > bVal) {
-				return direction;
-			}
-			return 0;
-		});
-		sortItems.set(sorted);
-	} */
+		if (bom?.lines) { */
+	bom.lines.forEach((line) => {
+		//console.log(line);
+		let part = line?.part || null;
+		if (!lines.has(part)) {
+			lines.set(part, []);
+		}
+		lines.get(part).push(line);
+	});
+	items = lines.keys();
+	/* } */
+	console.log(lines);
+	/* } */
+
 	let highlightedReferences: string[] = [];
 	let openRows: number[] = [];
 
@@ -116,9 +106,14 @@
 	}
 
 	$: console.log('BOM:', bom);
-	$: console.log('partsInLibrary:', partsInLibrary, partsInLibrary.length);
-	$: console.log('cad:', job?.assembly?.assemblies_cad);
+	$: console.log('JOB:', job);
+
+	let receieveModal = false;
 </script>
+
+<!-- <Modal autoclose bind:open={recieveModal}>
+	<ReceiveItem />
+</Modal> -->
 
 {#if bom}
 	<Table hoverable shadow>
@@ -136,8 +131,14 @@
 			{#if visibleColumns?.includes('quantity')}
 				<TableHeadCell>Qty</TableHeadCell>
 			{/if}
-			{#if job?.quantity}
+			{#if job?.quantity && visibleColumns?.includes('build_quantity')}
 				<TableHeadCell>Build Qty</TableHeadCell>
+			{/if}
+			{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
+				<TableHeadCell>Order Qty</TableHeadCell>
+			{/if}
+			{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
+				<TableHeadCell>Received Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_kits}
 				<TableHeadCell>Kit Qty</TableHeadCell>
@@ -150,6 +151,9 @@
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const kitItems = job?.jobs_kits
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
+					.flat()}
+				{@const orderItems = job?.jobs_orders
+					?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
@@ -175,7 +179,7 @@
 					{/if}
 
 					{#if visibleColumns?.includes('description')}
-						<TableBodyCell tdClass="w-1/4">
+						<TableBodyCell>
 							<p class="overflow-hidden text-clip">{description || ''}</p>
 							{#if line?.[0]?.description && line?.[0]?.description !== description}
 								<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
@@ -184,50 +188,57 @@
 					{/if}
 
 					{#if visibleColumns?.includes('references')}
-						<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
-							<div
-								class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
-							>
-								{#each references as reference}
-									{@const colour = lineKey ? 'blue' : 'red'}
-									<span
-										class={`hover:shadow m-0.5 h-4 -top-2 -right-2 rounded font-medium inline-flex items-center justify-center px-1 bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
-										on:mouseenter={() => {
-											//handleReferenceHover([reference], true);
-										}}
-										on:mouseleave={() => {
-											//handleReferenceHover(references, false);
-										}}
-									>
-										<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
-									</span>
-									<Tooltip>{reference}</Tooltip>
-									<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
-										>{reference}</Badge
-									> -->
-								{/each}
-							</div>
-						</TableBodyCell>
+						<BomTableLineReferences pn={lineKey} {references} />
 					{/if}
 
 					{#if visibleColumns?.includes('quantity')}
 						<TableBodyCell>{references?.length}</TableBodyCell>
 					{/if}
 
-					{#if job?.quantity}
+					{#if job?.quantity && visibleColumns?.includes('build_quantity')}
 						<TableBodyCell>{buildQty}</TableBodyCell>
+					{/if}
+					{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
+					{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
+						<TableBodyCell>
+							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+								{orderItemQty}
+							</Badge>
+						</TableBodyCell>
+					{/if}
+
+					{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
+						{@const receivedItemQty = orderItems
+							?.map((i) => i.orders_items_receiveds?.quantity || 0)
+							?.reduce((a, v) => a + v, 0)}
+
+						<TableBodyCell>
+							<span
+								class="cursor-pointer"
+								on:click|stopPropagation={(e) => {
+									e.preventDefault();
+								}}
+							>
+								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
+									{receivedItemQty}
+								</Badge>
+								{#if orderItemQty !== receivedItemQty}
+									<span> ➕ </span>
+								{/if}
+							</span>
+						</TableBodyCell>
 					{/if}
 
 					{#if job?.jobs_kits}
 						{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 						{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
 						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
+							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 								{kitItemQty}
 							</Badge>
 						</TableBodyCell>
 						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'blue' : qtyColor(kitItemQty, buildQty)}>
+							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 								{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
 							</Badge>
 						</TableBodyCell>

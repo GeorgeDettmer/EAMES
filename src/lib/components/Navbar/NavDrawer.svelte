@@ -28,7 +28,7 @@
 	import { onMount } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	export let hidden = true;
-	export let search: string | undefined = 'creat';
+	export let search: string | undefined = undefined;
 	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
 	let transitionParams = {
 		x: -320,

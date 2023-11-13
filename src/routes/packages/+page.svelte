@@ -18,7 +18,8 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import { datetimeFormat } from '$lib/utils';
+	import { datetimeFormat, replaceStateWithQuery } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	$: allPackagesQueryStore = queryStore({
 		client: getContextClient(),
@@ -147,6 +148,12 @@
 	let modifiedFilterStart = '';
 	let modifiedFilterEnd = '';
 	$: console.log('modifiedFilter', modifiedFilterStart, modifiedFilterEnd);
+
+	onMount(() => {
+		modifiedFilterStart = $page.url.searchParams.get('modifiedStart') || '';
+		modifiedFilterEnd = $page.url.searchParams.get('modifiedEnd') || '';
+		nameSearch = $page.url.searchParams.get('name') || '';
+	});
 </script>
 
 <Modal autoclose outsideclose size="lg" bind:open={showHistory}>
@@ -208,7 +215,16 @@
 				<TableHeadCell>
 					<div class="flex">
 						<p class="my-auto pr-4">Name</p>
-						<Input bind:value={nameSearch} placeholder="Search by package name" size="sm" />
+						<Input
+							bind:value={nameSearch}
+							placeholder="Search by package name"
+							size="sm"
+							on:input={() => {
+								replaceStateWithQuery({
+									name: nameSearch
+								});
+							}}
+						/>
 					</div>
 				</TableHeadCell>
 				<TableHeadCell>
@@ -218,6 +234,9 @@
 							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 							type="date"
 							on:change={() => {
+								replaceStateWithQuery({
+									modifiedStart: modifiedFilterStart
+								});
 								if (!modifiedFilterEnd) {
 									modifiedFilterEnd = modifiedFilterStart;
 								}
@@ -228,6 +247,11 @@
 						<input
 							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 							type="date"
+							on:change={() => {
+								replaceStateWithQuery({
+									modifiedEnd: modifiedFilterEnd
+								});
+							}}
 							min={modifiedFilterStart}
 							disabled={!modifiedFilterStart}
 							bind:value={modifiedFilterEnd}

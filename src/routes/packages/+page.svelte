@@ -10,6 +10,7 @@
 		Hr,
 		Input,
 		Modal,
+		Spinner,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -22,8 +23,12 @@
 	$: allPackagesQueryStore = queryStore({
 		client: getContextClient(),
 		query: gql`
-			query allPackages {
-				mydbpackview_14_package_base(limit: 10000, order_by: { modifiedtime: desc }) {
+			query allPackages($modifiedtime: timestamp_comparison_exp = {}, $name: String_comparison_exp = {}) {
+				mydbpackview_14_package_base(
+					limit: 10000
+					order_by: { modifiedtime: desc }
+					where: { modifiedtime: $modifiedtime, name: $name }
+				) {
 					name
 					modifiedtime
 					phs_min_lenght
@@ -43,6 +48,20 @@
 				}
 			}
 		`,
+		variables: {
+			modifiedtime:
+				modifiedFilterStart && modifiedFilterEnd
+					? {
+							_gte: modifiedFilterStart,
+							_lte: modifiedFilterEnd + 'T23:59:59'
+					  }
+					: {},
+			name: nameSearch
+				? {
+						_ilike: '%' + nameSearch + '%'
+				  }
+				: {}
+		},
 		requestPolicy: 'cache-and-network'
 	});
 	$: name = '';
@@ -116,14 +135,18 @@
 	$: packageHistory = $packageHistoryQueryStore?.data?.mycronic_tpsys_packages || [];
 	$: historyEntries = packageHistory.length;
 	$: allPackages = $allPackagesQueryStore?.data?.mydbpackview_14_package_base || [];
-	$: allPackagesFiltered = allPackages?.filter((p) =>
+	$: allPackagesFiltered = allPackages; /* ?.filter((p) =>
 		nameSearch ? p.name.toLowerCase().includes(nameSearch.toLowerCase()) : true
-	);
+	); */
 	$: console.log(packageHistory);
 
 	let nameSearch = '';
 	let openRowIdx = -1;
 	let showHistory = false;
+
+	let modifiedFilterStart = '';
+	let modifiedFilterEnd = '';
+	$: console.log('modifiedFilter', modifiedFilterStart, modifiedFilterStart && new Date(modifiedFilterStart).toISOString());
 </script>
 
 <Modal autoclose outsideclose size="lg" bind:open={showHistory}>
@@ -171,130 +194,102 @@
 	</div>
 </Modal>
 
-{#if $allPackagesQueryStore.fetching}
-	<p>Loading packages...</p>
-{:else if $allPackagesQueryStore.error}
-	<p>Error! {$allPackagesQueryStore.error.message}</p>
-{:else}
-	<div class="mt-2">
-		<div>
-			<Table hoverable>
-				<TableHead theadClass="text-xs uppercase">
-					<TableHeadCell>{allPackagesFiltered.length}</TableHeadCell>
-					<TableHeadCell>
-						<div class="flex">
-							<p class="my-auto pr-4">Name</p>
-							<Input bind:value={nameSearch} placeholder="Search by package name" size="sm" />
-						</div>
-					</TableHeadCell>
-					<TableHeadCell>Last modified</TableHeadCell>
-				</TableHead>
-				<TableBody>
-					{#each allPackagesFiltered as pkg, idx}
-						<TableBodyRow
-							class="cursor-pointer"
-							on:click={() => {
-								if (openRowIdx === idx) {
-									openRowIdx = -1;
-									return;
-								}
-								name = pkg.name;
-								openRowIdx = idx;
-							}}
-						>
-							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
-							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{pkg.name}</TableBodyCell>
-							<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-								>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell
-							>
-						</TableBodyRow>
-						{#if openRowIdx === idx}
-							<TableBodyRow class="h-24 shadow-inner">
-								<TableBodyCell>
-									<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
-										{pkg?.name}
-									</a>
-								</TableBodyCell>
-								<TableBodyCell class="p-0">
-									<div class="px-1 py-1 grid grid-cols-2">
-										<div>
-											<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
-											<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
-											<p>Height(mm): {pkg.phs_nom_height / 1000}({pkg.phs_min_height / 1000}/{pkg.phs_max_height / 1000})</p>
-										</div>
-										<div>
-											<p>Centering type: {pkg.algorithm}</p>
-											<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
-											<p>Cameras: {pkg.cameraset}</p>
-										</div>
-									</div>
-								</TableBodyCell>
-								<TableBodyCell>
-									<div class="px-1 py-1 mx-auto">
-										<p>Changes in history: {packageHistory.length}</p>
-										<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
-											Show history
-										</Button>
-									</div>
-								</TableBodyCell>
-							</TableBodyRow>
-						{/if}
-					{/each}
-				</TableBody>
-			</Table>
-		</div>
-	</div>
-
-	<!-- {#each $packageHistoryQueryStore?.data?.mycronic_tpsys_packages as pkg, idx}
-		{@const comparison = compare($packageHistoryQueryStore?.data?.mycronic_tpsys_packages[idx + 1] || pkg, pkg)}
-		{@const comparisonKeys = Object.keys(comparison)}
-		{#if !comparisonKeys.length}
-			<table>
-				<tr>
-					{#each Object.keys(pkg) as key}
-						<th>{key}</th>
-					{/each}
-				</tr>
-				<tr>
-					{#each Object.keys(pkg) as p}
-						<td><center><span style="color: blue">{pkg[p]}</span></center></td>
-					{/each}
-				</tr>
-			</table>
-		{/if}
-		<table>
-			<tr>
-				{#each comparisonKeys as key}
-					<th>{key}</th>
-				{/each}
-			</tr>
-			<tr>
-				{#each comparisonKeys as key}
-					<td
-						><center
-							><span style="color: orange">{comparison[key][0]}</span><br />⏬<br /><span style="color: green"
-								>{comparison[key][1]}</span
-							></center
-						></td
+<div class="mt-2">
+	<div>
+		<Table hoverable>
+			<TableHead theadClass="text-xs uppercase">
+				<TableHeadCell>
+					{#if $allPackagesQueryStore.fetching}
+						<Spinner />
+					{:else}
+						{allPackagesFiltered.length}
+					{/if}
+				</TableHeadCell>
+				<TableHeadCell>
+					<div class="flex">
+						<p class="my-auto pr-4">Name</p>
+						<Input bind:value={nameSearch} placeholder="Search by package name" size="sm" />
+					</div>
+				</TableHeadCell>
+				<TableHeadCell>
+					<div class="flex">
+						<p class="my-auto pr-4">Last modified</p>
+						<input
+							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="date"
+							bind:value={modifiedFilterStart}
+						/>
+						<p class="my-auto px-1 text-2xl">-</p>
+						<input
+							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="date"
+							bind:value={modifiedFilterEnd}
+						/>
+					</div>
+				</TableHeadCell>
+			</TableHead>
+			<TableBody>
+				{#each allPackagesFiltered as pkg, idx}
+					<TableBodyRow
+						class="cursor-pointer"
+						on:click={() => {
+							if (openRowIdx === idx) {
+								openRowIdx = -1;
+								return;
+							}
+							name = pkg.name;
+							openRowIdx = idx;
+						}}
 					>
+						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{pkg.name}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
+							>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell
+						>
+					</TableBodyRow>
+					{#if openRowIdx === idx}
+						<TableBodyRow class="h-24 shadow-inner">
+							<TableBodyCell>
+								<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
+									{pkg?.name}
+								</a>
+							</TableBodyCell>
+							<TableBodyCell class="p-0">
+								<div class="px-1 py-1 grid grid-cols-2">
+									<div>
+										<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
+										<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
+										<p>Height(mm): {pkg.phs_nom_height / 1000}({pkg.phs_min_height / 1000}/{pkg.phs_max_height / 1000})</p>
+									</div>
+									<div>
+										<p>Centering type: {pkg.algorithm}</p>
+										<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
+										<p>Cameras: {pkg.cameraset}</p>
+									</div>
+								</div>
+							</TableBodyCell>
+							<TableBodyCell>
+								<div class="px-1 py-1 mx-auto">
+									<p>Changes in history: {packageHistory.length}</p>
+									<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
+										Show history
+									</Button>
+								</div>
+							</TableBodyCell>
+						</TableBodyRow>
+					{/if}
+				{:else}
+					<TableBodyRow>
+						<TableBodyCell colspan="3">
+							{#if $allPackagesQueryStore.fetching}
+								<p>Loading packages...</p>
+							{:else if $allPackagesQueryStore.error}
+								<p>Error! {$allPackagesQueryStore.error.message}</p>
+							{/if}
+						</TableBodyCell>
+					</TableBodyRow>
 				{/each}
-			</tr>
-		</table>
-		<hr />
-	{/each} -->
-{/if}
-
-<style>
-	table {
-		font-family: arial, sans-serif;
-		border-collapse: collapse;
-		width: 100%;
-	}
-
-	td,
-	th {
-		border: 1px solid #dddddd;
-		text-align: left;
-		padding: 8px;
-	}
-</style>
+			</TableBody>
+		</Table>
+	</div>
+</div>

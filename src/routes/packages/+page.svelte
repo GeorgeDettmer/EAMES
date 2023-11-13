@@ -146,7 +146,7 @@
 
 	let modifiedFilterStart = '';
 	let modifiedFilterEnd = '';
-	$: console.log('modifiedFilter', modifiedFilterStart, modifiedFilterStart && new Date(modifiedFilterStart).toISOString());
+	$: console.log('modifiedFilter', modifiedFilterStart, modifiedFilterEnd);
 </script>
 
 <Modal autoclose outsideclose size="lg" bind:open={showHistory}>
@@ -200,7 +200,7 @@
 			<TableHead theadClass="text-xs uppercase">
 				<TableHeadCell>
 					{#if $allPackagesQueryStore.fetching}
-						<Spinner />
+						<Spinner color="blue" />
 					{:else}
 						{allPackagesFiltered.length}
 					{/if}
@@ -215,14 +215,21 @@
 					<div class="flex">
 						<p class="my-auto pr-4">Last modified</p>
 						<input
-							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 							type="date"
+							on:change={() => {
+								if (!modifiedFilterEnd) {
+									modifiedFilterEnd = modifiedFilterStart;
+								}
+							}}
 							bind:value={modifiedFilterStart}
 						/>
 						<p class="my-auto px-1 text-2xl">-</p>
 						<input
-							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 							type="date"
+							min={modifiedFilterStart}
+							disabled={!modifiedFilterStart}
 							bind:value={modifiedFilterEnd}
 						/>
 					</div>

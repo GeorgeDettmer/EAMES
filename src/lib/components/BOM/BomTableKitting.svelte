@@ -24,17 +24,16 @@
 		TableHeadCell,
 		Tooltip
 	} from 'flowbite-svelte';
-	import { writable } from 'svelte/store';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
-	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { datetimeFormat } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
-	import ReceiveItem from '../Receiving/ReceiveItem.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
+	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
+	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
 
 	let items = [];
 
@@ -63,37 +62,7 @@
 		if (qty > requiredQty) return 'green';
 	}
 
-	function highlightReferences(references: string[], highlight: boolean = true) {
-		if (highlight) {
-			highlightedReferences = highlightedReferences.concat(references);
-		} else {
-			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
-		}
-		console.log('highlightedReferences', highlightedReferences);
-		references.forEach((r) => {
-			let group = getComponentGroups(r);
-			group = group?.[0];
-			if (group) {
-				group?.find('.outline')?.forEach((c) => {
-					//console.log('Update component colour:', c);
-					c.fillEnabled(true);
-					c.fill(highlight ? 'blue' : '');
-					c.opacity(0.75);
-				});
-			}
-		});
-	}
 	const dispatch = createEventDispatcher();
-	function handleReferenceHover(references: string[], hovering: boolean) {
-		//console.log('handleReferenceHover', references, hovering);
-		if (hovering) {
-			highlightedReferences = highlightedReferences.concat(references);
-		} else {
-			highlightedReferences = highlightedReferences.filter((v) => !highlightedReferences.includes(v));
-		}
-		console.log('handleReferenceHover', highlightedReferences);
-		//highlightReferences(references, hovering);
-	}
 
 	function handleRowClick(idx: number, references: string[], line, pn: string | null, event: MouseEvent) {
 		console.log('handleRowClick', idx, references, line, event);
@@ -113,25 +82,32 @@
 
 	let receiveModal = false;
 	let activeLine = {};
+
+	let collapsedColumns: string[] = [];
 </script>
 
 <Modal autoclose bind:open={receiveModal} size="lg">
-	<KitItem orderItems={activeLine?.orderItems} kitItems={activeLine?.kitItems} part={activeLine?.line?.[0]?.part} />
+	<KitItem
+		kits={job?.jobs_kits?.map((jk) => jk.kit)}
+		orderItems={activeLine?.orderItems}
+		kitItems={activeLine?.kitItems}
+		part={activeLine?.line?.[0]?.part}
+	/>
 </Modal>
 
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
 			<TableHeadCell>#</TableHeadCell>
-			{#if visibleColumns?.includes('part')}
-				<TableHeadCell>Part</TableHeadCell>
-			{/if}
-			{#if visibleColumns?.includes('description')}
-				<TableHeadCell>Description</TableHeadCell>
-			{/if}
-			{#if visibleColumns?.includes('references')}
-				<TableHeadCell>References</TableHeadCell>
-			{/if}
+			<TableHeadCollapsible columnId="part" visible={visibleColumns?.includes('part')} bind:collapsedColumns>
+				Part
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="description" visible={visibleColumns?.includes('description')} bind:collapsedColumns>
+				Description
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="references" visible={visibleColumns?.includes('references')} bind:collapsedColumns>
+				References
+			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
 				<TableHeadCell>Qty</TableHeadCell>
 			{/if}
@@ -179,24 +155,27 @@
 					}}
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
-					{#if visibleColumns?.includes('part')}
-						<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}
-							>{lineKey || 'Not Fitted'}</TableBodyCell
-						>
-					{/if}
 
-					{#if visibleColumns?.includes('description')}
-						<TableBodyCell>
-							<p class="overflow-hidden text-clip">{description || ''}</p>
-							{#if line?.[0]?.description && line?.[0]?.description !== description}
-								<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
-							{/if}
-						</TableBodyCell>
-					{/if}
+					<TableBodyCollapsible columnId="part" visible={visibleColumns?.includes('part')} bind:collapsedColumns>
+						<p class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}>
+							{lineKey || 'Not Fitted'}
+						</p>
+					</TableBodyCollapsible>
 
-					{#if visibleColumns?.includes('references')}
+					<TableBodyCollapsible
+						columnId="description"
+						visible={visibleColumns?.includes('description')}
+						bind:collapsedColumns
+					>
+						<p class="overflow-hidden text-clip">{description || ''}</p>
+						{#if line?.[0]?.description && line?.[0]?.description !== description}
+							<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
+						{/if}
+					</TableBodyCollapsible>
+
+					<TableBodyCollapsible columnId="references" visible={visibleColumns?.includes('references')} bind:collapsedColumns>
 						<BomTableLineReferences pn={lineKey} {references} />
-					{/if}
+					</TableBodyCollapsible>
 
 					{#if visibleColumns?.includes('quantity')}
 						<TableBodyCell>{references?.length}</TableBodyCell>

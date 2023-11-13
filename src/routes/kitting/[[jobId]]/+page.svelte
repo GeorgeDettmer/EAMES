@@ -12,6 +12,7 @@
 	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
 	import KitList from '$lib/components/Kitting/KitList.svelte';
 	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
+	import { Alert, Spinner } from 'flowbite-svelte';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -181,11 +182,12 @@
 </script>
 
 {#if jobId}
-	{#if jobInfo}
-		<div class="flex">
-			<div class="w-full">
-				<JobOverview job={jobInfo}>
-					<!-- <div class="pl-4">
+	{#if $jobInfoStore.data}
+		{#if jobInfo}
+			<div class="flex">
+				<div class="w-full">
+					<JobOverview job={jobInfo}>
+						<!-- <div class="pl-4">
 							<div
 								class:bg-red-600={incompleteOrders?.length > 0}
 								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
@@ -193,30 +195,36 @@
 								<p class="text-white">{incompleteOrders?.length > 0 ? incompleteOrders?.length : '✅'}</p>
 							</div>
 						</div> -->
-				</JobOverview>
+					</JobOverview>
+				</div>
+				<!-- <div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
+					<ChevronDoubleUp
+						on:click={() => {
+							toggleAccordions(false);
+						}}
+					/>
+					<EllipseHorizontalSolid
+						on:click={() => {
+							toggleAccordions();
+						}}
+					/>
+					<ChevronDoubleDown
+						on:click={() => {
+							toggleAccordions(true);
+						}}
+					/>
+				</div> -->
 			</div>
-			<div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
-				<ChevronDoubleUp
-					on:click={() => {
-						toggleAccordions(false);
-					}}
-				/>
-				<EllipseHorizontalSolid
-					on:click={() => {
-						toggleAccordions();
-					}}
-				/>
-				<ChevronDoubleDown
-					on:click={() => {
-						toggleAccordions(true);
-					}}
-				/>
-			</div>
-		</div>
-	{/if}
-	<KitList {kits} bind:accordionState />
-	{#if jobInfo?.assembly?.bom}
-		<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
+		{/if}
+
+		{#if jobInfo?.assembly?.bom}
+			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
+		{:else}
+			<Alert color="red">No BOM set for this job assembly!</Alert>
+		{/if}
+		<KitList {kits} bind:accordionState />
+	{:else}
+		<Spinner color="blue" />
 	{/if}
 {:else}
 	TODO: kitting dashboard

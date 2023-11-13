@@ -166,52 +166,6 @@
 
 	$: console.log('scanStore', $scanStore);
 
-	let scanPartTokens;
-	$: {
-		if ($scanStore) {
-			let r = $scanStore
-				?.toLowerCase()
-				?.match(/(?<CON>(06k).*)(?<MPN>(p1p).*)(?<SPN>(3p).*)(?<QTY>(q).*)(?<UNDEFINED>(9d).*)/);
-			/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
-			console.log('scanPartTokens', r?.groups);
-			//TODO: Fix regex not to include prefixes is capture groups...
-			scanPartTokens = {
-				spn: r?.groups?.SPN?.slice(2),
-				mpn: r?.groups?.MPN?.slice(3),
-				qty: Number(r?.groups?.QTY?.slice(1))
-			};
-			console.log('scanPartTokens', scanPartTokens);
-			scanStore.set('');
-			if (scanPartTokens?.mpn) {
-				let ordersContainingPart = orders.filter(
-					({ order }) => order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn).length > 0
-				);
-				//TODO: Redo all this binding of values, its a mess
-				/* accordionState = orders.map(({ order }) => {
-					let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
-					let item = items?.[0];
-					if (item) {
-						order._open = true;
-						if (scanPartTokens?.qty) {
-							item._qty = scanPartTokens.qty;
-						}
-					}
-					return item?.id ? item : false;
-				}); */
-				highlightOrderItems = orders
-					.map(({ order }, idx) => {
-						let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
-						let item = items?.[0];
-						console.log('i', items, item);
-						accordionState[idx] = item;
-						return items;
-					})
-					?.flat();
-				console.log('ordersContainingPart', ordersContainingPart, 'highlightOrderItems', highlightOrderItems);
-				messagesStore(`Part scanned. ${scanPartTokens?.mpn} found in ${ordersContainingPart?.length} order(s)`);
-			}
-		}
-	}
 	$: console.log('orders', orders);
 
 	let accordionState: boolean[] = [];

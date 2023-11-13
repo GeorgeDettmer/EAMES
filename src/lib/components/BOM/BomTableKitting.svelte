@@ -27,7 +27,7 @@
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { datetimeFormat } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
@@ -36,8 +36,9 @@
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
 	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
 	import { XMark } from 'svelte-heros-v2';
-	import { storage } from 'svelte-legos';
+	import { messagesStore, storage } from 'svelte-legos';
 	import { writable } from 'svelte/store';
+	import { scanStore } from '$lib/stores';
 
 	let items = [];
 
@@ -83,14 +84,55 @@
 
 	$: console.log('BOM:', bom);
 	$: console.log('JOB:', job);
+	$: console.log('activeLine', activeLine);
 
 	let receiveModal = false;
 	let activeLine = {};
 
 	let collapsedColumns = storage(writable([]), 'EAMES_kitting_collapsedColumns');
+
+	let scanStoreUnsub = scanStore.subscribe((scan: string) => {
+		console.log('scan sub', scan);
+		let r = scan?.toLowerCase()?.match(/(?<CON>(06k).*)(?<MPN>(p1p).*)(?<SPN>(3p).*)(?<QTY>(q).*)(?<UNDEFINED>(9d).*)/);
+		/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
+		console.log('scanPartTokens', r?.groups);
+		//TODO: Fix regex not to include prefixes is capture groups...
+		let scanPartTokens = {
+			spn: r?.groups?.SPN?.slice(2),
+			mpn: r?.groups?.MPN?.slice(3),
+			qty: Number(r?.groups?.QTY?.slice(1))
+		};
+		console.log('scanPartTokens', scanPartTokens);
+		scanStore.set('');
+		if (scanPartTokens?.mpn) {
+			/* let ordersContainingPart = orders.filter(
+					({ order }) => order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn).length > 0
+				); */
+			//TODO: Redo all this binding of values, its a mess
+			/* accordionState = orders.map(({ order }) => {
+					let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
+					let item = items?.[0];
+					if (item) {
+						order._open = true;
+						if (scanPartTokens?.qty) {
+							item._qty = scanPartTokens.qty;
+						}
+					}
+					return item?.id ? item : false;
+				}); */
+			/* activeLine = lines.keys().map((pn, idx) => {
+				if (pn == scanPartTokens?.mpn) {
+					return lines.get(pn);
+				}
+			}); */
+			console.log('ordersContainingPart', ordersContainingPart, 'highlightOrderItems', highlightOrderItems);
+			messagesStore(`Part scanned. ${scanPartTokens?.mpn} found in ${ordersContainingPart?.length} order(s)`);
+		}
+	});
+	onDestroy(scanStoreUnsub);
 </script>
 
-<Modal autoclose bind:open={receiveModal} size="lg">
+<Modal autoclose outsideclose bind:open={receiveModal} size="lg">
 	<KitItem
 		kits={job?.jobs_kits?.map((jk) => jk.kit)}
 		orderItems={activeLine?.orderItems}
@@ -158,9 +200,11 @@
 				{@const kitItems = job?.jobs_kits
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
-				{@const orderItems = job?.jobs_orders
-					?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
-					.flat()}
+				{@const orderItems = lineKey
+					? job?.jobs_orders
+							?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
+							.flat()
+					: []}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
@@ -184,7 +228,11 @@
 						visible={visibleColumns?.includes('part')}
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<p class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}>
+						<p
+							class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
+								activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
+							}`}
+						>
 							{lineKey || 'Not Fitted'}
 						</p>
 					</TableBodyCollapsible>

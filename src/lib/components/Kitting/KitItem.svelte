@@ -33,6 +33,7 @@
 
 	orderItems.forEach((i) => {
 		i.__quantity = i.quantity;
+		i.__selected = true;
 	});
 	const urqlClient = getContextClient();
 	let quantityAdding = false;
@@ -75,6 +76,36 @@
 				console.log('MUTATION RESULT: ', mutationResult);
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
 			}
+		} else {
+			let itemsToKit = orderItems?.filter((i) => i.__selected && i.__quantity);
+			let items = itemsToKit?.map((i) => {
+				return {
+					kit_id: kit.id,
+					order_item_id: i.id,
+					part: i?.part,
+					quantity: i.__quantity
+				};
+			});
+			console.log('itemstoadd:', items);
+			mutationResult = await urqlClient.mutation(
+				gql`
+					mutation insertOrderItems($items: [erp_kits_items_insert_input!] = {}) {
+						insert_erp_kits_items(objects: $items) {
+							returning {
+								id
+							}
+						}
+					}
+				`,
+				{ items }
+			);
+			if (mutationResult?.error) {
+				console.error('MUTATION ERROR: ', mutationResult);
+				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+			} else {
+				console.log('MUTATION RESULT: ', mutationResult);
+				messagesStore('Inserted: ' + mutationResult.data, 'success');
+			}
 		}
 
 		quantityAdding = false;
@@ -96,7 +127,8 @@
 			{#if !arbitraryQuantityVisible}
 				<p class="pb-2 text-lg">Kit {kittingTotal} from {orderItems?.filter((i) => i.__selected).length} order(s)</p>
 			{:else}
-				<p class="pb-2 text-lg underline text-red-600">Kit {kittingTotal} (arbitrary amount not associated with an order)</p>
+				<p class="text-lg underline text-red-600">Kit {kittingTotal}</p>
+				<p class="pb-2 italic text-red-600">arbitrary amount not associated with an order</p>
 			{/if}
 			<PartInfo partId={part} showPopoutButton={false} />
 		</div>

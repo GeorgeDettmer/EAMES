@@ -34,6 +34,8 @@
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
+	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
+	import { XMark } from 'svelte-heros-v2';
 
 	let items = [];
 
@@ -261,6 +263,7 @@
 											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
+											<TableHeadCell padding="px-1 py-1" />
 										</TableHead>
 										<TableBody>
 											{#each kitItems as item, idx}
@@ -299,6 +302,9 @@
 														{:else}
 															N/A
 														{/if}
+													</TableBodyCell>
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+														<KitItemRemoveButton id={item.id}><XMark size="16" /></KitItemRemoveButton>
 													</TableBodyCell>
 												</TableBodyRow>
 												<!-- <div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1">

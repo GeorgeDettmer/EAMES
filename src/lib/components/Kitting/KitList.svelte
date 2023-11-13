@@ -1,7 +1,6 @@
 <script lang="ts">
 	import {
 		Badge,
-		Button,
 		Accordion,
 		AccordionItem,
 		Table,
@@ -13,15 +12,16 @@
 		Popover
 	} from 'flowbite-svelte';
 	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
-	import { ChevronDoubleUp, ChevronDoubleDown } from 'svelte-heros-v2';
+	import { ChevronDoubleUp, ChevronDoubleDown, XMark } from 'svelte-heros-v2';
 	import OrdersListItem from '../Orders/OrdersListItem.svelte';
 	import PartInfo from '../PartInfo.svelte';
-	import { onMount } from 'svelte';
+	import KitItemRemoveButton from './KitItemRemoveButton.svelte';
 
 	export let kits = [];
 	export let highlightAccordionIdx: undefined | number = undefined;
 	export let accordionState: boolean[] = [];
 	export let showAccordionToggles: boolean = false;
+	export let allowEdit: boolean = true;
 
 	function toggleAccordions(open: boolean | undefined = undefined) {
 		accordionState.forEach((v, i) => {
@@ -89,6 +89,9 @@
 					<TableHeadCell>Part</TableHeadCell>
 					<TableHeadCell>Order</TableHeadCell>
 					<TableHeadCell>Quantity</TableHeadCell>
+					{#if allowEdit}
+						<TableHeadCell />
+					{/if}
 				</TableHead>
 				<TableBody>
 					{#each kits_items as item, item_idx}
@@ -96,14 +99,21 @@
 							<TableBodyCell>{item_idx + 1}</TableBodyCell>
 							<TableBodyCell>{item.part}</TableBodyCell>
 							<TableBodyCell>
-								<Badge class="cursor-pointer" color={item.orders_item.order.id ? 'blue' : 'dark'}>
-									{item.orders_item.order.id || 'N/A'}
+								<Badge class="cursor-pointer" color={item.orders_item?.order?.id ? 'blue' : 'dark'}>
+									{item?.orders_item?.order?.id || 'N/A'}
 								</Badge>
-								<Popover placement="left">
-									<OrdersListItem order={item.orders_item.order} />
-								</Popover>
+								{#if item?.orders_item?.order}
+									<Popover placement="left">
+										<OrdersListItem order={item.orders_item.order} />
+									</Popover>
+								{/if}
 							</TableBodyCell>
 							<TableBodyCell>{item.quantity}</TableBodyCell>
+							{#if allowEdit}
+								<TableBodyCell>
+									<KitItemRemoveButton id={item.id}><XMark size="16" /></KitItemRemoveButton>
+								</TableBodyCell>
+							{/if}
 						</TableBodyRow>
 						{#if item?.__open}
 							<TableBodyRow class="shadow-inner">
@@ -120,7 +130,7 @@
 						{/if}
 					{:else}
 						<TableBodyRow>
-							<TableBodyCell colspan="3">No items assigned to this kit</TableBodyCell>
+							<TableBodyCell colspan="5">No items assigned to this kit</TableBodyCell>
 						</TableBodyRow>
 					{/each}
 				</TableBody>
@@ -129,6 +139,7 @@
 					<TableHeadCell />
 					<TableHeadCell />
 					<TableHeadCell>{kits_items.reduce((a, v) => (a = a + v.quantity), 0)}</TableHeadCell>
+					<TableHeadCell />
 				</TableHead>
 			</Table>
 		</AccordionItem>

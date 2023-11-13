@@ -12,16 +12,17 @@
 		Button,
 		Dropdown,
 		Helper,
-		Radio
+		Radio,
+		Spinner
 	} from 'flowbite-svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
-	import { gql } from '@urql/svelte';
+	import { getContextClient, gql } from '@urql/svelte';
 	import { ChevronDownSolid } from 'flowbite-svelte-icons';
 
-	export let part = '';
+	export let part;
 	export let orderItems = [];
 	export let kitItems = [];
 	export let kits = [];
@@ -33,40 +34,50 @@
 	orderItems.forEach((i) => {
 		i.__quantity = i.quantity;
 	});
-
-	async function removeRecieved(received) {
+	const urqlClient = getContextClient();
+	let quantityAdding = false;
+	async function addQuantity() {
+		if (quantityAdding) return;
+		//TODO: Fix quantity control
+		/* if (recievedQty >= orderItem.quantity || recievedQty + quantity > orderItem.quantity) {
+			messagesStore('Quantity over order total', 'warning');
+			return;
+		} */
 		if (!$page?.data?.user) {
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
-		/* if (!$page?.data?.user?.processes['eng']) {
-			alert(
-				`You do not have permission to insert components. You have permission for: ${Object.keys(
-					$page?.data?.user?.processes
-				)}`
-			);
-			return;
-		} */
+		if (kittingTotal < 1) {
+			messagesStore('Quantity to add must more than 0', 'warning');
+		}
+		if (!kit?.id) {
+			messagesStore('No kit seleted', 'warning');
+		}
+
+		quantityAdding = true;
 		let mutationResult;
 
-		mutationResult = await urqlClient.mutation(
-			gql`
-				mutation removeRecieved($id: uuid!) {
-					delete_erp_orders_items_received_by_pk(id: $id) {
-						id
+		if (arbitraryQuantityVisible) {
+			mutationResult = await urqlClient.mutation(
+				gql`
+					mutation insertKitQty($kit_id: uuid!, $quantity: Int!, $part: String) {
+						insert_erp_kits_items_one(object: { kit_id: $kit_id, quantity: $quantity, part: $part }) {
+							id
+						}
 					}
-				}
-			`,
-			{ id: received?.id }
-		);
-		if (mutationResult?.error) {
-			console.error('MUTATION ERROR: ', mutationResult);
-			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-		} else {
-			recieveModal = false;
-			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Removed receipt: ' + mutationResult.data.delete_erp_orders_items_received_by_pk.id, 'success');
+				`,
+				{ kit_id: kit.id, quantity: arbitraryQuantity, part }
+			);
+			if (mutationResult?.error) {
+				console.error('MUTATION ERROR: ', mutationResult);
+				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+			} else {
+				console.log('MUTATION RESULT: ', mutationResult);
+				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
+			}
 		}
+
+		quantityAdding = false;
 	}
 
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);
@@ -91,7 +102,7 @@
 		</div>
 		<div class="w-1/4">
 			<ul class="p-2">
-				{kit.id}
+				<p class="uppercase">{kit?.id?.split('-')?.slice(-1)}</p>
 				{#each kits as k, idx}
 					<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
 						<Radio
@@ -112,7 +123,12 @@
 		<div class="w-1/4">
 			<div class="">
 				<div class="flex">
-					<Button color="blue" disabled={kittingTotal < 1}>Add to kit</Button>
+					<Button color="blue" size="sm" disabled={kittingTotal < 1} on:click={() => addQuantity()}>
+						Add
+						{#if quantityAdding}
+							<Spinner class="ml-3" size="3" color="white" />
+						{/if}
+					</Button>
 					{#if arbitraryQuantityVisible}
 						<div
 							class="w-1/2 mx-auto"

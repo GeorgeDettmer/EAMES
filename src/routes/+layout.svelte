@@ -263,9 +263,11 @@
 				keys.timeStamp = 0;
 				keys.result = '';
 			}
+			//TODO: Check character filtering is sufficient here
 			if (
 				keys.timeStamp &&
-				new Set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ' + keys.config.separator).has(key)
+				key.length === 1
+				//new Set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_+()[]{} ' + keys.config.separator).has(key)
 			) {
 				keys.result += key;
 			}

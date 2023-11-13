@@ -90,13 +90,12 @@
 	let activeLine = {};
 
 	let collapsedColumns = storage(writable([]), 'EAMES_kitting_collapsedColumns');
-
 	let scanStoreUnsub = scanStore.subscribe((scan: string) => {
-		console.log('scan sub', scan);
+		if (!scan) return;
+		console.log('scanStore3', scan);
 		let r = scan?.toLowerCase()?.match(/(?<CON>(06k).*)(?<MPN>(p1p).*)(?<SPN>(3p).*)(?<QTY>(q).*)(?<UNDEFINED>(9d).*)/);
-		/* $scanStore?.split(/(?<CON>(06K).*)(?<MPN>(P1P).*)(?<SPN>(3P).*)/); */
-		console.log('scanPartTokens', r?.groups);
-		//TODO: Fix regex not to include prefixes is capture groups...
+		console.log('scanPartTokens', scan, scan?.toLowerCase(), r?.groups);
+		//TODO: Fix regex not to include prefixes in capture groups...
 		let scanPartTokens = {
 			spn: r?.groups?.SPN?.slice(2),
 			mpn: r?.groups?.MPN?.slice(3),
@@ -105,28 +104,14 @@
 		console.log('scanPartTokens', scanPartTokens);
 		scanStore.set('');
 		if (scanPartTokens?.mpn) {
-			/* let ordersContainingPart = orders.filter(
-					({ order }) => order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn).length > 0
-				); */
-			//TODO: Redo all this binding of values, its a mess
-			/* accordionState = orders.map(({ order }) => {
-					let items = order.orders_items.filter((i) => i?.part?.toLowerCase() === scanPartTokens?.mpn);
-					let item = items?.[0];
-					if (item) {
-						order._open = true;
-						if (scanPartTokens?.qty) {
-							item._qty = scanPartTokens.qty;
-						}
-					}
-					return item?.id ? item : false;
-				}); */
-			/* activeLine = lines.keys().map((pn, idx) => {
-				if (pn == scanPartTokens?.mpn) {
-					return lines.get(pn);
-				}
-			}); */
-			console.log('ordersContainingPart', ordersContainingPart, 'highlightOrderItems', highlightOrderItems);
-			messagesStore(`Part scanned. ${scanPartTokens?.mpn} found in ${ordersContainingPart?.length} order(s)`);
+			messagesStore(`Part scanned: ${scanPartTokens.mpn}`);
+			let newActiveLine = [...lines.entries()].filter(([key, value]) => key?.toLowerCase() === scanPartTokens.mpn)?.[0];
+			console.log('newActiveLine', newActiveLine);
+			if (newActiveLine?.[1]) {
+				activeLine.line = newActiveLine?.[1];
+				receiveModal = true;
+				messagesStore(`Matched ${scanPartTokens.mpn} at line *`, 'success');
+			}
 		}
 	});
 	onDestroy(scanStoreUnsub);

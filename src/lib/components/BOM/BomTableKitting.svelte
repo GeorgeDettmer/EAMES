@@ -99,22 +99,64 @@
 		let scanPartTokens = {
 			spn: r?.groups?.SPN?.slice(2),
 			mpn: r?.groups?.MPN?.slice(3),
-			qty: Number(r?.groups?.QTY?.slice(1))
+			qty: Number(r?.groups?.QTY?.slice(1)),
+			con: r?.groups?.CON?.slice(3)
 		};
 		console.log('scanPartTokens', scanPartTokens);
 		scanStore.set('');
 		if (scanPartTokens?.mpn) {
 			messagesStore(`Part scanned: ${scanPartTokens.mpn}`);
-			let newActiveLine = [...lines.entries()].filter(([key, value]) => key?.toLowerCase() === scanPartTokens.mpn)?.[0];
-			console.log('newActiveLine', newActiveLine);
-			if (newActiveLine?.[1]) {
-				activeLine.line = newActiveLine?.[1];
-				receiveModal = true;
-				messagesStore(`Matched ${scanPartTokens.mpn} at line *`, 'success');
-			}
+			setActiveLine(scanPartTokens.mpn, scanPartTokens.con, scanPartTokens.qty);
 		}
 	});
 	onDestroy(scanStoreUnsub);
+
+	function setActiveLine(mpn: string, con, qty) {
+		let matches = [...lines.entries()].filter(([key, value]) => key?.toLowerCase() === mpn.toLowerCase());
+		console.log('setActiveLine', matches);
+		if (matches.length === 1) {
+			let match = matches?.[0];
+			const kitItems = job?.jobs_kits
+				?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id?.toLowerCase() === mpn || i.part?.toLowerCase() === mpn))
+				.flat();
+			const orderItems = job?.jobs_orders
+				?.map((jo) =>
+					jo.order?.orders_items?.filter((i) => i.part_id?.toLowerCase() === mpn || i.part?.toLowerCase() === mpn)
+				)
+				.flat();
+
+			if (con) {
+				console.log('setActiveLine', 'has con', con);
+				orderItems.forEach((i) => {
+					const idString = i.order.id.toString();
+					console.log('setActiveLine', 'con', idString, i.order.id, con);
+					if (idString === con || i.order.id === con) {
+						console.log('setActiveLine', 'con match', i);
+						i.__selected = true;
+						if (qty && qty > 0) {
+							console.log('setActiveLine', 'con has qty', qty, i.quantity);
+							if (qty <= i.quantity) {
+								i.__quantity = qty;
+							} else {
+								console.error('setActiveLine', 'scan qty higher than line order qty!', qty, i?.quantity);
+							}
+						}
+						return;
+					}
+				});
+			}
+
+			activeLine.line = match?.[1];
+			activeLine.kitItems = kitItems;
+			activeLine.orderItems = orderItems;
+
+			receiveModal = true;
+		} else if (matches.length > 1) {
+			console.log('setActiveLineFromMPN', 'multiple matches for', mpn);
+		} else {
+			console.log('setActiveLineFromMPN', 'no matches for', mpn);
+		}
+	}
 </script>
 
 <Modal autoclose outsideclose bind:open={receiveModal} size="lg">

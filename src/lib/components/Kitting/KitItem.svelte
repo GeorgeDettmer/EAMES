@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clamp, datetimeFormat } from '$lib/utils';
+	import { clamp, classes, datetimeFormat } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -32,8 +32,19 @@
 	let arbitraryQuantity = 1;
 
 	orderItems.forEach((i) => {
-		i.__quantity = i.quantity;
-		i.__selected = true;
+		let kitted = kitItems?.filter((ki) => ki.orders_item?.id === i.id);
+		let kittedQty = kitted?.reduce((a, v) => (a = a + v.quantity), 0);
+		if (!i?.__quantity) {
+			i.__quantity = i.quantity;
+		}
+		if (!i?.__selected) {
+			i.__selected = true;
+		}
+		if (kittedQty >= i.quantity) {
+			i.__selected = false;
+			i.__quantity = 0;
+			i.__kitted = true;
+		}
 	});
 	const urqlClient = getContextClient();
 	let quantityAdding = false;
@@ -190,7 +201,7 @@
 		{#if !arbitraryQuantityVisible}
 			<Table>
 				<TableHead theadClass="uppercase text-center">
-					<TableHeadCell>User</TableHeadCell>
+					<TableHeadCell>Buyer</TableHeadCell>
 					<TableHeadCell>Time/Date</TableHeadCell>
 					<TableHeadCell>Order</TableHeadCell>
 					<TableHeadCell>Order Qty</TableHeadCell>
@@ -199,12 +210,14 @@
 						<Checkbox
 							on:change={(e) => {
 								orderItems.forEach((i) => {
-									i.__selected = e.target.checked;
+									if (!i.__kitted) {
+										i.__selected = e.target.checked;
+									}
 								});
 								orderItems = orderItems;
 							}}
 							disabled={!orderItems.length}
-							checked={orderItems.length > 0 && orderItems.filter((i) => i?.__selected).length == orderItems.length}
+							checked={orderItems.length > 0 && orderItems.filter((i) => !i?.__selected && !i?.__kitted).length == 0}
 						/>
 					</TableHeadCell>
 				</TableHead>
@@ -229,7 +242,11 @@
 						<TableBodyCell tdClass="font-sm text-center">
 							{datetimeFormat(orderItem.updated_at)}
 						</TableBodyCell>
-						<TableBodyCell tdClass="font-sm text-center">{orderItem.order.id}</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							<a href={`${window.origin}/order/${orderItem.order.id}`} target="_blank" class={classes.link}>
+								{orderItem.order.id}
+							</a>
+						</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">{orderItem.quantity}</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">
 							<div
@@ -251,7 +268,11 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">
-							<Checkbox bind:checked={orderItem.__selected} />
+							{#if orderItem?.__kitted}
+								<Checkbox checked={orderItem.__kitted} disabled={orderItem.__kitted} color="green" />
+							{:else}
+								<Checkbox bind:checked={orderItem.__selected} disabled={orderItem.__kitted} />
+							{/if}
 						</TableBodyCell>
 					</TableBodyRow>
 				{:else}

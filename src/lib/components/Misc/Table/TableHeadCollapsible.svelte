@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TableHeadCell } from 'flowbite-svelte';
+	import { TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { ChevronDownOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
 
 	export let columnId: string;
@@ -32,6 +32,7 @@
 					<ChevronLeftOutline size="xs" on:click={() => collapseColumn(columnId, false)} />
 				</div>
 			</div>
+			<Tooltip placement="right" defaultClass="py-2 px-2 text-xs font-medium"><slot /></Tooltip>
 		</TableHeadCell>
 	{/if}
 {/if}

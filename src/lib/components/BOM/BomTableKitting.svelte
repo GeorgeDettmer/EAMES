@@ -36,6 +36,8 @@
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
 	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
 	import { XMark } from 'svelte-heros-v2';
+	import { storage } from 'svelte-legos';
+	import { writable } from 'svelte/store';
 
 	let items = [];
 
@@ -85,7 +87,7 @@
 	let receiveModal = false;
 	let activeLine = {};
 
-	let collapsedColumns: string[] = [];
+	let collapsedColumns = storage(writable([]), 'EAMES_kitting_collapsedColumns');
 </script>
 
 <Modal autoclose bind:open={receiveModal} size="lg">
@@ -100,14 +102,33 @@
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
+			<TableHeadCell padding="px-6 py-1" colspan="5"
+				>{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</TableHeadCell
+			>
+			<TableHeadCell padding="px-6 py-1" colspan="4" />
+			<TableHeadCell padding="px-6 py-1" colspan="2" />
+		</TableHead>
+		<TableHead>
 			<TableHeadCell>#</TableHeadCell>
-			<TableHeadCollapsible columnId="part" visible={visibleColumns?.includes('part')} bind:collapsedColumns>
+			<TableHeadCollapsible
+				columnId="part"
+				visible={visibleColumns?.includes('part')}
+				bind:collapsedColumns={$collapsedColumns}
+			>
 				Part
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="description" visible={visibleColumns?.includes('description')} bind:collapsedColumns>
+			<TableHeadCollapsible
+				columnId="description"
+				visible={visibleColumns?.includes('description')}
+				bind:collapsedColumns={$collapsedColumns}
+			>
 				Description
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="references" visible={visibleColumns?.includes('references')} bind:collapsedColumns>
+			<TableHeadCollapsible
+				columnId="references"
+				visible={visibleColumns?.includes('references')}
+				bind:collapsedColumns={$collapsedColumns}
+			>
 				References
 			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
@@ -158,7 +179,11 @@
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
 
-					<TableBodyCollapsible columnId="part" visible={visibleColumns?.includes('part')} bind:collapsedColumns>
+					<TableBodyCollapsible
+						columnId="part"
+						visible={visibleColumns?.includes('part')}
+						bind:collapsedColumns={$collapsedColumns}
+					>
 						<p class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}>
 							{lineKey || 'Not Fitted'}
 						</p>
@@ -167,7 +192,7 @@
 					<TableBodyCollapsible
 						columnId="description"
 						visible={visibleColumns?.includes('description')}
-						bind:collapsedColumns
+						bind:collapsedColumns={$collapsedColumns}
 					>
 						<p class="overflow-hidden text-clip">{description || ''}</p>
 						{#if line?.[0]?.description && line?.[0]?.description !== description}
@@ -175,7 +200,11 @@
 						{/if}
 					</TableBodyCollapsible>
 
-					<TableBodyCollapsible columnId="references" visible={visibleColumns?.includes('references')} bind:collapsedColumns>
+					<TableBodyCollapsible
+						columnId="references"
+						visible={visibleColumns?.includes('references')}
+						bind:collapsedColumns={$collapsedColumns}
+					>
 						<BomTableLineReferences pn={lineKey} {references} />
 					</TableBodyCollapsible>
 
@@ -186,6 +215,7 @@
 					{#if job?.quantity && visibleColumns?.includes('build_quantity')}
 						<TableBodyCell>{buildQty}</TableBodyCell>
 					{/if}
+
 					{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 					{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
 						<TableBodyCell>
@@ -237,7 +267,6 @@
 						</TableBodyCell>
 					{/if}
 				</TableBodyRow>
-				<!-- {#if openRow === idx} -->
 				{#if openRows?.includes(idx)}
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="3" class="p-0">

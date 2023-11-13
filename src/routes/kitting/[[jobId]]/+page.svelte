@@ -33,6 +33,9 @@
 						revision_internal
 						bom {
 							id
+							name
+							revision_external
+							revision_internal
 							lines_aggregate {
 								aggregate {
 									count
@@ -223,16 +226,12 @@
 	}
 </script>
 
-<h1>Kitting</h1>
 {#if jobId}
-	{#if jobId.startsWith('PO')}
-		<OrderOverview orderId={jobId?.slice(2)} showRecieved />
-	{:else if orders}
-		{#if jobInfo}
-			<div class="flex">
-				<div class="w-full">
-					<JobOverview job={jobInfo}>
-						<!-- <div class="pl-4">
+	{#if jobInfo}
+		<div class="flex">
+			<div class="w-full">
+				<JobOverview job={jobInfo}>
+					<!-- <div class="pl-4">
 							<div
 								class:bg-red-600={incompleteOrders?.length > 0}
 								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
@@ -240,32 +239,31 @@
 								<p class="text-white">{incompleteOrders?.length > 0 ? incompleteOrders?.length : '✅'}</p>
 							</div>
 						</div> -->
-					</JobOverview>
-				</div>
-				<div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
-					<ChevronDoubleUp
-						on:click={() => {
-							toggleAccordions(false);
-						}}
-					/>
-					<EllipseHorizontalSolid
-						on:click={() => {
-							toggleAccordions();
-						}}
-					/>
-					<ChevronDoubleDown
-						on:click={() => {
-							toggleAccordions(true);
-						}}
-					/>
-				</div>
+				</JobOverview>
 			</div>
-		{/if}
-		<KitList {kits} bind:accordionState />
-		{#if jobInfo?.assembly?.bom}
-			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
-		{/if}
-	{:else}{/if}
+			<div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
+				<ChevronDoubleUp
+					on:click={() => {
+						toggleAccordions(false);
+					}}
+				/>
+				<EllipseHorizontalSolid
+					on:click={() => {
+						toggleAccordions();
+					}}
+				/>
+				<ChevronDoubleDown
+					on:click={() => {
+						toggleAccordions(true);
+					}}
+				/>
+			</div>
+		</div>
+	{/if}
+	<KitList {kits} bind:accordionState />
+	{#if jobInfo?.assembly?.bom}
+		<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
+	{/if}
 {:else}
 	TODO: kitting dashboard
 {/if}

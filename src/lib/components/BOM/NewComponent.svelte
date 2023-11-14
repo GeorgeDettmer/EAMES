@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { getContextClient, gql } from '@urql/svelte';
-	import { Button, Input, Label, Spinner } from 'flowbite-svelte';
+	import { Button, Checkbox, Input, Label, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -73,8 +73,16 @@
 
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertComponent($id: String!, $name: String = "", $description: String = "", $image_url: String = "") {
-					insert_parts_data_one(object: { id: $id, name: $name, description: $description, image_url: $image_url }) {
+				mutation insertComponent(
+					$id: String!
+					$name: String = ""
+					$description: String = ""
+					$image_url: String = ""
+					$properties: json = ""
+				) {
+					insert_parts_data_one(
+						object: { id: $id, name: $name, description: $description, image_url: $image_url, properties: $properties }
+					) {
 						id
 					}
 					insert_parts_one(object: { id: $id, name: $name, part_data_id: $id }) {
@@ -82,7 +90,7 @@
 					}
 				}
 			`,
-			{ id, name, description, image_url: image }
+			{ id, name, description, image_url: image, properties: isSMT ? { type: 'SMT' } : {} }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -93,6 +101,8 @@
 		}
 		componentAdding = false;
 	}
+
+	let isSMT = false;
 </script>
 
 <div class="grid grid-cols-2">
@@ -105,6 +115,8 @@
 
 		<Label for="small-input" class="block mb-2">Image</Label>
 		<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
+
+		<Checkbox bind:checked={isSMT}>SMT</Checkbox>
 	</div>
 	<div class="my-2 p-4">
 		<Button color="green" size="sm" on:click={() => addComponent()}>

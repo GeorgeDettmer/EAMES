@@ -59,6 +59,21 @@
 		return { value: c, name: c.name };
 	});
 
+	$: assembliesStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query assemblies {
+				assemblies(order_by: { name: asc }) {
+					id
+					name
+					revision_external
+					revision_internal
+				}
+			}
+		`,
+		requestPolicy: 'cache-and-network'
+	});
+
 	let id;
 	let batch;
 	let customer;
@@ -66,8 +81,7 @@
 	let assembly;
 	let createKit = false;
 
-	$: assemblies = customer?.jobs?.map((j) => {
-		const assembly = j?.assembly;
+	$: assemblies = $assembliesStore?.data?.assemblies?.map((assembly) => {
 		return { value: assembly, name: `${assembly?.name} (${assembly?.revision_external})` };
 	});
 

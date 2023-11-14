@@ -97,6 +97,7 @@
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
 				let kitItemId = mutationResult.data.insert_erp_kits_items_one.id;
 				if (createCarrier) {
+					messagesStore('IMAGINARY CARRIER CREATED');
 					/* mutationResult = await urqlClient.mutation(
 						gql`
 							mutation insertCarrier(
@@ -143,6 +144,12 @@
 				}
 			}
 		} else {
+			if (createCarrier) {
+				messagesStore('IMAGINARY CARRIER CREATED');
+			}
+			if (createLabel) {
+				messagesStore('IMAGINARY LABEL PRINTED');
+			}
 			let itemsToKit = orderItems?.filter((i) => i.__selected && i.__quantity);
 			let items = itemsToKit?.map((i) => {
 				return {
@@ -153,7 +160,7 @@
 				};
 			});
 			console.log('itemstoadd:', items);
-			if (receivedTotal < kittingTotal) {
+			if (remainingToReceive > 0) {
 				mutationResult = await urqlClient.mutation(
 					gql`
 						mutation insertRecievedItems(
@@ -182,6 +189,19 @@
 						})
 					}
 				);
+				if (mutationResult?.error) {
+					console.error('MUTATION ERROR: ', mutationResult);
+					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				} else {
+					console.log('MUTATION RESULT: ', mutationResult);
+					messagesStore(
+						'Inserted: Receipt:' +
+							mutationResult.data.insert_erp_orders_items_received.returning?.[0]?.id +
+							' Kitting:' +
+							mutationResult.data.insert_erp_kits_items.returning?.[0]?.id,
+						'success'
+					);
+				}
 			} else {
 				mutationResult = await urqlClient.mutation(
 					gql`
@@ -195,15 +215,13 @@
 					`,
 					{ items }
 				);
-			}
-
-			if (mutationResult?.error) {
-				console.error('MUTATION ERROR: ', mutationResult);
-				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-			} else {
-				console.log('MUTATION RESULT: ', mutationResult);
-
-				messagesStore('Inserted: ' + mutationResult.data.returning?.[0]?.id, 'success');
+				if (mutationResult?.error) {
+					console.error('MUTATION ERROR: ', mutationResult);
+					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				} else {
+					console.log('MUTATION RESULT: ', mutationResult);
+					messagesStore('Inserted: ' + mutationResult.data.returning?.[0]?.id, 'success');
+				}
 			}
 		}
 		visible = false;
@@ -265,6 +283,7 @@
 		?.map((i) => i.orders_items_receiveds)
 		?.flat()
 		?.reduce((a, v) => (a = a + v.quantity), 0);
+	$: remainingToReceive = orderTotal - receivedTotal;
 	$: kittingTotal = arbitraryQuantityVisible
 		? arbitraryQuantity
 		: orderItems
@@ -287,13 +306,12 @@
 <div>
 	<div class="flex pt-4">
 		<div class="w-1/2">
-			{#if receivedTotal < kittingTotal}
+			{#if remainingToReceive > 0}
 				<p class="text-lg underline text-red-600">You are attempting to kit more than recieved</p>
 			{/if}
 			{#if !arbitraryQuantityVisible}
 				<p class="pb-2 text-lg">
-					Kit {receivedTotal < kittingTotal && ' & recieve '}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
-						.length} order(s)
+					Kit {remainingToReceive > 0 && ' & recieve '}{kittingTotal} from {orderItems?.filter((i) => i.__selected).length} order(s)
 				</p>
 			{:else}
 				<p class="text-lg underline text-red-600">Kit {kittingTotal}</p>

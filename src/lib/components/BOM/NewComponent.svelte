@@ -102,7 +102,7 @@
 		componentAdding = false;
 	}
 
-	let isSMT = false;
+	let isSMT = true;
 </script>
 
 <div class="grid grid-cols-2">

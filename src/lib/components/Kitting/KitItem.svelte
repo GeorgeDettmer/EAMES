@@ -13,23 +13,30 @@
 		Dropdown,
 		Helper,
 		Radio,
-		Spinner
+		Spinner,
+		Label
 	} from 'flowbite-svelte';
 	import { mediaQuery, messagesStore } from 'svelte-legos';
 	import PartInfo from '../PartInfo.svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
 	import { getContextClient, gql } from '@urql/svelte';
-	import { ChevronDownSolid } from 'flowbite-svelte-icons';
+	import { PlusOutline } from 'flowbite-svelte-icons';
 
-	export let part;
+	export let pn: string;
+	export let part = {};
+	export let job;
 	export let orderItems = [];
 	export let kitItems = [];
 	export let kits = [];
 	export let kit = kits?.[0];
+	export let visible = true;
+	export let createCarrier = part?.properties?.type?.toLowerCase() === 'smt';
+	export let createLabel = createCarrier;
+
 	export let arbitraryQuantityVisible = false;
 
-	let arbitraryQuantity = 1;
+	export let arbitraryQuantity = 1;
 
 	orderItems.forEach((i) => {
 		let kitted = kitItems?.filter((ki) => ki.orders_item?.id === i.id);
@@ -78,7 +85,7 @@
 						}
 					}
 				`,
-				{ kit_id: kit.id, quantity: arbitraryQuantity, part }
+				{ kit_id: kit.id, quantity: arbitraryQuantity, part: pn }
 			);
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
@@ -86,6 +93,52 @@
 			} else {
 				console.log('MUTATION RESULT: ', mutationResult);
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
+				let kitItemId = mutationResult.data.insert_erp_kits_items_one.id;
+				if (createCarrier) {
+					/* mutationResult = await urqlClient.mutation(
+						gql`
+							mutation insertCarrier(
+								$carrierid: String!
+								$componentname: String!
+								$owner: String
+								$quantity: Int!
+								$angle: Int = -90
+								$batchid: String = ""
+							) {
+								insert_mydbcarrview_10_carrier_magname_one(
+									object: {
+										carrierid: $carrierid
+										componentname: $componentname
+										owner: $owner
+										quantity: $quantity
+										angle: $angle
+										batchid: $batchid
+									}
+								) {
+									carrierid
+								}
+							}
+						`,
+						{
+							carrierid: 'EAMES#' + String(kitItemId),
+							componentname: pn,
+							owner: $page.data.user.initials,
+							quantity: arbitraryQuantity,
+							angle: -90,
+							batchid: String(job?.id)
+						}
+					);
+					if (mutationResult?.error) {
+						console.error('MUTATION ERROR: ', mutationResult);
+						messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+					} else {
+						console.log('MUTATION RESULT: ', mutationResult);
+						messagesStore(
+							'Inserted carrier: ' + mutationResult.data.insert_mydbcarrview_10_carrier_magname_one.carrierid,
+							'success'
+						);
+					} */
+				}
 			}
 		} else {
 			let itemsToKit = orderItems?.filter((i) => i.__selected && i.__quantity);
@@ -115,11 +168,62 @@
 				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 			} else {
 				console.log('MUTATION RESULT: ', mutationResult);
-				messagesStore('Inserted: ' + mutationResult.data, 'success');
+
+				messagesStore('Inserted: ' + mutationResult.data.returning?.[0]?.id, 'success');
 			}
 		}
-
+		visible = false;
 		quantityAdding = false;
+	}
+
+	let kitAdding = false;
+	async function addKit() {
+		if (kitAdding) return;
+		//TODO: Fix quantity control
+		/* if (recievedQty >= orderItem.quantity || recievedQty + quantity > orderItem.quantity) {
+			messagesStore('Quantity over order total', 'warning');
+			return;
+		} */
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+
+		kitAdding = true;
+		let mutationResult;
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation insertKit($job_id: bigint) {
+					insert_material_jobs_kits(objects: { job_id: $job_id, kit: { data: {} } }) {
+						returning {
+							id
+							job {
+								id
+							}
+							kit {
+								id
+								kits_items {
+									id
+								}
+							}
+							kit_id
+						}
+					}
+				}
+			`,
+			{ job_id: job.id }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Inserted: ' + mutationResult.data.insert_material_jobs_kits.returning?.[0]?.kit?.id, 'success');
+			if (!kit) {
+				kit = mutationResult.data.insert_material_jobs_kits.returning?.[0]?.kit;
+			}
+		}
+		kitAdding = false;
 	}
 
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);
@@ -132,6 +236,16 @@
 	$: console.log(orderItems);
 </script>
 
+<svelte:window
+	on:keydown={(e) => {
+		console.log(e);
+		if (e.key === 'Enter') {
+			addQuantity();
+			visible = false;
+		}
+	}}
+/>
+
 <div>
 	<div class="flex pt-4">
 		<div class="w-1/2">
@@ -141,32 +255,37 @@
 				<p class="text-lg underline text-red-600">Kit {kittingTotal}</p>
 				<p class="pb-2 italic text-red-600">arbitrary amount not associated with an order</p>
 			{/if}
-			<PartInfo partId={part} showPopoutButton={false} />
+			<PartInfo partId={pn} showPopoutButton={false} />
 		</div>
-		<div class="w-1/4">
-			<ul class="p-2">
-				<p class="uppercase">{kit?.id?.split('-')?.slice(-1)}</p>
+		<div class="w-1/4 px-1 h-52 overflow-y-auto">
+			<ul>
 				{#each kits as k, idx}
 					<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
-						<Radio
-							name="kit_group"
-							group={'kit'}
-							value={k.id}
-							on:change={(e) => {
-								kit = k;
-							}}
-						>
-							{k.id.split('-').slice(-1)}
-						</Radio>
-						<Helper class="pl-6">Kit info here...</Helper>
+						<Label class={'flex items-center'} show={$$slots.default}>
+							<input
+								type="radio"
+								on:change={() => (kit = k)}
+								checked={k.id === kit.id}
+								value={k.id}
+								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+							/>
+							{idx + 1}
+						</Label>
+						<Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper>
 					</li>
-				{/each}
+				{:else}{/each}
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
+					<Label class={'flex items-center text-xs gap-x-2'} show={$$slots.default}>
+						<Button color="blue" size="xs" on:click={() => addKit()}><PlusOutline size="xs" /></Button>
+						Add kit
+					</Label>
+				</li>
 			</ul>
 		</div>
 		<div class="w-1/4">
 			<div class="">
 				<div class="flex">
-					<Button color="blue" size="sm" disabled={kittingTotal < 1} on:click={() => addQuantity()}>
+					<Button color="blue" size="sm" disabled={kittingTotal < 1 || !kit?.id} on:click={() => addQuantity()}>
 						Add
 						{#if quantityAdding}
 							<Spinner class="ml-3" size="3" color="white" />
@@ -190,8 +309,14 @@
 						</div>
 					{/if}
 				</div>
-				<div>
+				<div class="mt-1">
 					<Checkbox bind:checked={arbitraryQuantityVisible}>Arbitrary quantity</Checkbox>
+				</div>
+				<div class="mt-10">
+					<Checkbox bind:checked={createCarrier}>Create carrier</Checkbox>
+					{#if createCarrier}
+						<Checkbox bind:checked={createLabel}>Print label</Checkbox>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -205,24 +330,32 @@
 					<TableHeadCell>Time/Date</TableHeadCell>
 					<TableHeadCell>Order</TableHeadCell>
 					<TableHeadCell>Order Qty</TableHeadCell>
+					<TableHeadCell>Kitted Qty</TableHeadCell>
 					<TableHeadCell>Quantity</TableHeadCell>
 					<TableHeadCell>
-						<Checkbox
-							on:change={(e) => {
-								orderItems.forEach((i) => {
-									if (!i.__kitted) {
-										i.__selected = e.target.checked;
-									}
-								});
-								orderItems = orderItems;
-							}}
-							disabled={!orderItems.length}
-							checked={orderItems.length > 0 && orderItems.filter((i) => !i?.__selected && !i?.__kitted).length == 0}
-						/>
+						{#if orderItems.filter((i) => !i?.__kitted).length == 0}
+							<Checkbox checked={true} disabled={true} color="green" />
+						{:else}
+							<Checkbox
+								on:change={(e) => {
+									orderItems.forEach((i) => {
+										if (!i.__kitted) {
+											i.__selected = e.target.checked;
+										}
+									});
+									orderItems = orderItems;
+								}}
+								disabled={!orderItems.length}
+								checked={orderItems.length > 0 && orderItems.filter((i) => !i?.__selected && !i?.__kitted).length == 0}
+							/>
+						{/if}
 					</TableHeadCell>
 				</TableHead>
 
 				{#each orderItems as orderItem, idx}
+					{@const kittedQty = kitItems
+						?.filter((ki) => ki.orders_item?.id === orderItem.id)
+						?.reduce((a, v) => (a = a + v.quantity), 0)}
 					<TableBodyRow>
 						<TableBodyCell tdClass="font-sm text-center">
 							<UserIcon size="xs" user={orderItem?.user}>
@@ -248,11 +381,16 @@
 							</a>
 						</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">{orderItem.quantity}</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">{kittedQty}</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">
 							<div
 								class="w-1/2 mx-auto"
 								on:mousewheel={(e) => {
-									orderItem.__quantity = clamp(orderItem.__quantity + (e.deltaY > 0 ? -1 : +1), 1, orderItem.quantity);
+									orderItem.__quantity = clamp(
+										orderItem.__quantity + (e.deltaY > 0 ? -1 : +1),
+										1,
+										orderItem.quantity - kittedQty
+									);
 								}}
 							>
 								<Input
@@ -262,7 +400,7 @@
 									disabled={!orderItem?.__selected}
 									on:input={(e) => {
 										orderItem.__selected = true;
-										orderItem.__quantity = clamp(Number(e.target.value), 1, orderItem.quantity);
+										orderItem.__quantity = clamp(Number(e.target.value), 1, orderItem.quantity - kittedQty);
 									}}
 								/>
 							</div>
@@ -285,6 +423,9 @@
 					<TableBodyCell tdClass="font-sm text-center font-bold">
 						{orderTotal}
 					</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold"
+						>{kitItems?.reduce((a, v) => (a = a + v.quantity), 0)}</TableBodyCell
+					>
 					<TableBodyCell tdClass="font-sm text-center font-bold">
 						{kittingTotal}
 					</TableBodyCell>

@@ -28,7 +28,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { datetimeFormat } from '$lib/utils';
+	import { datetimeFormat, getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -73,6 +73,7 @@
 		console.log('handleRowClick', idx, references, line, event);
 		dispatch('row_click', { idx, references, line, event });
 		if (!pn) return;
+		if (getSelectionText()) return;
 		if (openRows.includes(idx)) {
 			openRows = openRows.filter((v) => v !== idx);
 			//handleReferenceHover(references, false);
@@ -111,8 +112,14 @@
 	});
 	onDestroy(scanStoreUnsub);
 
-	function setActiveLine(mpn: string, con, qty) {
-		let matches = [...lines.entries()].filter(([key, value]) => key?.toLowerCase() === mpn.toLowerCase());
+	function setActiveLine(mpn: string, con, qty): boolean {
+		let matches = [...lines.entries()].filter(([key, value], idx) => {
+			let found = key?.toLowerCase() === mpn.toLowerCase();
+			if (found) {
+				messagesStore(`Part found on line: ${idx + 1}`, 'success');
+			}
+			return found;
+		});
 		console.log('setActiveLine', matches);
 		if (matches.length === 1) {
 			let match = matches?.[0];
@@ -151,20 +158,26 @@
 			activeLine.orderItems = orderItems;
 
 			receiveModal = true;
+
+			return true;
 		} else if (matches.length > 1) {
 			console.log('setActiveLineFromMPN', 'multiple matches for', mpn);
 		} else {
 			console.log('setActiveLineFromMPN', 'no matches for', mpn);
 		}
+		return false;
 	}
 </script>
 
-<Modal autoclose outsideclose bind:open={receiveModal} size="lg">
+<Modal outsideclose bind:open={receiveModal} size="lg">
 	<KitItem
+		{job}
 		kits={job?.jobs_kits?.map((jk) => jk.kit)}
 		orderItems={activeLine?.orderItems}
 		kitItems={activeLine?.kitItems}
-		part={activeLine?.line?.[0]?.part}
+		pn={activeLine?.line?.[0]?.part}
+		part={activeLine?.line?.[0]?.partByPart}
+		bind:visible={receiveModal}
 	/>
 </Modal>
 

@@ -32,7 +32,7 @@
 	export let kit = kits?.[0];
 	export let visible = true;
 	export let createCarrier = part?.properties?.type?.toLowerCase() === 'smt';
-	export let createLabel = createCarrier;
+	export let createLabel = true;
 
 	export let arbitraryQuantityVisible = false;
 
@@ -68,9 +68,11 @@
 		}
 		if (kittingTotal < 1) {
 			messagesStore('Quantity to add must more than 0', 'warning');
+			return;
 		}
 		if (!kit?.id) {
 			messagesStore('No kit seleted', 'warning');
+			return;
 		}
 
 		quantityAdding = true;
@@ -125,7 +127,7 @@
 							owner: $page.data.user.initials,
 							quantity: arbitraryQuantity,
 							angle: -90,
-							batchid: String(job?.id)
+							batchid: `${job?.id} #(${kitItemId})`
 						}
 					);
 					if (mutationResult?.error) {
@@ -151,18 +153,50 @@
 				};
 			});
 			console.log('itemstoadd:', items);
-			mutationResult = await urqlClient.mutation(
-				gql`
-					mutation insertOrderItems($items: [erp_kits_items_insert_input!] = {}) {
-						insert_erp_kits_items(objects: $items) {
-							returning {
-								id
+			if (receivedTotal < kittingTotal) {
+				mutationResult = await urqlClient.mutation(
+					gql`
+						mutation insertRecievedItems(
+							$received_items: [erp_orders_items_received_insert_input!] = {}
+							$kit_items: [erp_kits_items_insert_input!] = {}
+						) {
+							insert_erp_orders_items_received(objects: $received_items) {
+								returning {
+									id
+								}
+							}
+							insert_erp_kits_items(objects: $kit_items) {
+								returning {
+									id
+								}
 							}
 						}
+					`,
+					{
+						kit_items: items,
+						received_items: itemsToKit?.map((i) => {
+							return {
+								orders_items_id: i.id,
+								quantity: i.__quantity
+							};
+						})
 					}
-				`,
-				{ items }
-			);
+				);
+			} else {
+				mutationResult = await urqlClient.mutation(
+					gql`
+						mutation insertKitItems($items: [erp_kits_items_insert_input!] = {}) {
+							insert_erp_kits_items(objects: $items) {
+								returning {
+									id
+								}
+							}
+						}
+					`,
+					{ items }
+				);
+			}
+
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
 				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
@@ -227,6 +261,10 @@
 	}
 
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);
+	$: receivedTotal = orderItems
+		?.map((i) => i.orders_items_receiveds)
+		?.flat()
+		?.reduce((a, v) => (a = a + v.quantity), 0);
 	$: kittingTotal = arbitraryQuantityVisible
 		? arbitraryQuantity
 		: orderItems
@@ -249,8 +287,14 @@
 <div>
 	<div class="flex pt-4">
 		<div class="w-1/2">
+			{#if receivedTotal < kittingTotal}
+				<p class="text-lg underline text-red-600">You are attempting to kit more than recieved</p>
+			{/if}
 			{#if !arbitraryQuantityVisible}
-				<p class="pb-2 text-lg">Kit {kittingTotal} from {orderItems?.filter((i) => i.__selected).length} order(s)</p>
+				<p class="pb-2 text-lg">
+					Kit {receivedTotal < kittingTotal && ' & recieve '}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
+						.length} order(s)
+				</p>
 			{:else}
 				<p class="text-lg underline text-red-600">Kit {kittingTotal}</p>
 				<p class="pb-2 italic text-red-600">arbitrary amount not associated with an order</p>
@@ -261,7 +305,7 @@
 			<ul>
 				{#each kits as k, idx}
 					<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
-						<Label class={'flex items-center'} show={$$slots.default}>
+						<Label class={'flex items-center'}>
 							<input
 								type="radio"
 								on:change={() => (kit = k)}
@@ -275,7 +319,7 @@
 					</li>
 				{:else}{/each}
 				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
-					<Label class={'flex items-center text-xs gap-x-2'} show={$$slots.default}>
+					<Label class={'flex items-center text-xs gap-x-2'}>
 						<Button color="blue" size="xs" on:click={() => addKit()}><PlusOutline size="xs" /></Button>
 						Add kit
 					</Label>
@@ -313,10 +357,8 @@
 					<Checkbox bind:checked={arbitraryQuantityVisible}>Arbitrary quantity</Checkbox>
 				</div>
 				<div class="mt-10">
+					<Checkbox bind:checked={createLabel}>Print label</Checkbox>
 					<Checkbox bind:checked={createCarrier}>Create carrier</Checkbox>
-					{#if createCarrier}
-						<Checkbox bind:checked={createLabel}>Print label</Checkbox>
-					{/if}
 				</div>
 			</div>
 		</div>

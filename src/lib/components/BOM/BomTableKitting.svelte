@@ -28,7 +28,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { datetimeFormat, getSelectionText } from '$lib/utils';
+	import { classes, datetimeFormat, getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -62,7 +62,7 @@
 	let openRows: number[] = [];
 
 	function qtyColor(qty: number, requiredQty: number) {
-		if (qty === requiredQty) return 'blue';
+		if (qty === requiredQty) return 'green';
 		if (qty < requiredQty) return 'red';
 		if (qty > requiredQty) return 'green';
 	}
@@ -315,8 +315,9 @@
 
 					{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
 						{@const receivedItemQty = orderItems
-							?.map((i) => i.orders_items_receiveds?.quantity || 0)
-							?.reduce((a, v) => a + v, 0)}
+							?.map((i) => i.orders_items_receiveds)
+							?.flat()
+							?.reduce((a, v) => (a = a + v.quantity), 0)}
 
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
@@ -372,7 +373,7 @@
 								<div class="px-1 py-1">
 									<h1>Kit:</h1>
 									<Table>
-										<TableHead>
+										<TableHead theadClass="text-xs uppercase text-center">
 											<TableHeadCell padding="px-1 py-1">Kit</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
 											<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
@@ -385,22 +386,30 @@
 										<TableBody>
 											{#each kitItems as item, idx}
 												<TableBodyRow>
-													<TableBodyCell>
-														{job?.jobs_kits?.findIndex((jk) => jk.kit.id === item.kit_id) + 1}
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
+														<a
+															class={'uppercase' + classes.link}
+															target="_blank"
+															href={`${window.origin}/kitting/kits/${item.kit_id}`}
+														>
+															{item.kit_id.split('-').slice(-1)} ({job?.jobs_kits?.findIndex(
+																(jk) => jk.kit.id === item.kit_id
+															) + 1})
+														</a>
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														<UserIcon user={item?.user} size="sm" />
 														<Tooltip placement="left">
 															{datetimeFormat(item.updated_at)}
 														</Tooltip>
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														{datetimeFormat(item.updated_at)}
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														{item?.quantity}
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														{item?.orders_item?.order?.supplier?.name || 'Unknown'}
 													</TableBodyCell>
 													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
@@ -411,16 +420,20 @@
 															Math.round((item?.orders_item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0
 														)}
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														{#if item?.orders_item?.order?.id}
-															<a href={`${window.origin}/order/${item?.orders_item?.order?.id}`} target="_blank">
+															<a
+																href={`${window.origin}/order/${item?.orders_item?.order?.id}`}
+																target="_blank"
+																class={classes.link}
+															>
 																{item?.orders_item?.order?.id}
 															</a>
 														{:else}
 															N/A
 														{/if}
 													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
+													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
 														<KitItemRemoveButton id={item.id}><XMark size="16" /></KitItemRemoveButton>
 													</TableBodyCell>
 												</TableBodyRow>

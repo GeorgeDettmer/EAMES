@@ -50,6 +50,7 @@
 		"jsonwebtoken": "^9.0.0",
 		"konva": "^9.2.0",
 		"moment": "^2.29.4",
+		"postgres": "^3.4.3",
 		"serpapi": "^2.0.0",
 		"shipengine": "^1.0.5",
 		"simplify-js": "^1.2.4",

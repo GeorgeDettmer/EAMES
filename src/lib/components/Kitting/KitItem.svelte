@@ -22,6 +22,8 @@
 	import { page } from '$app/stores';
 	import { getContextClient, gql } from '@urql/svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
+	import { getPrinters, printLabel, printerOnline } from '$lib/utils/bpac/bpac';
+	import type { LabelContent } from '$lib/utils/bpac/bpac';
 
 	export let pn: string;
 	export let part = {};
@@ -57,6 +59,18 @@
 	let quantityAdding = false;
 	async function addQuantity() {
 		if (quantityAdding) return;
+		if (createLabel) {
+			let printers = await getPrinters();
+			if (printers.length == 0) {
+				messagesStore(`CANNOT PRINT LABEL. No label printer available...`, 'error');
+				return;
+			}
+			let online = await printerOnline(printers[0]);
+			if (!online) {
+				messagesStore(`CANNOT PRINT LABEL. Label printer ${printers[0]} offline...`, 'error');
+				return;
+			}
+		}
 		//TODO: Fix quantity control
 		/* if (recievedQty >= orderItem.quantity || recievedQty + quantity > orderItem.quantity) {
 			messagesStore('Quantity over order total', 'warning');
@@ -144,12 +158,6 @@
 				}
 			}
 		} else {
-			if (createCarrier) {
-				messagesStore('IMAGINARY CARRIER CREATED');
-			}
-			if (createLabel) {
-				messagesStore('IMAGINARY LABEL PRINTED');
-			}
 			let itemsToKit = orderItems?.filter((i) => i.__selected && i.__quantity);
 			let items = itemsToKit?.map((i) => {
 				return {
@@ -220,7 +228,63 @@
 					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 				} else {
 					console.log('MUTATION RESULT: ', mutationResult);
-					messagesStore('Inserted: ' + mutationResult.data.returning?.[0]?.id, 'success');
+					messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items.returning?.[0]?.id, 'success');
+				}
+			}
+			if (!mutationResult?.error) {
+				if (createCarrier) {
+					messagesStore('IMAGINARY CARRIER CREATED');
+				}
+				if (createLabel) {
+					if (!mutationResult.data.insert_erp_kits_items.returning?.[0]?.id) {
+						messagesStore('Kitting error, label print skipped...', 'error');
+					} else {
+						const carrierid = `EAMES#${mutationResult.data.insert_erp_kits_items.returning?.[0]?.id}`;
+						let labelContent: LabelContent[] = [
+							{
+								name: 'barcode',
+								type: 'barcode',
+								content: 'R' + carrierid
+							},
+							{
+								name: 'barcode_pn',
+								type: 'barcode',
+								content: pn
+							},
+							{
+								name: 'pn',
+								type: 'text',
+								content: pn
+							},
+							{
+								name: 'carrier',
+								type: 'text',
+								content: carrierid
+							},
+							{
+								name: 'notes',
+								type: 'text',
+								content: ''
+							},
+							{
+								name: 'description',
+								type: 'text',
+								content: ''
+							},
+							{
+								name: 'freeissue',
+								type: 'text',
+								content: ''
+							},
+							{
+								name: 'batch',
+								type: 'text',
+								content: job?.id
+							}
+						];
+						await printLabel('C:\\Users\\georg\\Documents\\test.lbx', labelContent);
+						messagesStore('LABEL PRINTED');
+					}
 				}
 			}
 		}

@@ -10,7 +10,7 @@
 	import Barcode from './Barcode.svelte';
 	import UserOverview from './UserOverview.svelte';
 	import { fade } from 'svelte/transition';
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import JobPopoverContent from './JobPopoverContent.svelte';
 	import { goto } from '$app/navigation';
 	import NavDrawer from './Navbar/NavDrawer.svelte';
@@ -78,6 +78,7 @@
 		CheckPlusCircleSolid,
 		DropboxSolid
 	} from 'flowbite-svelte-icons';
+	import { getPrinters, printerDetails, printerOnline } from '$lib/utils/bpac/bpac';
 	let menus = {
 		purchasing: [
 			{
@@ -122,6 +123,13 @@
 		],
 		'': menu
 	};
+
+	let printers: string[] = [];
+	let printersState: any[] = [];
+	onMount(async () => {
+		printers = await getPrinters();
+		printersState = printers.map(async (printer) => await printerOnline(printer));
+	});
 </script>
 
 <svelte:window
@@ -165,6 +173,26 @@
 			checked={showDebug_page}>Show Debug: $page</Toggle
 		>
 	</form>
+	<div>
+		<p>Printers:</p>
+		{#each printers as printer, idx}
+			<p>
+				{printer}
+				{#await printerOnline(printer) then online}
+					{online ? '✅' : '❌'}
+				{/await}
+
+				{#await printerDetails(printer) then details}
+					[Media: {details.mediaName}({details.mediaId})]
+					<!-- {#each Object.entries(details) as [k, v]}
+				<p>{k}: {v}</p>
+			{/each} -->
+				{/await}
+			</p>
+		{:else}
+			<p>No printers...</p>
+		{/each}
+	</div>
 </Modal>
 
 <NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus />

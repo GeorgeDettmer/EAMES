@@ -102,6 +102,9 @@
 						insert_erp_kits_items_one(object: { kit_id: $kit_id, quantity: $quantity, part: $part }) {
 							id
 						}
+						update_erp_kits_by_pk(pk_columns: { id: $kit_id }, _set: { updated_at: "now()" }) {
+							updated_at
+						}
 					}
 				`,
 				{ kit_id: kit.id, quantity: arbitraryQuantity, part: pn }
@@ -177,6 +180,7 @@
 						mutation insertRecievedItems(
 							$received_items: [erp_orders_items_received_insert_input!] = {}
 							$kit_items: [erp_kits_items_insert_input!] = {}
+							$kit_id: uuid!
 						) {
 							insert_erp_orders_items_received(objects: $received_items) {
 								returning {
@@ -188,9 +192,13 @@
 									id
 								}
 							}
+							update_erp_kits_by_pk(pk_columns: { id: $kit_id }, _set: { updated_at: "now()" }) {
+								updated_at
+							}
 						}
 					`,
 					{
+						kit_id: kit.id,
 						kit_items: items,
 						received_items: itemsToKit?.map((i) => {
 							console.log('kit receipt', i, i.orders_items_receiveds);

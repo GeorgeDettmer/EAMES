@@ -13,6 +13,7 @@
 	import KitList from '$lib/components/Kitting/KitList.svelte';
 	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
 	import { Alert, Spinner } from 'flowbite-svelte';
+	import KittingDashboard from '$lib/components/Kitting/KittingDashboard.svelte';
 
 	$: jobId = $page?.data?.jobId;
 
@@ -243,4 +244,5 @@
 	{/if}
 {:else}
 	TODO: kitting dashboard
+	<KittingDashboard />
 {/if}

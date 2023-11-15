@@ -14,6 +14,8 @@
 	];
 
 	import {
+		Accordion,
+		AccordionItem,
 		Badge,
 		Modal,
 		Table,
@@ -31,7 +33,7 @@
 	import { classes, datetimeFormat, getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
-	import { PlusOutline } from 'flowbite-svelte-icons';
+	import { CogOutline, PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
 	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
 	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
@@ -39,6 +41,9 @@
 	import { messagesStore, storage } from 'svelte-legos';
 	import { writable } from 'svelte/store';
 	import { scanStore } from '$lib/stores';
+	import KitItemsTable from '../Kitting/KitItemsTable.svelte';
+	import ReceiptItemsTable from '../Kitting/ReceiptItemsTable.svelte';
+	import OrderItemsTable from '../Kitting/OrderItemsTable.svelte';
 
 	let items = [];
 
@@ -245,6 +250,9 @@
 							?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 							.flat()
 					: []}
+				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
+				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
+				{@const receivedItemQty = receiptItems?.reduce((a, v) => (a = a + v.quantity), 0)}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
@@ -304,7 +312,6 @@
 						<TableBodyCell>{buildQty}</TableBodyCell>
 					{/if}
 
-					{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 					{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
@@ -314,11 +321,6 @@
 					{/if}
 
 					{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
-						{@const receivedItemQty = orderItems
-							?.map((i) => i.orders_items_receiveds)
-							?.flat()
-							?.reduce((a, v) => (a = a + v.quantity), 0)}
-
 						<TableBodyCell>
 							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
 								{receivedItemQty}
@@ -368,89 +370,81 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell colspan="3" />
-						{#if kitItems}
-							<TableBodyCell colspan="5" class="p-0 object-right">
-								<div class="px-1 py-1">
-									<h1>Kit:</h1>
-									<Table>
-										<TableHead theadClass="text-xs uppercase text-center">
-											<TableHeadCell padding="px-1 py-1">Kit</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
-											<TableHeadCell padding="px-1 py-1" />
-										</TableHead>
-										<TableBody>
-											{#each kitItems as item, idx}
-												<TableBodyRow>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														<a
-															class={'uppercase' + classes.link}
-															target="_blank"
-															href={`${window.origin}/kitting/kits/${item.kit_id}`}
-														>
-															{item.kit_id.split('-').slice(-1)} ({job?.jobs_kits?.findIndex(
-																(jk) => jk.kit.id === item.kit_id
-															) + 1})
-														</a>
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														<UserIcon user={item?.user} size="sm" />
-														<Tooltip placement="left">
-															{datetimeFormat(item.updated_at)}
-														</Tooltip>
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														{datetimeFormat(item.updated_at)}
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														{item?.quantity}
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														{item?.orders_item?.order?.supplier?.name || 'Unknown'}
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm ">
-														{new Intl.NumberFormat('en-GB', {
-															style: 'currency',
-															currency: 'GBP'
-														}).format(
-															Math.round((item?.orders_item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0
-														)}
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														{#if item?.orders_item?.order?.id}
-															<a
-																href={`${window.origin}/order/${item?.orders_item?.order?.id}`}
-																target="_blank"
-																class={classes.link}
-															>
-																{item?.orders_item?.order?.id}
-															</a>
-														{:else}
-															N/A
-														{/if}
-													</TableBodyCell>
-													<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-sm text-center">
-														<KitItemRemoveButton id={item.id}><XMark size="16" /></KitItemRemoveButton>
-													</TableBodyCell>
-												</TableBodyRow>
-												<!-- <div class="flex bg-gray-400 rounded-lg p-1 px-2 m-1">
-											<UserIcon user={item?.user} />
-											<p class="text-lg text-white items-center align-middle mx-auto">
-												({item.quantity}) [{item?.orders_item?.order?.supplier?.name
-													? `${item?.orders_item?.order?.supplier?.name}:${item?.orders_item?.order?.reference}`
-													: 'Unknown Supplier'}]
-											</p>
-										</div> -->
-											{/each}
-										</TableBody>
-									</Table>
-								</div>
-							</TableBodyCell>
-						{/if}
+						<TableBodyCell colspan="5" class="p-0 object-right">
+							<div class="px-1 py-0">
+								<Accordion multiple>
+									<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
+										<span slot="header" class="text-base flex gap-2">
+											<ShoppingCartSolid class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : ''}`} />
+											<span>Order</span>
+										</span>
+										<OrderItemsTable {orderItems} />
+									</AccordionItem>
+									<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && receivedItemQty < orderItemQty}>
+										<span slot="header" class="text-base flex gap-2">
+											{#if receivedItemQty === 0}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/unpacking.png"
+													alt="unpacking"
+												/>
+											{:else if receivedItemQty === orderItemQty}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/unpacking.png"
+													alt="unpacking"
+												/>
+											{:else}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/unpacking.png"
+													alt="unpacking"
+												/>
+											{/if}
+											<span>Receipt</span>
+										</span>
+										<ReceiptItemsTable {receiptItems} />
+									</AccordionItem>
+									<AccordionItem paddingDefault="p-1" open={kittedQty > 0}>
+										<span slot="header" class="text-base flex gap-2">
+											{#if kittedQty === 0}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/packing.png"
+													alt="packing"
+												/>
+											{:else if kittedQty === orderItemQty}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/packing.png"
+													alt="packing"
+												/>
+											{:else}
+												<img
+													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+													width="24"
+													height="24"
+													src="https://img.icons8.com/ios/50/packing.png"
+													alt="packing"
+												/>
+											{/if}
+											<span>Kitting</span>
+										</span>
+										<KitItemsTable {kitItems} jobsKits={job?.jobs_kits} />
+									</AccordionItem>
+								</Accordion>
+							</div>
+						</TableBodyCell>
 					</TableBodyRow>
 				{/if}
 			{/each}

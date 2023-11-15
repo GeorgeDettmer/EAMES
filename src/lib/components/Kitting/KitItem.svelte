@@ -282,8 +282,11 @@
 								content: job?.id
 							}
 						];
-						await printLabel('C:\\Users\\georg\\Documents\\test.lbx', labelContent);
-						messagesStore('LABEL PRINTED');
+						if (await printLabel('C:\\Users\\georg\\Documents\\test.lbx', labelContent)) {
+							messagesStore('LABEL PRINTED');
+						} else {
+							messagesStore('LABEL PRINT FAILED', 'error');
+						}
 					}
 				}
 			}

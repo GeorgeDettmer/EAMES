@@ -93,7 +93,7 @@
 		});
 	}
 	onMount(() => {
-		if (kitIds.lenght > 0) {
+		if (kitIds.length > 0) {
 			accordionState.fill(true);
 		}
 	});

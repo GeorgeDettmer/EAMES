@@ -138,6 +138,8 @@
 								orders_items_receiveds {
 									id
 									quantity
+									created_at
+									updated_at
 									user {
 										id
 										username
@@ -145,6 +147,18 @@
 										last_name
 										initials
 										color
+									}
+									orders_item {
+										id
+										price
+										quantity
+										order {
+											id
+											reference
+											supplier {
+												name
+											}
+										}
 									}
 								}
 							}

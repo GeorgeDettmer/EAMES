@@ -1,12 +1,11 @@
 import * as _bpac from '$lib/utils/bpac/_bpac';
-import { FastLayer } from 'konva/lib/FastLayer';
 import { messagesStore } from 'svelte-legos';
 
 export function extensionInstalled(showWarning: boolean = true): boolean {
 	const extensionIsInstalled = _bpac.IsExtensionInstalled() != false;
 	if (!extensionIsInstalled) {
 		messagesStore("Brother 'bpac' browser extension is not installed!", 'error');
-		/* const agent = window.navigator.userAgent.toLowerCase();
+		const agent = window.navigator.userAgent.toLowerCase();
 		const isedge = agent.indexOf('edg') !== -1;
 		if (isedge)
 			window.open(
@@ -14,7 +13,7 @@ export function extensionInstalled(showWarning: boolean = true): boolean {
 				'_blank'
 			);
 		const ischrome = agent.indexOf('chrome') !== -1 && agent.indexOf('opr') === -1;
-		if (ischrome) window.open('https://chrome.google.com/webstore/detail/ilpghlfadkjifilabejhhijpfphfcfhb', '_blank'); */
+		if (ischrome) window.open('https://chrome.google.com/webstore/detail/ilpghlfadkjifilabejhhijpfphfcfhb', '_blank');
 	}
 	return extensionIsInstalled;
 }
@@ -80,6 +79,7 @@ export async function printLabel(templatePath: string, content: LabelContent[]):
 }
 
 export async function getPrinters(): Promise<string[]> {
+	if (!extensionInstalled()) return [];
 	return await _bpac.IPrinter.GetInstalledPrinters();
 }
 

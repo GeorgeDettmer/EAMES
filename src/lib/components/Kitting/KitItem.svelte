@@ -394,10 +394,11 @@
 			<div class="border rounded-md p-1">
 				{#if !arbitraryQuantityVisible}
 					<p class="font-bold text-lg" class:text-red-600={kittingTotal < 1}>
-						Kit {remainingToReceive > 0 ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
-							.length} order(s)
+						Kit {kittingTotal > receivedTotal ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter(
+							(i) => i.__selected
+						).length} order(s)
 					</p>
-					{#if remainingToReceive > 0}
+					{#if kittingTotal > receivedTotal}
 						<p class="font-semibold underline text-red-600">
 							You are attempting to kit more than recieved. Receipt(s) will be created for the selected quantity(s)
 						</p>
@@ -522,6 +523,7 @@
 					<TableHeadCell>Time/Date</TableHeadCell>
 					<TableHeadCell>Order</TableHeadCell>
 					<TableHeadCell>Order Qty</TableHeadCell>
+					<TableHeadCell>Receieved Qty</TableHeadCell>
 					<TableHeadCell>Kitted Qty</TableHeadCell>
 					<TableHeadCell>Quantity</TableHeadCell>
 					<TableHeadCell>
@@ -548,6 +550,9 @@
 					{@const kittedQty = kitItems
 						?.filter((ki) => ki.orders_item?.id === orderItem.id)
 						?.reduce((a, v) => (a = a + v.quantity), 0)}
+					{@const receivedQty = orderItem?.orders_items_receiveds
+						?.filter((ri) => ri.orders_item?.id === orderItem.id)
+						?.reduce((a, v) => (a = a + v.quantity), 0)}
 					<TableBodyRow>
 						<TableBodyCell tdClass="font-sm text-center">
 							<UserIcon size="xs" user={orderItem?.user}>
@@ -573,6 +578,7 @@
 							</a>
 						</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">{orderItem.quantity}</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">{receivedQty}</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">{kittedQty}</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">
 							<div
@@ -615,9 +621,10 @@
 					<TableBodyCell tdClass="font-sm text-center font-bold">
 						{orderTotal}
 					</TableBodyCell>
-					<TableBodyCell tdClass="font-sm text-center font-bold"
-						>{kitItems?.reduce((a, v) => (a = a + v.quantity), 0)}</TableBodyCell
-					>
+					<TableBodyCell tdClass="font-sm text-center font-bold">{receivedTotal}</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold">
+						{kitItems?.reduce((a, v) => (a = a + v.quantity), 0)}
+					</TableBodyCell>
 					<TableBodyCell tdClass="font-sm text-center font-bold">
 						{kittingTotal}
 					</TableBodyCell>

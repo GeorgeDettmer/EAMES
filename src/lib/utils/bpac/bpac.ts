@@ -1,4 +1,5 @@
 import * as _bpac from '$lib/utils/bpac/_bpac';
+import { FastLayer } from 'konva/lib/FastLayer';
 import { messagesStore } from 'svelte-legos';
 
 export function extensionInstalled(showWarning: boolean = true): boolean {
@@ -31,13 +32,22 @@ export async function printLabel(templatePath: string, content: LabelContent[]):
 		const ret = await objDoc.Open(templatePath);
 		console.log('bpac', ret);
 		if (ret == true) {
-			content.forEach(async ({ name, type, content }, idx) => {
+			content.forEach(async (c, idx) => {
+				const { name, type, content } = c;
+				console.log('BPAC SET CONTENT', c);
+				let object = await objDoc.GetObject(name);
+				if (object == false) {
+					console.error('BPAC ERROR OBJECT NOT FOUND', c);
+					return;
+				}
 				if (type === 'text') {
-					(await objDoc.GetObject(name)).Text = content ? String(content) : '';
+					object.Text = content;
+					//(await objDoc.GetObject(name)).Text = content;
 				} else if (type === 'barcode') {
-					objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex(name), content ? String(content) : '');
+					object.Text = content;
+					//objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex(name), content);
 				} else {
-					console.error('BPAC UNHANDLED CONTENT TYPE', { name, content, type });
+					console.error('BPAC UNHANDLED CONTENT TYPE', c);
 				}
 			});
 
@@ -49,8 +59,14 @@ export async function printLabel(templatePath: string, content: LabelContent[]):
 			await objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex('barcode'), 'new barcode test wow');
 			console.log('bpac width:', await objDoc.Width); */
 
-			await objDoc.StartPrint('', 0);
-			await objDoc.PrintOut(1, 0);
+			if ((await objDoc.StartPrint('', 33554432)) == false) {
+				console.error('BPAC ERROR', objDoc.ErrorCode);
+				return false;
+			} //33554432 = hi res
+			if ((await objDoc.PrintOut(1, 33554432)) == false) {
+				console.error('BPAC ERROR', objDoc.ErrorCode);
+				return false;
+			}
 			await objDoc.EndPrint();
 			await objDoc.Close();
 			return true;
@@ -67,7 +83,14 @@ export async function getPrinters(): Promise<string[]> {
 	return await _bpac.IPrinter.GetInstalledPrinters();
 }
 
-export async function printerOnline(printer: string): Promise<boolean> {
+export async function printerOnline(printer: string | undefined = undefined): Promise<boolean> {
+	if (!printer) {
+		let printers = await getPrinters();
+		printer = printers?.[0];
+	}
+	if (!printer) {
+		return false;
+	}
 	return await _bpac.IPrinter.IsPrinterOnline(printer);
 }
 

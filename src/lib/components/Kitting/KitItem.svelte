@@ -24,17 +24,19 @@
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import { getPrinters, printLabel, printerOnline } from '$lib/utils/bpac/bpac';
 	import type { LabelContent } from '$lib/utils/bpac/bpac';
+	import { onMount } from 'svelte';
 
 	export let pn: string;
 	export let part = {};
 	export let job;
+	export let bomLine = [];
 	export let orderItems = [];
 	export let kitItems = [];
 	export let kits = [];
 	export let kit = kits?.[0];
 	export let visible = true;
 	export let createCarrier = part?.properties?.type?.toLowerCase() === 'smt';
-	export let createLabel = true;
+	export let createLabel = false;
 
 	export let arbitraryQuantityVisible = false;
 
@@ -44,7 +46,8 @@
 		let kitted = kitItems?.filter((ki) => ki.orders_item?.id === i.id);
 		let kittedQty = kitted?.reduce((a, v) => (a = a + v.quantity), 0);
 		if (!i?.__quantity) {
-			i.__quantity = i.quantity;
+			//i.__quantity = i.quantity;
+			i.__quantity = clamp(i.quantity, 1, i.quantity - kittedQty);
 		}
 		if (!i?.__selected) {
 			i.__selected = true;
@@ -282,7 +285,8 @@
 								content: job?.id
 							}
 						];
-						if (await printLabel('C:\\Users\\georg\\Documents\\test.lbx', labelContent)) {
+						let printResult = await printLabel('C:\\Users\\george\\Documents\\label_template.lbx', labelContent);
+						if (printResult) {
 							messagesStore('LABEL PRINTED');
 						} else {
 							messagesStore('LABEL PRINT FAILED', 'error');
@@ -345,6 +349,10 @@
 		kitAdding = false;
 	}
 
+	onMount(async () => {
+		createLabel = await printerOnline();
+	});
+
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);
 	$: receivedTotal = orderItems
 		?.map((i) => i.orders_items_receiveds)
@@ -358,33 +366,58 @@
 				?.map((i) => i?.__quantity || 0)
 				?.reduce((a, v) => a + v, 0);
 	$: console.log(orderItems);
+
+	let partInfo;
+	let descriptionOkCheckbox = false;
+	$: descriptionOk = bomLine?.[0]?.description === partInfo?.description || descriptionOkCheckbox;
 </script>
 
 <svelte:window
 	on:keydown={(e) => {
 		console.log(e);
 		if (e.key === 'Enter') {
-			addQuantity();
-			visible = false;
+			if (!descriptionOkCheckbox) {
+				descriptionOkCheckbox = true;
+			} else {
+				addQuantity();
+				visible = false;
+			}
 		}
 	}}
 />
 
-<div>
-	<div class="flex pt-4">
+<div class="py-4">
+	<div class="flex">
 		<div class="w-1/2">
 			{#if remainingToReceive > 0}
-				<p class="text-lg underline text-red-600">You are attempting to kit more than recieved</p>
+				<p class="font-semibold text-lg underline text-red-600">You are attempting to kit more than recieved</p>
 			{/if}
 			{#if !arbitraryQuantityVisible}
-				<p class="pb-2 text-lg">
-					Kit {remainingToReceive > 0 && ' & recieve '}{kittingTotal} from {orderItems?.filter((i) => i.__selected).length} order(s)
+				<p class="font-bold pb-2 text-lg" class:text-red-600={kittingTotal < 1}>
+					Kit {remainingToReceive > 0 ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
+						.length} order(s)
 				</p>
 			{:else}
-				<p class="text-lg underline text-red-600">Kit {kittingTotal}</p>
+				<p class="font-bold text-lg underline text-red-600">Kit {kittingTotal}</p>
 				<p class="pb-2 italic text-red-600">arbitrary amount not associated with an order</p>
 			{/if}
-			<PartInfo partId={pn} showPopoutButton={false} />
+			<div>
+				<Helper>Description check</Helper>
+				<div class="flex border rounded-md p-1">
+					<p class={`font-semibold uppercase ${descriptionOk ? 'text-green-500' : 'text-red-600'}`}>
+						{bomLine?.[0]?.description || partInfo?.description}
+					</p>
+					<div class="my-auto mx-auto">
+						<Checkbox bind:checked={descriptionOkCheckbox} />
+					</div>
+				</div>
+			</div>
+			<div>
+				<Helper>Part info</Helper>
+				<div class="flex border rounded-md p-1">
+					<PartInfo partId={pn} showPopoutButton={false} bind:partInfo />
+				</div>
+			</div>
 		</div>
 		<div class="w-1/4 px-1 h-52 overflow-y-auto">
 			<ul>
@@ -414,12 +447,22 @@
 		<div class="w-1/4">
 			<div class="">
 				<div class="flex">
-					<Button color="blue" size="sm" disabled={kittingTotal < 1 || !kit?.id} on:click={() => addQuantity()}>
+					<Button
+						color="blue"
+						size="sm"
+						disabled={kittingTotal < 1 || !kit?.id || !descriptionOkCheckbox}
+						on:click={() => addQuantity()}
+					>
 						Add
 						{#if quantityAdding}
 							<Spinner class="ml-3" size="3" color="white" />
 						{/if}
 					</Button>
+					{#if !kit?.id || !descriptionOkCheckbox}
+						<Tooltip
+							>{(!kit?.id ? ' NO KIT SELECTED ' : '') + (!descriptionOkCheckbox ? ' DESCRIPTION NOT CHECKED ' : '')}</Tooltip
+						>
+					{/if}
 					{#if arbitraryQuantityVisible}
 						<div
 							class="w-1/2 mx-auto"
@@ -442,8 +485,27 @@
 					<Checkbox bind:checked={arbitraryQuantityVisible}>Arbitrary quantity</Checkbox>
 				</div>
 				<div class="mt-10">
-					<Checkbox bind:checked={createLabel}>Print label</Checkbox>
 					<Checkbox bind:checked={createCarrier}>Create carrier</Checkbox>
+					<div class="mt-4">
+						{#await printerOnline() then online}
+							{#if !online}
+								<Checkbox bind:checked={createLabel} disabled={true}>Print label</Checkbox>
+								<Helper helperClass={'text-xs font-normal text-gray-500 dark:text-gray-300 pl-6' + classes.link} color="red">
+									No printer available
+								</Helper>
+							{:else}
+								<Checkbox bind:checked={createLabel}>Print label</Checkbox>
+								{#await getPrinters() then printers}
+									<Helper
+										helperClass={'text-xs font-normal text-gray-500 dark:text-gray-300 pl-6' + classes.link}
+										color="green"
+									>
+										{printers[0]}
+									</Helper>
+								{/await}
+							{/if}
+						{/await}
+					</div>
 				</div>
 			</div>
 		</div>

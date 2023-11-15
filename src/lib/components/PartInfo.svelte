@@ -15,6 +15,7 @@
 	export let footprint = {};
 	export let showPopoutButton = true;
 	export let showFootprint = false;
+	export let partInfo = {};
 
 	$: partInfoStore = queryStore({
 		client: getContextClient(),
@@ -125,7 +126,7 @@
 				{partInfo?.description}
 			</div>
 			<div class="grid grid-cols-2">
-				<div>
+				<div class="w-1/2">
 					{#if partInfo?.properties && partInfo?.properties.length > 0}
 						<p class="font-semibold">Properties:</p>
 						<hr />
@@ -140,35 +141,37 @@
 						{/each}
 					{/if}
 				</div>
-				<div class="flex items-center mb-0">
-					{#if partInfo?.image_url && !image}
-						<img src={partInfo.image_url} alt={partInfo?.name} class=" px-1 m-0 aspect-square max-h-32 max-w-fit" />
-					{/if}
-					{#if image && !galleryVisible}
-						<img
-							src={image}
-							alt={partInfo?.name}
-							class=" px-1 m-0 aspect-square max-h-32 max-w-fit"
-							on:click={() => {
-								imageIdx++;
-								imageInterval = 2000;
-								if (imageIdx > images.length - 1) {
-									imageIdx = 0;
-								}
-							}}
-						/>
-					{/if}
-
-					<div>
-						{#if galleryVisible && images.length > 0}
-							<div class="grid md:grid-cols-3 sm:grid-cols-2">
-								{#each images as image}
-									<a href={image} target="_blank" class="border rounded-lg p-1 mx-1 my-1 hover:shadow-inner">
-										<img src={image} class="w-fit aspect-auto" alt={image} />
-									</a>
-								{/each}
-							</div>
+				<div class=" w-1/2">
+					<div class="mx-auto">
+						{#if partInfo?.image_url && !image}
+							<img src={partInfo.image_url} alt={partInfo?.name} class=" px-1 m-0 aspect-square max-h-32 max-w-fit" />
 						{/if}
+						{#if image && !galleryVisible}
+							<img
+								src={image}
+								alt={partInfo?.name}
+								class=" px-1 m-0 aspect-square max-h-32 max-w-fit"
+								on:click={() => {
+									imageIdx++;
+									imageInterval = 2000;
+									if (imageIdx > images.length - 1) {
+										imageIdx = 0;
+									}
+								}}
+							/>
+						{/if}
+
+						<div>
+							{#if galleryVisible && images.length > 0}
+								<div class="grid md:grid-cols-3 sm:grid-cols-2">
+									{#each images as image}
+										<a href={image} target="_blank" class="border rounded-lg p-1 mx-1 my-1 hover:shadow-inner">
+											<img src={image} class="w-fit aspect-auto" alt={image} />
+										</a>
+									{/each}
+								</div>
+							{/if}
+						</div>
 					</div>
 					{#if showFootprint}
 						<ViewerFromJson json={footprint} height={200} />

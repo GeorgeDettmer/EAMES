@@ -172,6 +172,36 @@
 		}
 		return false;
 	}
+
+	function rowColor(
+		pn: string | null,
+		buildQty: number = 0,
+		orderQty: number = 0,
+		receivedQty: number = 0,
+		kittedQty: number = 0
+	) {
+		if (!pn) return 'default';
+
+		if (kittedQty > 0 && kittedQty < buildQty) {
+			return 'red';
+		} else if (kittedQty > 0 && kittedQty < orderQty) {
+			return 'yellow';
+		} else if (kittedQty >= buildQty) {
+			return 'green';
+		} else {
+			return 'default';
+		}
+
+		/* {
+			!lineKey
+				? 'default'
+				: kittedQty > 0 && kittedQty < orderItemQty
+				? 'yellow'
+				: kittedQty >= buildQty
+				? 'green'
+				: 'default';
+		} */
+	}
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -182,6 +212,7 @@
 		kitItems={activeLine?.kitItems}
 		pn={activeLine?.line?.[0]?.part}
 		part={activeLine?.line?.[0]?.partByPart}
+		bomLine={activeLine?.line}
 		bind:visible={receiveModal}
 	/>
 </Modal>
@@ -257,13 +288,7 @@
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
 				<TableBodyRow
-					color={!lineKey
-						? 'default'
-						: kittedQty > 0 && kittedQty < buildQty
-						? 'yellow'
-						: kittedQty >= buildQty
-						? 'green'
-						: 'default'}
+					color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
 					class={`cursor-pointer`}
 					on:click={(e) => {
 						handleRowClick(idx, references, line, lineKey, e);
@@ -390,7 +415,7 @@
 													src="https://img.icons8.com/ios/50/unpacking.png"
 													alt="unpacking"
 												/>
-											{:else if receivedItemQty === orderItemQty}
+											{:else if receivedItemQty >= orderItemQty}
 												<img
 													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
 													width="24"
@@ -421,7 +446,7 @@
 													src="https://img.icons8.com/ios/50/packing.png"
 													alt="packing"
 												/>
-											{:else if kittedQty === orderItemQty}
+											{:else if kittedQty >= orderItemQty}
 												<img
 													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
 													width="24"

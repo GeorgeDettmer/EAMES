@@ -193,9 +193,12 @@
 					{
 						kit_items: items,
 						received_items: itemsToKit?.map((i) => {
+							console.log('kit receipt', i, i.orders_items_receiveds);
+							let receivedQty = i.orders_items_receiveds?.reduce((a, v) => (a = a + v.quantity), 0);
+							//TODO: Not properly calculated quantity here - check...
 							return {
 								orders_items_id: i.id,
-								quantity: i.__quantity
+								quantity: i.__quantity - receivedQty
 							};
 						})
 					}

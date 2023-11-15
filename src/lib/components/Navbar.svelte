@@ -128,7 +128,12 @@
 	let printersState: any[] = [];
 	onMount(async () => {
 		printers = await getPrinters();
-		printersState = printers.map(async (printer) => await printerOnline(printer));
+		let promises = printers.map(async (printer) => await printerDetails(printer));
+
+		Promise.all(promises).then((x) => {
+			console.log('printersDetails', x);
+			printersState = x;
+		});
 	});
 </script>
 

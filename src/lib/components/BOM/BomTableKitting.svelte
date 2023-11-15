@@ -370,7 +370,7 @@
 					{#if visibleColumns?.includes('kit_button')}
 						<TableBodyCell>
 							<div
-								class="cursor-pointer"
+								class="cursor-pointer w-fit"
 								on:click|stopPropagation={(e) => {
 									activeLine = { line, orderItems, kitItems };
 									receiveModal = true;
@@ -378,7 +378,7 @@
 									e.preventDefault();
 								}}
 							>
-								<PlusOutline />
+								<PlusOutline size="lg" />
 							</div>
 						</TableBodyCell>
 					{/if}

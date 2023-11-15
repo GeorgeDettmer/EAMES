@@ -350,7 +350,9 @@
 	}
 
 	onMount(async () => {
-		createLabel = await printerOnline();
+		let printer = await printerOnline();
+		createLabel = printer;
+		createCarrier = printer;
 	});
 
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);
@@ -365,7 +367,6 @@
 				?.filter((i) => i?.__selected)
 				?.map((i) => i?.__quantity || 0)
 				?.reduce((a, v) => a + v, 0);
-	$: console.log(orderItems);
 
 	let partInfo;
 	let descriptionOkCheckbox = false;

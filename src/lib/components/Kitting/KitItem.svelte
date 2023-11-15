@@ -390,19 +390,24 @@
 <div class="py-4">
 	<div class="flex">
 		<div class="w-1/2">
-			{#if remainingToReceive > 0}
-				<p class="font-semibold text-lg underline text-red-600">You are attempting to kit more than recieved</p>
-			{/if}
-			{#if !arbitraryQuantityVisible}
-				<p class="font-bold pb-2 text-lg" class:text-red-600={kittingTotal < 1}>
-					Kit {remainingToReceive > 0 ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
-						.length} order(s)
-				</p>
-			{:else}
-				<p class="font-bold text-lg underline text-red-600">Kit {kittingTotal}</p>
-				<p class="pb-2 italic text-red-600">arbitrary amount not associated with an order</p>
-			{/if}
-			<div>
+			<Helper>Summary</Helper>
+			<div class="border rounded-md p-1">
+				{#if !arbitraryQuantityVisible}
+					<p class="font-bold text-lg" class:text-red-600={kittingTotal < 1}>
+						Kit {remainingToReceive > 0 ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter((i) => i.__selected)
+							.length} order(s)
+					</p>
+					{#if remainingToReceive > 0}
+						<p class="font-semibold underline text-red-600">
+							You are attempting to kit more than recieved. Receipt(s) will be created for the selected quantity(s)
+						</p>
+					{/if}
+				{:else}
+					<p class="font-bold text-lg underline text-red-600">Kit {kittingTotal}</p>
+					<p class=" italic text-red-600">arbitrary amount not associated with an order</p>
+				{/if}
+			</div>
+			<div class="pt-4">
 				<Helper>Description check</Helper>
 				<div class="flex border rounded-md p-1">
 					<p class={`font-semibold uppercase ${descriptionOk ? 'text-green-500' : 'text-red-600'}`}>
@@ -420,10 +425,10 @@
 				</div>
 			</div>
 		</div>
-		<div class="w-1/4 px-1 h-52 overflow-y-auto">
+		<div class="w-1/4 px-6 pt-8 h-52 overflow-y-auto">
 			<ul>
 				{#each kits as k, idx}
-					<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
+					<li class="rounded p-0.5 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
 						<Label class={'flex items-center'}>
 							<input
 								type="radio"
@@ -437,12 +442,9 @@
 						<Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper>
 					</li>
 				{:else}{/each}
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
-					<Label class={'flex items-center text-xs gap-x-2'}>
-						<Button color="blue" size="xs" on:click={() => addKit()}><PlusOutline size="xs" /></Button>
-						Add kit
-					</Label>
-				</li>
+				<div class="ml-6 pt-1">
+					<Button color="blue" size="xs" on:click={() => addKit()}><PlusOutline size="xs" /> Add kit</Button>
+				</div>
 			</ul>
 		</div>
 		<div class="w-1/4">

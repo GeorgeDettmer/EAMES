@@ -112,6 +112,7 @@
 								id
 								created_at
 								updated_at
+								tracking
 								order {
 									id
 									supplier {

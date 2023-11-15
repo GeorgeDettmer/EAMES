@@ -3,6 +3,7 @@
 	import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { XMark } from 'svelte-heros-v2';
 	import UserIcon from '../UserIcon.svelte';
+	import TrackingStatus from '../Orders/TrackingStatus.svelte';
 	//import ReceiptItemRemoveButton from './ReceiptItemRemoveButton.svelte';
 
 	export let orderItems = [];
@@ -66,6 +67,9 @@
 					{/if}
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+					{#each item?.tracking || [] as tracking}
+						<TrackingStatus {tracking} showText={false} width={30} height={30} />
+					{/each}
 					<!-- <KitItemRemoveButton id={item.id}><XMark size="16" /></KitItemRemoveButton> -->
 				</TableBodyCell>
 			</TableBodyRow>

@@ -5,7 +5,7 @@
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
-	import { Button, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import { Button, Input, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -209,7 +209,7 @@
 					}
 				}
 			`,
-			{ data: bom_lines, name: files.accepted[0].name?.split('.xl')?.[0] }
+			{ data: bom_lines, name: name ? name : files.accepted[0].name?.split('.xl')?.[0], revision_external }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -263,6 +263,9 @@
 	$: partsNotInLibrary = (bom?.lines || [])?.map((l) => l?.part)?.filter((x) => x && !partsInLibrary?.includes(x));
 	$: canAdd = partsNotInLibrary.length === 0;
 	$: console.log('partsInLibrary', partsInLibrary);
+
+	let revision_external = '';
+	let name = '';
 </script>
 
 {#if assemblyId}
@@ -328,6 +331,8 @@
 </Table> -->
 {#if bom?.lines}
 	<Button outline color={canAdd ? 'green' : 'red'} on:click={insert}>Insert BOM</Button>
+	<Input type="text" bind:value={name} placeholder={'Name'} />
+	<Input type="text" bind:value={revision_external} placeholder={'External revision'} />
 
 	<hr />
 	<BomTable {bom} {partsInLibrary} />

@@ -17,6 +17,7 @@
 		Accordion,
 		AccordionItem,
 		Badge,
+		Input,
 		Modal,
 		Table,
 		TableBody,
@@ -202,6 +203,9 @@
 				: 'default';
 		} */
 	}
+
+	let partSearch = '';
+	let descriptionSearch = '';
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -220,11 +224,38 @@
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
-			<TableHeadCell padding="px-6 py-1" colspan="5"
-				>{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</TableHeadCell
+			<TableHeadCell />
+
+			<TableHeadCollapsible
+				columnId="part"
+				visible={visibleColumns?.includes('part')}
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
 			>
-			<TableHeadCell padding="px-6 py-1" colspan="4" />
-			<TableHeadCell padding="px-6 py-1" colspan="2" />
+				<input
+					class="m-0 block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+					type="text"
+					bind:value={partSearch}
+				/>
+			</TableHeadCollapsible>
+
+			<TableHeadCollapsible
+				columnId="description"
+				visible={visibleColumns?.includes('description')}
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
+				<input
+					class=" block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+					type="text"
+					bind:value={descriptionSearch}
+				/>
+			</TableHeadCollapsible>
+
+			<TableHeadCell />
+			<TableHeadCell padding="px-6 py-1" colspan="7">
+				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>
+			</TableHeadCell>
 		</TableHead>
 		<TableHead>
 			<TableHeadCell>#</TableHeadCell>
@@ -287,190 +318,196 @@
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
-				<TableBodyRow
-					color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
-					class={`cursor-pointer`}
-					on:click={(e) => {
-						handleRowClick(idx, references, line, lineKey, e);
-					}}
-				>
-					<TableBodyCell>{idx + 1}</TableBodyCell>
-
-					<TableBodyCollapsible
-						columnId="part"
-						visible={visibleColumns?.includes('part')}
-						bind:collapsedColumns={$collapsedColumns}
+				{#if lineKey.toLowerCase().includes(partSearch.toLowerCase()) && description
+						.toLowerCase()
+						.includes(descriptionSearch.toLowerCase())}
+					<TableBodyRow
+						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
+						class={`cursor-pointer`}
+						on:click={(e) => {
+							handleRowClick(idx, references, line, lineKey, e);
+						}}
 					>
-						<p
-							class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
-								activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
-							}`}
+						<TableBodyCell>{idx + 1}</TableBodyCell>
+
+						<TableBodyCollapsible
+							columnId="part"
+							visible={visibleColumns?.includes('part')}
+							bind:collapsedColumns={$collapsedColumns}
 						>
-							{lineKey || 'Not Fitted'}
-						</p>
-					</TableBodyCollapsible>
-
-					<TableBodyCollapsible
-						columnId="description"
-						visible={visibleColumns?.includes('description')}
-						bind:collapsedColumns={$collapsedColumns}
-					>
-						<p class="overflow-hidden text-clip">{description || ''}</p>
-						{#if line?.[0]?.description && line?.[0]?.description !== description}
-							<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
-						{/if}
-					</TableBodyCollapsible>
-
-					<TableBodyCollapsible
-						columnId="references"
-						visible={visibleColumns?.includes('references')}
-						bind:collapsedColumns={$collapsedColumns}
-					>
-						<BomTableLineReferences pn={lineKey} {references} />
-					</TableBodyCollapsible>
-
-					{#if visibleColumns?.includes('quantity')}
-						<TableBodyCell>{references?.length}</TableBodyCell>
-					{/if}
-
-					{#if job?.quantity && visibleColumns?.includes('build_quantity')}
-						<TableBodyCell>{buildQty}</TableBodyCell>
-					{/if}
-
-					{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
-						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
-								{orderItemQty}
-							</Badge>
-						</TableBodyCell>
-					{/if}
-
-					{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
-						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
-								{receivedItemQty}
-							</Badge>
-						</TableBodyCell>
-					{/if}
-
-					{#if job?.jobs_kits}
-						{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
-						{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
-						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
-								{kitItemQty}
-							</Badge>
-						</TableBodyCell>
-						<TableBodyCell>
-							<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
-								{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
-							</Badge>
-						</TableBodyCell>
-					{/if}
-					{#if visibleColumns?.includes('kit_button')}
-						<TableBodyCell>
-							<div
-								class="cursor-pointer w-fit"
-								on:click|stopPropagation={(e) => {
-									activeLine = { line, orderItems, kitItems };
-									receiveModal = true;
-									console.log('activeLine', activeLine);
-									e.preventDefault();
-								}}
+							<p
+								class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
+									activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
+								}`}
 							>
-								<PlusOutline size="lg" />
-							</div>
-						</TableBodyCell>
-					{/if}
-				</TableBodyRow>
-				{#if openRows?.includes(idx)}
-					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="3" class="p-0">
-							<div class="px-1 py-1">
-								{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
-									<NewComponent id={lineKey} {description} />
-								{:else}
-									<PartInfo partId={lineKey} galleryVisible showFootprint />
-								{/if}
-							</div>
-						</TableBodyCell>
-						<TableBodyCell colspan="3" />
-						<TableBodyCell colspan="5" class="p-0 object-right">
-							<div class="px-1 py-0">
-								<Accordion multiple>
-									<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
-										<span slot="header" class="text-base flex gap-2">
-											<ShoppingCartSolid class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : 'text-red-500'}`} />
-											<span>Order</span>
-										</span>
-										<OrderItemsTable {orderItems} />
-									</AccordionItem>
-									<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && kittedQty < 1}>
-										<span slot="header" class="text-base flex gap-2">
-											{#if receivedItemQty === 0}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/unpacking.png"
-													alt="unpacking"
-												/>
-											{:else if receivedItemQty >= orderItemQty}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/unpacking.png"
-													alt="unpacking"
-												/>
-											{:else}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/unpacking.png"
-													alt="unpacking"
-												/>
-											{/if}
-											<span>Receipt</span>
-										</span>
-										<ReceiptItemsTable {receiptItems} />
-									</AccordionItem>
-									<AccordionItem paddingDefault="p-1" open={kittedQty > 0}>
-										<span slot="header" class="text-base flex gap-2">
-											{#if kittedQty === 0}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/packing.png"
-													alt="packing"
-												/>
-											{:else if kittedQty >= orderItemQty}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/packing.png"
-													alt="packing"
-												/>
-											{:else}
-												<img
-													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-													width="24"
-													height="24"
-													src="https://img.icons8.com/ios/50/packing.png"
-													alt="packing"
-												/>
-											{/if}
-											<span>Kitting</span>
-										</span>
-										<KitItemsTable {kitItems} jobsKits={job?.jobs_kits} />
-									</AccordionItem>
-								</Accordion>
-							</div>
-						</TableBodyCell>
+								{lineKey || 'Not Fitted'}
+							</p>
+						</TableBodyCollapsible>
+
+						<TableBodyCollapsible
+							columnId="description"
+							visible={visibleColumns?.includes('description')}
+							bind:collapsedColumns={$collapsedColumns}
+						>
+							<p class="overflow-hidden text-clip">{description || ''}</p>
+							{#if line?.[0]?.description && line?.[0]?.description !== description}
+								<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
+							{/if}
+						</TableBodyCollapsible>
+
+						<TableBodyCollapsible
+							columnId="references"
+							visible={visibleColumns?.includes('references')}
+							bind:collapsedColumns={$collapsedColumns}
+						>
+							<BomTableLineReferences pn={lineKey} {references} />
+						</TableBodyCollapsible>
+
+						{#if visibleColumns?.includes('quantity')}
+							<TableBodyCell>{references?.length}</TableBodyCell>
+						{/if}
+
+						{#if job?.quantity && visibleColumns?.includes('build_quantity')}
+							<TableBodyCell>{buildQty}</TableBodyCell>
+						{/if}
+
+						{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
+							<TableBodyCell>
+								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+									{orderItemQty}
+								</Badge>
+							</TableBodyCell>
+						{/if}
+
+						{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
+							<TableBodyCell>
+								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
+									{receivedItemQty}
+								</Badge>
+							</TableBodyCell>
+						{/if}
+
+						{#if job?.jobs_kits}
+							{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
+							{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
+							<TableBodyCell>
+								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
+									{kitItemQty}
+								</Badge>
+							</TableBodyCell>
+							<TableBodyCell>
+								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
+									{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
+								</Badge>
+							</TableBodyCell>
+						{/if}
+						{#if visibleColumns?.includes('kit_button')}
+							<TableBodyCell>
+								<div
+									class="cursor-pointer w-fit"
+									on:click|stopPropagation={(e) => {
+										activeLine = { line, orderItems, kitItems };
+										receiveModal = true;
+										console.log('activeLine', activeLine);
+										e.preventDefault();
+									}}
+								>
+									<PlusOutline size="lg" />
+								</div>
+							</TableBodyCell>
+						{/if}
 					</TableBodyRow>
+					{#if openRows?.includes(idx)}
+						<TableBodyRow class="h-24">
+							<TableBodyCell colspan="3" class="p-0">
+								<div class="px-1 py-1">
+									{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
+										<NewComponent id={lineKey} {description} />
+									{:else}
+										<PartInfo partId={lineKey} galleryVisible showFootprint />
+									{/if}
+								</div>
+							</TableBodyCell>
+							<TableBodyCell colspan="3" />
+							<TableBodyCell colspan="5" class="p-0 object-right">
+								<div class="px-1 py-0">
+									<Accordion multiple>
+										<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
+											<span slot="header" class="text-base flex gap-2">
+												<ShoppingCartSolid
+													class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : 'text-red-500'}`}
+												/>
+												<span>Order</span>
+											</span>
+											<OrderItemsTable {orderItems} />
+										</AccordionItem>
+										<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && kittedQty < 1}>
+											<span slot="header" class="text-base flex gap-2">
+												{#if receivedItemQty === 0}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/unpacking.png"
+														alt="unpacking"
+													/>
+												{:else if receivedItemQty >= orderItemQty}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/unpacking.png"
+														alt="unpacking"
+													/>
+												{:else}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/unpacking.png"
+														alt="unpacking"
+													/>
+												{/if}
+												<span>Receipt</span>
+											</span>
+											<ReceiptItemsTable {receiptItems} />
+										</AccordionItem>
+										<AccordionItem paddingDefault="p-1" open={kittedQty > 0}>
+											<span slot="header" class="text-base flex gap-2">
+												{#if kittedQty === 0}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/packing.png"
+														alt="packing"
+													/>
+												{:else if kittedQty >= orderItemQty}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/packing.png"
+														alt="packing"
+													/>
+												{:else}
+													<img
+														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+														width="24"
+														height="24"
+														src="https://img.icons8.com/ios/50/packing.png"
+														alt="packing"
+													/>
+												{/if}
+												<span>Kitting</span>
+											</span>
+											<KitItemsTable {kitItems} jobsKits={job?.jobs_kits} />
+										</AccordionItem>
+									</Accordion>
+								</div>
+							</TableBodyCell>
+						</TableBodyRow>
+					{/if}
 				{/if}
 			{/each}
 		</TableBody>

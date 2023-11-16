@@ -12,7 +12,8 @@
 		Button,
 		ButtonGroup,
 		Modal,
-		Label
+		Label,
+		Checkbox
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
@@ -63,22 +64,15 @@
 	let newPrice = 0;
 	let newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
 
-	let orderTracking = { tracking_number: '', carrier_code: 'ups' };
+	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
 	$: console.log(orderTracking);
 
 	$: console.log('OrderCreateMulti', order);
 
-	function updateOrderLinesTracking(tracking_number: string, carrier_code: string) {
-		order?.order_items?.forEach((i) => {
-			i.tracking = [
-				{
-					tracking_number,
-					carrier_code,
-					tracking_url: carrier_urls?.[tracking?.carrier_code]
-						? carrier_urls?.[tracking?.carrier_code](tracking?.tracking_number)
-						: undefined
-				}
-			];
+	function updateOrderLinesTracking(force: boolean = false) {
+		orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
+		order?.orders_items?.forEach((i, idx) => {
+			i.tracking = [orderTracking];
 		});
 		order = order;
 		console.log('ttttttttt', order);
@@ -240,7 +234,7 @@
 							placeholder="Carrier code"
 							size="sm"
 							bind:value={orderTracking.carrier_code}
-							on:change={() => updateOrderLinesTracking(orderTracking.tracking_number, orderTracking.carrier_code)}
+							on:change={() => updateOrderLinesTracking()}
 						/>
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
@@ -248,7 +242,7 @@
 							placeholder="Tracking number"
 							size="sm"
 							bind:value={orderTracking.tracking_number}
-							on:change={() => updateOrderLinesTracking(orderTracking.tracking_number, orderTracking.carrier_code)}
+							on:change={() => updateOrderLinesTracking()}
 						/>
 						<!-- <Button color="primary" class="!p-2.5">
 	<SearchOutline class="w-5 h-5" />
@@ -302,52 +296,25 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell>
-							<!-- {#each item?.tracking || [] as track}
-								<div>
-									<ButtonGroup size="sm">
-										<Input
-											defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
-											type="text"
-											placeholder="Carrier code"
-											size="sm"
-											bind:value={track.carrier_code}
-										/>
-										<Input
-											defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-											type="text"
-											placeholder="Tracking number"
-											size="sm"
-											bind:value={track.tracking_number}
-										/>
-
-										<Button color="primary" class="!p-2.5" disabled>
-											<Link size="10" class="w-5 h-5" />
-										</Button>
-									</ButtonGroup>
-								</div>
-							{:else}
-								<ButtonGroup size="sm">
+							<div>
+								<!-- <ButtonGroup size="sm">
 									<Input
 										defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
 										type="text"
 										placeholder="Carrier code"
 										size="sm"
-										bind:value={orderTracking.carrier_code}
-										disabled
+										value={item?.tracking?.[0]?.carrier_code}
 									/>
 									<Input
 										defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 										type="text"
 										placeholder="Tracking number"
 										size="sm"
-										bind:value={orderTracking.tracking_number}
-										disabled
+										value={item?.tracking?.[0]?.tracking_number}
 									/>
-									<Button color="primary" class="!p-2.5">
-										<Link size="10" class="w-5 h-5" />
-									</Button>
-								</ButtonGroup>
-							{/each} -->
+									<Checkbox class="ml-2"  ><Link size="10" class="w-5 h-5" /></Checkbox>
+								</ButtonGroup> -->
+							</div>
 						</TableBodyCell>
 						<TableBodyCell>
 							<span

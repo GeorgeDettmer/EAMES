@@ -5,6 +5,7 @@
 	export let columnId: string;
 	export let visible: boolean = true;
 	export let collapsedColumns: string[] = [];
+	export let showCollapseButton: boolean = true;
 
 	function collapseColumn(columnId: string, collapse: boolean) {
 		if (collapse) {
@@ -20,19 +21,23 @@
 		<TableHeadCell>
 			<div class="inline-flex cursor-pointer">
 				<slot />
-				<div class="my-auto ml-1">
-					<ChevronDownOutline size="xs" on:click={() => collapseColumn(columnId, true)} />
-				</div>
+				{#if showCollapseButton}
+					<div class="my-auto ml-1">
+						<ChevronDownOutline size="xs" on:click={() => collapseColumn(columnId, true)} />
+					</div>
+				{/if}
 			</div>
 		</TableHeadCell>
 	{:else}
 		<TableHeadCell padding="px-0">
-			<div class="inline-flex cursor-pointer">
-				<div class="my-auto ml-1">
-					<ChevronLeftOutline size="xs" on:click={() => collapseColumn(columnId, false)} />
+			{#if showCollapseButton}
+				<div class="inline-flex cursor-pointer">
+					<div class="my-auto ml-1">
+						<ChevronLeftOutline size="xs" on:click={() => collapseColumn(columnId, false)} />
+					</div>
 				</div>
-			</div>
-			<Tooltip placement="right" defaultClass="py-2 px-2 text-xs font-medium"><slot /></Tooltip>
+				<Tooltip placement="right" defaultClass="py-2 px-2 text-xs font-medium"><slot /></Tooltip>
+			{/if}
 		</TableHeadCell>
 	{/if}
 {/if}

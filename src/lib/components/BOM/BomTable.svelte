@@ -169,7 +169,7 @@
 				>
 					<TableBodyCell>{idx + 1}</TableBodyCell>
 					{#if visibleColumns?.includes('part')}
-						<TableBodyCell class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}
+						<TableBodyCell class={`${partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}
 							>{lineKey || 'Not Fitted'}</TableBodyCell
 						>
 					{/if}
@@ -236,9 +236,9 @@
 				<!-- {#if openRow === idx} -->
 				{#if openRows?.includes(idx)}
 					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="3" class="p-0">
+						<TableBodyCell colspan={kitItems ? '3' : '5'} class="p-0">
 							<div class="px-1 py-1">
-								{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
+								{#if !partsInLibrary?.includes(lineKey)}
 									<NewComponent id={lineKey} {description} />
 								{:else}
 									<PartInfo partId={lineKey} galleryVisible showFootprint />

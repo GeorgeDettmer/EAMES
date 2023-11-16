@@ -400,12 +400,12 @@
 								<Accordion multiple>
 									<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
 										<span slot="header" class="text-base flex gap-2">
-											<ShoppingCartSolid class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : ''}`} />
+											<ShoppingCartSolid class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : 'text-red-500'}`} />
 											<span>Order</span>
 										</span>
 										<OrderItemsTable {orderItems} />
 									</AccordionItem>
-									<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && receivedItemQty < orderItemQty}>
+									<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && kittedQty < 1}>
 										<span slot="header" class="text-base flex gap-2">
 											{#if receivedItemQty === 0}
 												<img

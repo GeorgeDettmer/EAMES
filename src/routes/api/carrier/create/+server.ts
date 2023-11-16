@@ -1,9 +1,10 @@
 import sql from './db';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
+import { CARRIER_PREFIX } from '$env/static/private';
 
 export const GET: RequestHandler = async ({ url }) => {
-	const carrierid = url.searchParams.get('carrierid');
+	let carrierid = url.searchParams.get('carrierid');
 	const componentname = url.searchParams.get('componentname');
 	const owner = url.searchParams.get('owner');
 	const quantity = url.searchParams.get('quantity');
@@ -14,6 +15,8 @@ export const GET: RequestHandler = async ({ url }) => {
 		console.log('Error creating carrier: ', 'missing info');
 		throw error(400, 'missing info');
 	}
+	let carrierPrefix = CARRIER_PREFIX || 'EAMES#';
+	carrierid = carrierPrefix + carrierid;
 	if (carrierid.length > 50) {
 		console.log('Error creating carrier: ', 'carrierid over 50 chars', carrierid, carrierid.length);
 		throw error(400, 'carrierid over 50 chars');

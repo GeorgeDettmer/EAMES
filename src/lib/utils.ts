@@ -138,7 +138,11 @@ export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: str
 	if (!object) return;
 	return object[
 		Object.keys(object).filter((k) => {
-			return keys.includes(k.toLowerCase());
+			let match = keys.includes(k.toLowerCase());
+			//if (match) console.log('getParameterInsensitiveAny', k, keys, match);
+
+			return match;
+			//return keys.filter((matchKeys) => matchKeys.toLowerCase() === k.toLowerCase())?.length > 0;
 		})[0]
 	];
 };

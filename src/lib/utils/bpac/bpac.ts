@@ -99,11 +99,15 @@ export async function printerOnline(printer: string | undefined = undefined): Pr
 }
 
 interface PrinterDetails {
+	printer: string;
 	mediaId: number;
 	mediaName: string;
+	supportedMediaIds: number[];
+	supportedMediaNames: string[];
 }
 export async function printerDetails(printer: string): Promise<PrinterDetails> {
 	let details = {
+		printer,
 		mediaId: await _bpac.IPrinter.GetMediaId(),
 		mediaName: await _bpac.IPrinter.GetMediaName(),
 		supportedMediaIds: await _bpac.IPrinter.GetSupportedMediaIds(),

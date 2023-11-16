@@ -128,7 +128,7 @@
 				return newLine;
 			});
 
-			console.log('keys:', keys);
+			console.log('keys:', keys, headerIdx);
 		}
 		console.log('new lines:', lines);
 		lines.forEach((line, idx) => {

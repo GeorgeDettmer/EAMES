@@ -10,9 +10,7 @@
 		Checkbox,
 		Input,
 		Button,
-		Dropdown,
 		Helper,
-		Radio,
 		Spinner,
 		Label
 	} from 'flowbite-svelte';
@@ -35,7 +33,7 @@
 	export let kits = [];
 	export let kit = kits?.[0];
 	export let visible = true;
-	export let createCarrier = part?.properties?.type?.toLowerCase() === 'smt';
+	export let createCarrier = $page?.data?.user?.username !== 'GDettmer' && part?.properties?.type?.toLowerCase() === 'smt';
 	export let createLabel = false;
 
 	export let arbitraryQuantityVisible = false;
@@ -117,7 +115,28 @@
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
 				let kitItemId = mutationResult.data.insert_erp_kits_items_one.id;
 				if (createCarrier) {
-					messagesStore('IMAGINARY CARRIER CREATED');
+					console.log(
+						'createCarrier request:',
+						`/api/carrier/create?carrierid=${String(kitItemId)}&componentname=${pn}&quantity=${arbitraryQuantity}&owner=${
+							$page.data.user.initials
+						}&batchid=${`EAS${job?.id} (${kitItemId})`}`
+					);
+					const response = await fetch(
+						encodeURI(
+							`/api/carrier/create?carrierid=${String(kitItemId)}&componentname=${pn}&quantity=${arbitraryQuantity}&owner=${
+								$page.data.user.initials
+							}&batchid=${`EAS${job?.id} (${kitItemId})`}`
+						)
+					);
+					const result = await response.json();
+					if (response.status !== 200) {
+						messagesStore('CARRIER CREATION ERROR: ' + result?.message, 'error');
+						console.error('createCarrier error:', result, response);
+					} else {
+						messagesStore('CARRIER CREATED');
+						console.log('createCarrier result:', result, response);
+					}
+
 					/* mutationResult = await urqlClient.mutation(
 						gql`
 							mutation insertCarrier(
@@ -405,7 +424,8 @@
 			<div class="border rounded-md p-1">
 				{#if !arbitraryQuantityVisible}
 					<p class="font-bold text-lg" class:text-red-600={kittingTotal < 1}>
-						Kit {kittingTotal > receivedTotal ? ' & recieve ' : ''}{kittingTotal} from {orderItems?.filter(
+						Kit {kittingTotal}
+						{kittingTotal > receivedTotal ? `& recieve ${kittingTotal - receivedTotal}` : ''} from {orderItems?.filter(
 							(i) => i.__selected
 						).length} order(s)
 					</p>

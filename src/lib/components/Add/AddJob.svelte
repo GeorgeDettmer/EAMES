@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { queryStore, getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import { Label, Input, Helper, Select, Badge, Modal, Button, Toggle } from 'flowbite-svelte';
+	import { Label, Input, Helper, Select, Badge, Modal, Button, Toggle, Checkbox } from 'flowbite-svelte';
 	import AssemblyInfoOverview from '../Assembly/AssemblyInfoOverview.svelte';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
 	import SearchList from '../Misc/SearchList.svelte';
+	import AddAssembly from './AddAssembly.svelte';
+	import { PlusCircle } from 'svelte-heros-v2';
 	const urqlClient = getContextClient();
 	$: lastJobIdStore = subscriptionStore({
 		client: getContextClient(),
@@ -59,10 +61,10 @@
 		return { value: c, name: c.name };
 	});
 
-	$: assembliesStore = queryStore({
+	$: assembliesStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			query assemblies {
+			subscription assemblies {
 				assemblies(order_by: { name: asc }) {
 					id
 					name
@@ -70,8 +72,7 @@
 					revision_internal
 				}
 			}
-		`,
-		requestPolicy: 'cache-and-network'
+		`
 	});
 
 	let id;
@@ -80,6 +81,7 @@
 	let quantity = 1;
 	let assembly;
 	let createKit = false;
+	let createAssembly = false;
 
 	$: assemblies = $assembliesStore?.data?.assemblies?.map((assembly) => {
 		return { value: assembly, name: `${assembly?.name} (${assembly?.revision_external})` };
@@ -207,7 +209,14 @@
 			<div class="">
 				<Label>Assemblies</Label>
 				{#if assemblies}
-					<Select items={assemblies} bind:value={assembly} placeholder="Select assembly" />
+					<div class="flex">
+						<Select items={assemblies} bind:value={assembly} placeholder="Select assembly" />
+						<div class="ml-1 my-auto">
+							<a class="hover:text-green-500 cursor-pointer" target="_blank" href={window.origin + '/add/assembly'}>
+								<PlusCircle />
+							</a>
+						</div>
+					</div>
 				{:else}
 					<Input type="text" />
 				{/if}

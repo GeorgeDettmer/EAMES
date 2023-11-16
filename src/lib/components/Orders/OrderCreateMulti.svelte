@@ -30,9 +30,11 @@
 	import { BarsArrowDown, Link, Plus, PlusCircle } from 'svelte-heros-v2';
 
 	export let order;
-	export let user = order?.user;
+	export let user = order?.user || $page?.data?.user;
 	export let allowAddLine: boolean = true;
 	export let showHeader: boolean = true;
+
+	export let active = true;
 
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
@@ -48,7 +50,8 @@
 			spn: newSPN,
 			price: newPrice,
 			quantity: Number(newQuantity),
-			user_id: user.id,
+			user_id: user?.id,
+			user: user,
 			created_at: new Date().toISOString(),
 			tracking: newTracking
 		};
@@ -204,7 +207,7 @@
 
 	$: showSupplierSelect = false; //!order?.supplier_id;
 
-	export let selectedSupplierId: undefined | string = undefined;
+	export let selectedSupplierId: undefined | string = order?.id;
 	$: supplier = suppliers?.filter((s) => s?.id === selectedSupplierId)?.[0];
 
 	let jobListVisible = false;
@@ -218,7 +221,7 @@
 
 	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
 
-	$: console.log(order);
+	$: console.log('OrderCreateMulti', order);
 </script>
 
 <Modal bind:open={addLineModal} size="lg">
@@ -359,7 +362,13 @@
 	{#if showHeader}
 		<div class="grid grid-cols-4">
 			<div class="flex col-span-3">
-				<div class="cursor-pointer" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
+				<div
+					class="cursor-pointer"
+					on:click={() => {
+						if (!active) return;
+						showSupplierSelect = !showSupplierSelect;
+					}}
+				>
 					<OrdersListItem {order} interactive={false}>
 						{#if showSupplierSelect}
 							<div class=" w-fit flex" on:click|stopPropagation={() => {}}>

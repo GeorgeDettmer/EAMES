@@ -3,8 +3,10 @@
 	export let data: PageData;
 
 	import { page } from '$app/stores';
-	import OrderCreate from '$lib/components/Orders/OrderCreate.svelte';
+	import OrderCreateMulti from '$lib/components/Orders/OrderCreateMulti.svelte';
 	import {
+		Tabs,
+		TabItem,
 		Alert,
 		Button,
 		Checkbox,
@@ -22,8 +24,9 @@
 		Toggle
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-	import { InfoCircleSolid } from 'flowbite-svelte-icons';
+	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
+	import OrderCreateHeader from '$lib/components/Orders/OrderCreateHeader.svelte';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -34,13 +37,12 @@
 		color: $page?.data?.user?.color
 	};
 
-	$: order = {
+	/* $: order = {
 		orders_items: [],
-		/* supplier_id: 'FARNELL', */
 		supplier: {},
 		user_id: user.id,
 		user
-	};
+	}; */
 	let headers = {};
 	function excelToObjects(stringData) {
 		let objects = [];
@@ -81,7 +83,6 @@
 	let importText: string = '';
 	let showImport: boolean = false;
 	let imported: any[] = []; //excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
-	$: console.log('ORDER:', order);
 
 	function fillOrderFromImport() {
 		let toImport = imported?.filter((l) => l?._import !== false);
@@ -96,14 +97,16 @@
 			);
 			return;
 		}
-		if (importSuppliers.size > 1) {
+		/* if (importSuppliers.size > 1) {
 			messagesStore(
 				`Currently only import for 1 supplier at a time is supported. Suppliers: ${[...importSuppliers.values()]}`
 			);
 			return;
-		}
+		} */
 		showImport = false;
+		let order = {};
 		let order_items = [];
+		let importOrders = {};
 		toImport.forEach((line, idx) => {
 			//console.log('line add', line);
 			if (line) {
@@ -123,24 +126,47 @@
 				if (!price) {
 					messagesStore(`Line ${idx + 1} has 0 price`);
 				}
-				order_items.push({
+				let importSuppierName = line?.[orderItemProperties['supplier']];
+				if (!importOrders?.[importSuppierName]) {
+					importOrders[importSuppierName] = [];
+					importOrders[importSuppierName].user = $page?.data?.user;
+					importOrders[importSuppierName].supplier = suppliers?.filter((s) =>
+						s.names?.includes(importSuppierName?.toLowerCase())
+					)?.[0];
+					importOrders[importSuppierName].orders_items = [];
+				}
+				importOrders[importSuppierName].orders_items = [
+					...importOrders[importSuppierName].orders_items,
+					{
+						part,
+						spn,
+						price,
+						quantity: quantity,
+						created_at: new Date(),
+						user_id: $page?.data?.user?.id
+					}
+				];
+				/* order_items.push({
 					part,
 					spn,
 					price,
 					quantity: quantity,
 					created_at: new Date(),
 					user_id: $page?.data?.user?.id
-				});
+				}); */
 			}
 		});
-		let importSuppierName = toImport?.[0]?.[orderItemProperties['supplier']];
+		console.log('importOrders', importOrders, Object.values(importOrders));
+		orders = Object.values(importOrders);
+		/* let importSuppierName = toImport?.[0]?.[orderItemProperties['supplier']];
 		let importSupplier = suppliers?.filter((s) => s.names?.includes(importSuppierName?.toLowerCase()))?.[0];
 		selectedSupplierId = importSupplier?.id;
+		order.user = $page?.data?.user;
 		order.supplier_id = selectedSupplierId;
 		order.supplier.id = importSupplier?.id;
 		order.supplier.name = importSupplier?.name;
 		order.supplier.names = importSupplier?.names;
-		order.orders_items = order_items;
+		order.orders_items = order_items; */
 	}
 
 	function removeFromImport(idx: number) {
@@ -176,7 +202,7 @@
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
 	$: suppliersNames = suppliers?.map((s) => s.names);
-	$: {
+	/* $: {
 		if (!selectedSupplierId && suppliers) {
 			selectedSupplierId = suppliers?.[0]?.id;
 			order.supplier_id = selectedSupplierId;
@@ -184,12 +210,77 @@
 			order.supplier.name = suppliers?.[0]?.name;
 			order.supplier.names = suppliers?.[0]?.names;
 		}
-	}
+	} */
 	let selectedSupplierId = undefined;
-	//$: console.log('missingImportData', missingImportData);
+
+	let orders = [
+		/* {
+			orders_items: [],
+			supplier: {},
+			user_id: user?.id,
+			user
+		},
+		{
+			orders_items: [],
+			supplier: {},
+			user_id: user?.id,
+			user
+		} */
+	];
+
+	/* $: {
+		if (suppliers?.length > 0) {
+			orders[0].supplier = suppliers[0];
+		}
+	} */
+	$: console.log('PAGE ORDERS:', orders);
+
+	//$: tabsState = orders.map((o, idx) => idx === 0);
+	let openOrderIdx = 0;
 </script>
 
-<OrderCreate {order} bind:selectedSupplierId />
+<div class="">
+	<div class="-mb-8 -ml-10 -mt-2">
+		<Button
+			on:click={(e) => {
+				orders = [
+					...orders,
+					{
+						orders_items: [],
+						/* supplier_id: 'FARNELL', */
+						supplier: suppliers?.[0] || {},
+						user_id: user?.id,
+						user
+					}
+				];
+			}}><PlusOutline /></Button
+		>
+	</div>
+	<div>
+		{#if orders.length === 0}
+			No orders
+		{:else}
+			<Tabs
+				style="underline"
+				divider
+				defaultClass="flex flex-wrap space-x-1"
+				contentClass="p-4 rounded-lg mt-0"
+				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
+				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+			>
+				{#each orders as o, idx}
+					<TabItem opem={openOrderIdx === idx}>
+						<span slot="title">
+							<OrderCreateHeader bind:order={o} />
+						</span>
+						<OrderCreateMulti bind:order={o} showHeader={false} />
+					</TabItem>
+				{/each}
+			</Tabs>
+		{/if}
+	</div>
+</div>
+
 <div class="p-2">
 	<div class="p-2 grid grid-cols-2">
 		<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>

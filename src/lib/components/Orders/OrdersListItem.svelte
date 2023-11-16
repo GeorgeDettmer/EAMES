@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { padString } from '$lib/utils';
-	import { reference } from '@popperjs/core';
 
 	export let order;
 	export let modalVisible: boolean = false;

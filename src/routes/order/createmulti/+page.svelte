@@ -272,6 +272,8 @@
 			}
 		];
 	}
+
+	const urqlClient = getContextClient();
 	let ordersAdding = false;
 	async function addOrders() {
 		if (ordersAdding) return;
@@ -295,7 +297,7 @@
 			);
 			return;
 		} */
-		const urqlClient = getContextClient();
+
 		ordersAdding = true;
 		let mutationResult;
 		console.log('addOrders', orders);
@@ -366,6 +368,7 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted order(s): ' + mutationResult?.data?.insert_erp_orders?.returning?.map((r) => r.id), 'success');
+			goto('/order?me');
 		}
 		ordersAdding = false;
 	}

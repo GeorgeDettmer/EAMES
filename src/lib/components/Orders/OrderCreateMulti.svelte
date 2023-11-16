@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { carrier_codes, carrier_urls, datetimeFormat, supplier_export } from '$lib/utils';
+	import { datetimeFormat } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -11,23 +11,14 @@
 		Input,
 		Button,
 		ButtonGroup,
-		Dropdown,
-		DropdownItem,
-		Select,
-		Toggle,
 		Modal,
-		Spinner,
 		Label
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
-	import OrdersListItem from './OrdersListItem.svelte';
-	import { ChevronDownSolid, SearchOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/stores';
-	import { messagesStore } from 'svelte-legos';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderOverview from './OrderOverview.svelte';
-	import { goto } from '$app/navigation';
-	import { BarsArrowDown, Link, Plus, PlusCircle } from 'svelte-heros-v2';
+	import { Link, Plus } from 'svelte-heros-v2';
 
 	export let order;
 	export let user = order?.user || $page?.data?.user;
@@ -61,134 +52,6 @@
 		order.orders_items = [...order.orders_items, newLine];
 		addLineModal = false;
 	}
-	const urqlClient = getContextClient();
-	let orderAdding = false;
-	async function addOrder() {
-		if (orderAdding) return;
-		if (!$page?.data?.user) {
-			messagesStore('You must be logged in to perform this action', 'warning');
-			return;
-		}
-		if (orderItems.length === 0) {
-			messagesStore('There must be some order items to submit an order', 'warning');
-			return;
-		}
-		/* if (!$page?.data?.user?.processes['eng']) {
-			alert(
-				`You do not have permission to insert components. You have permission for: ${Object.keys(
-					$page?.data?.user?.processes
-				)}`
-			);
-			return;
-		} */
-		orderAdding = true;
-		let mutationResult;
-		console.log('sid', supplier, order.supplier.id);
-		mutationResult = await urqlClient.mutation(
-			gql`
-				mutation insertOrder($supplier_id: String!, $user_id: uuid!, $reference: String) {
-					insert_erp_orders_one(object: { supplier_id: $supplier_id, user_id: $user_id, reference: $reference }) {
-						id
-					}
-				}
-			`,
-			{ supplier_id: order.supplier_id, user_id: order.user_id, reference: order.reference }
-		);
-		if (mutationResult?.error) {
-			console.error('MUTATION ERROR: ', mutationResult);
-			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-		} else {
-			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Inserted order: ' + mutationResult?.data?.insert_erp_orders_one?.id, 'success');
-		}
-		if (mutationResult?.data?.insert_erp_orders_one?.id) {
-			console.log('oo', orderItems);
-			let items = orderItems;
-			order.id = mutationResult?.data?.insert_erp_orders_one?.id;
-			items.forEach((i) => {
-				i.order_id = mutationResult?.data?.insert_erp_orders_one?.id;
-				if (!i?.tracking) {
-					if (carrier_urls?.[orderTracking?.carrier_code]) {
-						orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
-					}
-					i.tracking = [orderTracking];
-				} else {
-					i?.tracking?.map((t) => {
-						if (carrier_urls?.[orderTracking?.carrier_code]) {
-							t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number);
-						}
-					});
-				}
-				console.log('tracking set:', i?.tracking);
-			});
-			mutationResult = await urqlClient.mutation(
-				gql`
-					mutation insertOrderItems($items: [erp_orders_items_insert_input!] = {}) {
-						insert_erp_orders_items(objects: $items) {
-							returning {
-								id
-							}
-						}
-					}
-				`,
-				{ items }
-			);
-		}
-		if (mutationResult?.error) {
-			console.error('MUTATION ERROR: ', mutationResult);
-			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-		} else {
-			console.log('MUTATION RESULT: ', mutationResult);
-			if (mutationResult?.error) {
-				console.error('MUTATION ERROR: ', mutationResult);
-				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-			} else {
-				console.log('MUTATION RESULT: ', mutationResult);
-				//goto('/order/' + order.id, { invalidateAll: true, replaceState: true });
-			}
-			console.log('job id---', job);
-			if (job?.id) {
-				mutationResult = await urqlClient.mutation(
-					gql`
-						mutation createJobOrder($job_id: bigint!, $order_id: bigint!) {
-							insert_erp_jobs_orders_one(object: { job_id: $job_id, order_id: $order_id }) {
-								id
-							}
-						}
-					`,
-					{ order_id: order.id, job_id: job.id }
-				);
-				if (mutationResult?.error) {
-					console.error('MUTATION ERROR: ', mutationResult);
-					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-				} else {
-					console.log('MUTATION RESULT: ', mutationResult);
-				}
-			}
-
-			goto('/order/' + order.id, { invalidateAll: true, replaceState: true });
-		}
-		orderAdding = false;
-	}
-
-	$: jobsStore = subscriptionStore({
-		client: getContextClient(),
-		query: gql`
-			subscription order {
-				jobs(order_by: { id: desc }) {
-					id
-					batch
-					customer {
-						name
-					}
-				}
-			}
-		`
-	});
-	$: jobs = $jobsStore?.data?.jobs?.map((j) => {
-		return { value: j, name: `${j.id} (${j.batch})` };
-	});
-	let job;
 
 	$: suppliersStore = queryStore({
 		client: getContextClient(),
@@ -210,7 +73,6 @@
 	export let selectedSupplierId: undefined | string = order?.id;
 	//$: supplier = suppliers?.filter((s) => s?.id === selectedSupplierId)?.[0];
 
-	let jobListVisible = false;
 	let addLineModal = false;
 
 	let newQuantity = 0;

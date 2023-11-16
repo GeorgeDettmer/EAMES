@@ -238,7 +238,7 @@
 		{:else}
 			<Alert color="red">No BOM set for this job assembly!</Alert>
 		{/if}
-		<KitList {kits} bind:accordionState />
+		<!-- <KitList {kits} bind:accordionState /> -->
 	{:else}
 		<Spinner color="blue" />
 	{/if}

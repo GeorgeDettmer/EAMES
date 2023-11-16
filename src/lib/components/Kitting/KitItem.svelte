@@ -56,6 +56,33 @@
 			i.__kitted = true;
 		}
 	});
+	async function insertCarrier(
+		carrierid: string,
+		componentname: string,
+		quantity: number,
+		owner: string = '',
+		jobid: number = 0
+	) {
+		console.log(
+			'createCarrier request:',
+			`/api/carrier/create?carrierid=${carrierid}&componentname=${componentname}&quantity=${quantity}&owner=${owner}&batchid=${`EAJ${jobid} (${carrierid})`}`
+		);
+		const response = await fetch(
+			encodeURI(
+				`/api/carrier/create?carrierid=${carrierid}&componentname=${componentname}&quantity=${quantity}&owner=${owner}&batchid=${`EAJ${jobid} (${carrierid})`}`
+			)
+		);
+		const result = await response.json();
+		if (response.status !== 200) {
+			messagesStore('CARRIER CREATION ERROR: ' + result?.message, 'error');
+			console.error('createCarrier error:', result, response);
+		} else {
+			messagesStore('CARRIER CREATED');
+			console.log('createCarrier result:', result, response);
+		}
+		return response;
+	}
+
 	const urqlClient = getContextClient();
 	let quantityAdding = false;
 	async function addQuantity() {
@@ -92,7 +119,7 @@
 
 		quantityAdding = true;
 		let mutationResult;
-
+		let insertedKitItems = [];
 		if (arbitraryQuantityVisible) {
 			mutationResult = await urqlClient.mutation(
 				gql`
@@ -115,71 +142,7 @@
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
 				let kitItemId = mutationResult.data.insert_erp_kits_items_one.id;
 				if (createCarrier) {
-					console.log(
-						'createCarrier request:',
-						`/api/carrier/create?carrierid=${String(kitItemId)}&componentname=${pn}&quantity=${arbitraryQuantity}&owner=${
-							$page.data.user.initials
-						}&batchid=${`EAS${job?.id} (${kitItemId})`}`
-					);
-					const response = await fetch(
-						encodeURI(
-							`/api/carrier/create?carrierid=${String(kitItemId)}&componentname=${pn}&quantity=${arbitraryQuantity}&owner=${
-								$page.data.user.initials
-							}&batchid=${`EAS${job?.id} (${kitItemId})`}`
-						)
-					);
-					const result = await response.json();
-					if (response.status !== 200) {
-						messagesStore('CARRIER CREATION ERROR: ' + result?.message, 'error');
-						console.error('createCarrier error:', result, response);
-					} else {
-						messagesStore('CARRIER CREATED');
-						console.log('createCarrier result:', result, response);
-					}
-
-					/* mutationResult = await urqlClient.mutation(
-						gql`
-							mutation insertCarrier(
-								$carrierid: String!
-								$componentname: String!
-								$owner: String
-								$quantity: Int!
-								$angle: Int = -90
-								$batchid: String = ""
-							) {
-								insert_mydbcarrview_10_carrier_magname_one(
-									object: {
-										carrierid: $carrierid
-										componentname: $componentname
-										owner: $owner
-										quantity: $quantity
-										angle: $angle
-										batchid: $batchid
-									}
-								) {
-									carrierid
-								}
-							}
-						`,
-						{
-							carrierid: 'EAMES#' + String(kitItemId),
-							componentname: pn,
-							owner: $page.data.user.initials,
-							quantity: arbitraryQuantity,
-							angle: -90,
-							batchid: `${job?.id} #(${kitItemId})`
-						}
-					);
-					if (mutationResult?.error) {
-						console.error('MUTATION ERROR: ', mutationResult);
-						messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-					} else {
-						console.log('MUTATION RESULT: ', mutationResult);
-						messagesStore(
-							'Inserted carrier: ' + mutationResult.data.insert_mydbcarrview_10_carrier_magname_one.carrierid,
-							'success'
-						);
-					} */
+					insertCarrier(kitItemId, pn, arbitraryQuantity, $page?.data?.user?.username, job?.id);
 				}
 			}
 		} else {
@@ -250,6 +213,7 @@
 							insert_erp_kits_items(objects: $items) {
 								returning {
 									id
+									quantity
 								}
 							}
 						}
@@ -262,65 +226,74 @@
 				} else {
 					console.log('MUTATION RESULT: ', mutationResult);
 					messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items.returning?.[0]?.id, 'success');
+					insertedKitItems = mutationResult.data.insert_erp_kits_items.returning;
 				}
 			}
 			if (!mutationResult?.error) {
+				//TODO: Check all working
 				if (createCarrier) {
 					messagesStore('IMAGINARY CARRIER CREATED');
+					insertedKitItems.forEach(async (ki) => {
+						console.log(ki);
+						ki.__carrierInsertResult = await insertCarrier(ki.id, pn, ki.quantity, $page?.data?.user?.username, job?.id);
+					});
 				}
 				if (createLabel) {
 					if (!mutationResult.data.insert_erp_kits_items.returning?.[0]?.id) {
 						messagesStore('Kitting error, label print skipped...', 'error');
 					} else {
-						const carrierid = `EAMES#${mutationResult.data.insert_erp_kits_items.returning?.[0]?.id}`;
-						let labelContent: LabelContent[] = [
-							{
-								name: 'barcode',
-								type: 'barcode',
-								content: 'R' + carrierid
-							},
-							{
-								name: 'barcode_pn',
-								type: 'barcode',
-								content: pn
-							},
-							{
-								name: 'pn',
-								type: 'text',
-								content: pn
-							},
-							{
-								name: 'carrier',
-								type: 'text',
-								content: carrierid
-							},
-							{
-								name: 'notes',
-								type: 'text',
-								content: ''
-							},
-							{
-								name: 'description',
-								type: 'text',
-								content: ''
-							},
-							{
-								name: 'freeissue',
-								type: 'text',
-								content: ''
-							},
-							{
-								name: 'batch',
-								type: 'text',
-								content: job?.id
+						insertedKitItems.forEach(async (ki) => {
+							if (ki?.__carrierInsertResult && ki.__carrierInsertResult.status === 200) {
+								let labelContent: LabelContent[] = [
+									{
+										name: 'barcode',
+										type: 'barcode',
+										content: 'R' + `EAJ${ki.id}`
+									},
+									{
+										name: 'barcode_pn',
+										type: 'barcode',
+										content: pn
+									},
+									{
+										name: 'pn',
+										type: 'text',
+										content: pn
+									},
+									{
+										name: 'carrier',
+										type: 'text',
+										content: `EAJ${ki.id}`
+									},
+									{
+										name: 'notes',
+										type: 'text',
+										content: ''
+									},
+									{
+										name: 'description',
+										type: 'text',
+										content: ''
+									},
+									{
+										name: 'freeissue',
+										type: 'text',
+										content: ''
+									},
+									{
+										name: 'batch',
+										type: 'text',
+										content: job?.id
+									}
+								];
+								let printResult = await printLabel('C:\\Users\\george\\Documents\\label_template.lbx', labelContent);
+								if (printResult) {
+									messagesStore('LABEL PRINTED');
+								} else {
+									messagesStore('LABEL PRINT FAILED', 'error');
+								}
 							}
-						];
-						let printResult = await printLabel('C:\\Users\\george\\Documents\\label_template.lbx', labelContent);
-						if (printResult) {
-							messagesStore('LABEL PRINTED');
-						} else {
-							messagesStore('LABEL PRINT FAILED', 'error');
-						}
+						});
 					}
 				}
 			}

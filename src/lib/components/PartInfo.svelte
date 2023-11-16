@@ -127,7 +127,7 @@
 			</div>
 			<div class="grid grid-cols-2">
 				<div class="w-1/2">
-					{#if partInfo?.properties && partInfo?.properties.length > 0}
+					{#if partInfo?.properties && Object.keys(partInfo.properties).length > 0}
 						<p class="font-semibold">Properties:</p>
 						<hr />
 						{#each properties as [name, value], idx}

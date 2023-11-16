@@ -145,7 +145,8 @@
 						price,
 						quantity: quantity,
 						created_at: new Date(),
-						user_id: $page?.data?.user?.id
+						user_id: $page?.data?.user?.id,
+						tracking: []
 					}
 				];
 				/* order_items.push({
@@ -266,6 +267,7 @@
 			{
 				orders_items: [],
 				/* supplier_id: 'FARNELL', */
+				tracking: [],
 				supplier: supplier,
 				user_id: user?.id,
 				user

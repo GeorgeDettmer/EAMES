@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { datetimeFormat } from '$lib/utils';
+	import { carrier_urls, datetimeFormat } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -53,25 +53,7 @@
 		addLineModal = false;
 	}
 
-	$: suppliersStore = queryStore({
-		client: getContextClient(),
-		query: gql`
-			query suppliers {
-				erp_suppliers(order_by: { name: asc }) {
-					id
-					name
-					names
-				}
-			}
-		`,
-		variables: {}
-	});
-	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-
-	$: showSupplierSelect = false; //!order?.supplier_id;
-
 	export let selectedSupplierId: undefined | string = order?.id;
-	//$: supplier = suppliers?.filter((s) => s?.id === selectedSupplierId)?.[0];
 
 	let addLineModal = false;
 
@@ -81,9 +63,26 @@
 	let newPrice = 0;
 	let newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
 
-	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
+	let orderTracking = { tracking_number: '', carrier_code: 'ups' };
+	$: console.log(orderTracking);
 
 	$: console.log('OrderCreateMulti', order);
+
+	function updateOrderLinesTracking(tracking_number: string, carrier_code: string) {
+		order?.order_items?.forEach((i) => {
+			i.tracking = [
+				{
+					tracking_number,
+					carrier_code,
+					tracking_url: carrier_urls?.[tracking?.carrier_code]
+						? carrier_urls?.[tracking?.carrier_code](tracking?.tracking_number)
+						: undefined
+				}
+			];
+		});
+		order = order;
+		console.log('ttttttttt', order);
+	}
 </script>
 
 <Modal bind:open={addLineModal} size="lg">
@@ -241,6 +240,7 @@
 							placeholder="Carrier code"
 							size="sm"
 							bind:value={orderTracking.carrier_code}
+							on:change={() => updateOrderLinesTracking(orderTracking.tracking_number, orderTracking.carrier_code)}
 						/>
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
@@ -248,6 +248,7 @@
 							placeholder="Tracking number"
 							size="sm"
 							bind:value={orderTracking.tracking_number}
+							on:change={() => updateOrderLinesTracking(orderTracking.tracking_number, orderTracking.carrier_code)}
 						/>
 						<!-- <Button color="primary" class="!p-2.5">
 	<SearchOutline class="w-5 h-5" />
@@ -301,7 +302,7 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell>
-							{#each item?.tracking || [] as track}
+							<!-- {#each item?.tracking || [] as track}
 								<div>
 									<ButtonGroup size="sm">
 										<Input
@@ -346,7 +347,7 @@
 										<Link size="10" class="w-5 h-5" />
 									</Button>
 								</ButtonGroup>
-							{/each}
+							{/each} -->
 						</TableBodyCell>
 						<TableBodyCell>
 							<span

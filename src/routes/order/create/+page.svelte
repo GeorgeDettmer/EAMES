@@ -87,6 +87,15 @@
 		let toImport = imported?.filter((l) => l?._import !== false);
 		console.log('toImport', toImport, imported);
 		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
+		let importSuppliersExist = [...importSuppliers].every((is) => suppliersNames.flat().includes(is.toLowerCase()));
+		if (!importSuppliersExist) {
+			messagesStore(
+				`One or more suppliers in the import do not exist in the suppliers library. Suppliers: ${[
+					...importSuppliers.values()
+				]}`
+			);
+			return;
+		}
 		if (importSuppliers.size > 1) {
 			messagesStore(
 				`Currently only import for 1 supplier at a time is supported. Suppliers: ${[...importSuppliers.values()]}`
@@ -166,6 +175,7 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
+	$: suppliersNames = suppliers.map((s) => s.names);
 	$: {
 		if (!selectedSupplierId && suppliers) {
 			selectedSupplierId = suppliers?.[0]?.id;

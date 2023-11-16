@@ -24,7 +24,7 @@
 		class:cursor-pointer={interactive}
 		class:hover:shadow-lg={interactive}
 		class={classes +
-			(!order?.id
+			(false
 				? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300 '
 				: orderItemCount > 0
 				? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '

@@ -392,7 +392,6 @@
 					<a
 						class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
 						href={window.origin + '/receiving/' + (job?.id || '')}
-						target="_blank"
 					>
 						<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 							<div>

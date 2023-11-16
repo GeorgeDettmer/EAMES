@@ -184,7 +184,7 @@
 				{@const jobsOrders = order?.jobs_orders || []}
 				<!-- {#if selectedSupplierId === null || selectedSupplierId === order.supplier_id} -->
 				<div>
-					<a href={window.origin + '/order/' + order?.id} target="_blank">
+					<a href={window.origin + '/order/' + order?.id}>
 						<OrdersListItem {order}>
 							<div class="ml-5 w-auto">
 								<UserIcon size="xs" user={order?.user}>

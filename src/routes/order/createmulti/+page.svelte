@@ -25,8 +25,10 @@
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
-	import { getContextClient, gql, queryStore } from '@urql/svelte';
+	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderCreateHeader from '$lib/components/Orders/OrderCreateHeader.svelte';
+	import { goto } from '$app/navigation';
+	import { carrier_urls } from '$lib/utils';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -169,12 +171,6 @@
 		order.orders_items = order_items; */
 	}
 
-	function removeFromImport(idx: number) {
-		imported = imported.toSpliced(idx, 1);
-	}
-
-	//$: console.log('headers:', orderItemProperties);
-
 	let orderItemProperties = {
 		part: 'MPN',
 		quantity: 'Order',
@@ -186,6 +182,26 @@
 	$: missingImportData = imported?.map(
 		(i) => ['part', 'quantity', 'price'].filter((k) => !i?.[orderItemProperties[k]])?.length !== 0
 	);
+
+	$: jobsStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription order {
+				jobs(order_by: { id: desc }) {
+					id
+					batch
+					customer {
+						name
+					}
+				}
+			}
+		`
+	});
+	$: jobs =
+		$jobsStore?.data?.jobs?.map((j) => {
+			return { value: j, name: `${j.id} (${j.batch})` };
+		}) || [];
+	let job;
 
 	$: suppliersStore = queryStore({
 		client: getContextClient(),
@@ -235,30 +251,164 @@
 	} */
 	$: console.log('PAGE ORDERS:', orders);
 
+	$: {
+		if (!$suppliersStore.fetching) {
+			addOrder();
+		}
+	}
+
+	$: ordersItems = orders?.flatMap((o) => o.orders_items) || [];
+
+	function addOrder(force: boolean = true) {
+		let supplier = Object.assign({}, suppliers?.[0] || {});
+		orders = [
+			...orders,
+			{
+				orders_items: [],
+				/* supplier_id: 'FARNELL', */
+				supplier: supplier,
+				user_id: user?.id,
+				user
+			}
+		];
+	}
+	let ordersAdding = false;
+	async function addOrders() {
+		if (ordersAdding) return;
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		if (orders.length === 0) {
+			messagesStore('No orders to create', 'error');
+			return;
+		}
+		if (ordersItems.length === 0) {
+			messagesStore('There must be some order items to submit an order', 'error');
+			return;
+		}
+		/* if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert components. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes
+				)}`
+			);
+			return;
+		} */
+		const urqlClient = getContextClient();
+		ordersAdding = true;
+		let mutationResult;
+		console.log('addOrders', orders);
+		let objects = orders.map((o) => {
+			let obj = {
+				supplier_id: o.supplier.id,
+				user_id: $page?.data?.user?.id
+			};
+
+			let items = o.orders_items;
+			/* items.forEach((i) => {
+				if (!i?.tracking) {
+					if (carrier_urls?.[orderTracking?.carrier_code]) {
+						orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
+					}
+					i.tracking = [orderTracking];
+				} else {
+					i?.tracking?.map((t) => {
+						if (carrier_urls?.[orderTracking?.carrier_code]) {
+							t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number);
+						}
+					});
+				}
+				console.log('tracking set:', i?.tracking);
+			}); */
+
+			obj.orders_items = {
+				data: items
+			};
+
+			if (job?.id) {
+				obj.jobs_orders = {
+					data: [
+						{
+							job_id: job.id
+						}
+					]
+				};
+			}
+
+			return obj;
+		});
+
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation addOrders($objects: [erp_orders_insert_input!] = []) {
+					insert_erp_orders(objects: $objects) {
+						returning {
+							id
+							orders_items {
+								id
+							}
+							jobs_orders {
+								id
+								job_id
+							}
+						}
+					}
+				}
+			`,
+			{
+				objects
+			}
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Inserted order(s): ' + mutationResult?.data?.insert_erp_orders?.returning?.map((r) => r.id), 'success');
+		}
+		ordersAdding = false;
+	}
+
 	//$: tabsState = orders.map((o, idx) => idx === 0);
 	let openOrderIdx = 0;
+	let jobListVisible = true;
 </script>
 
 <div class="">
-	<div class="-mb-8 -ml-10 -mt-2">
-		<Button
-			on:click={(e) => {
-				orders = [
-					...orders,
-					{
-						orders_items: [],
-						/* supplier_id: 'FARNELL', */
-						supplier: suppliers?.[0] || {},
-						user_id: user?.id,
-						user
-					}
-				];
-			}}><PlusOutline /></Button
-		>
+	<div class="flex">
+		<div class="-mb-8 -ml-10 -mt-2">
+			<Button
+				on:click={(e) => {
+					addOrder();
+				}}
+			>
+				<PlusOutline />
+			</Button>
+		</div>
+		<div class="-mb-8 ml-auto space-y-1">
+			<div class="mx-auto">
+				{#if orders.length > 0}
+					<Button
+						color="blue"
+						size="sm"
+						on:click={(e) => {
+							addOrders();
+						}}
+					>
+						Create {orders.length} orders with {ordersItems.length} lines
+					</Button>
+				{/if}
+			</div>
+			<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
+		</div>
 	</div>
+
 	<div>
 		{#if orders.length === 0}
-			No orders
+			<div class="mx-auto mt-10">
+				<p>No orders...</p>
+			</div>
 		{:else}
 			<Tabs
 				style="underline"
@@ -268,12 +418,12 @@
 				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 			>
-				{#each orders as o, idx}
-					<TabItem opem={openOrderIdx === idx}>
+				{#each orders as order, idx}
+					<TabItem open={openOrderIdx === idx}>
 						<span slot="title">
-							<OrderCreateHeader bind:order={o} />
+							<OrderCreateHeader bind:order />
 						</span>
-						<OrderCreateMulti bind:order={o} showHeader={false} />
+						<OrderCreateMulti bind:order showHeader={false} />
 					</TabItem>
 				{/each}
 			</Tabs>

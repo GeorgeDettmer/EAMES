@@ -396,11 +396,11 @@
 			<Helper>Summary</Helper>
 			<div class="border rounded-md p-1">
 				{#if !arbitraryQuantityVisible}
+					{@const ordersKittingFrom = orderItems?.filter((i) => i.__selected)}
 					<p class="font-bold text-lg" class:text-red-600={kittingTotal < 1}>
 						Kit {kittingTotal}
-						{kittingTotal > receivedTotal ? `& recieve ${kittingTotal - receivedTotal}` : ''} from {orderItems?.filter(
-							(i) => i.__selected
-						).length} order(s)
+						{kittingTotal > receivedTotal ? `& recieve ${kittingTotal - receivedTotal}` : ''} from {ordersKittingFrom.length}
+						order{ordersKittingFrom.length > 1 ? 's' : ''}
 					</p>
 					{#if kittingTotal > receivedTotal}
 						<p class="font-semibold underline text-red-600">
@@ -418,7 +418,7 @@
 					<p class={`font-semibold uppercase ${descriptionOk ? 'text-green-500' : 'text-red-600'}`}>
 						{bomLine?.[0]?.description || partInfo?.description}
 					</p>
-					<div class="my-auto mx-auto">
+					<div class="ml-auto mb-1">
 						<Checkbox bind:checked={descriptionOkCheckbox} />
 					</div>
 				</div>

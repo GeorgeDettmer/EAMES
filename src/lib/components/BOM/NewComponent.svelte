@@ -103,21 +103,60 @@
 	}
 
 	let isSMT = true;
+
+	let descriptionTokens = [];
+	$: {
+		let tokens = description.split(' ')?.map((t) => {
+			t = t.toLowerCase();
+			if (['cap', 'capacitor', 'res', 'resistor'].includes(t)) {
+				return { type: 'type', value: t === 'cap' || t === 'capacitor' ? 'CAP' : 'RES' };
+			}
+		});
+
+		let valueTokens = tokens?.map((t) => {
+			if (!t?.type) return;
+			if (t.type === 'CAP') {
+				console.log('isCAp');
+				if (['u', 'n', 'p'].includes(t)) {
+					return { type: 'value', value: t };
+				}
+			}
+			if (t.type === 'RES') {
+				if (['k', 'm'].includes(t)) {
+					return { type: 'value', value: t };
+				}
+			}
+		});
+		descriptionTokens = [...tokens, ...valueTokens];
+	}
 </script>
 
 <div class="grid grid-cols-2">
-	<div>
-		<Label for="small-input" class="block mb-2">Name</Label>
-		<Input id="small-input" size="sm" placeholder="Part name/number" bind:value={name} />
+	<div class="flex">
+		<div class="w-1/2">
+			<div>
+				<Label for="small-input" class="block mb-2">Name</Label>
+				<Input id="small-input" size="sm" placeholder="Part name/number" bind:value={name} />
 
-		<Label for="small-input" class="block mb-2">Description</Label>
-		<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
+				<Label for="small-input" class="block mb-2">Description</Label>
+				<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
 
-		<Label for="small-input" class="block mb-2">Image</Label>
-		<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
+				<Label for="small-input" class="block mb-2">Image</Label>
+				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
 
-		<Checkbox bind:checked={isSMT}>SMT</Checkbox>
+				<Checkbox bind:checked={isSMT}>SMT</Checkbox>
+			</div>
+		</div>
+		<div class="1/2">
+			{description.split(' ')}
+			{#each descriptionTokens as token}
+				{#if token?.value && token?.type}
+					<p>{token?.type}: {token?.value}</p>
+				{/if}
+			{/each}
+		</div>
 	</div>
+
 	<div class="my-2 p-4">
 		<Button color="green" size="sm" on:click={() => addComponent()}>
 			Add ➕

@@ -34,39 +34,38 @@ export async function printLabel(templatePath: string, content: LabelContent[]):
 		const objDoc = _bpac.IDocument;
 		const ret = await objDoc.Open(templatePath);
 		console.log('bpac', ret);
-		if (ret == true) {
-			content.forEach(async (c, idx) => {
+		if (ret === true) {
+			for (const c of content) {
 				const { name, type, content } = c;
 				console.log('BPAC SET CONTENT', c);
 				let object = await objDoc.GetObject(name);
-				if (object == false) {
+				if (object === false) {
 					console.error('BPAC ERROR OBJECT NOT FOUND', c);
-					return;
-				}
-				if (type === 'text') {
-					object.Text = content;
-					//(await objDoc.GetObject(name)).Text = content;
-				} else if (type === 'barcode') {
-					object.Text = content;
-					//objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex(name), content);
 				} else {
-					console.error('BPAC UNHANDLED CONTENT TYPE', c);
+					if (type === 'text') {
+						//object.Text = content;
+						(await objDoc.GetObject(name)).Text = String(content);
+					} else if (type === 'barcode') {
+						await objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex(name), content);
+					} else {
+						console.error('BPAC UNHANDLED CONTENT TYPE', c);
+					}
 				}
-			});
+			}
 
-			/* //const text = await objDoc.GetObject('text');
+			//const text = await objDoc.GetObject('text');
 			//text.Text = 'wow';
-			(await objDoc.GetObject('text')).Text = 'wowow';
+			//(await objDoc.GetObject('pn')).Text = 'wowow';
 			//const barcode = await objDoc.GetObject('barcode');
 			//await barcode.SetBarcodeData(barcode, 'new barcode test wow');
-			await objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex('barcode'), 'new barcode test wow');
-			console.log('bpac width:', await objDoc.Width); */
+			//await objDoc.SetBarcodeData(await objDoc.GetBarcodeIndex('barcode_pn'), 'new barcode test wow');
+			//console.log('bpac width:', await objDoc.Width);
 
-			if ((await objDoc.StartPrint('', 33554432)) == false) {
+			if ((await objDoc.StartPrint('', 65536 + 1)) === false) {
 				console.error('BPAC ERROR', objDoc.ErrorCode);
 				return false;
 			} //33554432 = hi res
-			if ((await objDoc.PrintOut(1, 33554432)) == false) {
+			if ((await objDoc.PrintOut(1, 65536 + 1)) === false) {
 				console.error('BPAC ERROR', objDoc.ErrorCode);
 				return false;
 			}

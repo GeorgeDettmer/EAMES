@@ -28,7 +28,6 @@
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderCreateHeader from '$lib/components/Orders/OrderCreateHeader.svelte';
 	import { goto } from '$app/navigation';
-	import { carrier_urls } from '$lib/utils';
 
 	$: user = {
 		id: $page?.data?.user?.id,
@@ -39,12 +38,6 @@
 		color: $page?.data?.user?.color
 	};
 
-	/* $: order = {
-		orders_items: [],
-		supplier: {},
-		user_id: user.id,
-		user
-	}; */
 	let headers = {};
 	function excelToObjects(stringData) {
 		let objects = [];
@@ -283,6 +276,17 @@
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
+		if (!$page?.data?.user?.processes['purchase']) {
+			messagesStore(
+				`You do not have permission to create orders. You have permission for: ${Object.keys($page?.data?.user?.processes)}`,
+				'warning'
+			);
+			return;
+		}
+		if (job === '') {
+			messagesStore('Choose a job to assign orders to or choose "N/A"', 'error');
+			return;
+		}
 		if (orders.length === 0) {
 			messagesStore('No orders to create', 'error');
 			return;
@@ -291,14 +295,6 @@
 			messagesStore('There must be some order items to submit an order', 'error');
 			return;
 		}
-		/* if (!$page?.data?.user?.processes['eng']) {
-			alert(
-				`You do not have permission to insert components. You have permission for: ${Object.keys(
-					$page?.data?.user?.processes
-				)}`
-			);
-			return;
-		} */
 
 		ordersAdding = true;
 		let mutationResult;

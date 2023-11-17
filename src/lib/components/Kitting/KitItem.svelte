@@ -34,11 +34,11 @@
 	export let kits = [];
 	export let kit = kits?.[0];
 	export let visible = true;
-	export let createCarrier = $page?.data?.user?.username !== 'GDettmer' && part?.properties?.type?.toLowerCase() === 'smt';
+	export let createCarrier =
+		/* $page?.data?.user?.username !== 'GDettmer' && */ part?.properties?.type?.toLowerCase() === 'smt';
 	export let createLabel = false;
 
 	export let arbitraryQuantityVisible = false;
-
 	export let arbitraryQuantity = 1;
 
 	orderItems.forEach((i) => {
@@ -142,6 +142,62 @@
 				console.log('MUTATION RESULT: ', mutationResult);
 				messagesStore('Inserted: ' + mutationResult.data.insert_erp_kits_items_one.id, 'success');
 				let kitItemId = mutationResult.data.insert_erp_kits_items_one.id;
+				if (createLabel) {
+					console.log('printing carrier', kitItemId);
+					let labelContent: LabelContent[] = [
+						{
+							name: 'barcode',
+							type: 'barcode',
+							content: 'R' + `EAMES#${kitItemId}`
+						},
+						{
+							name: 'barcode_pn',
+							type: 'barcode',
+							content: pn
+						},
+						{
+							name: 'pn',
+							type: 'text',
+							content: pn
+						},
+						{
+							name: 'qty',
+							type: 'text',
+							content: arbitraryQuantity
+						},
+						{
+							name: 'carrier',
+							type: 'text',
+							content: `EAMES#${kitItemId}`
+						},
+						{
+							name: 'notes',
+							type: 'text',
+							content: ''
+						},
+						{
+							name: 'description',
+							type: 'text',
+							content: part?.description
+						},
+						{
+							name: 'freeissue',
+							type: 'text',
+							content: ''
+						},
+						{
+							name: 'batch',
+							type: 'text',
+							content: job?.id
+						}
+					];
+					let printResult = await printLabel(PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent);
+					if (printResult) {
+						messagesStore('LABEL PRINTED');
+					} else {
+						messagesStore('LABEL PRINT FAILED', 'error');
+					}
+				}
 				if (createCarrier) {
 					insertCarrier(kitItemId, pn, arbitraryQuantity, $page?.data?.user?.username, job?.id);
 				}
@@ -238,24 +294,23 @@
 			if (!mutationResult?.error) {
 				//TODO: Check all working
 				if (createCarrier) {
-					messagesStore('IMAGINARY CARRIER CREATED', insertedKitItems.length);
-					insertedKitItems.forEach(async (ki) => {
+					for (const ki of insertedKitItems) {
 						console.log('carrier ki', ki);
 						ki.__carrierInsertResult = await insertCarrier(ki.id, pn, ki.quantity, $page?.data?.user?.username, job?.id);
-					});
+					}
 				}
 				if (createLabel) {
 					if (!mutationResult.data.insert_erp_kits_items.returning?.[0]?.id) {
 						messagesStore('Kitting error, label print skipped...', 'error');
 					} else {
-						insertedKitItems.forEach(async (ki) => {
+						for (const ki of insertedKitItems) {
 							if (ki?.__carrierInsertResult?.status === 200) {
 								console.log('printing carrier', ki);
 								let labelContent: LabelContent[] = [
 									{
 										name: 'barcode',
 										type: 'barcode',
-										content: 'R' + `EAJ${ki.id}`
+										content: 'R' + `EAMES#${ki.id}`
 									},
 									{
 										name: 'barcode_pn',
@@ -268,9 +323,14 @@
 										content: pn
 									},
 									{
+										name: 'qty',
+										type: 'text',
+										content: ki.quantity
+									},
+									{
 										name: 'carrier',
 										type: 'text',
-										content: `EAJ${ki.id}`
+										content: `EAMES#${ki.id}`
 									},
 									{
 										name: 'notes',
@@ -280,7 +340,7 @@
 									{
 										name: 'description',
 										type: 'text',
-										content: ''
+										content: part?.description
 									},
 									{
 										name: 'freeissue',
@@ -300,7 +360,7 @@
 									messagesStore('LABEL PRINT FAILED', 'error');
 								}
 							}
-						});
+						}
 					}
 				}
 			}

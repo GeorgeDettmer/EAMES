@@ -139,7 +139,13 @@
 						quantity: quantity,
 						created_at: new Date(),
 						user_id: $page?.data?.user?.id,
-						tracking: []
+						tracking: [
+							{
+								tracking_number: '',
+								tracking_url: '',
+								carrier_code: ''
+							}
+						]
 					}
 				];
 				/* order_items.push({

@@ -163,6 +163,7 @@
 			bom.lines = _lines;
 		}
 		console.log('bom.lines', bom?.lines);
+		name = files.accepted[0].name?.split('.xl')?.[0] || 'Unknown name';
 	}
 
 	async function insert() {
@@ -209,7 +210,7 @@
 					}
 				}
 			`,
-			{ data: bom_lines, name: name ? name : files.accepted[0].name?.split('.xl')?.[0], revision_external }
+			{ data: bom_lines, name: name, revision_external }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);

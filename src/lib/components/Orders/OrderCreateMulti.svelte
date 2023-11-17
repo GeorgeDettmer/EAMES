@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { carrier_urls, datetimeFormat } from '$lib/utils';
+	import { carrier_names, carrier_urls, carrier_codes, datetimeFormat } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -13,13 +13,15 @@
 		ButtonGroup,
 		Modal,
 		Label,
-		Checkbox
+		Checkbox,
+		Select
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
-	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderOverview from './OrderOverview.svelte';
-	import { Link, Plus } from 'svelte-heros-v2';
+	import { Plus } from 'svelte-heros-v2';
+	import { onDestroy } from 'svelte';
+	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 
 	export let order;
 	export let user = order?.user || $page?.data?.user;
@@ -30,7 +32,6 @@
 
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
-	//$: console.log('orderItems', orderItems);
 
 	function remove(idx: number) {
 		order.orders_items = orderItems.toSpliced(idx, 1);
@@ -70,13 +71,20 @@
 	$: console.log('OrderCreateMulti', order);
 
 	function updateOrderLinesTracking(force: boolean = false) {
-		orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
-		order?.orders_items?.forEach((i, idx) => {
-			i.tracking = [orderTracking];
+		order?.orders_items?.forEach((i) => {
+			let url = carrier_urls?.[orderTracking?.carrier_code]
+				? carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number)
+				: '';
+			i.tracking[0].tracking_url = url;
+			i.tracking[0].tracking_number = orderTracking.tracking_number;
+			i.tracking[0].carrier_code = orderTracking.carrier_code;
 		});
 		order = order;
 		console.log('ttttttttt', order);
 	}
+	onDestroy(() => {
+		console.log('OrderCreateMulti', 'destroy');
+	});
 </script>
 
 <Modal bind:open={addLineModal} size="lg">
@@ -127,6 +135,7 @@
 								<DropdownItem>{c}</DropdownItem>
 							{/each}
 						</Dropdown> -->
+
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 							type="text"
@@ -228,25 +237,35 @@
 				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell>
 					<ButtonGroup size="sm">
-						<Input
+						<Select
+							items={[
+								{ value: null, name: 'Other' },
+								...carrier_codes.map((code, idx) => {
+									return { value: code, name: carrier_names?.[idx] };
+								})
+							]}
+							bind:value={orderTracking.carrier_code}
+							placeholder="Carrier"
+							size="sm"
+						/>
+						<!-- <Input
 							defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
 							type="text"
 							placeholder="Carrier code"
 							size="sm"
-							bind:value={orderTracking.carrier_code}
+							bind:value={order.carrier_code}
 							on:change={() => updateOrderLinesTracking()}
-						/>
+						/> -->
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 							type="text"
 							placeholder="Tracking number"
 							size="sm"
 							bind:value={orderTracking.tracking_number}
-							on:change={() => updateOrderLinesTracking()}
 						/>
-						<!-- <Button color="primary" class="!p-2.5">
-	<SearchOutline class="w-5 h-5" />
-</Button> -->
+						<Button color="primary" class="!p-2.5" on:click={() => updateOrderLinesTracking()}>
+							<ChevronDoubleDownOutline />
+						</Button>
 					</ButtonGroup>
 				</TableHeadCell>
 				<TableHeadCell />
@@ -297,23 +316,33 @@
 						</TableBodyCell>
 						<TableBodyCell>
 							<div>
-								<!-- <ButtonGroup size="sm">
-									<Input
+								<ButtonGroup size="sm">
+									<!-- <Input
 										defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
 										type="text"
 										placeholder="Carrier code"
 										size="sm"
-										value={item?.tracking?.[0]?.carrier_code}
+										bind:value={item.tracking[0].carrier_code}
+									/> -->
+									<Select
+										items={[
+											{ value: null, name: 'Other' },
+											...carrier_codes.map((code, idx) => {
+												return { value: code, name: carrier_names?.[idx] };
+											})
+										]}
+										bind:value={item.tracking[0].carrier_code}
+										placeholder="Carrier"
+										size="sm"
 									/>
 									<Input
 										defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 										type="text"
 										placeholder="Tracking number"
 										size="sm"
-										value={item?.tracking?.[0]?.tracking_number}
+										bind:value={item.tracking[0].tracking_number}
 									/>
-									<Checkbox class="ml-2"  ><Link size="10" class="w-5 h-5" /></Checkbox>
-								</ButtonGroup> -->
+								</ButtonGroup>
 							</div>
 						</TableBodyCell>
 						<TableBodyCell>

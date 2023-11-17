@@ -166,6 +166,7 @@ export let getParameterInsensitive = (object: { [x: string]: any }, key: string)
 };
 
 export let carrier_codes = ['ups', 'fedex', 'dhl'];
+export let carrier_names = ['UPS', 'FEDEX', 'DHL'];
 export let carrier_urls = {
 	ups: (t) => `https://www.ups.com/track?track=yes&trackNums=${t}`,
 	fedex: (t) => `https://www.fedex.com/fedextrack/?tracknumbers=${t}`,

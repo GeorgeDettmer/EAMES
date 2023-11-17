@@ -125,8 +125,8 @@
 			<div class="mb-1 text-sm font-light">
 				{partInfo?.description}
 			</div>
-			<div class="grid grid-cols-2">
-				<div class="w-1/2">
+			<div class="flex">
+				<div class="w-2/3">
 					{#if partInfo?.properties && Object.keys(partInfo.properties).length > 0}
 						<p class="font-semibold">Properties:</p>
 						<hr />
@@ -141,7 +141,7 @@
 						{/each}
 					{/if}
 				</div>
-				<div class=" w-1/2">
+				<div class="w-1/3">
 					<div class="mx-auto">
 						{#if partInfo?.image_url && !image}
 							<img src={partInfo.image_url} alt={partInfo?.name} class=" px-1 m-0 aspect-square max-h-32 max-w-fit" />

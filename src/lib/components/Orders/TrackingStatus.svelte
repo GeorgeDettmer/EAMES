@@ -136,7 +136,7 @@
 	<a target="_blank" href={tracking.tracking_url}>
 		<div class="flex">
 			<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-			<Spinner size="6" color="blue" />
+			<div class="my-auto"><Spinner size="4" color="blue" /></div>
 		</div>
 	</a>
 {:else}

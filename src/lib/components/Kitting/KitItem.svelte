@@ -23,6 +23,7 @@
 	import { getPrinters, printLabel, printerOnline } from '$lib/utils/bpac/bpac';
 	import type { LabelContent } from '$lib/utils/bpac/bpac';
 	import { onMount } from 'svelte';
+	import { PUBLIC_CARRIER_LABEL_TEMPLATE_PATH } from '$env/static/public';
 
 	export let pn: string;
 	export let part = {};
@@ -172,6 +173,7 @@
 							insert_erp_kits_items(objects: $kit_items) {
 								returning {
 									id
+									quantity
 								}
 							}
 							update_erp_kits_by_pk(pk_columns: { id: $kit_id }, _set: { updated_at: "now()" }) {
@@ -205,6 +207,7 @@
 							mutationResult.data.insert_erp_kits_items.returning?.[0]?.id,
 						'success'
 					);
+					insertedKitItems = mutationResult.data.insert_erp_kits_items.returning;
 				}
 			} else {
 				mutationResult = await urqlClient.mutation(
@@ -216,9 +219,12 @@
 									quantity
 								}
 							}
+							update_erp_kits_by_pk(pk_columns: { id: $kit_id }, _set: { updated_at: "now()" }) {
+								updated_at
+							}
 						}
 					`,
-					{ items }
+					{ items, kit_id: kit.id }
 				);
 				if (mutationResult?.error) {
 					console.error('MUTATION ERROR: ', mutationResult);
@@ -232,9 +238,9 @@
 			if (!mutationResult?.error) {
 				//TODO: Check all working
 				if (createCarrier) {
-					messagesStore('IMAGINARY CARRIER CREATED');
+					messagesStore('IMAGINARY CARRIER CREATED', insertedKitItems.length);
 					insertedKitItems.forEach(async (ki) => {
-						console.log(ki);
+						console.log('carrier ki', ki);
 						ki.__carrierInsertResult = await insertCarrier(ki.id, pn, ki.quantity, $page?.data?.user?.username, job?.id);
 					});
 				}
@@ -243,7 +249,8 @@
 						messagesStore('Kitting error, label print skipped...', 'error');
 					} else {
 						insertedKitItems.forEach(async (ki) => {
-							if (ki?.__carrierInsertResult && ki.__carrierInsertResult.status === 200) {
+							if (ki?.__carrierInsertResult?.status === 200) {
+								console.log('printing carrier', ki);
 								let labelContent: LabelContent[] = [
 									{
 										name: 'barcode',
@@ -286,7 +293,7 @@
 										content: job?.id
 									}
 								];
-								let printResult = await printLabel('C:\\Users\\george\\Documents\\label_template.lbx', labelContent);
+								let printResult = await printLabel(PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent);
 								if (printResult) {
 									messagesStore('LABEL PRINTED');
 								} else {

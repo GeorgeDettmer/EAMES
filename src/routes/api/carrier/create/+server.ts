@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const owner = url.searchParams.get('owner');
 	const quantity = url.searchParams.get('quantity');
 	const angle = url.searchParams.get('angle');
-	const batchid = url.searchParams.get('batchid');
+	const batchid = decodeURI(url.searchParams.get('batchid') || '');
 	const step = url.searchParams.get('step');
 	if (!carrierid || !componentname || !quantity) {
 		console.log('Error creating carrier: ', 'missing info');

@@ -1,0 +1,3130 @@
+{
+  "resource_version": 919,
+  "metadata": {
+    "version": 3,
+    "sources": [
+      {
+        "name": "aggregations",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "mycronic_tpsys",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_components",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_packages",
+              "schema": "public"
+            },
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "history_id",
+                    "modifiedcount",
+                    "algorithm",
+                    "hphiacccode",
+                    "hzacccode",
+                    "indextype",
+                    "mountprecision",
+                    "name",
+                    "phiacccode",
+                    "tapeacccode",
+                    "xacccode",
+                    "yacccode",
+                    "zacccode",
+                    "autopresangle",
+                    "holduntilready",
+                    "hydraextendedreject",
+                    "hydrafinepitchrequired",
+                    "hydrafloatingpick",
+                    "indexareapos_x",
+                    "indexareapos_y",
+                    "indexareasize",
+                    "indexmincorr",
+                    "lowforce",
+                    "phs_max_height",
+                    "phs_max_lenght",
+                    "phs_max_width",
+                    "phs_min_height",
+                    "phs_min_lenght",
+                    "phs_min_width",
+                    "phs_nom_height",
+                    "phs_nom_lenght",
+                    "phs_nom_width",
+                    "pickoffsetfeedback",
+                    "pickoffset_x",
+                    "pickoffset_y",
+                    "pickwaittimeoffset",
+                    "pinnoofupperleft",
+                    "placeforce",
+                    "placewaittimeoffset",
+                    "presangle",
+                    "slowdownatpick",
+                    "slowdownatplace",
+                    "tooltotopoffset",
+                    "usebestfit",
+                    "vacuumtest",
+                    "zupdist",
+                    "zupspeed",
+                    "bannedcameraset",
+                    "cameraset",
+                    "diagonalleads",
+                    "hydracameraset",
+                    "hydratoolset",
+                    "ztoolset",
+                    "changed_at",
+                    "history_created_at",
+                    "modifiedtime"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "history_id",
+                    "modifiedcount",
+                    "algorithm",
+                    "hphiacccode",
+                    "hzacccode",
+                    "indextype",
+                    "mountprecision",
+                    "name",
+                    "phiacccode",
+                    "tapeacccode",
+                    "xacccode",
+                    "yacccode",
+                    "zacccode",
+                    "autopresangle",
+                    "holduntilready",
+                    "hydraextendedreject",
+                    "hydrafinepitchrequired",
+                    "hydrafloatingpick",
+                    "indexareapos_x",
+                    "indexareapos_y",
+                    "indexareasize",
+                    "indexmincorr",
+                    "lowforce",
+                    "phs_max_height",
+                    "phs_max_lenght",
+                    "phs_max_width",
+                    "phs_min_height",
+                    "phs_min_lenght",
+                    "phs_min_width",
+                    "phs_nom_height",
+                    "phs_nom_lenght",
+                    "phs_nom_width",
+                    "pickoffsetfeedback",
+                    "pickoffset_x",
+                    "pickoffset_y",
+                    "pickwaittimeoffset",
+                    "pinnoofupperleft",
+                    "placeforce",
+                    "placewaittimeoffset",
+                    "presangle",
+                    "slowdownatpick",
+                    "slowdownatplace",
+                    "tooltotopoffset",
+                    "usebestfit",
+                    "vacuumtest",
+                    "zupdist",
+                    "zupspeed",
+                    "bannedcameraset",
+                    "cameraset",
+                    "diagonalleads",
+                    "hydracameraset",
+                    "hydratoolset",
+                    "ztoolset",
+                    "changed_at",
+                    "history_created_at",
+                    "modifiedtime"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "mycronic_tpsys_pcbs",
+              "schema": "public"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/aggregations",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "eames",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "jobs_orders",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "job",
+                "using": {
+                  "foreign_key_constraint_on": "job_id"
+                }
+              },
+              {
+                "name": "order",
+                "using": {
+                  "foreign_key_constraint_on": "order_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "job_id",
+                    "order_id",
+                    "reference",
+                    "user_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "job_id",
+                    "order_id",
+                    "reference",
+                    "user_id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kits",
+              "schema": "erp"
+            },
+            "array_relationships": [
+              {
+                "name": "jobs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "kit_id",
+                    "table": {
+                      "name": "jobs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "jobs_kits",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "kit_id",
+                    "table": {
+                      "name": "jobs_kits",
+                      "schema": "material"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kits_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "kit_id",
+                    "table": {
+                      "name": "kits_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "meta",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "meta",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "updated_at"
+                  ],
+                  "filter": {},
+                  "check": null
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kits_items",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "kit",
+                "using": {
+                  "foreign_key_constraint_on": "kit_id"
+                }
+              },
+              {
+                "name": "orders_item",
+                "using": {
+                  "foreign_key_constraint_on": "order_item_id"
+                }
+              },
+              {
+                "name": "parts_datum",
+                "using": {
+                  "foreign_key_constraint_on": "part_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "id",
+                    "quantity",
+                    "part",
+                    "part_id",
+                    "created_at",
+                    "updated_at",
+                    "kit_id",
+                    "order_item_id",
+                    "user_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "quantity",
+                    "part",
+                    "part_id",
+                    "created_at",
+                    "updated_at",
+                    "kit_id",
+                    "order_item_id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "orders",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "supplier",
+                "using": {
+                  "foreign_key_constraint_on": "supplier_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "jobs_orders",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "order_id",
+                    "table": {
+                      "name": "jobs_orders",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "order_id",
+                    "table": {
+                      "name": "orders_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "kb",
+                    "reference",
+                    "supplier_id",
+                    "updated_at",
+                    "user_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "reference",
+                    "supplier_id",
+                    "created_at",
+                    "updated_at",
+                    "kb",
+                    "user_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                },
+                "comment": ""
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "orders_items",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "order",
+                "using": {
+                  "foreign_key_constraint_on": "order_id"
+                }
+              },
+              {
+                "name": "partByPartId",
+                "using": {
+                  "foreign_key_constraint_on": "part_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "kits_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "order_item_id",
+                    "table": {
+                      "name": "kits_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders_items_receiveds",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "orders_items_id",
+                    "table": {
+                      "name": "orders_items_received",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "created_at",
+                    "estimatedDeliveryDate",
+                    "id",
+                    "order_id",
+                    "part",
+                    "part_id",
+                    "price",
+                    "quantity",
+                    "spn",
+                    "tracking",
+                    "updated_at",
+                    "user_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "order_id",
+                    "quantity",
+                    "tracking",
+                    "price",
+                    "part",
+                    "part_id",
+                    "spn",
+                    "created_at",
+                    "estimatedDeliveryDate",
+                    "updated_at",
+                    "id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "orders_items_received",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "orders_item",
+                "using": {
+                  "foreign_key_constraint_on": "orders_items_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "created_at",
+                    "orders_items_id",
+                    "quantity",
+                    "updated_at"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "orders_items_id",
+                    "quantity",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                },
+                "comment": ""
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "quantity"
+                  ],
+                  "filter": {},
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  }
+                },
+                "comment": ""
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "suppliers",
+              "schema": "erp"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "orders",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "supplier_id",
+                    "table": {
+                      "name": "orders",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "name",
+                    "names",
+                    "updated_at"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "names",
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "jobs_kits",
+              "schema": "material"
+            },
+            "object_relationships": [
+              {
+                "name": "job",
+                "using": {
+                  "foreign_key_constraint_on": "job_id"
+                }
+              },
+              {
+                "name": "kit",
+                "using": {
+                  "foreign_key_constraint_on": "kit_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "job_id",
+                    "created_at",
+                    "id",
+                    "kit_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "job_id",
+                    "kit_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "assemblies",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assemblies_cad",
+                "using": {
+                  "foreign_key_constraint_on": "cad_id"
+                }
+              },
+              {
+                "name": "bom",
+                "using": {
+                  "foreign_key_constraint_on": "bom_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "assembly_instructions",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "boards",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "jobs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "jobs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "assembly_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "id",
+                    "revision_external",
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "bom_id",
+                    "cad_id",
+                    "kb"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "revision_external",
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "bom_id",
+                    "cad_id",
+                    "kb"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "bom_id",
+                    "cad_id",
+                    "id",
+                    "kb",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "revision_internal"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "revision_external",
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "bom_id",
+                    "cad_id",
+                    "kb"
+                  ],
+                  "filter": {},
+                  "check": null
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "assembly_instructions",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "instruction",
+                "using": {
+                  "foreign_key_constraint_on": "instruction_id"
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "instruction_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "boards",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "job",
+                "using": {
+                  "foreign_key_constraint_on": "job_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "signoffsByBoardId",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "board_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "id",
+                    "job_id",
+                    "signoffs",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "id",
+                    "job_id",
+                    "signoffs",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "bom",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "assemblies",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "bom_id",
+                    "table": {
+                      "name": "assemblies",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "lines",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "bom_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "bom_lines",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "id",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "revision_internal",
+                    "updated_at"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "revision_internal",
+                    "meta",
+                    "name",
+                    "revision_external",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {},
+                  "check": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "bom_lines",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "bom",
+                "using": {
+                  "foreign_key_constraint_on": "bom_id"
+                }
+              },
+              {
+                "name": "partByPart",
+                "using": {
+                  "foreign_key_constraint_on": "part"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "bom_id",
+                    "created_at",
+                    "description",
+                    "id",
+                    "part",
+                    "reference",
+                    "updated_at"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "bom_id",
+                    "created_at",
+                    "id",
+                    "reference",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "description",
+                    "part",
+                    "reference",
+                    "created_at",
+                    "updated_at",
+                    "bom_id",
+                    "id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "bom_id",
+                    "created_at",
+                    "description",
+                    "id",
+                    "part",
+                    "reference",
+                    "updated_at"
+                  ],
+                  "filter": {},
+                  "check": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "cad",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "assemblies",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "cad_id",
+                    "table": {
+                      "name": "assemblies",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "start_scale",
+                    "start_x",
+                    "start_y",
+                    "data",
+                    "layers",
+                    "meta",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "data",
+                    "created_at",
+                    "updated_at",
+                    "name",
+                    "start_x",
+                    "start_y",
+                    "start_scale",
+                    "layers",
+                    "meta"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "customers",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "jobs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "customer_id",
+                    "table": {
+                      "name": "jobs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "name": "name"
+                    },
+                    "relationship_type": "object",
+                    "source": "earp",
+                    "table": {
+                      "name": "customers_erp",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "customers_erp"
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "created_at",
+                    "id",
+                    "name",
+                    "updated_at"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "flows",
+              "schema": "public"
+            }
+          },
+          {
+            "table": {
+              "name": "history",
+              "schema": "public"
+            },
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "new_val",
+                    "old_val",
+                    "operation",
+                    "schemaname",
+                    "tabname",
+                    "who",
+                    "tstamp"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "new_val",
+                    "old_val",
+                    "operation",
+                    "schemaname",
+                    "tabname",
+                    "who",
+                    "tstamp"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "instructions",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "stepsByAssemblyId",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "instruction_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "assembly_instructions",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "instruction_id",
+                    "table": {
+                      "name": "assembly_instructions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "stepsByInstructionId",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "instruction_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "created_at",
+                    "description",
+                    "dynamic",
+                    "id",
+                    "meta",
+                    "name",
+                    "revision",
+                    "type",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "name",
+                    "revision",
+                    "active",
+                    "description",
+                    "created_at",
+                    "updated_at",
+                    "type",
+                    "meta",
+                    "dynamic"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "jobs",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "customer",
+                "using": {
+                  "foreign_key_constraint_on": "customer_id"
+                }
+              },
+              {
+                "name": "jobs_kits2",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "job_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "jobs_kits",
+                      "schema": "material"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kit",
+                "using": {
+                  "foreign_key_constraint_on": "kit_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "boards",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "job_id",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "jobs_kits",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "job_id",
+                    "table": {
+                      "name": "jobs_kits",
+                      "schema": "material"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "jobs_orders",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "job_id",
+                    "table": {
+                      "name": "jobs_orders",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "assembly_id",
+                    "customer_id",
+                    "id",
+                    "batch",
+                    "quantity",
+                    "created_at",
+                    "updated_at",
+                    "kit_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "customer_id",
+                    "id",
+                    "batch",
+                    "quantity",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "batch",
+                    "created_at",
+                    "customer_id",
+                    "id",
+                    "kit_id",
+                    "quantity",
+                    "updated_at"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kb",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "comments",
+                "using": {
+                  "manual_configuration": {
+                    "column_mapping": {
+                      "id": "kb_id"
+                    },
+                    "insertion_order": null,
+                    "remote_table": {
+                      "name": "kb_comments",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "content",
+                    "created_at",
+                    "images",
+                    "kb_id",
+                    "updated_at"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "kb_id",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "kb_id",
+                    "user_id"
+                  ],
+                  "filter": {},
+                  "allow_aggregations": true
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "kb_comments",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "created_at",
+                    "updated_at",
+                    "content",
+                    "user_id",
+                    "images",
+                    "kb_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "id",
+                    "kb_id",
+                    "images",
+                    "content",
+                    "created_at",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "parts",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "part_data",
+                "using": {
+                  "foreign_key_constraint_on": "part_data_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "level",
+                    "id",
+                    "name",
+                    "part_data_id"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "level",
+                    "id",
+                    "name",
+                    "part_data_id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "level",
+                    "id",
+                    "name",
+                    "part_data_id"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "parts_data",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "bom_lines",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part",
+                    "table": {
+                      "name": "bom_lines",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kits_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part_id",
+                    "table": {
+                      "name": "kits_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part_id",
+                    "table": {
+                      "name": "orders_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "parts",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part_data_id",
+                    "table": {
+                      "name": "parts",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "part_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "polarised",
+                    "footprint",
+                    "images",
+                    "properties",
+                    "description",
+                    "id",
+                    "image_url",
+                    "manufacturer",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "kb"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "created_at",
+                    "description",
+                    "footprint",
+                    "id",
+                    "image_url",
+                    "images",
+                    "kb",
+                    "manufacturer",
+                    "name",
+                    "polarised",
+                    "properties",
+                    "updated_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "polarised",
+                    "footprint",
+                    "images",
+                    "properties",
+                    "description",
+                    "id",
+                    "image_url",
+                    "manufacturer",
+                    "name",
+                    "created_at",
+                    "updated_at",
+                    "kb"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "signoffs",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "board",
+                "using": {
+                  "foreign_key_constraint_on": "board_id"
+                }
+              },
+              {
+                "name": "step",
+                "using": {
+                  "foreign_key_constraint_on": "step_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "board_id",
+                    "created_at",
+                    "id",
+                    "step_id",
+                    "updated_at",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "steps",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "assembly",
+                "using": {
+                  "foreign_key_constraint_on": "assembly_id"
+                }
+              },
+              {
+                "name": "instruction",
+                "using": {
+                  "foreign_key_constraint_on": "instruction_id"
+                }
+              },
+              {
+                "name": "part",
+                "using": {
+                  "foreign_key_constraint_on": "part_id"
+                }
+              },
+              {
+                "name": "user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "signoffs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "step_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "set": {
+                    "user_id": "x-hasura-User-Id"
+                  },
+                  "columns": [
+                    "assembly_id",
+                    "board_id",
+                    "color",
+                    "created_at",
+                    "dynamic",
+                    "id",
+                    "instruction_id",
+                    "meta",
+                    "notes",
+                    "part_id",
+                    "position",
+                    "reference"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "board_id",
+                    "color",
+                    "created_at",
+                    "dynamic",
+                    "id",
+                    "instruction_id",
+                    "meta",
+                    "notes",
+                    "part_id",
+                    "position",
+                    "reference",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "assembly_id",
+                    "board_id",
+                    "color",
+                    "created_at",
+                    "dynamic",
+                    "id",
+                    "instruction_id",
+                    "meta",
+                    "notes",
+                    "part_id",
+                    "position",
+                    "reference",
+                    "user_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "jobs_orders",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "jobs_orders",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kb_comments",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "kb_comments",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kbs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "kb",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "kits_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "kits_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "orders",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders_items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "orders_items",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "orders_items_receiveds",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "orders_items_received",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "signoffs",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "signoffs",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "steps",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "steps",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "suppliers",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "suppliers",
+                      "schema": "erp"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "users_tokens",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "user_id",
+                    "table": {
+                      "name": "users_tokens",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "color",
+                    "created_at",
+                    "first_name",
+                    "id",
+                    "initials",
+                    "last_active",
+                    "last_name",
+                    "permissions",
+                    "processes",
+                    "updated_at",
+                    "username"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "active",
+                    "color",
+                    "created_at",
+                    "first_name",
+                    "id",
+                    "initials",
+                    "last_active",
+                    "last_name",
+                    "processes",
+                    "updated_at",
+                    "username"
+                  ],
+                  "filter": {
+                    "_exists": {
+                      "_table": {
+                        "name": "users",
+                        "schema": "public"
+                      },
+                      "_where": {
+                        "id": {
+                          "_eq": "X-Hasura-User-Id"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users_tokens",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "users_tokens_user",
+                "using": {
+                  "foreign_key_constraint_on": "user_id"
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "config",
+              "schema": "system"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/eames",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "eamrp",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "items",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "items_location",
+                "using": {
+                  "foreign_key_constraint_on": "location_id"
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "changed_username": "username"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "users",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "changed_username_mes"
+              },
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "item": "id"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "boards",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "item_board"
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "locations",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "items",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "location_id",
+                    "table": {
+                      "name": "items",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/eamrp",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        },
+        "customization": {
+          "root_fields": {
+            "namespace": "mrp"
+          }
+        }
+      },
+      {
+        "name": "earp",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "customers_erp",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "customersErpByName",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "name",
+                    "table": {
+                      "name": "customers_erp",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "customers_erp",
+                "using": {
+                  "foreign_key_constraint_on": "name"
+                }
+              }
+            ],
+            "remote_relationships": [
+              {
+                "definition": {
+                  "to_source": {
+                    "field_mapping": {
+                      "name": "name"
+                    },
+                    "relationship_type": "object",
+                    "source": "eames",
+                    "table": {
+                      "name": "customers",
+                      "schema": "public"
+                    }
+                  }
+                },
+                "name": "mes_to_ero_customer"
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://postgres:eames@192.168.1.221:8889/earp",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "mycronic",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "carrier",
+              "schema": "mydbcarrview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "carrier_header",
+              "schema": "mydbcarrview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "carrier_magname",
+              "schema": "mydbcarrview_10"
+            },
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "angle",
+                    "batchid",
+                    "carrierid",
+                    "componentname",
+                    "owner",
+                    "quantity"
+                  ]
+                },
+                "comment": ""
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "aux1",
+                    "aux2",
+                    "aux3",
+                    "aux4",
+                    "aux5",
+                    "aux6",
+                    "aux7",
+                    "aux8",
+                    "aux9",
+                    "batchid",
+                    "carrierid",
+                    "carriersubtype",
+                    "carriertype",
+                    "componentname",
+                    "location",
+                    "magazinename",
+                    "owner",
+                    "previousfeeder",
+                    "previouslocation",
+                    "supplierpartnumber",
+                    "trayposition",
+                    "yacc",
+                    "zacc",
+                    "maxtotaltime",
+                    "previouspauses",
+                    "amplitude",
+                    "angle",
+                    "autorefill",
+                    "duration",
+                    "feeder",
+                    "frequency",
+                    "hasbeenloaded",
+                    "hydrareachable",
+                    "quantity",
+                    "quantityatload",
+                    "quantityatnew",
+                    "servoadjustment",
+                    "step",
+                    "steplengthtrim",
+                    "xoffset",
+                    "created",
+                    "lastchanged",
+                    "timeatfirstload",
+                    "timeatlocation",
+                    "timeatpause",
+                    "timeatwarning"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "carrierarchive",
+              "schema": "mydbcarrview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "carrierarchive_magname",
+              "schema": "mydbcarrview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "carrier_header",
+              "schema": "mydbcarrview_11"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://carrierviewwriter:mydata@192.168.1.244:5432/mydata_common_db",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      },
+      {
+        "name": "mycronic_read",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "package",
+              "schema": "mydbpackview_14"
+            }
+          },
+          {
+            "table": {
+              "name": "package_base",
+              "schema": "mydbpackview_14"
+            },
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "algorithm",
+                    "bannedcameraset",
+                    "cameraset",
+                    "diagonalleads",
+                    "hphiacccode",
+                    "hydracameraset",
+                    "hydratoolset",
+                    "hzacccode",
+                    "indextype",
+                    "mountprecision",
+                    "name",
+                    "phiacccode",
+                    "tapeacccode",
+                    "xacccode",
+                    "yacccode",
+                    "zacccode",
+                    "ztoolset",
+                    "autopresangle",
+                    "holduntilready",
+                    "hydraextendedreject",
+                    "hydrafinepitchrequired",
+                    "hydrafloatingpick",
+                    "indexareapos_x",
+                    "indexareapos_y",
+                    "indexareasize",
+                    "indexmincorr",
+                    "lowforce",
+                    "modifiedcount",
+                    "phs_max_height",
+                    "phs_max_lenght",
+                    "phs_max_width",
+                    "phs_min_height",
+                    "phs_min_lenght",
+                    "phs_min_width",
+                    "phs_nom_height",
+                    "phs_nom_lenght",
+                    "phs_nom_width",
+                    "pickoffset_x",
+                    "pickoffset_y",
+                    "pickoffsetfeedback",
+                    "pickwaittimeoffset",
+                    "pinnoofupperleft",
+                    "placeforce",
+                    "placewaittimeoffset",
+                    "presangle",
+                    "slowdownatpick",
+                    "slowdownatplace",
+                    "tooltotopoffset",
+                    "usebestfit",
+                    "vacuumtest",
+                    "zupdist",
+                    "zupspeed",
+                    "modifiedtime"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "algorithm",
+                    "bannedcameraset",
+                    "cameraset",
+                    "diagonalleads",
+                    "hphiacccode",
+                    "hydracameraset",
+                    "hydratoolset",
+                    "hzacccode",
+                    "indextype",
+                    "mountprecision",
+                    "name",
+                    "phiacccode",
+                    "tapeacccode",
+                    "xacccode",
+                    "yacccode",
+                    "zacccode",
+                    "ztoolset",
+                    "autopresangle",
+                    "holduntilready",
+                    "hydraextendedreject",
+                    "hydrafinepitchrequired",
+                    "hydrafloatingpick",
+                    "indexareapos_x",
+                    "indexareapos_y",
+                    "indexareasize",
+                    "indexmincorr",
+                    "lowforce",
+                    "modifiedcount",
+                    "phs_max_height",
+                    "phs_max_lenght",
+                    "phs_max_width",
+                    "phs_min_height",
+                    "phs_min_lenght",
+                    "phs_min_width",
+                    "phs_nom_height",
+                    "phs_nom_lenght",
+                    "phs_nom_width",
+                    "pickoffset_x",
+                    "pickoffset_y",
+                    "pickoffsetfeedback",
+                    "pickwaittimeoffset",
+                    "pinnoofupperleft",
+                    "placeforce",
+                    "placewaittimeoffset",
+                    "presangle",
+                    "slowdownatpick",
+                    "slowdownatplace",
+                    "tooltotopoffset",
+                    "usebestfit",
+                    "vacuumtest",
+                    "zupdist",
+                    "zupspeed",
+                    "modifiedtime"
+                  ],
+                  "filter": {}
+                },
+                "comment": ""
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "pcb",
+              "schema": "mydbpcblview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "pcb_base",
+              "schema": "mydbpcblview_10"
+            }
+          },
+          {
+            "table": {
+              "name": "pcb",
+              "schema": "mydbpcblview_14"
+            }
+          },
+          {
+            "table": {
+              "name": "user",
+              "schema": "mydbuserview_11"
+            }
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgresql://viewreader:viewsonly@192.168.1.244:5432/mydata_common_db",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      }
+    ],
+    "query_collections": [
+      {
+        "name": "allowed-queries",
+        "definition": {
+          "queries": [
+            {
+              "name": "insert_mydbcarrview_10_carrier_magname_one",
+              "query": "mutation insert_mydbcarrview_10_carrier_magname_one($object: mydbcarrview_10_carrier_magname_insert_input!) {\n  insert_mydbcarrview_10_carrier_magname_one(object: $object) {\n    amplitude\n    angle\n    autorefill\n    aux1\n    aux2\n    aux3\n    aux4\n    aux5\n    aux6\n    aux7\n    aux8\n    aux9\n    batchid\n    carrierid\n    carriersubtype\n    carriertype\n    componentname\n    created\n    duration\n    feeder\n    frequency\n    hasbeenloaded\n    hydrareachable\n    lastchanged\n    location\n    magazinename\n    maxtotaltime\n    owner\n    previousfeeder\n    previouslocation\n    previouspauses\n    quantity\n    quantityatload\n    quantityatnew\n    servoadjustment\n    step\n    steplengthtrim\n    supplierpartnumber\n    timeatfirstload\n    timeatlocation\n    timeatpause\n    timeatwarning\n    trayposition\n    xoffset\n    yacc\n    zacc\n  }\n}\n"
+            },
+            {
+              "name": "mydbcarrview_10_carrier_magname",
+              "query": "query mydbcarrview_10_carrier_magname {\n  mydbcarrview_10_carrier_magname {\n    amplitude\n    angle\n    autorefill\n    aux1\n    aux2\n    aux3\n    aux4\n    aux5\n    aux6\n    aux7\n    aux8\n    aux9\n    batchid\n    carrierid\n    carriersubtype\n    carriertype\n    componentname\n    created\n    duration\n    feeder\n    frequency\n    hasbeenloaded\n    hydrareachable\n    lastchanged\n    location\n    magazinename\n    maxtotaltime\n    owner\n    previousfeeder\n    previouslocation\n    previouspauses\n    quantity\n    quantityatload\n    quantityatnew\n    servoadjustment\n    step\n    steplengthtrim\n    supplierpartnumber\n    timeatfirstload\n    timeatlocation\n    timeatpause\n    timeatwarning\n    trayposition\n    xoffset\n    yacc\n    zacc\n  }\n}\n"
+            }
+          ]
+        }
+      }
+    ],
+    "allowlist": [
+      {
+        "collection": "allowed-queries",
+        "scope": {
+          "global": true
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": "faults",
+        "definition": {
+          "handler": "http://192.168.1.107:4444/aoi/api/faults",
+          "output_type": "[SampleOutput]",
+          "arguments": [
+            {
+              "name": "batch",
+              "type": "String"
+            },
+            {
+              "name": "sn",
+              "type": "String"
+            },
+            {
+              "name": "last",
+              "type": "Int"
+            }
+          ],
+          "request_transform": {
+            "method": "GET",
+            "query_params": {
+              "batch": "{{$body.input?.batch}}",
+              "last": "{{$body.input?.last}}",
+              "sn": "{{$body.input?.sn}}"
+            },
+            "request_headers": {
+              "add_headers": {},
+              "remove_headers": [
+                "content-type"
+              ]
+            },
+            "template_engine": "Kriti",
+            "version": 2
+          },
+          "type": "query",
+          "timeout": 5
+        },
+        "comment": "Get faults",
+        "permissions": [
+          {
+            "role": "user"
+          }
+        ]
+      },
+      {
+        "name": "faults_dayco_rapid",
+        "definition": {
+          "handler": "http://192.168.1.107:4444/aoi/api/faults",
+          "output_type": "[API_Fault]",
+          "arguments": [
+            {
+              "name": "input",
+              "type": "API_Fault_Input"
+            }
+          ],
+          "request_transform": {
+            "method": "GET",
+            "query_params": {
+              "sn": "{{$body.input?.boardId}}"
+            },
+            "request_headers": {
+              "add_headers": {},
+              "remove_headers": [
+                "content-type"
+              ]
+            },
+            "template_engine": "Kriti",
+            "version": 2
+          },
+          "type": "query",
+          "timeout": 2
+        },
+        "comment": "faults_dayco_rapid"
+      }
+    ],
+    "custom_types": {
+      "input_objects": [
+        {
+          "name": "SampleInput",
+          "fields": [
+            {
+              "name": "batch",
+              "type": "String!"
+            },
+            {
+              "name": "sn",
+              "type": "String!"
+            }
+          ]
+        },
+        {
+          "name": "API_Fault_Input",
+          "fields": [
+            {
+              "name": "boardId",
+              "type": "String!"
+            }
+          ]
+        }
+      ],
+      "objects": [
+        {
+          "name": "SampleOutput",
+          "fields": [
+            {
+              "name": "Accepted",
+              "type": "String"
+            },
+            {
+              "name": "BoardName",
+              "type": "String"
+            },
+            {
+              "name": "Bottom",
+              "type": "Float"
+            },
+            {
+              "name": "DateActioned",
+              "type": "String"
+            },
+            {
+              "name": "DateInspected",
+              "type": "String"
+            },
+            {
+              "name": "Description",
+              "type": "String"
+            },
+            {
+              "name": "FaultDescription",
+              "type": "String"
+            },
+            {
+              "name": "Filename",
+              "type": "String"
+            },
+            {
+              "name": "ID",
+              "type": "Int"
+            },
+            {
+              "name": "Ident",
+              "type": "String"
+            },
+            {
+              "name": "Inspector",
+              "type": "String"
+            },
+            {
+              "name": "JobNumber",
+              "type": "String"
+            },
+            {
+              "name": "Left",
+              "type": "Float"
+            },
+            {
+              "name": "PartNumber",
+              "type": "String"
+            },
+            {
+              "name": "Reworked",
+              "type": "String"
+            },
+            {
+              "name": "Right",
+              "type": "Float"
+            },
+            {
+              "name": "SerialNumber",
+              "type": "String"
+            },
+            {
+              "name": "Side",
+              "type": "Int"
+            },
+            {
+              "name": "Top",
+              "type": "Float"
+            }
+          ],
+          "relationships": [
+            {
+              "field_mapping": {
+                "SerialNumber": "id"
+              },
+              "name": "board",
+              "remote_table": {
+                "name": "boards",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "array"
+            },
+            {
+              "field_mapping": {
+                "Inspector": "first_name"
+              },
+              "name": "user",
+              "remote_table": {
+                "name": "users",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "array"
+            },
+            {
+              "field_mapping": {
+                "Reworked": "initials"
+              },
+              "name": "user_rw",
+              "remote_table": {
+                "name": "users",
+                "schema": "public"
+              },
+              "source": "eames",
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "name": "API_Fault",
+          "fields": [
+            {
+              "name": "id",
+              "type": "String"
+            },
+            {
+              "name": "user",
+              "type": "String"
+            },
+            {
+              "name": "reference",
+              "type": "String"
+            },
+            {
+              "name": "type",
+              "type": "String"
+            },
+            {
+              "name": "description",
+              "type": "String"
+            },
+            {
+              "name": "imagePath",
+              "type": "String"
+            },
+            {
+              "name": "imageDate",
+              "type": "String"
+            }
+          ]
+        }
+      ]
+    },
+    "rest_endpoints": [
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "insert_mydbcarrview_10_carrier_magname_one"
+          }
+        },
+        "methods": [
+          "POST"
+        ],
+        "name": "insert_mydbcarrview_10_carrier_magname_one",
+        "url": "carrier_magname"
+      },
+      {
+        "comment": "",
+        "definition": {
+          "query": {
+            "collection_name": "allowed-queries",
+            "query_name": "mydbcarrview_10_carrier_magname"
+          }
+        },
+        "methods": [
+          "GET"
+        ],
+        "name": "mydbcarrview_10_carrier_magname",
+        "url": "carrier_magname"
+      }
+    ]
+  }
+}

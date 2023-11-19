@@ -373,9 +373,18 @@
 
 						{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
 							<TableBodyCell>
-								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+								<div class="grid grid-cols-1 gap-y-1">
+									{#each orderItems as orderItem}
+										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+											{orderItem?.quantity} | {orderItem?.order?.supplier?.name}
+										</Badge>
+									{:else}
+										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>0</Badge>
+									{/each}
+								</div>
+								<!-- <Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
 									{orderItemQty}
-								</Badge>
+								</Badge> -->
 							</TableBodyCell>
 						{/if}
 

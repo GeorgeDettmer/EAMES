@@ -1,12 +1,30 @@
 <script lang="ts">
 	import { queryStore, getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import { Label, Input, Helper, Select, Badge, Modal, Button, Toggle, Checkbox } from 'flowbite-svelte';
+	import {
+		Label,
+		Input,
+		Helper,
+		Select,
+		Badge,
+		Modal,
+		Button,
+		Toggle,
+		Checkbox,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell
+	} from 'flowbite-svelte';
 	import AssemblyInfoOverview from '../Assembly/AssemblyInfoOverview.svelte';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
 	import SearchList from '../Misc/SearchList.svelte';
 	import AddAssembly from './AddAssembly.svelte';
-	import { PlusCircle } from 'svelte-heros-v2';
+	import { Plus, PlusCircle } from 'svelte-heros-v2';
+	import { goto } from '$app/navigation';
+	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 	const urqlClient = getContextClient();
 	$: lastJobIdStore = subscriptionStore({
 		client: getContextClient(),
@@ -70,6 +88,14 @@
 					name
 					revision_external
 					revision_internal
+					assemblies_cad {
+						revision_external
+						revision_internal
+					}
+					bom {
+						revision_external
+						revision_internal
+					}
 				}
 			}
 		`
@@ -84,7 +110,12 @@
 	let createAssembly = false;
 
 	$: assemblies = $assembliesStore?.data?.assemblies?.map((assembly) => {
-		return { value: assembly, name: `${assembly?.name} (${assembly?.revision_external})` };
+		return {
+			value: assembly,
+			name: `${assembly?.name} (${assembly?.revision_external || '-'}|${assembly?.bom?.revision_external || '-'}|${
+				assembly?.assemblies_cad?.revision_external || '-'
+			})`
+		};
 	});
 
 	function validate(type: string) {
@@ -175,9 +206,17 @@
 		}
 		jobAdding = false;
 	}
+
+	//TODO: Expand....
+	let customerOrderItems = [];
+	let quotedItems = [];
+	let typeOptions = [{ id: 'LABOUR' }, { id: 'MATERIAL' }, { id: 'OTHER' }];
+	$: totalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost), 0);
+	$: totalPaid = customerOrderItems.reduce((a, v) => a + Number(v.cost), 0);
+	$: fullyPaid = totalPaid === totalQuoted;
 </script>
 
-<div class="w-1/2 mx-auto">
+<div class="w-2/3 mx-auto">
 	<div class="grid md:grid-cols-2 gap-2 gap-y-1">
 		<div class="flex">
 			<div class="w-2/3">
@@ -191,7 +230,12 @@
 		</div>
 		<div class="flex">
 			<div class="w-2/3" />
-			<div class="">
+			<div
+				class=""
+				on:mousewheel={(e) => {
+					quantity = Math.max(Number(quantity) + (e.deltaY > 0 ? -1 : +1), 1);
+				}}
+			>
 				<Label>Quantity</Label>
 				<Input placeholder={1} type="number" bind:value={quantity} />
 			</div>
@@ -229,6 +273,194 @@
 				{/if}
 			{/if}
 		</div>
+	</div>
+
+	<div class="mt-8">
+		<Table hoverable>
+			<TableHead>
+				<TableHeadCell padding="px-1 pt-2" colspan="6">Quoted</TableHeadCell>
+			</TableHead>
+			<TableHead>
+				<TableHeadCell>#</TableHeadCell>
+				<TableHeadCell>Description</TableHeadCell>
+				<TableHeadCell>Type</TableHeadCell>
+				<TableHeadCell>Quantity</TableHeadCell>
+				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell />
+			</TableHead>
+			<TableBody>
+				{#each quotedItems as item, idx}
+					<TableBodyRow
+						class={`cursor-pointer`}
+						on:click={() => {
+							//goto('/kitting/' + job.id);
+						}}
+					>
+						<TableBodyCell>
+							{idx + 1}
+						</TableBodyCell>
+						<!-- <TableBodyCell>
+							{item.description}
+						</TableBodyCell> -->
+
+						<TableBodyCellEditable bind:value={item.description}>
+							{item.description || '--------------'}
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.type} inputType="dropdown" options={typeOptions}>
+							{item.type}
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.quantity} inputType="number">
+							<Badge color={Number(item.quantity) !== Number(quantity) ? 'blue' : 'green'}>{item.quantity}</Badge>
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.cost} inputType="number">
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(item.cost)}
+						</TableBodyCellEditable>
+						<TableBodyCell>
+							<span
+								class="cursor-pointer"
+								on:click={() => {
+									quotedItems = quotedItems.filter((_, i) => i !== idx);
+								}}
+							>
+								❌
+							</span>
+						</TableBodyCell>
+					</TableBodyRow>
+				{:else}
+					<TableBodyRow>
+						<TableBodyCell colspan="6">Enter quoted items</TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			</TableBody>
+			<TableHead>
+				<TableHeadCell>{customerOrderItems.length}</TableHeadCell>
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell>{quotedItems.reduce((a, v) => a + Number(v.quantity), 0)}</TableHeadCell>
+				<TableHeadCell>
+					<Badge color="blue">
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(totalQuoted)}
+					</Badge>
+				</TableHeadCell>
+				<TableHeadCell>
+					<span
+						on:click={() => {
+							quotedItems = [
+								...quotedItems,
+								{
+									description: '',
+									type: 'LABOUR',
+									quantity: 1,
+									cost: 0
+								}
+							];
+						}}
+					>
+						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+					</span>
+				</TableHeadCell>
+			</TableHead>
+		</Table>
+	</div>
+
+	<div class="mt-2">
+		<Table hoverable>
+			<TableHead>
+				<TableHeadCell padding="px-1 pt-2" colspan="6">Paid</TableHeadCell>
+			</TableHead>
+			<TableHead>
+				<TableHeadCell>#</TableHeadCell>
+				<TableHeadCell>Description</TableHeadCell>
+				<TableHeadCell>Type</TableHeadCell>
+				<TableHeadCell>Quantity</TableHeadCell>
+				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell />
+			</TableHead>
+			<TableBody>
+				{#each customerOrderItems as item, idx}
+					<TableBodyRow
+						class={`cursor-pointer`}
+						on:click={() => {
+							//goto('/kitting/' + job.id);
+						}}
+					>
+						<TableBodyCell>
+							{idx + 1}
+						</TableBodyCell>
+						<!-- <TableBodyCell>
+							{item.description}
+						</TableBodyCell> -->
+
+						<TableBodyCellEditable bind:value={item.description}>
+							{item.description || '--------------'}
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.type} inputType="dropdown" options={typeOptions}>
+							{item.type}
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.quantity} inputType="number">
+							<Badge color={Number(item.quantity) !== Number(quantity) ? 'blue' : 'green'}>{item.quantity}</Badge>
+						</TableBodyCellEditable>
+						<TableBodyCellEditable bind:value={item.cost} inputType="number">
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(item.cost)}
+						</TableBodyCellEditable>
+						<TableBodyCell>
+							<span
+								class="cursor-pointer"
+								on:click={() => {
+									customerOrderItems = customerOrderItems.filter((_, i) => i !== idx);
+								}}
+							>
+								❌
+							</span>
+						</TableBodyCell>
+					</TableBodyRow>
+				{:else}
+					<TableBodyRow>
+						<TableBodyCell colspan="6">Enter customer order items</TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			</TableBody>
+			<TableHead>
+				<TableHeadCell>{customerOrderItems.length}</TableHeadCell>
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell>{customerOrderItems.reduce((a, v) => a + Number(v.quantity), 0)}</TableHeadCell>
+				<TableHeadCell>
+					<Badge color={fullyPaid ? 'green' : 'red'}>
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(totalPaid)}
+					</Badge>
+				</TableHeadCell>
+				<TableHeadCell>
+					<span
+						on:click={() => {
+							customerOrderItems = [
+								...customerOrderItems,
+								{
+									description: '',
+									type: 'LABOUR',
+									quantity: 1,
+									cost: 0
+								}
+							];
+						}}
+					>
+						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+					</span>
+				</TableHeadCell>
+			</TableHead>
+		</Table>
 	</div>
 
 	<div class="pt-4 mx-auto">

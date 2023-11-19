@@ -268,7 +268,16 @@
 						</Button>
 					</ButtonGroup>
 				</TableHeadCell>
-				<TableHeadCell />
+				<TableHeadCell>
+					<!-- <span
+						class="cursor-pointer"
+						on:click={() => {
+							order = {};
+						}}
+					>
+						❌
+					</span> -->
+				</TableHeadCell>
 				<slot name="head" />
 			</TableHead>
 			<TableBody>
@@ -363,13 +372,7 @@
 			</TableBody>
 			<TableHead>
 				<TableBodyCell>
-					<span
-						on:click={() => {
-							addLineModal = true;
-						}}
-					>
-						<Plus size="20" class="hover:text-green-600 cursor-pointer" />
-					</span>
+					{orderItems.length + 1}
 				</TableBodyCell>
 				<TableBodyCell />
 				<TableBodyCell />
@@ -377,16 +380,24 @@
 				<TableBodyCell>
 					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 				</TableBodyCell>
-
+				<TableBodyCell />
 				<TableBodyCell>
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
+
 				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell />
+				<TableBodyCell>
+					<span
+						on:click={() => {
+							addLineModal = true;
+						}}
+					>
+						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+					</span>
+				</TableBodyCell>
 				<slot name="foot" />
 			</TableHead>
 		</Table>

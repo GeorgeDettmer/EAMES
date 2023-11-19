@@ -193,9 +193,10 @@
 		if (result.type === 'success') {
 			// rerun all `load` functions, following the successful update
 			await invalidateAll();
+			document.cookie = '';
 			messagesStore('Logged out', 'success');
 		} else {
-			messagesStore(result?.error?.message || result?.data?.error, 'error');
+			messagesStore(result?.error?.message, 'error');
 		}
 	}
 

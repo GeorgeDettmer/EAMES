@@ -79,6 +79,7 @@
 		DropboxSolid
 	} from 'flowbite-svelte-icons';
 	import { getPrinters, printerDetails, printerOnline } from '$lib/utils/bpac/bpac';
+	import { openMenuGroupsStore } from '$lib/stores';
 	let menus = {
 		purchasing: [
 			{
@@ -201,7 +202,7 @@
 	</div>
 </Modal>
 
-<NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus />
+<NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus openMenuGroups={openMenuGroupsStore} />
 <div class="relative px-0">
 	<Navbar navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
 		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>

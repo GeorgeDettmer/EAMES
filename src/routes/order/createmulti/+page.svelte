@@ -83,12 +83,10 @@
 		let toImport = imported?.filter((l) => l?._import !== false);
 		console.log('toImport', toImport, imported);
 		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
-		let importSuppliersExist = [...importSuppliers].every((is) => suppliersNames.flat().includes(is.toLowerCase()));
-		if (!importSuppliersExist) {
+		let importSuppliersInvalid = [...importSuppliers].filter((is) => !suppliersNames.includes(is.toLowerCase()));
+		if (importSuppliersInvalid.length > 0) {
 			messagesStore(
-				`One or more suppliers in the import do not exist in the suppliers library. Suppliers: ${[
-					...importSuppliers.values()
-				]}`
+				`Suppliers in the import do not exist in the suppliers library. Invalid suppliers: ${importSuppliersInvalid}`
 			);
 			return;
 		}
@@ -217,7 +215,7 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	$: suppliersNames = suppliers?.map((s) => s.names);
+	$: suppliersNames = suppliers?.flatMap((s) => s.names);
 	/* $: {
 		if (!selectedSupplierId && suppliers) {
 			selectedSupplierId = suppliers?.[0]?.id;

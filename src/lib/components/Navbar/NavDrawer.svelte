@@ -14,19 +14,9 @@
 		Hr,
 		Input
 	} from 'flowbite-svelte';
-	import {
-		ChartPieSolid,
-		ShoppingCartSolid,
-		GridSolid,
-		MailBoxSolid,
-		UsersSolid,
-		BagSolid,
-		ArrowRightToBracketSolid,
-		FileEditSolid,
-		SearchOutline
-	} from 'flowbite-svelte-icons';
-	import { onMount } from 'svelte';
+	import { ChartPieSolid, SearchOutline } from 'flowbite-svelte-icons';
 	import { sineIn } from 'svelte/easing';
+	import type { Writable } from 'svelte/store';
 	export let hidden = true;
 	export let search: string | undefined = undefined;
 	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
@@ -37,6 +27,7 @@
 	};
 
 	export let menus = [];
+	export let openMenuGroups: Writable<string[]>;
 
 	function onItemClick(e, item) {
 		if (item?.href) {
@@ -53,9 +44,6 @@
 	}
 </script>
 
-<!-- <div class="text-center">
-	<Button on:click={() => (open = false)}>Show navigation</Button>
-</div> -->
 <Drawer transitionType="fly" {transitionParams} bind:hidden id="sidebar2">
 	<div class="flex items-center">
 		{#if search === undefined}
@@ -107,26 +95,35 @@
 				<SidebarGroup>
 					{#each items as item}
 						{#if item?.items}
+							{@const key = `${group}-${item.name}`.toLowerCase()}
 							{#if search === undefined}
-								<SidebarDropdownWrapper label={item.name}>
-									<svelte:fragment slot="icon">
-										{#if item?.icon}
-											<svelte:component this={item.icon} />
-										{/if}
-										<!-- <ShoppingCartSolid
-                                class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                            /> -->
-									</svelte:fragment>
-									{#each item.items as subitem}
-										<SidebarDropdownItem
-											href={subitem?.href}
-											label={subitem.name}
-											on:click={(e) => {
-												onItemClick(e, subitem);
-											}}
-										/>
-									{/each}
-								</SidebarDropdownWrapper>
+								<div
+									on:click={() => {
+										console.log('openMenuGroups click', key, ...$openMenuGroups);
+										if ($openMenuGroups.includes(key)) {
+											$openMenuGroups = $openMenuGroups.filter((g) => g !== key);
+										} else {
+											$openMenuGroups = [...$openMenuGroups, key];
+										}
+									}}
+								>
+									<SidebarDropdownWrapper label={item.name} isOpen={$openMenuGroups.includes(key)}>
+										<svelte:fragment slot="icon">
+											{#if item?.icon}
+												<svelte:component this={item.icon} />
+											{/if}
+										</svelte:fragment>
+										{#each item.items as subitem}
+											<SidebarDropdownItem
+												href={subitem?.href}
+												label={subitem.name}
+												on:click={(e) => {
+													onItemClick(e, subitem);
+												}}
+											/>
+										{/each}
+									</SidebarDropdownWrapper>
+								</div>
 							{:else}
 								{#each item.items as subitem}
 									{#if search && subitem.name.toLowerCase().includes(search.toLowerCase())}

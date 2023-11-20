@@ -116,6 +116,7 @@
 								tracking
 								order {
 									id
+									reference
 									supplier {
 										id
 										name

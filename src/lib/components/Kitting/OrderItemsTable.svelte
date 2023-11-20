@@ -61,6 +61,9 @@
 					{#if item?.order?.id}
 						<a href={`${window.origin}/order/${item?.order?.id}`} target="_blank" class={classes.link}>
 							{item?.order?.id}
+							{#if item?.order?.reference}
+								({item?.order?.reference})
+							{/if}
 						</a>
 					{:else}
 						N/A

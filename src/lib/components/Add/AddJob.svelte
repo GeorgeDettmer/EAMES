@@ -106,6 +106,9 @@
 	let customer;
 	let quantity = 1;
 	let assembly;
+	let shipDate;
+	let deliveryDate;
+	let leadTime = 1;
 	let createKit = false;
 	let createAssembly = false;
 
@@ -228,10 +231,9 @@
 				<Input placeholder={null} type="number" bind:value={batch} />
 			</div>
 		</div>
-		<div class="flex">
-			<div class="w-2/3" />
+		<div class="flex gap-x-2">
 			<div
-				class=""
+				class="w-1/2"
 				on:mousewheel={(e) => {
 					quantity = Math.max(Number(quantity) + (e.deltaY > 0 ? -1 : +1), 1);
 				}}
@@ -239,16 +241,48 @@
 				<Label>Quantity</Label>
 				<Input placeholder={1} type="number" bind:value={quantity} />
 			</div>
+			<div
+				class="w-1/2"
+				on:mousewheel={(e) => {
+					leadTime = Math.max(Number(leadTime) + (e.deltaY > 0 ? -1 : +1), 1);
+				}}
+				on:change={(e) => {}}
+			>
+				<Label>Lead time</Label>
+				<Input placeholder={1} type="number" bind:value={leadTime} />
+			</div>
 		</div>
 		<div class="">
 			<Label>Customer</Label>
 			<Select items={customers} bind:value={customer} placeholder="Select customer" />
 		</div>
+		<div class="flex gap-x-2">
+			<div class="w-1/2">
+				<Label>Ship date</Label>
+				<Input
+					type="date"
+					on:change={() => {
+						if (!deliveryDate) {
+							deliveryDate = shipDate;
+						}
+					}}
+					bind:value={shipDate}
+				/>
+			</div>
+			<div class="w-1/2">
+				<Label>Delivery date</Label>
+				<Input type="date" min={shipDate} on:change={() => {}} bind:value={deliveryDate} />
+			</div>
+		</div>
+
 		<div class="my-auto pt-4">
 			{#if customer?.jobs_aggregate?.aggregate?.count}
 				<Badge color="blue" large>{customer?.jobs_aggregate?.aggregate?.count}</Badge>
 			{/if}
 		</div>
+
+		<div />
+
 		<div>
 			<div class="">
 				<Label>Assemblies</Label>
@@ -425,7 +459,7 @@
 					</TableBodyRow>
 				{:else}
 					<TableBodyRow>
-						<TableBodyCell colspan="6">Enter customer order items</TableBodyCell>
+						<TableBodyCell colspan="6">Enter ordered items</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>

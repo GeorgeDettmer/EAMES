@@ -268,7 +268,7 @@
 			} else {
 				mutationResult = await urqlClient.mutation(
 					gql`
-						mutation insertKitItems($items: [erp_kits_items_insert_input!] = {}) {
+						mutation insertKitItems($items: [erp_kits_items_insert_input!] = {}, $kit_id: uuid!) {
 							insert_erp_kits_items(objects: $items) {
 								returning {
 									id

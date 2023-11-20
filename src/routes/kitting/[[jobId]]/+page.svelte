@@ -4,13 +4,8 @@
 	export let data: PageData;
 	import { page } from '$app/stores';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 	import { scanStore } from '$lib/stores';
-	import { messagesStore } from 'svelte-legos';
-	import { ChevronDoubleDown, ChevronDoubleUp } from 'svelte-heros-v2';
-	import { EllipseHorizontalSolid } from 'flowbite-svelte-icons';
-	import KitList from '$lib/components/Kitting/KitList.svelte';
 	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
 	import { Alert, Spinner } from 'flowbite-svelte';
 	import KittingDashboard from '$lib/components/Kitting/KittingDashboard.svelte';

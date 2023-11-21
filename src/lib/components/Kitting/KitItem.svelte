@@ -482,12 +482,12 @@
 					{@const ordersKittingFrom = orderItems?.filter((i) => i.__selected)}
 					<p class="font-bold text-lg" class:text-red-600={kittingTotal < 1}>
 						Kit {kittingTotal}
-						{kittingTotal > receivedTotal ? `& recieve ${kittingTotal - receivedTotal}` : ''} from {ordersKittingFrom.length}
+						{kittingTotal > receivedTotal ? `& receive ${kittingTotal - receivedTotal}` : ''} from {ordersKittingFrom.length}
 						order{ordersKittingFrom.length > 1 ? 's' : ''}
 					</p>
 					{#if kittingTotal > receivedTotal}
 						<p class="font-semibold underline text-red-600">
-							You are attempting to kit more than recieved. Receipt(s) will be created for the selected quantity(s)
+							You are attempting to kit more than received. Receipt(s) will be created for the selected quantity(s)
 						</p>
 					{/if}
 				{:else}

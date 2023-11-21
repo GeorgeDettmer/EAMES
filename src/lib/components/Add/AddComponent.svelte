@@ -124,13 +124,14 @@
 	let isSMT = true;
 
 	let descriptionTokens = [];
-	let descriptionProperties = {};
-	$: {
+	let descriptionProperties = [{ property: 'type', value: 'SMT' }];
+	function updateDescriptionProperties() {
+		descriptionProperties = [];
 		let tokens = description.split(' ')?.map((t) => {
 			t = t.toLowerCase();
 			if (['cap', 'capacitor', 'res', 'resistor'].includes(t)) {
 				let comp = t === 'cap' || t === 'capacitor' ? 'CAP' : 'RES';
-				descriptionProperties.component = comp;
+				descriptionProperties = [...descriptionProperties, { property: 'component', value: comp }];
 				return { type: 'type', value: comp };
 			}
 		});
@@ -159,12 +160,29 @@
 		<Input id="small-input" size="sm" placeholder="Part name/number" bind:value={name} />
 
 		<Label for="small-input" class="block mt-2">Description</Label>
-		<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
+		<Input
+			id="small-input"
+			size="sm"
+			placeholder="Part description"
+			bind:value={description}
+			on:input={(e) => {
+				updateDescriptionProperties();
+			}}
+		/>
 
 		<Label for="small-input" class="block mt-2">Image</Label>
 		<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
 
-		<Checkbox bind:checked={isSMT}>SMT</Checkbox>
+		<Checkbox
+			bind:checked={isSMT}
+			on:change={(e) => {
+				if (e.target.checked) {
+					descriptionProperties = [...descriptionProperties, { property: 'type', value: 'SMT' }];
+				} else {
+					descriptionProperties = descriptionProperties.filter((p) => p.value !== 'SMT');
+				}
+			}}>SMT</Checkbox
+		>
 	</div>
 	<div class="overflow-x-auto">
 		<Table hoverable>
@@ -175,7 +193,7 @@
 				<TableHeadCell padding="px-1 py-1" />
 			</TableHead>
 			<TableBody>
-				{#each Object.entries(properties) as [key, value], idx}
+				{#each descriptionProperties as { property, value }, idx}
 					<TableBodyRow
 						class={`cursor-pointer`}
 						on:click={() => {
@@ -190,11 +208,11 @@
                         </TableBodyCell> -->
 
 						<TableBodyCellEditable
-							bind:value={key}
+							bind:value={property}
 							inputType="text"
 							tdClass="px-1 py-1 whitespace-nowrap text-xs text-center"
 						>
-							{key}
+							{property}
 						</TableBodyCellEditable>
 						<TableBodyCellEditable bind:value inputType="text" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 							{value}
@@ -212,18 +230,12 @@
 						</TableBodyCell>
 					</TableBodyRow>
 				{:else}
-					<TableBodyRow>
+					<!-- <TableBodyRow>
 						<TableBodyCell colspan="6">Enter quoted items</TableBodyCell>
-					</TableBodyRow>
+					</TableBodyRow> -->
 				{/each}
 			</TableBody>
 		</Table>
-		{#each Object.entries(properties) as [key, value]}
-			{key}: {value}
-		{/each}
-		{#each Object.entries(descriptionProperties) as [key, value]}
-			{key}: {value}
-		{/each}
 	</div>
 
 	<div class="my-2 p-4">

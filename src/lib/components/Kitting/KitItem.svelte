@@ -66,13 +66,29 @@
 	) {
 		console.log(
 			'createCarrier request:',
-			`/api/carrier/create?carrierid=${carrierid}&componentname=${componentname}&quantity=${quantity}&owner=${owner}&batchid=${`EAJ${jobid} (${carrierid})`}`
-		);
-		const response = await fetch(
-			encodeURI(
+			encodeURIComponent(
 				`/api/carrier/create?carrierid=${carrierid}&componentname=${componentname}&quantity=${quantity}&owner=${owner}&batchid=${`EAJ${jobid} (${carrierid})`}`
 			)
 		);
+
+		const response = await fetch('/api/carrier/create', {
+			method: 'POST',
+			body: JSON.stringify({
+				carrierid,
+				componentname,
+				quantity,
+				owner,
+				batchid: `EAS${jobid} #(${carrierid})`
+			}),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		/* const response = await fetch(
+			encodeURIComponent(
+				`/api/carrier/create?carrierid=${carrierid}&componentname=${componentname}&quantity=${quantity}&owner=${owner}&batchid=${`EAJ${jobid} (${carrierid})`}`
+			)
+		); */
 		const result = await response.json();
 		if (response.status !== 200) {
 			messagesStore('CARRIER CREATION ERROR: ' + result?.message, 'error');

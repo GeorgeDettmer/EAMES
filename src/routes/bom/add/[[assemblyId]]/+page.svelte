@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
 	import { getParameterInsensitiveAny, toRanges } from '$lib/utils';
@@ -237,6 +238,7 @@
 					messagesStore(`Set BOM for ${assemblyInfo?.name}`, 'success');
 				}
 			}
+			goto('/bom/' + mutationResult.data.insert_bom_one.id);
 		}
 	}
 

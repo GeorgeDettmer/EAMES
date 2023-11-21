@@ -44,7 +44,6 @@
 			price: newPrice,
 			quantity: Number(newQuantity),
 			user_id: user?.id,
-			user: user,
 			created_at: new Date().toISOString(),
 			tracking: newTracking
 		};

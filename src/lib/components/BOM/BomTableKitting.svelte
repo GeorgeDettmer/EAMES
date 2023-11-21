@@ -314,12 +314,12 @@
 					: []}
 				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
-				{@const receivedItemQty = receiptItems?.reduce((a, v) => (a = a + v.quantity), 0)}
+				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
-				{#if lineKey.toLowerCase().includes(partSearch.toLowerCase()) && description
-						.toLowerCase()
+				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && description
+						?.toLowerCase()
 						.includes(descriptionSearch.toLowerCase())}
 					<TableBodyRow
 						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}

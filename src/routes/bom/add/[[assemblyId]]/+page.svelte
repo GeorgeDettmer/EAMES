@@ -146,19 +146,23 @@
 		let _lines = [];
 		lines.forEach((line) => {
 			let references = getParameterInsensitiveAny(line, _config.bom.headings.references);
-			let refs = references?.split(',')?.map((r) => r.trim());
-			refs.forEach((ref) => {
-				let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
-				let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
+			let refs = references?.split(',')?.map((r) => r.trim()); //TODO: Check if null
+			if (!refs || refs.length == 0) {
+				console.error('BOM ADD', 'refs length 0 or null', references, refs);
+			} else {
+				refs.forEach((ref) => {
+					let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
+					let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
 
-				let l = {
-					reference: ref,
-					part: pn === 'Not Fitted' ? null : pn,
-					description,
-					partByPart: { description: description }
-				};
-				_lines.push(l);
-			});
+					let l = {
+						reference: ref,
+						part: pn === 'Not Fitted' ? null : pn,
+						description,
+						partByPart: { description: description }
+					};
+					_lines.push(l);
+				});
+			}
 		});
 		if (_lines) {
 			bom.lines = _lines;

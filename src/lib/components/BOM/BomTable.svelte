@@ -238,7 +238,7 @@
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan={kitItems ? '3' : '5'} class="p-0">
 							<div class="px-1 py-1">
-								{#if !partsInLibrary?.includes(lineKey)}
+								{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
 									<NewComponent id={lineKey} {description} />
 								{:else}
 									<PartInfo partId={lineKey} galleryVisible showFootprint />

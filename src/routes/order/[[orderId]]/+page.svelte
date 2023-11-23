@@ -129,6 +129,7 @@
 	let showCompleteOnly = false;
 	let orderReferenceSearch = '';
 	$: console.log(selectedSupplierId);
+	//TODO: Filter via query
 	$: orders = showIncompleteOnly
 		? $ordersStore?.data?.erp_orders.filter(
 				(o) =>

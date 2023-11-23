@@ -180,17 +180,10 @@
 	$: console.log('scanStore', $scanStore);
 
 	$: console.log('orders', orders);
+	$: console.log('kits', kits, jobInfo?.assembly?.bom?.lines);
 
-	let accordionState: boolean[] = [];
-	$: console.log('accordionState', accordionState);
-
-	let highlightOrderItems = [];
-
-	function toggleAccordions(open: boolean | undefined = undefined) {
-		accordionState.forEach((v, i) => {
-			accordionState[i] = open === undefined ? !accordionState[i] : open;
-		});
-	}
+	$: totalKitItemQty = kits?.flatMap((k) => k.kits_items?.reduce((a, v) => a + v.quantity, 0))?.reduce((a, v) => a + v, 0);
+	$: totalBomItemQty = jobInfo?.assembly?.bom?.lines?.length || 0;
 </script>
 
 {#if jobId}
@@ -199,42 +192,24 @@
 			<div class="flex">
 				<div class="w-full">
 					<JobOverview job={jobInfo}>
-						<!-- <div class="pl-4">
-							<div
+						<div class="pl-4">
+							<!-- <div
 								class:bg-red-600={incompleteOrders?.length > 0}
 								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
 							>
-								<p class="text-white">{incompleteOrders?.length > 0 ? incompleteOrders?.length : '✅'}</p>
-							</div>
-						</div> -->
+								<p class="text-white">{totalBomItemQty > totalKitItemQty ? incompleteOrders?.length : '✅'}</p>
+							</div> -->
+							{totalKitItemQty}/{totalBomItemQty * jobInfo.quantity}
+						</div>
 					</JobOverview>
 				</div>
-				<!-- <div class="my-auto ml-2 -mr-1 hover:cursor-pointer">
-					<ChevronDoubleUp
-						on:click={() => {
-							toggleAccordions(false);
-						}}
-					/>
-					<EllipseHorizontalSolid
-						on:click={() => {
-							toggleAccordions();
-						}}
-					/>
-					<ChevronDoubleDown
-						on:click={() => {
-							toggleAccordions(true);
-						}}
-					/>
-				</div> -->
 			</div>
 		{/if}
-
 		{#if jobInfo?.assembly?.bom}
 			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
 		{:else}
 			<Alert color="red">No BOM set for this job assembly!</Alert>
 		{/if}
-		<!-- <KitList {kits} bind:accordionState /> -->
 	{:else}
 		<Spinner color="blue" />
 	{/if}

@@ -206,6 +206,9 @@
 
 	let partSearch = '';
 	let descriptionSearch = '';
+	let supplierSearch = '';
+	$: ordersSuppliers = job?.jobs_orders?.flatMap((jo) => jo.order?.supplier?.name)?.filter((v, i, a) => a.indexOf(v) === i);
+	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -237,6 +240,9 @@
 					type="text"
 					bind:value={partSearch}
 				/>
+				<div class="flex my-auto hover:text-red-600" on:click={() => (partSearch = '')}>
+					<XMark size="16" />
+				</div>
 			</TableHeadCollapsible>
 
 			<TableHeadCollapsible
@@ -246,14 +252,31 @@
 				showCollapseButton={false}
 			>
 				<input
-					class=" block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+					class="block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 					type="text"
 					bind:value={descriptionSearch}
 				/>
+				<div class="flex my-auto hover:text-red-600" on:click={() => (descriptionSearch = '')}>
+					<XMark size="16" />
+				</div>
 			</TableHeadCollapsible>
-
 			<TableHeadCell />
-			<TableHeadCell padding="px-6 py-1" colspan="7">
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell>
+				<select
+					class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
+					bind:value={supplierSearch}
+				>
+					<option value={''} />
+					{#each ordersSuppliers as supplierName}
+						<option value={supplierName}>
+							{supplierName}
+						</option>
+					{/each}
+				</select>
+			</TableHeadCell>
+			<TableHeadCell padding="px-6 py-1" colspan="4">
 				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>
 			</TableHeadCell>
 		</TableHead>
@@ -312,6 +335,7 @@
 							?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 							.flat()
 					: []}
+				{@const lineSuppliers = orderItems?.flatMap((oi) => oi?.order?.supplier?.name)}
 				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
 				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v.quantity, 0)}
@@ -320,7 +344,7 @@
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
 				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && description
 						?.toLowerCase()
-						.includes(descriptionSearch.toLowerCase())}
+						.includes(descriptionSearch.toLowerCase()) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch))}
 					<TableBodyRow
 						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
 						class={`cursor-pointer`}

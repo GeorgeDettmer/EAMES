@@ -214,6 +214,6 @@
 		<Spinner color="blue" />
 	{/if}
 {:else}
-	TODO: kitting dashboard
+	<!-- TODO: kitting dashboard -->
 	<KittingDashboard />
 {/if}

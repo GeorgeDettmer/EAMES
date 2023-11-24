@@ -373,7 +373,7 @@
 							visible={visibleColumns?.includes('description')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<div class="max-w-xl overflow-x-auto">
+							<div class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 overflow-x-auto">
 								<p class="overflow-hidden text-clip">{description || ''}</p>
 								{#if line?.[0]?.description && line?.[0]?.description !== description}
 									<p class=" text-clip italic text-xs">{line?.[0]?.description}</p>

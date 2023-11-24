@@ -29,7 +29,7 @@
 					</p>
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-					<UserIcon user={item?.user} size="sm" />
+					<UserIcon user={item?.user} size="xs" />
 					<Tooltip placement="left">
 						<p>
 							{#if item?.user?.first_name}

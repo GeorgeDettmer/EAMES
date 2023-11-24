@@ -24,6 +24,10 @@
 
 	function adjustWidth(input: HTMLInputElement) {
 		if (!adjustWidthToFit) return;
+		if (inputType === 'dropdown') {
+			input.width = input.value.length || 1;
+			return;
+		}
 		input.size = input.value.length || 1;
 	}
 </script>

@@ -24,10 +24,10 @@
 	import TableHeadCollapsible from '$lib/components/Misc/Table/TableHeadCollapsible.svelte';
 	import { writable } from 'svelte/store';
 	import { storage } from 'svelte-legos';
-	import { XMark } from 'svelte-heros-v2';
+	import { ChevronDown, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { datetimeFormat, getSelectionText, padString } from '$lib/utils';
+	import { classes, datetimeFormat, getSelectionText, padString } from '$lib/utils';
 	import OrderItemsTable from '$lib/components/Kitting/OrderItemsTable.svelte';
 	import ReceivingStatus from '$lib/components/Orders/ReceivingStatus.svelte';
 
@@ -338,18 +338,27 @@
 					{@const categories = order?.orders_items
 						?.map((oi) => oi?.category || 'Unknown')
 						?.filter((v, i, a) => a.indexOf(v) === i)}
-					<TableBodyRow
-						color={'default'}
-						class={`cursor-pointer`}
-						on:click={(e) => {
-							handleRowClick(idx, e);
-						}}
-					>
+					<TableBodyRow color={'default'} class={``}>
 						{@const jobsOrders = order?.jobs_orders || []}
 						<TableBodyCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>
-							<p>
-								{padString(String(order?.id))}
-							</p>
+							<div
+								class="flex cursor-pointer"
+								on:click={(e) => {
+									handleRowClick(idx, e);
+								}}
+							>
+								<div class="my-auto">
+									{#if openRows?.includes(idx)}
+										<ChevronDown size="16" />
+									{:else}
+										<ChevronRight size="16" />
+									{/if}
+								</div>
+
+								<p class={classes.link}>
+									{padString(String(order?.id))}
+								</p>
+							</div>
 						</TableBodyCollapsible>
 						<TableBodyCollapsible
 							tdClass="px-6 py-1 whitespace-nowrap font-medium"
@@ -358,9 +367,9 @@
 						>
 							<div class="grid grid-cols-2">
 								{#each jobsOrders as jo}
-									<div>
+									<a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank">
 										<Badge color="blue">{jo?.job?.id}</Badge>
-									</div>
+									</a>
 								{/each}
 							</div>
 						</TableBodyCollapsible>
@@ -422,7 +431,7 @@
 							columnId="status"
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<div class="flex">
+							<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
 								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
 									<img
 										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
@@ -451,7 +460,7 @@
 									/>
 									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
 								{/if}
-							</div>
+							</a>
 						</TableBodyCollapsible>
 					</TableBodyRow>
 					{#if openRows?.includes(idx)}
@@ -488,7 +497,7 @@
 				</div> -->
 				{:else}
 					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="7" class="p-0">
+						<TableBodyCell colspan="8" class="p-0">
 							<p>No orders matching search criteria</p>
 						</TableBodyCell>
 					</TableBodyRow>

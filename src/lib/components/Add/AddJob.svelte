@@ -214,8 +214,12 @@
 	let customerOrderItems = [];
 	let quotedItems = [];
 	let typeOptions = [{ id: 'LABOUR' }, { id: 'MATERIAL' }, { id: 'OTHER' }];
-	$: totalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost), 0);
-	$: totalPaid = customerOrderItems.reduce((a, v) => a + Number(v.cost), 0);
+	$: unitTotalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost), 0);
+	$: unitTotalPaid = customerOrderItems.reduce((a, v) => a + Number(v.cost), 0);
+
+	$: totalPaid = customerOrderItems.reduce((a, v) => a + Number(v.cost) * Number(v.quantity), 0);
+	$: totalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost) * Number(v.quantity), 0);
+
 	$: fullyPaid = totalPaid === totalQuoted;
 </script>
 
@@ -312,14 +316,15 @@
 	<div class="mt-8">
 		<Table hoverable>
 			<TableHead>
-				<TableHeadCell padding="px-1 pt-2" colspan="6">Quoted</TableHeadCell>
+				<TableHeadCell padding="px-1 pt-2" colspan="7">Quoted</TableHeadCell>
 			</TableHead>
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>Description</TableHeadCell>
 				<TableHeadCell>Type</TableHeadCell>
 				<TableHeadCell>Quantity</TableHeadCell>
-				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell>Unit Cost</TableHeadCell>
+				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell />
 			</TableHead>
 			<TableBody>
@@ -353,6 +358,14 @@
 							}).format(item.cost)}
 						</TableBodyCellEditable>
 						<TableBodyCell>
+							<Badge color={Number(item.quantity) !== Number(quantity) ? 'blue' : 'green'}
+								>{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(item.cost * item.quantity)}</Badge
+							>
+						</TableBodyCell>
+						<TableBodyCell>
 							<span
 								class="cursor-pointer"
 								on:click={() => {
@@ -365,7 +378,7 @@
 					</TableBodyRow>
 				{:else}
 					<TableBodyRow>
-						<TableBodyCell colspan="6">Enter quoted items</TableBodyCell>
+						<TableBodyCell colspan="7">Enter quoted items</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>
@@ -376,6 +389,14 @@
 				<TableHeadCell>{quotedItems.reduce((a, v) => a + Number(v.quantity), 0)}</TableHeadCell>
 				<TableHeadCell>
 					<Badge color="blue">
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(unitTotalQuoted)}
+					</Badge>
+				</TableHeadCell>
+				<TableHeadCell>
+					<Badge color={fullyPaid ? 'green' : 'red'}>
 						{new Intl.NumberFormat('en-GB', {
 							style: 'currency',
 							currency: 'GBP'
@@ -406,14 +427,15 @@
 	<div class="mt-2">
 		<Table hoverable>
 			<TableHead>
-				<TableHeadCell padding="px-1 pt-2" colspan="6">Paid</TableHeadCell>
+				<TableHeadCell padding="px-1 pt-2" colspan="7">Paid</TableHeadCell>
 			</TableHead>
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>Description</TableHeadCell>
 				<TableHeadCell>Type</TableHeadCell>
 				<TableHeadCell>Quantity</TableHeadCell>
-				<TableHeadCell>Cost</TableHeadCell>
+				<TableHeadCell>Unit Cost</TableHeadCell>
+				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell />
 			</TableHead>
 			<TableBody>
@@ -447,6 +469,14 @@
 							}).format(item.cost)}
 						</TableBodyCellEditable>
 						<TableBodyCell>
+							<Badge color={Number(item.quantity) !== Number(quantity) ? 'blue' : 'green'}
+								>{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(item.cost * item.quantity)}</Badge
+							>
+						</TableBodyCell>
+						<TableBodyCell>
 							<span
 								class="cursor-pointer"
 								on:click={() => {
@@ -459,7 +489,7 @@
 					</TableBodyRow>
 				{:else}
 					<TableBodyRow>
-						<TableBodyCell colspan="6">Enter ordered items</TableBodyCell>
+						<TableBodyCell colspan="7">Enter ordered items</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>
@@ -468,6 +498,14 @@
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell>{customerOrderItems.reduce((a, v) => a + Number(v.quantity), 0)}</TableHeadCell>
+				<TableHeadCell>
+					<Badge color={unitTotalPaid === unitTotalQuoted ? 'green' : 'red'}>
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(unitTotalPaid)}
+					</Badge>
+				</TableHeadCell>
 				<TableHeadCell>
 					<Badge color={fullyPaid ? 'green' : 'red'}>
 						{new Intl.NumberFormat('en-GB', {

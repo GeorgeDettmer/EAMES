@@ -473,28 +473,6 @@
 							</TableBodyCell>
 						</TableBodyRow>
 					{/if}
-					<!-- <div>
-					<a href={window.origin + '/order/' + order?.id}>
-						<OrdersListItem {order}>
-							<div class="ml-5 w-auto">
-								<UserIcon size="xs" user={order?.user}>
-									{order?.user?.first_name}
-									{order?.user?.last_name}
-								</UserIcon>
-							</div>
-							<div class="ml-5">
-								{jobsOrders?.length}
-							</div>
-						</OrdersListItem>
-						{#if jobsOrders?.length > 0}
-							<Tooltip placement="right">
-								{#each jobsOrders as jo}
-									<p>{jo.job.id}</p>
-								{/each}
-							</Tooltip>
-						{/if}
-					</a>
-				</div> -->
 				{:else}
 					<TableBodyRow class="h-24">
 						<TableBodyCell colspan="8" class="p-0">
@@ -503,7 +481,16 @@
 					</TableBodyRow>
 				{/each}
 			</TableBody>
+			<TableHead>
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+			</TableHead>
 		</Table>
-		<!-- </div> -->
 	{/if}
 {/if}

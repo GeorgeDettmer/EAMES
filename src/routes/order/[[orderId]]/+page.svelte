@@ -16,97 +16,101 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Toggle
+		Toggle,
+		Tooltip
 	} from 'flowbite-svelte';
 	import TableHeadCollapsible from '$lib/components/Misc/Table/TableHeadCollapsible.svelte';
 	import { writable } from 'svelte/store';
-	import { storage } from 'svelte-legos';
+	import { intervalFnStore, storage } from 'svelte-legos';
 	import { ChevronDown, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
-	import { createEventDispatcher } from 'svelte';
-	import { classes, datetimeFormat, getSelectionText, padString } from '$lib/utils';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderItemsTable from '$lib/components/Kitting/OrderItemsTable.svelte';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 
 	export let data: PageData;
 
 	$: orderId = $page?.data?.orderId;
-	let ordersStore;
-	$: if (!orderId) {
-		ordersStore = queryStore({
-			client: getContextClient(),
-			query: gql`
-				query orders(
-					$supplierIdCriteria: String_comparison_exp = {}
-					$userIdCriteria: uuid_comparison_exp = {}
-					$orderReferenceCriteria: String_comparison_exp = {}
-					$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
-					$idsCriteria: bigint_comparison_exp = {}
-				) {
-					erp_orders(
-						order_by: { created_at: desc }
-						where: {
-							supplier_id: $supplierIdCriteria
-							user_id: $userIdCriteria
-							reference: $orderReferenceCriteria
-							jobs_orders: $jobIdsCriteria
-							id: $idsCriteria
-						}
-					) {
+
+	let client = getContextClient();
+	let query = gql`
+		query orders(
+			$supplierIdCriteria: String_comparison_exp = {}
+			$userIdCriteria: uuid_comparison_exp = {}
+			$orderReferenceCriteria: String_comparison_exp = {}
+			$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
+			$idsCriteria: bigint_comparison_exp = {}
+		) {
+			erp_orders(
+				order_by: { created_at: desc }
+				where: {
+					supplier_id: $supplierIdCriteria
+					user_id: $userIdCriteria
+					reference: $orderReferenceCriteria
+					jobs_orders: $jobIdsCriteria
+					id: $idsCriteria
+				}
+			) {
+				id
+				reference
+				kb
+				created_at
+				jobs_orders {
+					job {
 						id
-						reference
-						kb
-						created_at
-						jobs_orders {
-							job {
-								id
-								batch
-							}
-						}
-						orders_items_aggregate {
-							aggregate {
-								count
-								sum {
-									price
-									quantity
-								}
-							}
-						}
-						orders_items {
-							id
-							tracking
-							category
-							created_at
-							updated_at
-							order_id
-							part
+						batch
+					}
+				}
+				orders_items_aggregate {
+					aggregate {
+						count
+						sum {
 							price
 							quantity
-							orders_items_receiveds_aggregate {
-								aggregate {
-									sum {
-										quantity
-									}
-								}
-							}
-						}
-						supplier_id
-						supplier {
-							id
-							name
-						}
-						user_id
-						user {
-							id
-							username
-							first_name
-							last_name
-							initials
-							color
 						}
 					}
 				}
-			`,
+				orders_items {
+					id
+					tracking
+					category
+					created_at
+					updated_at
+					order_id
+					part
+					price
+					quantity
+					orders_items_receiveds_aggregate {
+						aggregate {
+							sum {
+								quantity
+							}
+						}
+					}
+				}
+				supplier_id
+				supplier {
+					id
+					name
+				}
+				user_id
+				user {
+					id
+					username
+					first_name
+					last_name
+					initials
+					color
+				}
+			}
+		}
+	`;
+	let ordersStore;
+	$: if (!orderId) {
+		ordersStore = queryStore({
+			client,
+			query,
 			variables: {
 				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
@@ -117,6 +121,19 @@
 			requestPolicy: 'cache-and-network'
 		});
 	}
+
+	let lastRefreshedAt = new Date();
+	function refresh() {
+		lastRefreshedAt = new Date();
+		queryStore({
+			client,
+			query,
+			requestPolicy: 'network-only'
+		});
+	}
+	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
+		refresh();
+	}, 10000);
 
 	$: suppliersStore = queryStore({
 		client: getContextClient(),
@@ -176,6 +193,12 @@
 	let supplierSearch: string;
 	let dateSearch: string[] = ['', ''];
 
+	onMount(() => {
+		idSearch = decodeURIComponent($page.url.searchParams.get('id') || '');
+		jobSearch = decodeURIComponent($page.url.searchParams.get('job') || '');
+		supplierSearch = decodeURIComponent($page.url.searchParams.get('supplier') || '');
+	});
+
 	$: console.log($ordersStore);
 </script>
 
@@ -220,25 +243,53 @@
 			<TableHead>
 				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
-						class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+						class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="text"
 						bind:value={idSearch}
+						on:input={() => {
+							replaceStateWithQuery({
+								id: idSearch
+							});
+						}}
 					/>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (idSearch = '')}>
+					<div
+						class:invisible={!idSearch}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => {
+							replaceStateWithQuery({
+								id: ''
+							});
+							idSearch = '';
+						}}
+					>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="text"
 						bind:value={jobSearch}
+						on:input={() => {
+							replaceStateWithQuery({
+								job: jobSearch
+							});
+						}}
 					/>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (jobSearch = '')}>
+					<div
+						class:invisible={!jobSearch}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => {
+							replaceStateWithQuery({
+								job: ''
+							});
+							jobSearch = '';
+						}}
+					>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
@@ -255,13 +306,17 @@
 				</TableHeadCollapsible> -->
 				<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="text"
 						bind:value={categorySearch}
 					/>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (categorySearch = '')}>
+					<div
+						class:invisible={!categorySearch}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => (categorySearch = '')}
+					>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
@@ -272,8 +327,13 @@
 						bind:value={supplierSearch}
 					/> -->
 					<select
-						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0"
+						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						bind:value={supplierSearch}
+						on:change={() => {
+							replaceStateWithQuery({
+								supplier: supplierSearch
+							});
+						}}
 					>
 						<option value={''} />
 						{#each suppliers as supplier}
@@ -284,20 +344,33 @@
 					</select>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (supplierSearch = '')}>
+					<div
+						class:invisible={!supplierSearch}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => {
+							replaceStateWithQuery({
+								supplier: ''
+							});
+							supplierSearch = '';
+						}}
+					>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="text"
 						bind:value={dateSearch[0]}
 					/>
 
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (dateSearch[0] = '')}>
+					<div
+						class:invisible={!dateSearch[0]}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => (dateSearch[0] = '')}
+					>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
@@ -308,15 +381,33 @@
 								<p class="text-red-600 font-bold">Query Error...</p>
 							</div>
 						{/if}
-						{#if $ordersStore?.fetching}
-							<div class="ml-auto">
-								<Spinner color="blue" size="5" />
-							</div>
-						{:else}
-							<div class="ml-auto">
-								<p>{orders.length} result{orders.length === 1 ? '' : 's'}</p>
-							</div>
-						{/if}
+
+						<div class="flex ml-auto">
+							<p class="mr-1">{orders.length} result{orders.length === 1 ? '' : 's'}</p>
+							<svg
+								on:click={() => {
+									refresh();
+								}}
+								class:cursor-pointer={!$ordersStore?.fetching}
+								class:animate-spin={$ordersStore?.fetching}
+								class="w-4 h-4 text-gray-500 dark:text-white hover:text-gray-800 outline-none"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 18 20"
+							>
+								<path
+									stroke="currentColor"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M16 1v5h-5M2 19v-5h5m10-4a8 8 0 0 1-14.947 3.97M1 10a8 8 0 0 1 14.947-3.97"
+								/>
+							</svg>
+							<Tooltip placement="left">
+								<p class="text-xs">Last updated: {lastRefreshedAt.toTimeString().split(' ')?.[0]}</p>
+							</Tooltip>
+						</div>
 					</div>
 				</TableHeadCell>
 			</TableHead>

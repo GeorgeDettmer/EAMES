@@ -3,7 +3,6 @@
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import type { PageData } from './$types';
-	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import {
 		Badge,
@@ -17,10 +16,8 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Toggle,
-		Tooltip
+		Toggle
 	} from 'flowbite-svelte';
-	import { getJsonBySearchId } from 'serpapi';
 	import TableHeadCollapsible from '$lib/components/Misc/Table/TableHeadCollapsible.svelte';
 	import { writable } from 'svelte/store';
 	import { storage } from 'svelte-legos';
@@ -29,7 +26,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import { classes, datetimeFormat, getSelectionText, padString } from '$lib/utils';
 	import OrderItemsTable from '$lib/components/Kitting/OrderItemsTable.svelte';
-	import ReceivingStatus from '$lib/components/Orders/ReceivingStatus.svelte';
 
 	export let data: PageData;
 
@@ -75,48 +71,13 @@
 							updated_at
 							order_id
 							part
-							part_id
-							partByPartId {
-								description
-								name
-							}
 							price
 							quantity
-							order {
-								id
-								supplier {
-									id
-									name
-								}
-							}
-							user {
-								id
-								username
-								first_name
-								last_name
-								initials
-								color
-							}
-
 							orders_items_receiveds_aggregate {
 								aggregate {
 									sum {
 										quantity
 									}
-								}
-							}
-							orders_items_receiveds {
-								id
-								quantity
-								created_at
-								updated_at
-								user {
-									id
-									username
-									first_name
-									last_name
-									initials
-									color
 								}
 							}
 						}
@@ -138,7 +99,7 @@
 				}
 			`,
 			variables: {
-				supplierIdCriteria: selectedSupplierId ? { _eq: selectedSupplierId } : {},
+				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
 				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {}
 			},
@@ -165,14 +126,14 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers || [];
-	let selectedSupplierId = '';
+
 	let showMyOrdersOnly = $page?.data?.me;
 	let showIncompleteOnly = false;
 	let showCompleteOnly = false;
 	let orderReferenceSearch = '';
-	$: console.log(selectedSupplierId);
 	//TODO: Filter via query
-	$: orders = showIncompleteOnly
+	$: orders =
+		/* showIncompleteOnly
 		? $ordersStore?.data?.erp_orders.filter(
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length > 0
@@ -182,7 +143,7 @@
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
 		  )
-		: $ordersStore?.data?.erp_orders || [];
+		: */ $ordersStore?.data?.erp_orders || [];
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -198,9 +159,12 @@
 	}
 
 	let collapsedColumns = storage(writable([]), 'EAMES_orders_collapsedColumns');
+
 	let idSearch: string;
 	let jobSearch: string;
+	let categorySearch: string;
 	let supplierSearch: string;
+	let dateSearch: string[] = ['', ''];
 </script>
 
 {#if $suppliersStore?.error}
@@ -225,7 +189,7 @@
 					{ value: null, name: 'All' },
 					...suppliers?.map((s) => ({ value: s.id, name: `${s.name}  (${s.orders_aggregate.aggregate.count})` }))
 				]}
-				bind:value={selectedSupplierId}
+				bind:value={supplierSearch}
 			/>
 		</div>
 		<div class="col-span-1">
@@ -240,7 +204,6 @@
 	</div>
 
 	{#if orders}
-		<!-- <div class="grid grid-cols-2"> -->
 		<Table shadow>
 			<TableHead>
 				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
@@ -282,20 +245,31 @@
 					<input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
-						bind:value={supplierSearch}
+						bind:value={categorySearch}
 					/>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (supplierSearch = '')}>
+					<div class="flex my-auto hover:text-red-600" on:click={() => (categorySearch = '')}>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
+					<!-- <input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
 						bind:value={supplierSearch}
-					/>
+					/> -->
+					<select
+						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0"
+						bind:value={supplierSearch}
+					>
+						<option value={''} />
+						{#each suppliers as supplier}
+							<option value={supplier.id}>
+								{supplier.name}
+							</option>
+						{/each}
+					</select>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div class="flex my-auto hover:text-red-600" on:click={() => (supplierSearch = '')}>
@@ -306,11 +280,12 @@
 					<input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
-						bind:value={supplierSearch}
+						bind:value={dateSearch[0]}
 					/>
+
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex my-auto hover:text-red-600" on:click={() => (supplierSearch = '')}>
+					<div class="flex my-auto hover:text-red-600" on:click={() => (dateSearch[0] = '')}>
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
@@ -340,7 +315,11 @@
 						?.filter((v, i, a) => a.indexOf(v) === i)}
 					<TableBodyRow color={'default'} class={``}>
 						{@const jobsOrders = order?.jobs_orders || []}
-						<TableBodyCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>
+						<TableBodyCollapsible
+							tdClass="px-6 py-1 whitespace-nowrap font-medium"
+							columnId="id"
+							bind:collapsedColumns={$collapsedColumns}
+						>
 							<div
 								class="flex cursor-pointer"
 								on:click={(e) => {

@@ -52,12 +52,13 @@ export const handle: Handle = async ({ event, resolve }) => {
 						last_name: user.last_name,
 						permissions: user.permissions
 					};
-					console.log('hooks', event.locals.user);
+					console.log('hooks', event.locals.user, event.getClientAddress());
 				} catch (error) {
 					console.error('hooks', error);
 				}
 			}
 		}
+	} else {
 	}
 
 	return await resolve(event);

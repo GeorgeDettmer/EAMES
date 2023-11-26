@@ -1,9 +1,6 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
 	export let form: ActionData;
-	import { enhance } from '$app/forms';
-
-	import { Alert } from 'flowbite-svelte';
 
 	import LoginForm from '$lib/components/LoginForm.svelte';
 </script>

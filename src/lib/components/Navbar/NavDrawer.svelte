@@ -35,7 +35,7 @@
 		}
 	}
 
-	let searchInput;
+	let searchInput: HTMLInputElement;
 
 	$: {
 		if (search !== undefined) {
@@ -43,6 +43,14 @@
 		}
 	}
 </script>
+
+<svelte:window
+	on:keydown={(e) => {
+		/* if (e.key === 'Escape' && !hidden && !searchInput) {
+			hidden = true;
+		} */
+	}}
+/>
 
 <Drawer transitionType="fly" {transitionParams} bind:hidden id="sidebar2">
 	<div class="flex items-center">

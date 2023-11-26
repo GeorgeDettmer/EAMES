@@ -326,6 +326,10 @@
 			messagesStore('There must be some order items to submit an order', 'error');
 			return;
 		}
+		if (!orders.every((o) => o.orders_items.length > 0)) {
+			messagesStore('An order contains no order items', 'error');
+			return;
+		}
 
 		ordersAdding = true;
 		let mutationResult;
@@ -397,7 +401,7 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted order(s): ' + mutationResult?.data?.insert_erp_orders?.returning?.map((r) => r.id), 'success');
-			goto('/order?me');
+			goto('/order?buyer=me');
 		}
 		ordersAdding = false;
 	}

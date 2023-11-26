@@ -43,7 +43,8 @@
 			$idsCriteria: bigint_comparison_exp = {}
 		) {
 			erp_orders(
-				order_by: { created_at: desc }
+				order_by: { id: desc }
+				limit: 2000
 				where: {
 					supplier_id: $supplierIdCriteria
 					user_id: $userIdCriteria
@@ -113,7 +114,8 @@
 			query,
 			variables: {
 				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
-				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
+				//userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
+				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
 				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
 				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
@@ -155,6 +157,22 @@
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers || [];
 
+	$: usersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query suppliers {
+				users(where: { orders_items_aggregate: { count: { predicate: { _gt: 0 } } } }, order_by: { username: asc }) {
+					id
+					username
+					first_name
+					last_name
+				}
+			}
+		`,
+		variables: {}
+	});
+	$: users = $usersStore?.data?.users || [];
+
 	let showMyOrdersOnly = $page?.data?.me;
 	let showIncompleteOnly = false;
 	let showCompleteOnly = false;
@@ -191,12 +209,22 @@
 	let jobSearch: string;
 	let categorySearch: string;
 	let supplierSearch: string;
+	let buyerSearch: string;
 	let dateSearch: string[] = ['', ''];
 
 	onMount(() => {
 		idSearch = decodeURIComponent($page.url.searchParams.get('id') || '');
 		jobSearch = decodeURIComponent($page.url.searchParams.get('job') || '');
 		supplierSearch = decodeURIComponent($page.url.searchParams.get('supplier') || '');
+		buyerSearch = decodeURIComponent($page.url.searchParams.get('buyer') || '');
+		if (buyerSearch === 'me') {
+			if ($page?.data?.user?.id) {
+				buyerSearch = $page?.data?.user?.id;
+				replaceStateWithQuery({
+					buyer: buyerSearch
+				});
+			}
+		}
 	});
 
 	$: console.log($ordersStore);
@@ -210,11 +238,11 @@
 	<OrderOverview {orderId} />
 {:else}
 	<!-- <div class="grid grid-cols-6 mb-4"> -->
-	<div class="flex my-auto mb-2 p-1">
+	<!-- <div class="flex my-auto mb-2 p-1">
 		<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
 		<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
 		<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
-	</div>
+	</div> -->
 	<!-- <div class="col-span-1">
 			<Label for="small-input">Supplier</Label>
 			<Select
@@ -293,17 +321,37 @@
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
-				<TableHeadCell />
-				<!-- <TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
-						class="block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
-						type="text"
-						bind:value={supplierSearch}
-					/>
-					<div class="flex my-auto hover:text-red-600" on:click={() => (supplierSearch = '')}>
+				<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+					<select
+						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+						bind:value={buyerSearch}
+						on:change={() => {
+							replaceStateWithQuery({
+								buyer: buyerSearch
+							});
+						}}
+					>
+						<option value={''} />
+						{#each users as user}
+							<option value={user.id}>
+								{user.first_name}
+								{user.last_name}
+							</option>
+						{/each}
+					</select>
+					<div
+						class:invisible={!buyerSearch}
+						class="flex my-auto hover:text-red-600"
+						on:click={() => {
+							replaceStateWithQuery({
+								buyer: ''
+							});
+							buyerSearch = '';
+						}}
+					>
 						<XMark size="16" />
 					</div>
-				</TableHeadCollapsible> -->
+				</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
@@ -383,6 +431,19 @@
 						{/if}
 
 						<div class="flex ml-auto">
+							<div
+								class:invisible={!idSearch && !jobSearch && !supplierSearch && !buyerSearch}
+								class="flex my-auto hover:text-red-600 pr-1 outline-none cursor-pointer"
+								on:click={() => {
+									dateSearch[0] = '';
+									idSearch = '';
+									jobSearch = '';
+									supplierSearch = '';
+									buyerSearch = '';
+								}}
+							>
+								<XMark size="16" />
+							</div>
 							<p class="mr-1">{orders.length} result{orders.length === 1 ? '' : 's'}</p>
 							<svg
 								on:click={() => {
@@ -419,7 +480,6 @@
 				<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns}>Supplier</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>Created</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="items" bind:collapsedColumns={$collapsedColumns}>Items</TableHeadCollapsible>
-
 				<TableHeadCollapsible columnId="total" bind:collapsedColumns={$collapsedColumns}>Total</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="status" bind:collapsedColumns={$collapsedColumns}>Status</TableHeadCollapsible>
 			</TableHead>
@@ -583,7 +643,7 @@
 					{/if}
 				{:else}
 					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="8" class="p-0">
+						<TableBodyCell colspan="9" class="p-0">
 							<p>No orders matching search criteria</p>
 						</TableBodyCell>
 					</TableBodyRow>
@@ -597,6 +657,18 @@
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
+				<TableHeadCell>
+					<p>
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(
+							orders
+								.flatMap((o) => o?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))
+								?.reduce((a, v) => a + v, 0)
+						)}
+					</p>
+				</TableHeadCell>
 				<TableHeadCell />
 			</TableHead>
 		</Table>

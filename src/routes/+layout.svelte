@@ -122,6 +122,7 @@
 			mapExchange({
 				onError(error, operation) {
 					messagesStore('Query error: ' + error, 'error');
+					gqlError = error;
 					console.error(`The operation ${operation.key} has errored with:`, error);
 				}
 			})
@@ -283,6 +284,8 @@
 	}
 
 	setContext('windowTitle', '');
+
+	let gqlError;
 </script>
 
 <svelte:window on:keydown={handleWindowKey} />
@@ -301,7 +304,7 @@
 	<title>EAMES {getContext('windowTitle')}</title>
 </svelte:head>
 
-<Modal bind:open={networkIssuesModal}>
+<Modal bind:open={networkIssuesModal} on:close={() => (gqlError = undefined)}>
 	<Alert class="!items-start">
 		<span slot="icon">
 			<ExclamationCircleOutline slot="icon" class="w-4 h-4" />
@@ -310,6 +313,9 @@
 		<p class="font-medium">Network error detected:</p>
 		<ul class="mt-1.5 ml-4 list-disc list-inside">
 			<li>Contact support</li>
+			{#if gqlError}
+				<li>gqlError: {JSON.stringify(gqlError)}</li>
+			{/if}
 			{#if isOnline}
 				<li>Network connected but a database access error occured</li>
 			{/if}

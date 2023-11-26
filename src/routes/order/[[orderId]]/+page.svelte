@@ -26,6 +26,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { classes, datetimeFormat, getSelectionText, padString } from '$lib/utils';
 	import OrderItemsTable from '$lib/components/Kitting/OrderItemsTable.svelte';
+	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 
 	export let data: PageData;
 
@@ -39,10 +40,18 @@
 					$supplierIdCriteria: String_comparison_exp = {}
 					$userIdCriteria: uuid_comparison_exp = {}
 					$orderReferenceCriteria: String_comparison_exp = {}
+					$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
+					$idsCriteria: bigint_comparison_exp = {}
 				) {
 					erp_orders(
 						order_by: { created_at: desc }
-						where: { supplier_id: $supplierIdCriteria, user_id: $userIdCriteria, reference: $orderReferenceCriteria }
+						where: {
+							supplier_id: $supplierIdCriteria
+							user_id: $userIdCriteria
+							reference: $orderReferenceCriteria
+							jobs_orders: $jobIdsCriteria
+							id: $idsCriteria
+						}
 					) {
 						id
 						reference
@@ -101,7 +110,9 @@
 			variables: {
 				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
-				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {}
+				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
+				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
 			},
 			requestPolicy: 'cache-and-network'
 		});
@@ -132,8 +143,7 @@
 	let showCompleteOnly = false;
 	let orderReferenceSearch = '';
 	//TODO: Filter via query
-	$: orders =
-		/* showIncompleteOnly
+	$: orders = showIncompleteOnly
 		? $ordersStore?.data?.erp_orders.filter(
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length > 0
@@ -143,7 +153,7 @@
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
 		  )
-		: */ $ordersStore?.data?.erp_orders || [];
+		: $ordersStore?.data?.erp_orders || [];
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -165,6 +175,8 @@
 	let categorySearch: string;
 	let supplierSearch: string;
 	let dateSearch: string[] = ['', ''];
+
+	$: console.log($ordersStore);
 </script>
 
 {#if $suppliersStore?.error}
@@ -174,13 +186,13 @@
 {#if orderId}
 	<OrderOverview {orderId} />
 {:else}
-	<div class="grid grid-cols-6 mb-4">
-		<div class="col-span-1 my-auto">
-			<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
-			<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
-			<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
-		</div>
-		<div class="col-span-1">
+	<!-- <div class="grid grid-cols-6 mb-4"> -->
+	<div class="flex my-auto mb-2 p-1">
+		<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
+		<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
+		<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
+	</div>
+	<!-- <div class="col-span-1">
 			<Label for="small-input">Supplier</Label>
 			<Select
 				size="sm"
@@ -191,8 +203,8 @@
 				]}
 				bind:value={supplierSearch}
 			/>
-		</div>
-		<div class="col-span-1">
+		</div> -->
+	<!-- <div class="col-span-1">
 			<Label for="small-input">Reference</Label>
 			<Input size="md" placeholder="" bind:value={orderReferenceSearch} />
 		</div>
@@ -200,15 +212,15 @@
 			<div class="my-auto pl-2">
 				<Spinner color="blue" />
 			</div>
-		{/if}
-	</div>
+		{/if} -->
+	<!-- </div> -->
 
 	{#if orders}
-		<Table shadow>
+		<Table shadow hoverable>
 			<TableHead>
 				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 					<input
-						class="block w-16 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+						class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
 						bind:value={idSearch}
 					/>
@@ -289,16 +301,34 @@
 						<XMark size="16" />
 					</div>
 				</TableHeadCollapsible>
-				<TableHeadCell />
-				<TableHeadCell />
+				<TableHeadCell colspan="3">
+					<div class="flex">
+						{#if $ordersStore?.error}
+							<div class="ml-auto">
+								<p class="text-red-600 font-bold">Query Error...</p>
+							</div>
+						{/if}
+						{#if $ordersStore?.fetching}
+							<div class="ml-auto">
+								<Spinner color="blue" size="5" />
+							</div>
+						{:else}
+							<div class="ml-auto">
+								<p>{orders.length} result{orders.length === 1 ? '' : 's'}</p>
+							</div>
+						{/if}
+					</div>
+				</TableHeadCell>
 			</TableHead>
 			<TableHead>
 				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>PO#</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Job(s)</TableHeadCollapsible>
+				<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Jobs</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns}>Buyer</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns}>Categories</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns}>Supplier</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>Created</TableHeadCollapsible>
+				<TableHeadCollapsible columnId="items" bind:collapsedColumns={$collapsedColumns}>Items</TableHeadCollapsible>
+
 				<TableHeadCollapsible columnId="total" bind:collapsedColumns={$collapsedColumns}>Total</TableHeadCollapsible>
 				<TableHeadCollapsible columnId="status" bind:collapsedColumns={$collapsedColumns}>Status</TableHeadCollapsible>
 			</TableHead>
@@ -395,6 +425,13 @@
 						</TableBodyCollapsible>
 						<TableBodyCollapsible
 							tdClass="px-6 py-1 whitespace-nowrap font-medium"
+							columnId="items"
+							bind:collapsedColumns={$collapsedColumns}
+						>
+							<p>{order?.orders_items_aggregate?.aggregate?.count}</p>
+						</TableBodyCollapsible>
+						<TableBodyCollapsible
+							tdClass="px-6 py-1 whitespace-nowrap font-medium"
 							columnId="total"
 							bind:collapsedColumns={$collapsedColumns}
 						>
@@ -425,7 +462,7 @@
 										style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
 										width="24"
 										height="24"
-										src="https://img.icons8.com/pastel-glyph/64/box--v4.png"
+										src="https://img.icons8.com/windows/32/unpacking.png"
 										alt="unpacking"
 									/>
 									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
@@ -443,11 +480,12 @@
 						</TableBodyCollapsible>
 					</TableBodyRow>
 					{#if openRows?.includes(idx)}
-						<TableBodyRow class="h-24">
-							<TableBodyCell colspan="8" class="p-0">
+						<TableBodyRow class="h-24 ">
+							<TableBodyCell colspan="9" class="p-0">
 								<div class="px-1 py-1 mx-auto">
 									<!-- TODO: Request when opening -->
-									<OrderItemsTable orderItems={order?.orders_items} />
+									<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
+									<!-- <OrderItemsTable orderItems={order?.orders_items} /> -->
 								</div>
 							</TableBodyCell>
 						</TableBodyRow>

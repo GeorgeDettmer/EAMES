@@ -4,9 +4,9 @@ import { messagesStore } from 'svelte-legos';
 export function extensionInstalled(showWarning: boolean = true): boolean {
 	const extensionIsInstalled = _bpac.IsExtensionInstalled() != false;
 	if (!extensionIsInstalled) {
-		messagesStore("Brother 'bpac' browser extension is not installed!", 'error');
 		let messageShown = JSON.parse(String(localStorage.getItem('EAMES_bpacExtensionNotificationShown')));
-		if (!messageShown) {
+		if (!messageShown && !showWarning) {
+			messagesStore("Brother 'bpac' browser extension is not installed!", 'error');
 			localStorage.setItem('EAMES_bpacExtensionNotificationShown', 'true');
 			const agent = window.navigator.userAgent.toLowerCase();
 			const isedge = agent.indexOf('edg') !== -1;

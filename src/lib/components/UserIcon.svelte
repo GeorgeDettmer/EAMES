@@ -19,7 +19,7 @@
 		{#if avatar}
 			<Avatar {size} class={avatarClass + ' ring-white ring-1'}>
 				{#if user?.initials}
-					{user.initials}
+					<p class="dark:text-gray-200 text-center align-middle">{user.initials}</p>
 				{:else}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

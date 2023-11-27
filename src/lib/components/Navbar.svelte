@@ -87,7 +87,7 @@
 				icon: FileEditSolid,
 				items: [
 					{ name: 'All Orders', href: '/order' },
-					{ name: 'All My Orders', href: '/order?me' },
+					{ name: 'All My Orders', href: '/order?buyer=me' },
 					/* { name: 'Create Order', href: '/order/create' }, */
 					{ name: 'Create Order', href: '/order/createmulti' }
 				]

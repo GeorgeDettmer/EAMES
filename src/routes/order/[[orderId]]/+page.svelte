@@ -4,29 +4,14 @@
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
-	import {
-		Badge,
-		Input,
-		Label,
-		Select,
-		Spinner,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell,
-		Toggle,
-		Tooltip
-	} from 'flowbite-svelte';
+	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import TableHeadCollapsible from '$lib/components/Misc/Table/TableHeadCollapsible.svelte';
 	import { writable } from 'svelte/store';
 	import { intervalFnStore, storage } from 'svelte-legos';
-	import { ChevronDown, ChevronRight, XMark } from 'svelte-heros-v2';
+	import { ChevronDown, ChevronLeft, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
-	import OrderItemsTable from '$lib/components/Kitting/OrderItemsTable.svelte';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 
 	export let data: PageData;
@@ -41,10 +26,13 @@
 			$orderReferenceCriteria: String_comparison_exp = {}
 			$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
 			$idsCriteria: bigint_comparison_exp = {}
+			$limit: Int = 100
+			$offset: Int = 0
 		) {
 			erp_orders(
 				order_by: { id: desc }
-				limit: 2000
+				limit: $limit
+				offset: $offset
 				where: {
 					supplier_id: $supplierIdCriteria
 					user_id: $userIdCriteria
@@ -55,7 +43,6 @@
 			) {
 				id
 				reference
-				kb
 				created_at
 				jobs_orders {
 					job {
@@ -73,13 +60,7 @@
 					}
 				}
 				orders_items {
-					id
-					tracking
 					category
-					created_at
-					updated_at
-					order_id
-					part
 					price
 					quantity
 					orders_items_receiveds_aggregate {
@@ -90,12 +71,10 @@
 						}
 					}
 				}
-				supplier_id
 				supplier {
 					id
 					name
 				}
-				user_id
 				user {
 					id
 					username
@@ -107,35 +86,56 @@
 			}
 		}
 	`;
+
+	let queryOffset: number = 0;
+	let queryLimit: number = 50;
 	let ordersStore;
+	//TODO: Clap upper limit of offset so as not to go past last id...
+	//TODO: If filter applied adjust offset?
 	$: if (!orderId) {
 		ordersStore = queryStore({
 			client,
 			query,
 			variables: {
+				limit: isFiltered ? 1000 : queryLimit,
+				offset: isFiltered ? 0 : queryOffset,
 				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
-				//userIdCriteria: showMyOrdersOnly ? { _eq: $page?.data?.user?.id } : {},
 				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
 				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
 				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
 			},
-			requestPolicy: 'cache-and-network'
+			requestPolicy: 'network-only'
 		});
+		lastRefreshedAt = new Date();
 	}
 
-	let lastRefreshedAt = new Date();
+	$: isFiltered = supplierSearch || buyerSearch || orderReferenceSearch || jobSearch || idSearch;
+
+	let lastRefreshedAt;
+	let oldOrders = [];
 	function refresh() {
+		//return;
 		lastRefreshedAt = new Date();
-		queryStore({
+		oldOrders = orders;
+		ordersStore = queryStore({
 			client,
 			query,
+			variables: {
+				limit: isFiltered ? 1000 : queryLimit,
+				offset: isFiltered ? 0 : queryOffset,
+				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
+				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
+				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
+				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
+			},
 			requestPolicy: 'network-only'
 		});
 	}
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
 		refresh();
-	}, 10000);
+	}, 15 * 1000);
 
 	$: suppliersStore = queryStore({
 		client: getContextClient(),
@@ -173,12 +173,8 @@
 	});
 	$: users = $usersStore?.data?.users || [];
 
-	let showMyOrdersOnly = $page?.data?.me;
-	let showIncompleteOnly = false;
-	let showCompleteOnly = false;
-	let orderReferenceSearch = '';
 	//TODO: Filter via query
-	$: orders = showIncompleteOnly
+	$: orders = /* showIncompleteOnly
 		? $ordersStore?.data?.erp_orders.filter(
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length > 0
@@ -188,7 +184,7 @@
 				(o) =>
 					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
 		  )
-		: $ordersStore?.data?.erp_orders || [];
+		: */ $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -210,6 +206,7 @@
 	let categorySearch: string;
 	let supplierSearch: string;
 	let buyerSearch: string;
+	let orderReferenceSearch: string;
 	let dateSearch: string[] = ['', ''];
 
 	onMount(() => {
@@ -227,7 +224,7 @@
 		}
 	});
 
-	$: console.log($ordersStore);
+	$: console.log($ordersStore, queryOffset);
 </script>
 
 {#if $suppliersStore?.error}
@@ -266,411 +263,427 @@
 		{/if} -->
 	<!-- </div> -->
 
-	{#if orders}
-		<Table shadow hoverable>
-			<TableHead>
-				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
-						class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						type="text"
-						bind:value={idSearch}
-						on:input={() => {
-							replaceStateWithQuery({
-								id: idSearch
-							});
-						}}
-					/>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						class:invisible={!idSearch}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => {
-							replaceStateWithQuery({
-								id: ''
-							});
-							idSearch = '';
-						}}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						type="text"
-						bind:value={jobSearch}
-						on:input={() => {
-							replaceStateWithQuery({
-								job: jobSearch
-							});
-						}}
-					/>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						class:invisible={!jobSearch}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => {
-							replaceStateWithQuery({
-								job: ''
-							});
-							jobSearch = '';
-						}}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<select
-						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						bind:value={buyerSearch}
-						on:change={() => {
-							replaceStateWithQuery({
-								buyer: buyerSearch
-							});
-						}}
-					>
-						<option value={''} />
-						{#each users as user}
-							<option value={user.id}>
-								{user.first_name}
-								{user.last_name}
-							</option>
-						{/each}
-					</select>
-					<div
-						class:invisible={!buyerSearch}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => {
-							replaceStateWithQuery({
-								buyer: ''
-							});
-							buyerSearch = '';
-						}}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						type="text"
-						bind:value={categorySearch}
-					/>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						class:invisible={!categorySearch}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => (categorySearch = '')}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<!-- <input
+	<!-- {#if orders} -->
+	<Table shadow hoverable>
+		<TableHead>
+			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<input
+					class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					type="text"
+					bind:value={idSearch}
+					on:input={() => {
+						replaceStateWithQuery({
+							id: idSearch
+						});
+					}}
+				/>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					class:invisible={!idSearch}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => {
+						replaceStateWithQuery({
+							id: ''
+						});
+						idSearch = '';
+					}}
+				>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<input
+					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					type="text"
+					bind:value={jobSearch}
+					on:input={() => {
+						replaceStateWithQuery({
+							job: jobSearch
+						});
+					}}
+				/>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					class:invisible={!jobSearch}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => {
+						replaceStateWithQuery({
+							job: ''
+						});
+						jobSearch = '';
+					}}
+				>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<select
+					class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					bind:value={buyerSearch}
+					on:change={() => {
+						replaceStateWithQuery({
+							buyer: buyerSearch
+						});
+					}}
+				>
+					<option value={''} />
+					{#each users as user}
+						<option value={user.id}>
+							{user.first_name}
+							{user.last_name}
+						</option>
+					{/each}
+				</select>
+				<div
+					class:invisible={!buyerSearch}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => {
+						replaceStateWithQuery({
+							buyer: ''
+						});
+						buyerSearch = '';
+					}}
+				>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<input
+					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					type="text"
+					bind:value={categorySearch}
+				/>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					class:invisible={!categorySearch}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => (categorySearch = '')}
+				>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<!-- <input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
 						bind:value={supplierSearch}
 					/> -->
-					<select
-						class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						bind:value={supplierSearch}
-						on:change={() => {
-							replaceStateWithQuery({
-								supplier: supplierSearch
-							});
-						}}
-					>
-						<option value={''} />
-						{#each suppliers as supplier}
-							<option value={supplier.id}>
-								{supplier.name}
-							</option>
-						{/each}
-					</select>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						class:invisible={!supplierSearch}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => {
-							replaceStateWithQuery({
-								supplier: ''
-							});
-							supplierSearch = '';
-						}}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-					<input
-						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						type="text"
-						bind:value={dateSearch[0]}
-					/>
+				<select
+					class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					bind:value={supplierSearch}
+					on:change={() => {
+						replaceStateWithQuery({
+							supplier: supplierSearch
+						});
+					}}
+				>
+					<option value={''} />
+					{#each suppliers as supplier}
+						<option value={supplier.id}>
+							{supplier.name}
+						</option>
+					{/each}
+				</select>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					class:invisible={!supplierSearch}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => {
+						replaceStateWithQuery({
+							supplier: ''
+						});
+						supplierSearch = '';
+					}}
+				>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+				<input
+					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					type="text"
+					bind:value={dateSearch[0]}
+				/>
 
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						class:invisible={!dateSearch[0]}
-						class="flex my-auto hover:text-red-600"
-						on:click={() => (dateSearch[0] = '')}
-					>
-						<XMark size="16" />
-					</div>
-				</TableHeadCollapsible>
-				<TableHeadCell colspan="3">
-					<div class="flex">
-						{#if $ordersStore?.error}
-							<div class="ml-auto">
-								<p class="text-red-600 font-bold">Query Error...</p>
-							</div>
-						{/if}
-
-						<div class="flex ml-auto">
-							<div
-								class:invisible={!idSearch && !jobSearch && !supplierSearch && !buyerSearch}
-								class="flex my-auto hover:text-red-600 pr-1 outline-none cursor-pointer"
-								on:click={() => {
-									dateSearch[0] = '';
-									idSearch = '';
-									jobSearch = '';
-									supplierSearch = '';
-									buyerSearch = '';
-								}}
-							>
-								<XMark size="16" />
-							</div>
-							<p class="mr-1">{orders.length} result{orders.length === 1 ? '' : 's'}</p>
-							<svg
-								on:click={() => {
-									refresh();
-								}}
-								class:cursor-pointer={!$ordersStore?.fetching}
-								class:animate-spin={$ordersStore?.fetching}
-								class="w-4 h-4 text-gray-500 dark:text-white hover:text-gray-800 outline-none"
-								aria-hidden="true"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 18 20"
-							>
-								<path
-									stroke="currentColor"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M16 1v5h-5M2 19v-5h5m10-4a8 8 0 0 1-14.947 3.97M1 10a8 8 0 0 1 14.947-3.97"
-								/>
-							</svg>
-							<Tooltip placement="left">
-								<p class="text-xs">Last updated: {lastRefreshedAt.toTimeString().split(' ')?.[0]}</p>
-							</Tooltip>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div class:invisible={!dateSearch[0]} class="flex my-auto hover:text-red-600" on:click={() => (dateSearch[0] = '')}>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
+			<TableHeadCell colspan="3">
+				<div class="flex">
+					{#if $ordersStore?.error}
+						<div class="ml-auto">
+							<p class="text-red-600 font-bold">Query Error...</p>
 						</div>
-					</div>
-				</TableHeadCell>
-			</TableHead>
-			<TableHead>
-				<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>PO#</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Jobs</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns}>Buyer</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns}>Categories</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns}>Supplier</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>Created</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="items" bind:collapsedColumns={$collapsedColumns}>Items</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="total" bind:collapsedColumns={$collapsedColumns}>Total</TableHeadCollapsible>
-				<TableHeadCollapsible columnId="status" bind:collapsedColumns={$collapsedColumns}>Status</TableHeadCollapsible>
-			</TableHead>
-
-			<TableBody>
-				{#each orders as order, idx}
-					{@const ordersTotalQty = order?.orders_items_aggregate?.aggregate?.sum?.quantity}
-					{@const ordersTotalReceivedQty = order?.orders_items?.reduce(
-						(a, v) => a + v.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity,
-						0
-					)}
-					{@const categories = order?.orders_items
-						?.map((oi) => oi?.category || 'Unknown')
-						?.filter((v, i, a) => a.indexOf(v) === i)}
-					<TableBodyRow color={'default'} class={``}>
-						{@const jobsOrders = order?.jobs_orders || []}
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="id"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<div
-								class="flex cursor-pointer"
-								on:click={(e) => {
-									handleRowClick(idx, e);
-								}}
-							>
-								<div class="my-auto">
-									{#if openRows?.includes(idx)}
-										<ChevronDown size="16" />
-									{:else}
-										<ChevronRight size="16" />
-									{/if}
-								</div>
-
-								<p class={classes.link}>
-									{padString(String(order?.id))}
-								</p>
-							</div>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="job"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<div class="grid grid-cols-2">
-								{#each jobsOrders as jo}
-									<a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank">
-										<Badge color="blue">{jo?.job?.id}</Badge>
-									</a>
-								{/each}
-							</div>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="buyer"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<UserIcon size="xs" user={order?.user} buttonClass="!p-0 !pr-2 text-white">
-								{order?.user?.first_name}
-								{order?.user?.last_name}
-							</UserIcon>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="category"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<div class="grid grid-cols-2">
-								{#each categories as category}
-									<div>
-										<Badge color="blue">{category}</Badge>
-									</div>
-								{:else}
-									<div>
-										<Badge color="blue">Unknown</Badge>
-									</div>
-								{/each}
-							</div>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="supplier"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<p>{order?.supplier?.name}</p>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="orderdate"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<p>{datetimeFormat(order?.created_at)}</p>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="items"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<p>{order?.orders_items_aggregate?.aggregate?.count}</p>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="total"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<p>
-								{new Intl.NumberFormat('en-GB', {
-									style: 'currency',
-									currency: 'GBP'
-								}).format(order?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))}
-							</p>
-						</TableBodyCollapsible>
-						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
-							columnId="status"
-							bind:collapsedColumns={$collapsedColumns}
-						>
-							<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
-								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
-								{:else if ordersTotalReceivedQty === 0}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
-								{:else if ordersTotalReceivedQty < ordersTotalQty}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
-								{/if}
-							</a>
-						</TableBodyCollapsible>
-					</TableBodyRow>
-					{#if openRows?.includes(idx)}
-						<TableBodyRow class="h-24 ">
-							<TableBodyCell colspan="9" class="p-0">
-								<div class="px-1 py-1 mx-auto">
-									<!-- TODO: Request when opening -->
-									<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
-									<!-- <OrderItemsTable orderItems={order?.orders_items} /> -->
-								</div>
-							</TableBodyCell>
-						</TableBodyRow>
 					{/if}
-				{:else}
-					<TableBodyRow class="h-24">
+
+					<div class="flex ml-auto">
+						<div
+							class:invisible={!isFiltered}
+							class="flex my-auto hover:text-red-600 pr-1 outline-none cursor-pointer"
+							on:click={() => {
+								dateSearch[0] = '';
+								idSearch = '';
+								jobSearch = '';
+								supplierSearch = '';
+								buyerSearch = '';
+							}}
+						>
+							<XMark size="16" />
+						</div>
+						<p class="mr-1">{orders?.length} result{orders?.length === 1 ? '' : 's'}</p>
+						<svg
+							on:click={() => {
+								refresh();
+							}}
+							class:cursor-pointer={!$ordersStore?.fetching}
+							class:animate-spin={$ordersStore?.fetching}
+							class="w-4 h-4 text-gray-500 dark:text-white hover:text-gray-800 outline-none"
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 18 20"
+						>
+							<path
+								stroke="currentColor"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M16 1v5h-5M2 19v-5h5m10-4a8 8 0 0 1-14.947 3.97M1 10a8 8 0 0 1 14.947-3.97"
+							/>
+						</svg>
+						<Tooltip placement="left">
+							<p class="text-xs">Last updated: {lastRefreshedAt.toTimeString().split(' ')?.[0]}</p>
+						</Tooltip>
+					</div>
+				</div>
+			</TableHeadCell>
+		</TableHead>
+		<TableHead>
+			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>PO#</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Jobs</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns}>Buyer</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns}>Categories</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns}>Supplier</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>Created</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="items" bind:collapsedColumns={$collapsedColumns}>Items</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="total" bind:collapsedColumns={$collapsedColumns}>Total</TableHeadCollapsible>
+			<TableHeadCollapsible columnId="status" bind:collapsedColumns={$collapsedColumns}>Status</TableHeadCollapsible>
+		</TableHead>
+
+		<TableBody>
+			{#each orders as order, idx}
+				{@const ordersTotalQty = order?.orders_items_aggregate?.aggregate?.sum?.quantity}
+				{@const ordersTotalReceivedQty = order?.orders_items?.reduce(
+					(a, v) => a + v.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity,
+					0
+				)}
+				{@const categories = order?.orders_items
+					?.map((oi) => oi?.category || 'Unknown')
+					?.filter((v, i, a) => a.indexOf(v) === i)}
+				<TableBodyRow color={'default'} class={``}>
+					{@const jobsOrders = order?.jobs_orders || []}
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="id"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<div
+							class="flex cursor-pointer"
+							on:click={(e) => {
+								handleRowClick(idx, e);
+							}}
+						>
+							<div class="my-auto">
+								{#if openRows?.includes(idx)}
+									<ChevronDown size="16" />
+								{:else}
+									<ChevronRight size="16" />
+								{/if}
+							</div>
+
+							<p class={classes.link}>
+								{padString(String(order?.id))}
+							</p>
+						</div>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="job"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<div class="grid grid-cols-2">
+							{#each jobsOrders as jo}
+								<a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank">
+									<Badge color="blue">{jo?.job?.id}</Badge>
+								</a>
+							{/each}
+						</div>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="buyer"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<UserIcon size="xs" user={order?.user} buttonClass="!p-0 !pr-2 text-white">
+							{order?.user?.first_name}
+							{order?.user?.last_name}
+						</UserIcon>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="category"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<div class="grid grid-cols-2">
+							{#each categories as category}
+								<div>
+									<Badge color="blue">{category}</Badge>
+								</div>
+							{:else}
+								<div>
+									<Badge color="blue">Unknown</Badge>
+								</div>
+							{/each}
+						</div>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="supplier"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<p>{order?.supplier?.name}</p>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="orderdate"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<p>{datetimeFormat(order?.created_at)}</p>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="items"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<p>{order?.orders_items_aggregate?.aggregate?.count}</p>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="total"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<p>
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(order?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))}
+						</p>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						columnId="status"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
+							{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/windows/32/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
+							{:else if ordersTotalReceivedQty === 0}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/windows/32/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
+							{:else if ordersTotalReceivedQty < ordersTotalQty}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/windows/32/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
+							{/if}
+						</a>
+					</TableBodyCollapsible>
+				</TableBodyRow>
+				{#if openRows?.includes(idx)}
+					<TableBodyRow class="h-24 ">
 						<TableBodyCell colspan="9" class="p-0">
-							<p>No orders matching search criteria</p>
+							<div class="px-1 py-1 mx-auto">
+								<!-- TODO: Request when opening -->
+								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
+								<!-- <OrderItemsTable orderItems={order?.orders_items} /> -->
+							</div>
 						</TableBodyCell>
 					</TableBodyRow>
-				{/each}
-			</TableBody>
-			<TableHead>
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell />
-				<TableHeadCell>
-					<p>
-						{new Intl.NumberFormat('en-GB', {
-							style: 'currency',
-							currency: 'GBP'
-						}).format(
-							orders
-								.flatMap((o) => o?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))
-								?.reduce((a, v) => a + v, 0)
-						)}
-					</p>
-				</TableHeadCell>
-				<TableHeadCell />
-			</TableHead>
-		</Table>
-	{/if}
+				{/if}
+			{:else}
+				<TableBodyRow class="h-24">
+					<TableBodyCell colspan="9" class="p-0">
+						<p>No orders matching search criteria</p>
+					</TableBodyCell>
+				</TableBodyRow>
+			{/each}
+		</TableBody>
+		<TableHead>
+			<TableHeadCell
+				on:click={() => {
+					/* if (!queryOffset) {
+						queryOffset = orders?.[0]?.id;
+					} */
+					oldOrders = orders;
+					queryOffset = Math.max(queryOffset - queryLimit, 0);
+				}}
+			>
+				<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {queryLimit}</div>
+			</TableHeadCell>
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell />
+			<TableHeadCell>
+				<p>
+					{new Intl.NumberFormat('en-GB', {
+						style: 'currency',
+						currency: 'GBP'
+					}).format(
+						orders
+							?.flatMap((o) => o?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))
+							?.reduce((a, v) => a + v, 0)
+					)}
+				</p>
+			</TableHeadCell>
+			<TableHeadCell
+				on:click={() => {
+					/* if (!queryOffset) {
+						queryOffset = orders?.[0]?.id;
+					} */
+					oldOrders = orders;
+					queryOffset += queryLimit;
+				}}
+			>
+				<div class={'flex cursor-point float-right' + classes.link}>Next {queryLimit} <ChevronRight size="16" /></div>
+			</TableHeadCell>
+		</TableHead>
+	</Table>
+	<!-- {/if} -->
 {/if}

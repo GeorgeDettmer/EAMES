@@ -231,7 +231,7 @@
 		}
 	});
 
-	$: console.log($ordersStore, queryOffset);
+	$: console.log('QUERY:', $ordersStore, queryOffset);
 </script>
 
 {#if $suppliersStore?.error}

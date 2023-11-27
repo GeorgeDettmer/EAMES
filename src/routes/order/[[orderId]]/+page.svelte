@@ -17,7 +17,7 @@
 	export let data: PageData;
 
 	$: orderId = $page?.data?.orderId;
-
+	//TODO: Orders without job not in query result
 	let client = getContextClient();
 	let query = gql`
 		query orders(
@@ -135,7 +135,7 @@
 	}
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
 		refresh();
-	}, 15 * 1000);
+	}, Number(localStorage.getItem('EAMES_orders_refreshInterval') || '15') * 1000);
 
 	$: suppliersStore = queryStore({
 		client: getContextClient(),

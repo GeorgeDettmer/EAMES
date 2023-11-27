@@ -88,7 +88,7 @@
 	`;
 
 	let queryOffset: number = 0;
-	let queryLimit: number = 50;
+	let queryLimit: number = 25;
 	let ordersStore: OperationResultStore;
 	//TODO: Clap upper limit of offset so as not to go past last id...
 	//TODO: If filter applied adjust offset?
@@ -674,7 +674,6 @@
 					/* if (!queryOffset) {
 						queryOffset = orders?.[0]?.id;
 					} */
-					if (oldOrders.slice(-1)?.id === orders.slice(-1)?.id) return;
 					oldOrders = orders;
 					queryOffset += queryLimit;
 				}}

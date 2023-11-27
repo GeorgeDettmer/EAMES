@@ -115,6 +115,7 @@
 	let lastRefreshedAt;
 	let oldOrders = [];
 	function refresh() {
+		if (window.document.visibilityState !== 'visible') return;
 		//return;
 		lastRefreshedAt = new Date();
 		oldOrders = orders;
@@ -180,18 +181,7 @@
 	});
 	$: users = $usersStore?.data?.users || [];
 
-	//TODO: Filter via query
-	$: orders = /* showIncompleteOnly
-		? $ordersStore?.data?.erp_orders.filter(
-				(o) =>
-					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length > 0
-		  )
-		: showCompleteOnly
-		? $ordersStore?.data?.erp_orders.filter(
-				(o) =>
-					o.orders_items.filter((i) => i.orders_items_receiveds_aggregate.aggregate.sum.quantity !== i.quantity).length === 0
-		  )
-		: */ $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
+	$: orders = $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -684,6 +674,7 @@
 					/* if (!queryOffset) {
 						queryOffset = orders?.[0]?.id;
 					} */
+					if (oldOrders.slice(-1)?.id === orders.slice(-1)?.id) return;
 					oldOrders = orders;
 					queryOffset += queryLimit;
 				}}

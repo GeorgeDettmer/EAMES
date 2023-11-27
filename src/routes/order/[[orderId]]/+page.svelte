@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
-	import { getContextClient, gql, queryStore } from '@urql/svelte';
+	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
 	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
@@ -89,7 +89,7 @@
 
 	let queryOffset: number = 0;
 	let queryLimit: number = 50;
-	let ordersStore;
+	let ordersStore: OperationResultStore;
 	//TODO: Clap upper limit of offset so as not to go past last id...
 	//TODO: If filter applied adjust offset?
 	$: if (!orderId) {
@@ -132,6 +132,13 @@
 			},
 			requestPolicy: 'network-only'
 		});
+
+		console.log(
+			'REFRESH @ ',
+			datetimeFormat(lastRefreshedAt.toISOString()),
+			oldOrders.length,
+			ordersStore?.data?.erp_orders?.length
+		);
 	}
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
 		refresh();

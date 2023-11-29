@@ -96,7 +96,7 @@
 	`;
 
 	let queryOffset: number = 0;
-	let queryLimit: number = 25;
+	let queryLimit: number = 200;
 	let ordersStore: OperationResultStore;
 	//TODO: Clap upper limit of offset so as not to go past last id...
 	//TODO: If filter applied adjust offset?

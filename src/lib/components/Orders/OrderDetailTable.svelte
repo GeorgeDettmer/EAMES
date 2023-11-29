@@ -158,9 +158,9 @@
 						</p>
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-						<UserIcon size="xs" user={order?.user} buttonClass="!p-0 !pr-2 text-white">
-							{order?.user?.first_name}
-							{order?.user?.last_name}
+						<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white">
+							{item?.user?.first_name}
+							{item?.user?.last_name}
 						</UserIcon>
 						<Tooltip placement="left">
 							<p>

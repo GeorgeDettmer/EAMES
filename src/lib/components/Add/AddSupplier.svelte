@@ -52,12 +52,23 @@
 
 	let id = '';
 	let name = '';
+	let identifiersInput = '';
+
+	$: identifiers = identifiersInput ? identifiersInput.split(',')?.map((i) => i.toLowerCase()) : [];
 
 	$: supplierIds = suppliers?.map((s) => s.id) || [];
 	$: supplierIdentifiers = suppliers?.flatMap((s) => s.names) || [];
 	$: suggestedId = name?.toUpperCase()?.replace(/[^A-Za-z0-9]/g, '') || '';
 	$: id = suggestedId;
-	$: console.log('test', supplierIds, suggestedId, id, supplierIdentifiers);
+	$: console.log(
+		'test',
+		supplierIds,
+		suggestedId,
+		id,
+		supplierIdentifiers,
+		identifiers,
+		identifiers.every((i) => !supplierIdentifiers.includes(i))
+	);
 	function validate(type: string) {
 		if (type === 'id') {
 			console.log(type, id);
@@ -77,8 +88,8 @@
 			messagesStore('Supplier id & name must be set', 'warning');
 			return;
 		}
-		if (supplierIdentifiers.inlcudes(name.toLowerCase())) {
-			messagesStore(`Supplier with matching identifier (${name.toLowerCase()}) already exists`, 'warning');
+		if (identifiers.every((i) => !supplierIdentifiers.includes(i))) {
+			messagesStore(`Supplier with matching identifier (${identifiers}) already exists`, 'warning');
 			return;
 		}
 		/* if (!$page?.data?.user?.processes['eng']) {
@@ -100,7 +111,7 @@
 					}
 				}
 			`,
-			{ id: id, name, names: [name.toLowerCase()] }
+			{ id: id, name, names: identifiers }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -110,28 +121,33 @@
 			messagesStore('Inserted supplier: ' + mutationResult.data.insert_erp_suppliers_one.id, 'success');
 			id = '';
 			name = '';
+			identifiersInput = '';
 			addedIds = [...addedIds, mutationResult.data.insert_erp_suppliers_one.id];
 		}
 		adding = false;
 	}
 </script>
 
-<div class="w-1/2 mx-auto">
+<div class="w-2/3 mx-auto">
 	<div class="grid md:grid-cols-2 gap-2 gap-y-1">
 		<div class="flex">
-			<div class="w-1/2">
+			<div class="w-1/3">
 				<Label>Supplier ID</Label>
 				<Input placeholder={null} type="text" bind:value={id} />
-				{#if supplierIds.includes(id)}
+				{#if supplierIds.includes(id.toUpperCase())}
 					<Helper class="mt-2" color="red">
 						<span class="font-medium">ID already in use!</span>
 						The id {id} is already assigned to another supplier
 					</Helper>
 				{/if}
 			</div>
-			<div class="w-1/2">
+			<div class="w-1/3">
 				<Label>Name</Label>
 				<Input placeholder={null} type="text" bind:value={name} />
+			</div>
+			<div class="w-1/3">
+				<Label>Identifiers</Label>
+				<Input type="text" bind:value={identifiersInput} on:change={() => {}} />
 			</div>
 		</div>
 		<!-- <div class="flex">
@@ -193,7 +209,9 @@
 					<TableBodyRow
 						color={addedIds.includes(supplier.id)
 							? 'green'
-							: supplier.id === id || supplier.name.toLowerCase() === name.toLowerCase()
+							: supplier.id === id ||
+							  supplier.name.toLowerCase() === name.toLowerCase() ||
+							  !identifiers.every((i) => !supplier.names.includes(i))
 							? 'red'
 							: 'default'}
 					>

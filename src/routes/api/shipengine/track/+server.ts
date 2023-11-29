@@ -1,8 +1,10 @@
 import { ShipEngine } from 'shipengine';
 import { trackingCache } from '../../cache';
 import type { RequestHandler } from './$types';
-import { SHIPENGINE_API_KEY } from '$env/static/private';
-import { error, fail, json } from '@sveltejs/kit';
+import { CACHE_TRACKING_TIMEOUT, SHIPENGINE_API_KEY } from '$env/static/private';
+import { error, json } from '@sveltejs/kit';
+
+let trackingCacheTimeout = Number(CACHE_TRACKING_TIMEOUT || '60');
 
 export const GET: RequestHandler = async ({ url }) => {
 	const trackingNumber = url.searchParams.get('tracking_number');
@@ -15,7 +17,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	if (cached) {
 		let cacheTimestamp = cached?._cachedTimestamp;
 		//TODO: configurable cache expiry
-		if (cacheTimestamp && (Date.now() - cacheTimestamp) / 1000 < 60) {
+		if (cacheTimestamp && (Date.now() - cacheTimestamp) / 1000 < trackingCacheTimeout) {
 			console.log('Tracking status:');
 			console.log('CACHED', (Date.now() - cacheTimestamp) / 1000);
 			console.log(cached?.statusCode, cached?.statusDescription);

@@ -5,10 +5,18 @@
 	import { page } from '$app/stores';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
-	import { scanStore } from '$lib/stores';
+	import { scanStore, windowTitleStore } from '$lib/stores';
 	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
 	import { Alert, Spinner } from 'flowbite-svelte';
 	import KittingDashboard from '$lib/components/Kitting/KittingDashboard.svelte';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		$windowTitleStore = $page?.data?.jobId ? `Kitting ${$page?.data?.jobId}` : 'Kitting';
+		return () => {
+			$windowTitleStore = '';
+		};
+	});
 
 	$: jobId = $page?.data?.jobId;
 

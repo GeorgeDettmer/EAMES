@@ -1,4 +1,4 @@
-import type { Handle } from '@sveltejs/kit';
+import { redirect, type Handle } from '@sveltejs/kit';
 
 import jwt from 'jsonwebtoken';
 import { findUser } from '$lib/user.model';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.postcss';
-	import { scanStore } from '$lib/stores';
+	import { scanStore, windowTitleStore } from '$lib/stores';
 	import { intervalFnStore, messagesStore } from 'svelte-legos';
 	import { deserialize } from '$app/forms';
 	import { getContext, setContext } from 'svelte';
@@ -301,7 +301,7 @@
 			let activityTimeout = localStorage.getItem('activityTimeout') || 30 * 60 * 1000;
 		}
 	</script>
-	<title>EAMES {getContext('windowTitle')}</title>
+	<title>EAMES {$windowTitleStore ? `| ${$windowTitleStore}` : ''}</title>
 </svelte:head>
 
 <Modal bind:open={networkIssuesModal} on:close={() => (gqlError = undefined)}>

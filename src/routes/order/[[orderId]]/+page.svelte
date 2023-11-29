@@ -10,11 +10,19 @@
 	import { intervalFnStore, storage } from 'svelte-legos';
 	import { ChevronDown, ChevronLeft, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
+	import { windowTitleStore } from '$lib/stores';
 
 	export let data: PageData;
+
+	onMount(() => {
+		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
+		return () => {
+			$windowTitleStore = '';
+		};
+	});
 
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result

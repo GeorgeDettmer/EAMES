@@ -29,6 +29,13 @@
 	import { filedrop, type FileDropOptions, type Files } from 'filedrop-svelte';
 	import XLSX from 'xlsx';
 	import { getParameterInsensitiveAny } from '$lib/utils';
+	import { windowTitleStore } from '$lib/stores';
+	import { onDestroy } from 'svelte';
+
+	$windowTitleStore = 'New order';
+	onDestroy(() => {
+		$windowTitleStore = '';
+	});
 
 	$: user = {
 		id: $page?.data?.user?.id,

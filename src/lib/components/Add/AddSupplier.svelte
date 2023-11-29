@@ -54,9 +54,10 @@
 	let name = '';
 
 	$: supplierIds = suppliers?.map((s) => s.id) || [];
+	$: supplierIdentifiers = suppliers?.flatMap((s) => s.names) || [];
 	$: suggestedId = name?.toUpperCase()?.replace(/[^A-Za-z0-9]/g, '') || '';
 	$: id = suggestedId;
-	$: console.log('test', supplierIds, suggestedId, id);
+	$: console.log('test', supplierIds, suggestedId, id, supplierIdentifiers);
 	function validate(type: string) {
 		if (type === 'id') {
 			console.log(type, id);
@@ -74,6 +75,10 @@
 		}
 		if (!id || !name) {
 			messagesStore('Supplier id & name must be set', 'warning');
+			return;
+		}
+		if (supplierIdentifiers.inlcudes(name.toLowerCase())) {
+			messagesStore(`Supplier with matching identifier (${name.toLowerCase()}) already exists`, 'warning');
 			return;
 		}
 		/* if (!$page?.data?.user?.processes['eng']) {
@@ -178,6 +183,7 @@
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>ID</TableHeadCell>
 				<TableHeadCell>Name</TableHeadCell>
+				<TableHeadCell>Identifiers</TableHeadCell>
 				<TableHeadCell>Created at</TableHeadCell>
 				<TableHeadCell>Created by</TableHeadCell>
 				<TableHeadCell>Orders</TableHeadCell>
@@ -194,6 +200,15 @@
 						<TableBodyCell>{idx + 1}</TableBodyCell>
 						<TableBodyCell>{supplier.id}</TableBodyCell>
 						<TableBodyCell>{supplier.name}</TableBodyCell>
+						<TableBodyCell>
+							<div class="flex gap-x-0.5">
+								{#each supplier?.names || [] as identifier}
+									<div>
+										<Badge color="blue">{identifier}</Badge>
+									</div>
+								{/each}
+							</div>
+						</TableBodyCell>
 						<TableBodyCell>{datetimeFormat(supplier.created_at)}</TableBodyCell>
 						<TableBodyCell>
 							<UserIcon size="xs" user={supplier?.user}>{supplier?.user?.username || 'Unknown'}</UserIcon>

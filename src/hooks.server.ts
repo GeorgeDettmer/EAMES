@@ -1,23 +1,31 @@
+import {sequence} from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 import jwt from 'jsonwebtoken';
 import { findUser } from '$lib/user.model';
 
 import { JWT_ACCESS_SECRET, HASURA_HEALTH_URL } from '$env/static/private';
+
+Sentry.init({
+    dsn: "https://e4470f743dce413934de370a59515993@o1053754.ingest.sentry.io/4506309759008768",
+    tracesSampleRate: 1
+})
+
 const hasuraHealth = async (firstRun: boolean = false) => {
-	if (!HASURA_HEALTH_URL) {
-		console.error('HASURA_HEALTH_URL not set!');
-		return;
-	}
-	const healthz = await fetch(HASURA_HEALTH_URL);
-	if (healthz.status !== 200 || firstRun) {
-		console.error('HASURA ENDPOINT STATUS: ', healthz?.statusText, healthz?.status);
-	}
+				if (!HASURA_HEALTH_URL) {
+								console.error('HASURA_HEALTH_URL not set!');
+								return;
+				}
+				const healthz = await fetch(HASURA_HEALTH_URL);
+				if (healthz.status !== 200 || firstRun) {
+								console.error('HASURA ENDPOINT STATUS: ', healthz?.statusText, healthz?.status);
+				}
 };
 hasuraHealth(true);
 //setInterval(hasuraHealth, 5000);
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	const authCookie = event.cookies.get('AuthorizationToken');
 
 	if (authCookie) {
@@ -62,4 +70,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	return await resolve(event);
-};
+});
+export const handleError = Sentry.handleErrorWithSentry();

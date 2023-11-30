@@ -291,7 +291,7 @@
 		}
 	}
 
-	$: ordersItems = orders?.flatMap((o) => o.orders_items) || [];
+	$: ordersItems = orders?.flatMap((o) => o?.orders_items) || [];
 
 	function addOrder(force: boolean = true) {
 		let supplier = Object.assign({}, suppliers?.[0] || {});
@@ -306,6 +306,10 @@
 				user
 			}
 		];
+	}
+
+	function removeOrder(idx: number) {
+		orders = orders.filter((o, i) => i !== idx);
 	}
 
 	const urqlClient = getContextClient();
@@ -439,41 +443,44 @@
 	async function handleDropAsync(e) {
 		e.stopPropagation();
 		e.preventDefault();
-
-		const f = e.dataTransfer.files[0];
-		const data = await f.arrayBuffer();
-		const wb = XLSX.read(data);
-		const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
-		if (!ws) {
-			messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
-		}
-		console.log(wb.Sheets, ws);
-		let lines = XLSX.utils.sheet_to_json(ws);
-		const includesAll = (arr, values) => values.every((v) => arr.includes(v));
-		let headingRow = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
-		let sheetText = XLSX.utils.sheet_to_txt(ws, {});
-		if (ws['!autofilter']?.ref) {
-			let range = XLSX.utils.decode_range(ws['!autofilter']?.ref);
-			let textSplit = sheetText.split('\n');
-			let newText = textSplit.slice(range.s.r, range.e.r + 1).join('\n');
-			sheetText = newText;
-		}
-		/* if (headingRow > -1) {
+		try {
+			const f = e.dataTransfer.files[0];
+			const data = await f.arrayBuffer();
+			const wb = XLSX.read(data);
+			const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
+			if (!ws) {
+				messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
+			}
+			console.log(wb.Sheets, ws);
+			let lines = XLSX.utils.sheet_to_json(ws);
+			const includesAll = (arr, values) => values.every((v) => arr.includes(v));
+			let headingRow = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
+			let sheetText = XLSX.utils.sheet_to_txt(ws, {});
+			if (ws['!autofilter']?.ref) {
+				let range = XLSX.utils.decode_range(ws['!autofilter']?.ref);
+				let textSplit = sheetText.split('\n');
+				let newText = textSplit.slice(range.s.r, range.e.r + 1).join('\n');
+				sheetText = newText;
+			}
+			/* if (headingRow > -1) {
 			sheetText = sheetText.split('/n').slice(headingRow).join('/n');
 			console.log(sheetText, headingRow);
 		} */
 
-		orderItemProperties = {
-			part: 'MPN (O)',
-			quantity: 'Order (T)',
-			price: 'Unit(£) (U)',
-			spn: 'Purchased Part (Q)',
-			supplier: 'Supplier (N)'
-		};
+			orderItemProperties = {
+				part: 'MPN (O)',
+				quantity: 'Order (T)',
+				price: 'Unit(£) (U)',
+				spn: 'Purchased Part (Q)',
+				supplier: 'Supplier (N)'
+			};
 
-		importText = sheetText;
-		imported = excelToObjects(importText);
-		console.log(imported);
+			importText = sheetText;
+			imported = excelToObjects(importText);
+			console.log(imported);
+		} catch (error) {
+			messagesStore('Excel Import Error: ' + error, 'error');
+		}
 	}
 	$: console.log(orderItemProperties);
 </script>
@@ -536,7 +543,7 @@
 							<span slot="title">
 								<OrderCreateHeader bind:order />
 							</span>
-							<OrderCreateMulti bind:order showHeader={false} />
+							<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
 						</TabItem>
 					{/each}
 				</Tabs>

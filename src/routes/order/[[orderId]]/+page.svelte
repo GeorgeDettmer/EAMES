@@ -28,27 +28,8 @@
 	//TODO: Orders without job not in query result
 	let client = getContextClient();
 	let query = gql`
-		query orders(
-			$supplierIdCriteria: String_comparison_exp = {}
-			$userIdCriteria: uuid_comparison_exp = {}
-			$orderReferenceCriteria: String_comparison_exp = {}
-			$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
-			$idsCriteria: bigint_comparison_exp = {}
-			$limit: Int = 100
-			$offset: Int = 0
-		) {
-			erp_orders(
-				order_by: { id: desc }
-				limit: $limit
-				offset: $offset
-				where: {
-					supplier_id: $supplierIdCriteria
-					user_id: $userIdCriteria
-					reference: $orderReferenceCriteria
-					jobs_orders: $jobIdsCriteria
-					id: $idsCriteria
-				}
-			) {
+		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
+			erp_orders(order_by: { id: desc }, limit: $limit, offset: $offset, where: $where) {
 				id
 				reference
 				created_at
@@ -107,11 +88,18 @@
 			variables: {
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
-				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
+				where: {
+					id: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {},
+					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
+					jobs_orders: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : undefined,
+					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+				}
+				/* supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
 				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
-				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
+				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {} */
 			},
 			requestPolicy: 'network-only'
 		});
@@ -124,7 +112,6 @@
 	let oldOrders = [];
 	function refresh() {
 		if (window.document.visibilityState !== 'visible') return;
-		//return;
 		lastRefreshedAt = new Date();
 		oldOrders = orders;
 		ordersStore = queryStore({
@@ -133,11 +120,13 @@
 			variables: {
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
-				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
-				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
-				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
-				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
-				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
+				where: {
+					id: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {},
+					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
+					jobs_orders: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : undefined,
+					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+				}
 			},
 			requestPolicy: 'network-only'
 		});
@@ -229,7 +218,12 @@
 		}
 	});
 
-	$: console.log('QUERY:', $ordersStore, queryOffset);
+	$: console.log(
+		'QUERY:',
+		$ordersStore,
+		queryOffset,
+		jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {}
+	);
 </script>
 
 {#if $suppliersStore?.error}
@@ -632,9 +626,7 @@
 					<TableBodyRow class="h-24 ">
 						<TableBodyCell colspan="9" class="p-0">
 							<div class="px-1 py-1 mx-auto">
-								<!-- TODO: Request when opening -->
 								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
-								<!-- <OrderItemsTable orderItems={order?.orders_items} /> -->
 							</div>
 						</TableBodyCell>
 					</TableBodyRow>

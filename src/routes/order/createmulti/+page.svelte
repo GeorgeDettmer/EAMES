@@ -64,7 +64,7 @@
 			if (rows[rowNr] && data) {
 				//Loop through all the data
 				for (let cellNr = 0; cellNr < data.length; cellNr++) {
-					o[newColumns[cellNr]] = data[cellNr];
+					o[newColumns[cellNr]] = data[cellNr]?.trim();
 				}
 				o._import = true;
 				objects.push(o);
@@ -209,7 +209,8 @@
 			() => [isNaN(Number(i?.[orderItemProperties['price']])), 'Price is not a number'],
 			() => [!i?.[orderItemProperties['supplier']], 'Supplier undefined'],
 			() => [
-				suppliersNames.filter((n) => n.toLowerCase() === i?.[orderItemProperties['supplier']]?.toLowerCase()).length === 0,
+				//suppliersNames.filter((n) => n.toLowerCase() === i?.[orderItemProperties['supplier']]?.toLowerCase()).length === 0,
+				suppliersNames.every((n) => n !== i?.[orderItemProperties['supplier']]?.toLowerCase()),
 				'Supplier invalid'
 			]
 		].map((check) => check())
@@ -249,7 +250,8 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	$: suppliersNames = suppliers?.flatMap((s) => s.names);
+	$: suppliersNames = suppliers?.flatMap((s) => s.names)?.map((n) => n?.toLowerCase());
+	$: console.log('suppliersNames', suppliersNames);
 	/* $: {
 		if (!selectedSupplierId && suppliers) {
 			selectedSupplierId = suppliers?.[0]?.id;
@@ -617,11 +619,19 @@
 								<ol class="mt-1.5 ml-4 list-decimal list-inside">
 									{#each missingImportData2 as missing, idx}
 										{#if missing.flat().includes(true)}
-											<li class:line-through={!imported[idx]?._import}>Line {idx + 1} is missing required import data</li>
+											<li class:line-through={!imported[idx]?._import} class:text-gray-500={!imported[idx]?._import}>
+												Line {idx + 1} is missing required import data
+											</li>
 											<ul class="ml-4 list-disc list-inside">
 												{#each missing as [isMissing, message]}
 													{#if isMissing}
-														<li class="capitalize" class:line-through={!imported[idx]?._import}>{message}</li>
+														<li
+															class="capitalize"
+															class:line-through={!imported[idx]?._import}
+															class:text-gray-500={!imported[idx]?._import}
+														>
+															{message}
+														</li>
 													{/if}
 												{/each}
 											</ul>
@@ -655,9 +665,11 @@
 				<Table>
 					<TableHead>
 						<TableHeadCell>#</TableHeadCell>
-						<TableHeadCell>Qty</TableHeadCell>
+
 						<TableHeadCell>Part</TableHeadCell>
+						<TableHeadCell>Qty</TableHeadCell>
 						<TableHeadCell>Unit Price</TableHeadCell>
+						<TableHeadCell>Total Price</TableHeadCell>
 						<TableHeadCell>Supplier</TableHeadCell>
 						<TableHeadCell>
 							<Checkbox
@@ -682,7 +694,7 @@
 								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
 							>
 								<TableBodyCell>{idx + 1}</TableBodyCell>
-								<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
+
 								<TableBodyCell>
 									<div>
 										<p>{part ? part : 'undefined'}</p>
@@ -691,7 +703,9 @@
 										{/if}
 									</div>
 								</TableBodyCell>
+								<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
 								<TableBodyCell>{price ? price : 'undefined'}</TableBodyCell>
+								<TableBodyCell>{price && quantity ? price * quantity : 'undefined'}</TableBodyCell>
 								<TableBodyCell>{supplier ? supplier : 'undefined'}</TableBodyCell>
 								<TableBodyCell>
 									<Checkbox bind:checked={line._import} />
@@ -701,13 +715,23 @@
 					</TableBody>
 					<TableHead>
 						<TableHeadCell>{imported.length}</TableHeadCell>
+						<TableHeadCell />
 						<TableHeadCell>
 							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
 						</TableHeadCell>
-						<TableHeadCell />
 						<TableHeadCell
 							>{imported.reduce(
 								(a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0),
+								0
+							)}</TableHeadCell
+						>
+						<TableHeadCell
+							>{imported.reduce(
+								(a, v) =>
+									a +
+									(v?._import
+										? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']])
+										: 0),
 								0
 							)}</TableHeadCell
 						>

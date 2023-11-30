@@ -494,7 +494,7 @@
 						addOrder();
 					}}
 				>
-					<PlusOutline />
+					<PlusOutline class="text-gray-400" />
 				</Button>
 			</div>
 			<div class="-mb-8 ml-auto space-y-1">
@@ -560,8 +560,10 @@
 						disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
 						on:click={() => {
 							fillOrderFromImport();
-						}}>Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...</Button
+						}}
 					>
+						Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
+					</Button>
 				{/if}
 			</div>
 		</div>

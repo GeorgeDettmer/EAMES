@@ -153,10 +153,11 @@
 				refs.forEach((ref) => {
 					let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
 					let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
-
+					let part = pn === 'Not Fitted' || !pn ? null : pn;
+					description = part ? description : null;
 					let l = {
 						reference: ref,
-						part: pn === 'Not Fitted' ? null : pn,
+						part,
 						description,
 						partByPart: { description: description }
 					};

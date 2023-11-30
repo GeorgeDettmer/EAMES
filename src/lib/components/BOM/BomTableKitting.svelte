@@ -264,17 +264,19 @@
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell>
-				<select
-					class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
-					bind:value={supplierSearch}
-				>
-					<option value={''} />
-					{#each ordersSuppliers as supplierName}
-						<option value={supplierName}>
-							{supplierName}
-						</option>
-					{/each}
-				</select>
+				{#if ordersSuppliers?.[0]}
+					<select
+						class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
+						bind:value={supplierSearch}
+					>
+						<option value={''} />
+						{#each ordersSuppliers as supplierName}
+							<option value={supplierName}>
+								{supplierName}
+							</option>
+						{/each}
+					</select>
+				{/if}
 			</TableHeadCell>
 			<TableHeadCell padding="px-6 py-1" colspan="4">
 				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>

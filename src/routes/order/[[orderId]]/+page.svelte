@@ -14,6 +14,7 @@
 	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
+	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 
 	export let data: PageData;
 
@@ -232,36 +233,6 @@
 {#if orderId}
 	<OrderOverview {orderId} />
 {:else}
-	<!-- <div class="grid grid-cols-6 mb-4"> -->
-	<!-- <div class="flex my-auto mb-2 p-1">
-		<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
-		<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
-		<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
-	</div> -->
-	<!-- <div class="col-span-1">
-			<Label for="small-input">Supplier</Label>
-			<Select
-				size="sm"
-				placeholder=""
-				items={[
-					{ value: null, name: 'All' },
-					...suppliers?.map((s) => ({ value: s.id, name: `${s.name}  (${s.orders_aggregate.aggregate.count})` }))
-				]}
-				bind:value={supplierSearch}
-			/>
-		</div> -->
-	<!-- <div class="col-span-1">
-			<Label for="small-input">Reference</Label>
-			<Input size="md" placeholder="" bind:value={orderReferenceSearch} />
-		</div>
-		{#if $ordersStore?.fetching}
-			<div class="my-auto pl-2">
-				<Spinner color="blue" />
-			</div>
-		{/if} -->
-	<!-- </div> -->
-
-	<!-- {#if orders} -->
 	<Table shadow hoverable>
 		<TableHead>
 			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
@@ -496,9 +467,11 @@
 						columnId="id"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div
+						<a
 							class="flex cursor-pointer"
-							on:click={(e) => {
+							href={`${window.origin}/order/${order?.id}`}
+							target="_blank"
+							on:click|preventDefault={(e) => {
 								handleRowClick(idx, e);
 							}}
 						>
@@ -513,7 +486,7 @@
 							<p class={classes.link}>
 								{padString(String(order?.id))}
 							</p>
-						</div>
+						</a>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"
@@ -685,5 +658,4 @@
 			</TableHeadCell>
 		</TableHead>
 	</Table>
-	<!-- {/if} -->
 {/if}

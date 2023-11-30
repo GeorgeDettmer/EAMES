@@ -17,13 +17,6 @@
 
 	export let data: PageData;
 
-	onMount(() => {
-		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
-		return () => {
-			$windowTitleStore = '';
-		};
-	});
-
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result
 	let client = getContextClient();
@@ -133,7 +126,7 @@
 
 		console.log(
 			'REFRESH @ ',
-			datetimeFormat(lastRefreshedAt.toISOString()),
+			lastRefreshedAt.toTimeString()?.split(' ')?.[0],
 			oldOrders.length,
 			ordersStore?.data?.erp_orders?.length
 		);
@@ -178,7 +171,8 @@
 	});
 	$: users = $usersStore?.data?.users || [];
 
-	$: orders = $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
+	//$: orders = $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
+	$: orders = $ordersStore?.fetching ? oldOrders : $ordersStore?.data?.erp_orders;
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -216,6 +210,11 @@
 				});
 			}
 		}
+
+		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
+		return () => {
+			$windowTitleStore = '';
+		};
 	});
 
 	$: console.log(
@@ -419,6 +418,10 @@
 					{#if $ordersStore?.error}
 						<div class="ml-auto">
 							<p class="text-red-600 font-bold">Query Error...</p>
+						</div>
+					{:else if !$ordersStore?.fetching && orders.length === 0}
+						<div class="ml-auto">
+							<p class="text-red-600 font-bold">No results...</p>
 						</div>
 					{/if}
 

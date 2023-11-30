@@ -1,7 +1,16 @@
 <script lang="ts">
 	import { datetimeFormat, classes } from '$lib/utils';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
-	import { Table, TableHead, TableHeadCell, TableBody, TableBodyRow, TableBodyCell, Tooltip } from 'flowbite-svelte';
+	import {
+		Table,
+		TableHead,
+		TableHeadCell,
+		TableBody,
+		TableBodyRow,
+		TableBodyCell,
+		Tooltip,
+		Spinner
+	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import TrackingStatus from './TrackingStatus.svelte';
 
@@ -211,7 +220,13 @@
 			{/each}
 		{:else}
 			<TableBodyRow>
-				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">No receipts</TableBodyCell>
+				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+					{#if $ordersStore?.fetching}
+						<Spinner color="blue" size="4" />
+					{:else}
+						No order items...
+					{/if}
+				</TableBodyCell>
 			</TableBodyRow>
 		{/each}
 	</TableBody>

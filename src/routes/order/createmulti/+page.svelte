@@ -100,7 +100,7 @@
 	function fillOrderFromImport() {
 		let toImport = imported?.filter((l) => l?._import !== false);
 		console.log('toImport', toImport, imported);
-		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
+		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]?.toLowerCase()));
 		let importSuppliersInvalid = [...importSuppliers].filter((is) => !suppliersNames.includes(is.toLowerCase()));
 		if (importSuppliersInvalid.length > 0) {
 			messagesStore(

@@ -432,7 +432,7 @@
 							/>
 						</svg>
 						<Tooltip placement="left">
-							<p class="text-xs">Last updated: {lastRefreshedAt.toTimeString().split(' ')?.[0]}</p>
+							<p class="text-xs">Last updated: {lastRefreshedAt?.toTimeString().split(' ')?.[0]}</p>
 						</Tooltip>
 					</div>
 				</div>

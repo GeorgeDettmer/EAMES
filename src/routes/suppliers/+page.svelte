@@ -22,7 +22,6 @@
 					name
 					names
 					created_at
-					user_id
 					user {
 						username
 						color

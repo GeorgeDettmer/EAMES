@@ -17,27 +17,23 @@
 		Accordion,
 		AccordionItem,
 		Badge,
-		Input,
 		Modal,
 		Table,
 		TableBody,
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell,
-		Tooltip
+		TableHeadCell
 	} from 'flowbite-svelte';
 	import PartInfo from '../PartInfo.svelte';
-	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { classes, datetimeFormat, getSelectionText } from '$lib/utils';
+	import { getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
-	import { CogOutline, PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
+	import { PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
 	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
-	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
 	import { XMark } from 'svelte-heros-v2';
 	import { messagesStore, storage } from 'svelte-legos';
 	import { writable } from 'svelte/store';

@@ -4,3 +4,4 @@ import { writable } from 'svelte/store';
 export const scanStore = writable('');
 export const openMenuGroupsStore = storage(writable([]), 'EAMES_navDrawerState');
 export const windowTitleStore = writable('');
+export const selectedPrinter = storage(writable(''), 'EAMES_selectedPrinter');

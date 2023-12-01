@@ -2,18 +2,32 @@
 	import { page } from '$app/stores';
 	import { classes } from '$lib/utils';
 	import { enhance } from '$app/forms';
+	import { fade } from 'svelte/transition';
+	import { getContext, onMount } from 'svelte';
+	import { Toggle, Dropdown, DropdownItem, Modal, Navbar, Popover, Checkbox, Label, Helper } from 'flowbite-svelte';
+	import {
+		FileEditSolid,
+		QuestionCircleSolid,
+		ExclamationCircleSolid,
+		ClipboardCheckSolid,
+		ShoppingCartSolid,
+		CheckPlusCircleSolid,
+		DropboxSolid
+	} from 'flowbite-svelte-icons';
+	import { getPrinters, printerDetails, printerOnline } from '$lib/utils/bpac/bpac';
+	import { openMenuGroupsStore, selectedPrinter } from '$lib/stores';
+
+	import logo from '$lib/assets/easl-logo.png';
+
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import LoginForm from '$lib/components/LoginForm.svelte';
-	import { Toggle, Dropdown, DropdownItem, Button, Modal, Navbar, MegaMenu, Popover } from 'flowbite-svelte';
-	import logo from '$lib/assets/easl-logo.png';
 	import BoardOverview from './BoardOverview.svelte';
 	import Barcode from './Barcode.svelte';
 	import UserOverview from './UserOverview.svelte';
-	import { fade } from 'svelte/transition';
-	import { getContext, onMount } from 'svelte';
 	import JobPopoverContent from './JobPopoverContent.svelte';
-	import { goto } from '$app/navigation';
 	import NavDrawer from './Navbar/NavDrawer.svelte';
+	import { storage } from 'svelte-legos';
+
 	//Modal toggles
 	let settingsVisible = false;
 	let boardVisible = false;
@@ -69,17 +83,7 @@
 		{ name: 'Help', href: '/help', icon: QuestionCircleSolid },
 		{ name: 'Report Issue', href: '/report/issue', icon: ExclamationCircleSolid }
 	];
-	import {
-		FileEditSolid,
-		QuestionCircleSolid,
-		ExclamationCircleSolid,
-		ClipboardCheckSolid,
-		ShoppingCartSolid,
-		CheckPlusCircleSolid,
-		DropboxSolid
-	} from 'flowbite-svelte-icons';
-	import { getPrinters, printerDetails, printerOnline } from '$lib/utils/bpac/bpac';
-	import { openMenuGroupsStore } from '$lib/stores';
+
 	let menus = {
 		purchasing: [
 			{
@@ -182,7 +186,7 @@
 	</form>
 	<div>
 		<p>Printers:</p>
-		{#each printers as printer, idx}
+		<!-- {#each printers as printer, idx}
 			<p>
 				{printer}
 				{#await printerOnline(printer) then online}
@@ -191,20 +195,49 @@
 
 				{#await printerDetails(printer) then details}
 					[Media: {details.mediaName}({details.mediaId})]
-					<!-- {#each Object.entries(details) as [k, v]}
-				<p>{k}: {v}</p>
-			{/each} -->
 				{/await}
 			</p>
 		{:else}
 			<p>No printers...</p>
-		{/each}
+		{/each} -->
+		{#if printers?.[0]}
+			<ul>
+				{#each printers as printer, idx}
+					<li class="rounded p-0.5 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
+						<Label class={'flex items-center'}>
+							<input
+								type="radio"
+								on:change={() => ($selectedPrinter = printer)}
+								checked={$selectedPrinter === printer}
+								value={printer}
+								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+							/>
+							{#await printerOnline(printer) then online}
+								<span class:text-red-600={!online}>
+									{printer}<span class="ml-2 italic text-xs"> {online ? '' : '(OFFLINE)'}</span>
+								</span>
+							{/await}
+						</Label>
+						{#await printerDetails(printer) then details}
+							<Helper class="pl-6">
+								{details?.mediaName}
+								{#if details?.mediaId}
+									({details?.mediaId})
+								{/if}
+							</Helper>
+						{/await}
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p>No printers found...</p>
+		{/if}
 	</div>
 </Modal>
 
 <NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus openMenuGroups={openMenuGroupsStore} />
 <div class="relative px-0">
-	<Navbar navClass="px-1 sm:px-4 py-2.5 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
+	<Navbar navClass="px-1 sm:px-4 py-1 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
 		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>
 			<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
 		</div>
@@ -277,6 +310,7 @@
 		<div class="flex items-center">
 			<span>
 				<UserIcon
+					size="sm"
 					user={$page.data?.user}
 					on:click={() => {
 						console.log($page.data?.user);

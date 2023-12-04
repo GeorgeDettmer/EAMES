@@ -320,7 +320,7 @@
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
-		if (!$page?.data?.user?.processes['purchase']) {
+		if ($page?.data?.user?.processes && !$page?.data?.user?.processes?.['purchase']) {
 			messagesStore(
 				`You do not have permission to create orders. You have permission for: ${Object.keys($page?.data?.user?.processes)}`,
 				'warning'

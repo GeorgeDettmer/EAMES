@@ -83,9 +83,25 @@
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
-					id: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {},
+					id: idSearch
+						? {
+								_in: idSearch
+									.split(',')
+									.map((v) => v.replace(/\D/g, ''))
+									.filter((v) => !!v)
+						  }
+						: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
-					jobs_orders: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : undefined,
+					jobs_orders: jobSearch
+						? {
+								job_id: {
+									_in: jobSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+								}
+						  }
+						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 					user_id: buyerSearch ? { _eq: buyerSearch } : {}
 				}
@@ -107,7 +123,7 @@
 	function refresh() {
 		if (window.document.visibilityState !== 'visible') return;
 		lastRefreshedAt = new Date();
-		oldOrders = orders;
+		oldOrders = orders || [];
 		ordersStore = queryStore({
 			client,
 			query,
@@ -115,9 +131,25 @@
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
-					id: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {},
+					id: idSearch
+						? {
+								_in: idSearch
+									.split(',')
+									.map((v) => v.replace(/\D/g, ''))
+									.filter((v) => !!v)
+						  }
+						: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
-					jobs_orders: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : undefined,
+					jobs_orders: jobSearch
+						? {
+								job_id: {
+									_in: jobSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+								}
+						  }
+						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 					user_id: buyerSearch ? { _eq: buyerSearch } : {}
 				}
@@ -222,7 +254,16 @@
 		'QUERY:',
 		$ordersStore,
 		queryOffset,
-		jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {}
+		jobSearch
+			? {
+					job_id: {
+						_in: jobSearch
+							.split(',')
+							.map((v) => v.replace(/\D/g, ''))
+							.filter((v) => !!v)
+					}
+			  }
+			: {}
 	);
 </script>
 

@@ -25,11 +25,7 @@
 		client: getContextClient(),
 		query: gql`
 			query allPackages($modifiedtime: timestamp_comparison_exp = {}, $name: String_comparison_exp = {}) {
-				mydbpackview_14_package_base(
-					limit: 10000
-					order_by: { modifiedtime: desc }
-					where: { modifiedtime: $modifiedtime, name: $name }
-				) {
+				mydbpackview_14_package_base(order_by: { modifiedtime: desc }, where: { modifiedtime: $modifiedtime, name: $name }) {
 					name
 					modifiedtime
 					phs_min_lenght

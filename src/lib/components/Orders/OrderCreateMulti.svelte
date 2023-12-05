@@ -264,7 +264,7 @@
 							bind:value={orderTracking.tracking_number}
 						/>
 						<Button color="primary" class="!p-2.5" on:click={() => updateOrderLinesTracking()}>
-							<ChevronDoubleDownOutline />
+							<ChevronDoubleDownOutline class="text-gray-400" />
 						</Button>
 					</ButtonGroup>
 				</TableHeadCell>

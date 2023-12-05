@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
+	import OrderEditable from '$lib/components/Orders/OrderEditable.svelte';
 	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
 	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
@@ -272,7 +273,11 @@
 {/if}
 
 {#if orderId}
-	<OrderOverview {orderId} />
+	{#if $page?.data?.user?.processes && $page?.data?.user?.processes['purchase']}
+		<OrderEditable {orderId} />
+	{:else}
+		<OrderOverview {orderId} />
+	{/if}
 {:else}
 	<Table shadow hoverable>
 		<TableHead>

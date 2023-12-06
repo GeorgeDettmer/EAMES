@@ -340,9 +340,11 @@
 				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
-				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && description
-						?.toLowerCase()
-						.includes(descriptionSearch.toLowerCase()) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch))}
+				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && (descriptionSearch == '' || description
+							?.toLowerCase()
+							.includes(descriptionSearch.toLowerCase()) || line?.[0]?.description
+							?.toLowerCase()
+							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch))}
 					<TableBodyRow
 						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
 						class={`cursor-pointer`}

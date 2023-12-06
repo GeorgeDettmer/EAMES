@@ -20,12 +20,17 @@
 	} from 'flowbite-svelte';
 	import { datetimeFormat, replaceStateWithQuery } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import FileDrop from 'filedrop-svelte/components/FileDrop';
 
 	$: allPackagesQueryStore = queryStore({
 		client: getContextClient(),
 		query: gql`
 			query allPackages($modifiedtime: timestamp_comparison_exp = {}, $name: String_comparison_exp = {}) {
-				mydbpackview_14_package_base(order_by: { modifiedtime: desc }, where: { modifiedtime: $modifiedtime, name: $name }) {
+				mydbpackview_14_package_base(
+					limit: 10000
+					order_by: { modifiedtime: desc }
+					where: { modifiedtime: $modifiedtime, name: $name }
+				) {
 					name
 					modifiedtime
 					phs_min_lenght
@@ -130,7 +135,7 @@
 		}
 	});
 	$: packageHistory = $packageHistoryQueryStore?.data?.mycronic_tpsys_packages || [];
-	$: historyEntries = packageHistory.length;
+	$: historyEntries = packageHistory?.length;
 	$: allPackages = $allPackagesQueryStore?.data?.mydbpackview_14_package_base || [];
 	$: allPackagesFiltered = allPackages; /* ?.filter((p) =>
 		nameSearch ? p.name.toLowerCase().includes(nameSearch.toLowerCase()) : true
@@ -150,6 +155,34 @@
 		modifiedFilterEnd = $page.url.searchParams.get('modifiedEnd') || '';
 		nameSearch = $page.url.searchParams.get('name') || '';
 	});
+
+	let files;
+	let items = [];
+	async function handleDropAsync(e) {
+		e.stopPropagation();
+		e.preventDefault();
+
+		const f: File = e.dataTransfer.files[0];
+		const d = await f.text();
+
+		let chunks = d
+			.split(/(^P00|C00)/)
+			.map((c) => c.trim())
+			?.filter((c) => !!c);
+		//let chunks = d.split(/(?=[^P00|C00])|()?<=[^P00|C00]/g);
+		//console.log(chunks);
+		for (let i = 1; i < chunks.length; i += 2) {
+			const chunk = chunks[i];
+			const raw = chunks[i - 1] + ' ' + chunk;
+			//console.log({ chunk, raw });
+			let item = chunk.split(/\r?\n/)?.map((l) => l.replace(/\r?\n/, '')?.trim());
+			items.push({
+				name: item?.[0],
+				raw: raw
+			});
+		}
+		console.log(items?.length, items);
+	}
 </script>
 
 <Modal autoclose outsideclose size="lg" bind:open={showHistory}>
@@ -197,17 +230,21 @@
 	</div>
 </Modal>
 
+<FileDrop
+	on:filedrop={(e) => {
+		files = e.detail.files;
+		console.log('DROP', e);
+		handleDropAsync(e.detail.event);
+	}}
+>
+	<div class="flex bg-slate-500 h-20">Drag & drop BOM</div>
+</FileDrop>
+
 <div class="mt-2">
 	<div>
 		<Table hoverable>
 			<TableHead theadClass="text-xs uppercase">
-				<TableHeadCell>
-					{#if $allPackagesQueryStore.fetching}
-						<Spinner color="blue" />
-					{:else}
-						{allPackagesFiltered.length}
-					{/if}
-				</TableHeadCell>
+				<TableHeadCell />
 				<TableHeadCell>
 					<div class="flex">
 						<p class="my-auto pr-4">Name</p>
@@ -256,7 +293,8 @@
 				</TableHeadCell>
 			</TableHead>
 			<TableBody>
-				{#each allPackagesFiltered as pkg, idx}
+				{#each items as { name, raw }, idx}
+					{name}
 					<TableBodyRow
 						class="cursor-pointer"
 						on:click={() => {
@@ -264,25 +302,23 @@
 								openRowIdx = -1;
 								return;
 							}
-							name = pkg.name;
+							/* name = pkg.name; */
 							openRowIdx = idx;
 						}}
 					>
 						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{pkg.name}</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium"
-							>{datetimeFormat(pkg.modifiedtime)}</TableBodyCell
-						>
+						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium">{name}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-2 whitespace-nowrap font-medium" />
 					</TableBodyRow>
 					{#if openRowIdx === idx}
 						<TableBodyRow class="h-24 shadow-inner">
 							<TableBodyCell>
-								<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + pkg?.name} target="_blank" class="underline py-2">
-									{pkg?.name}
+								<a href={'http://192.168.1.244/viewPackage.cgi?PCK=' + name} target="_blank" class="underline py-2">
+									{name}
 								</a>
 							</TableBodyCell>
 							<TableBodyCell class="p-0">
-								<div class="px-1 py-1 grid grid-cols-2">
+								<!-- <div class="px-1 py-1 grid grid-cols-2">
 									<div>
 										<p>Length(mm): {pkg.phs_nom_lenght / 1000}({pkg.phs_min_lenght / 1000}/{pkg.phs_max_lenght / 1000})</p>
 										<p>Width(mm): {pkg.phs_nom_width / 1000}({pkg.phs_min_width / 1000}/{pkg.phs_max_height / 1000})</p>
@@ -293,14 +329,15 @@
 										<p>Tools: {pkg.ztoolset}/{pkg.hydratoolset}</p>
 										<p>Cameras: {pkg.cameraset}</p>
 									</div>
-								</div>
+								</div> -->
+								{JSON.stringify(raw, null, 2)}
 							</TableBodyCell>
 							<TableBodyCell>
 								<div class="px-1 py-1 mx-auto">
-									<p>Changes in history: {packageHistory.length}</p>
+									<!-- <p>Changes in history: {packageHistory.length}</p>
 									<Button color="blue" disabled={!packageHistory.length} on:click={() => (showHistory = true)}>
 										Show history
-									</Button>
+									</Button> -->
 								</div>
 							</TableBodyCell>
 						</TableBodyRow>

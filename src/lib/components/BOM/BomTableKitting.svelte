@@ -17,27 +17,23 @@
 		Accordion,
 		AccordionItem,
 		Badge,
-		Input,
 		Modal,
 		Table,
 		TableBody,
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell,
-		Tooltip
+		TableHeadCell
 	} from 'flowbite-svelte';
 	import PartInfo from '../PartInfo.svelte';
-	import UserIcon from '../UserIcon.svelte';
 	import NewComponent from './NewComponent.svelte';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { classes, datetimeFormat, getSelectionText } from '$lib/utils';
+	import { getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
-	import { CogOutline, PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
+	import { PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
 	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
-	import KitItemRemoveButton from '../Kitting/KitItemRemoveButton.svelte';
 	import { XMark } from 'svelte-heros-v2';
 	import { messagesStore, storage } from 'svelte-legos';
 	import { writable } from 'svelte/store';
@@ -264,17 +260,19 @@
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell>
-				<select
-					class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
-					bind:value={supplierSearch}
-				>
-					<option value={''} />
-					{#each ordersSuppliers as supplierName}
-						<option value={supplierName}>
-							{supplierName}
-						</option>
-					{/each}
-				</select>
+				{#if ordersSuppliers?.[0]}
+					<select
+						class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
+						bind:value={supplierSearch}
+					>
+						<option value={''} />
+						{#each ordersSuppliers as supplierName}
+							<option value={supplierName}>
+								{supplierName}
+							</option>
+						{/each}
+					</select>
+				{/if}
 			</TableHeadCell>
 			<TableHeadCell padding="px-6 py-1" colspan="4">
 				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>

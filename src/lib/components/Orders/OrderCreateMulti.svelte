@@ -13,14 +13,13 @@
 		ButtonGroup,
 		Modal,
 		Label,
-		Checkbox,
 		Select
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
 	import OrderOverview from './OrderOverview.svelte';
 	import { Plus } from 'svelte-heros-v2';
-	import { onDestroy } from 'svelte';
+	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 
 	export let order;
@@ -32,6 +31,8 @@
 
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
+
+	let dispatch = createEventDispatcher();
 
 	function remove(idx: number) {
 		order.orders_items = orderItems.toSpliced(idx, 1);
@@ -263,19 +264,19 @@
 							bind:value={orderTracking.tracking_number}
 						/>
 						<Button color="primary" class="!p-2.5" on:click={() => updateOrderLinesTracking()}>
-							<ChevronDoubleDownOutline />
+							<ChevronDoubleDownOutline class="text-gray-400" />
 						</Button>
 					</ButtonGroup>
 				</TableHeadCell>
 				<TableHeadCell>
-					<!-- <span
+					<span
 						class="cursor-pointer"
 						on:click={() => {
-							order = {};
+							dispatch('delete');
 						}}
 					>
 						❌
-					</span> -->
+					</span>
 				</TableHeadCell>
 				<slot name="head" />
 			</TableHead>

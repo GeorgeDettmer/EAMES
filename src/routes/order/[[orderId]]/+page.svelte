@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
+	import OrderEditable from '$lib/components/Orders/OrderEditable.svelte';
 	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
 	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
@@ -14,41 +15,16 @@
 	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
+	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 
 	export let data: PageData;
-
-	onMount(() => {
-		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
-		return () => {
-			$windowTitleStore = '';
-		};
-	});
 
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result
 	let client = getContextClient();
 	let query = gql`
-		query orders(
-			$supplierIdCriteria: String_comparison_exp = {}
-			$userIdCriteria: uuid_comparison_exp = {}
-			$orderReferenceCriteria: String_comparison_exp = {}
-			$jobIdsCriteria: erp_jobs_orders_bool_exp = {}
-			$idsCriteria: bigint_comparison_exp = {}
-			$limit: Int = 100
-			$offset: Int = 0
-		) {
-			erp_orders(
-				order_by: { id: desc }
-				limit: $limit
-				offset: $offset
-				where: {
-					supplier_id: $supplierIdCriteria
-					user_id: $userIdCriteria
-					reference: $orderReferenceCriteria
-					jobs_orders: $jobIdsCriteria
-					id: $idsCriteria
-				}
-			) {
+		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
+			erp_orders(order_by: { id: desc }, limit: $limit, offset: $offset, where: $where) {
 				id
 				reference
 				created_at
@@ -107,11 +83,34 @@
 			variables: {
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
-				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
+				where: {
+					id: idSearch
+						? {
+								_in: idSearch
+									.split(',')
+									.map((v) => v.replace(/\D/g, ''))
+									.filter((v) => !!v)
+						  }
+						: {},
+					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
+					jobs_orders: jobSearch
+						? {
+								job_id: {
+									_in: jobSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+								}
+						  }
+						: undefined,
+					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+				}
+				/* supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
 				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
-				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
+				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {} */
 			},
 			requestPolicy: 'network-only'
 		});
@@ -124,27 +123,44 @@
 	let oldOrders = [];
 	function refresh() {
 		if (window.document.visibilityState !== 'visible') return;
-		//return;
 		lastRefreshedAt = new Date();
-		oldOrders = orders;
+		oldOrders = orders || [];
 		ordersStore = queryStore({
 			client,
 			query,
 			variables: {
 				limit: isFiltered ? 1000 : queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
-				supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
-				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
-				orderReferenceCriteria: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
-				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
-				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {}
+				where: {
+					id: idSearch
+						? {
+								_in: idSearch
+									.split(',')
+									.map((v) => v.replace(/\D/g, ''))
+									.filter((v) => !!v)
+						  }
+						: {},
+					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
+					jobs_orders: jobSearch
+						? {
+								job_id: {
+									_in: jobSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+								}
+						  }
+						: undefined,
+					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
+					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+				}
 			},
 			requestPolicy: 'network-only'
 		});
 
 		console.log(
 			'REFRESH @ ',
-			datetimeFormat(lastRefreshedAt.toISOString()),
+			lastRefreshedAt.toTimeString()?.split(' ')?.[0],
 			oldOrders.length,
 			ordersStore?.data?.erp_orders?.length
 		);
@@ -189,7 +205,8 @@
 	});
 	$: users = $usersStore?.data?.users || [];
 
-	$: orders = $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
+	//$: orders = $ordersStore?.data?.erp_orders?.length ? $ordersStore?.data?.erp_orders : oldOrders;
+	$: orders = $ordersStore?.fetching ? oldOrders : $ordersStore?.data?.erp_orders;
 
 	const dispatch = createEventDispatcher();
 	let openRows: number[] = [];
@@ -227,9 +244,28 @@
 				});
 			}
 		}
+
+		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
+		return () => {
+			$windowTitleStore = '';
+		};
 	});
 
-	$: console.log('QUERY:', $ordersStore, queryOffset);
+	$: console.log(
+		'QUERY:',
+		$ordersStore,
+		queryOffset,
+		jobSearch
+			? {
+					job_id: {
+						_in: jobSearch
+							.split(',')
+							.map((v) => v.replace(/\D/g, ''))
+							.filter((v) => !!v)
+					}
+			  }
+			: {}
+	);
 </script>
 
 {#if $suppliersStore?.error}
@@ -237,38 +273,12 @@
 {/if}
 
 {#if orderId}
-	<OrderOverview {orderId} />
+	{#if $page?.data?.user?.processes && $page?.data?.user?.processes['purchase']}
+		<OrderEditable {orderId} />
+	{:else}
+		<OrderOverview {orderId} />
+	{/if}
 {:else}
-	<!-- <div class="grid grid-cols-6 mb-4"> -->
-	<!-- <div class="flex my-auto mb-2 p-1">
-		<Toggle bind:checked={showMyOrdersOnly} color="blue">Show my orders</Toggle>
-		<Toggle disabled={showCompleteOnly} bind:checked={showIncompleteOnly} color="blue">Show incomplete orders</Toggle>
-		<Toggle disabled={showIncompleteOnly} bind:checked={showCompleteOnly} color="blue">Show complete orders</Toggle>
-	</div> -->
-	<!-- <div class="col-span-1">
-			<Label for="small-input">Supplier</Label>
-			<Select
-				size="sm"
-				placeholder=""
-				items={[
-					{ value: null, name: 'All' },
-					...suppliers?.map((s) => ({ value: s.id, name: `${s.name}  (${s.orders_aggregate.aggregate.count})` }))
-				]}
-				bind:value={supplierSearch}
-			/>
-		</div> -->
-	<!-- <div class="col-span-1">
-			<Label for="small-input">Reference</Label>
-			<Input size="md" placeholder="" bind:value={orderReferenceSearch} />
-		</div>
-		{#if $ordersStore?.fetching}
-			<div class="my-auto pl-2">
-				<Spinner color="blue" />
-			</div>
-		{/if} -->
-	<!-- </div> -->
-
-	<!-- {#if orders} -->
 	<Table shadow hoverable>
 		<TableHead>
 			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
@@ -426,6 +436,10 @@
 						<div class="ml-auto">
 							<p class="text-red-600 font-bold">Query Error...</p>
 						</div>
+					{:else if !$ordersStore?.fetching && orders.length === 0}
+						<div class="ml-auto">
+							<p class="text-red-600 font-bold">No results...</p>
+						</div>
 					{/if}
 
 					<div class="flex ml-auto">
@@ -464,7 +478,7 @@
 							/>
 						</svg>
 						<Tooltip placement="left">
-							<p class="text-xs">Last updated: {lastRefreshedAt.toTimeString().split(' ')?.[0]}</p>
+							<p class="text-xs">Last updated: {lastRefreshedAt?.toTimeString().split(' ')?.[0]}</p>
 						</Tooltip>
 					</div>
 				</div>
@@ -499,9 +513,11 @@
 						columnId="id"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div
+						<a
 							class="flex cursor-pointer"
-							on:click={(e) => {
+							href={`${window.origin}/order/${order?.id}`}
+							target="_blank"
+							on:click|preventDefault={(e) => {
 								handleRowClick(idx, e);
 							}}
 						>
@@ -516,7 +532,7 @@
 							<p class={classes.link}>
 								{padString(String(order?.id))}
 							</p>
-						</div>
+						</a>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"
@@ -632,9 +648,7 @@
 					<TableBodyRow class="h-24 ">
 						<TableBodyCell colspan="9" class="p-0">
 							<div class="px-1 py-1 mx-auto">
-								<!-- TODO: Request when opening -->
 								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
-								<!-- <OrderItemsTable orderItems={order?.orders_items} /> -->
 							</div>
 						</TableBodyCell>
 					</TableBodyRow>
@@ -690,5 +704,4 @@
 			</TableHeadCell>
 		</TableHead>
 	</Table>
-	<!-- {/if} -->
 {/if}

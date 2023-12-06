@@ -64,7 +64,7 @@
 			if (rows[rowNr] && data) {
 				//Loop through all the data
 				for (let cellNr = 0; cellNr < data.length; cellNr++) {
-					o[newColumns[cellNr]] = data[cellNr];
+					o[newColumns[cellNr]] = data[cellNr]?.trim();
 				}
 				o._import = true;
 				objects.push(o);
@@ -100,7 +100,7 @@
 	function fillOrderFromImport() {
 		let toImport = imported?.filter((l) => l?._import !== false);
 		console.log('toImport', toImport, imported);
-		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]));
+		let importSuppliers = new Set(toImport?.map((l) => l?.[orderItemProperties['supplier']]?.toLowerCase()));
 		let importSuppliersInvalid = [...importSuppliers].filter((is) => !suppliersNames.includes(is.toLowerCase()));
 		if (importSuppliersInvalid.length > 0) {
 			messagesStore(
@@ -209,7 +209,8 @@
 			() => [isNaN(Number(i?.[orderItemProperties['price']])), 'Price is not a number'],
 			() => [!i?.[orderItemProperties['supplier']], 'Supplier undefined'],
 			() => [
-				suppliersNames.filter((n) => n.toLowerCase() === i?.[orderItemProperties['supplier']]?.toLowerCase()).length === 0,
+				//suppliersNames.filter((n) => n.toLowerCase() === i?.[orderItemProperties['supplier']]?.toLowerCase()).length === 0,
+				suppliersNames.every((n) => n !== i?.[orderItemProperties['supplier']]?.toLowerCase()),
 				'Supplier invalid'
 			]
 		].map((check) => check())
@@ -249,7 +250,8 @@
 		variables: {}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
-	$: suppliersNames = suppliers?.flatMap((s) => s.names);
+	$: suppliersNames = suppliers?.flatMap((s) => s.names)?.map((n) => n?.toLowerCase());
+	$: console.log('suppliersNames', suppliersNames);
 	/* $: {
 		if (!selectedSupplierId && suppliers) {
 			selectedSupplierId = suppliers?.[0]?.id;
@@ -289,7 +291,7 @@
 		}
 	}
 
-	$: ordersItems = orders?.flatMap((o) => o.orders_items) || [];
+	$: ordersItems = orders?.flatMap((o) => o?.orders_items) || [];
 
 	function addOrder(force: boolean = true) {
 		let supplier = Object.assign({}, suppliers?.[0] || {});
@@ -306,6 +308,10 @@
 		];
 	}
 
+	function removeOrder(idx: number) {
+		orders = orders.filter((o, i) => i !== idx);
+	}
+
 	const urqlClient = getContextClient();
 	let ordersAdding = false;
 	async function addOrders() {
@@ -314,7 +320,7 @@
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
-		if (!$page?.data?.user?.processes['purchase']) {
+		if ($page?.data?.user?.processes && !$page?.data?.user?.processes?.['purchase']) {
 			messagesStore(
 				`You do not have permission to create orders. You have permission for: ${Object.keys($page?.data?.user?.processes)}`,
 				'warning'
@@ -437,41 +443,44 @@
 	async function handleDropAsync(e) {
 		e.stopPropagation();
 		e.preventDefault();
-
-		const f = e.dataTransfer.files[0];
-		const data = await f.arrayBuffer();
-		const wb = XLSX.read(data);
-		const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
-		if (!ws) {
-			messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
-		}
-		console.log(wb.Sheets, ws);
-		let lines = XLSX.utils.sheet_to_json(ws);
-		const includesAll = (arr, values) => values.every((v) => arr.includes(v));
-		let headingRow = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
-		let sheetText = XLSX.utils.sheet_to_txt(ws, {});
-		if (ws['!autofilter']?.ref) {
-			let range = XLSX.utils.decode_range(ws['!autofilter']?.ref);
-			let textSplit = sheetText.split('\n');
-			let newText = textSplit.slice(range.s.r, range.e.r + 1).join('\n');
-			sheetText = newText;
-		}
-		/* if (headingRow > -1) {
+		try {
+			const f = e.dataTransfer.files[0];
+			const data = await f.arrayBuffer();
+			const wb = XLSX.read(data);
+			const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
+			if (!ws) {
+				messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
+			}
+			console.log(wb.Sheets, ws);
+			let lines = XLSX.utils.sheet_to_json(ws);
+			const includesAll = (arr, values) => values.every((v) => arr.includes(v));
+			let headingRow = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
+			let sheetText = XLSX.utils.sheet_to_txt(ws, {});
+			if (ws['!autofilter']?.ref) {
+				let range = XLSX.utils.decode_range(ws['!autofilter']?.ref);
+				let textSplit = sheetText.split('\n');
+				let newText = textSplit.slice(range.s.r, range.e.r + 1).join('\n');
+				sheetText = newText;
+			}
+			/* if (headingRow > -1) {
 			sheetText = sheetText.split('/n').slice(headingRow).join('/n');
 			console.log(sheetText, headingRow);
 		} */
 
-		orderItemProperties = {
-			part: 'MPN (O)',
-			quantity: 'Order (T)',
-			price: 'Unit(£) (U)',
-			spn: 'Purchased Part (Q)',
-			supplier: 'Supplier (N)'
-		};
+			orderItemProperties = {
+				part: 'MPN (O)',
+				quantity: 'Order (T)',
+				price: 'Unit(£) (U)',
+				spn: 'Purchased Part (Q)',
+				supplier: 'Supplier (N)'
+			};
 
-		importText = sheetText;
-		imported = excelToObjects(importText);
-		console.log(imported);
+			importText = sheetText;
+			imported = excelToObjects(importText);
+			console.log(imported);
+		} catch (error) {
+			messagesStore('Excel Import Error: ' + error, 'error');
+		}
 	}
 	$: console.log(orderItemProperties);
 </script>
@@ -494,7 +503,7 @@
 						addOrder();
 					}}
 				>
-					<PlusOutline />
+					<PlusOutline class="text-gray-400" />
 				</Button>
 			</div>
 			<div class="-mb-8 ml-auto space-y-1">
@@ -534,7 +543,7 @@
 							<span slot="title">
 								<OrderCreateHeader bind:order />
 							</span>
-							<OrderCreateMulti bind:order showHeader={false} />
+							<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
 						</TabItem>
 					{/each}
 				</Tabs>
@@ -560,8 +569,10 @@
 						disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
 						on:click={() => {
 							fillOrderFromImport();
-						}}>Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...</Button
+						}}
 					>
+						Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
+					</Button>
 				{/if}
 			</div>
 		</div>
@@ -615,11 +626,19 @@
 								<ol class="mt-1.5 ml-4 list-decimal list-inside">
 									{#each missingImportData2 as missing, idx}
 										{#if missing.flat().includes(true)}
-											<li class:line-through={!imported[idx]?._import}>Line {idx + 1} is missing required import data</li>
+											<li class:line-through={!imported[idx]?._import} class:text-gray-500={!imported[idx]?._import}>
+												Line {idx + 1} is missing required import data
+											</li>
 											<ul class="ml-4 list-disc list-inside">
 												{#each missing as [isMissing, message]}
 													{#if isMissing}
-														<li class="capitalize" class:line-through={!imported[idx]?._import}>{message}</li>
+														<li
+															class="capitalize"
+															class:line-through={!imported[idx]?._import}
+															class:text-gray-500={!imported[idx]?._import}
+														>
+															{message}
+														</li>
 													{/if}
 												{/each}
 											</ul>
@@ -653,9 +672,11 @@
 				<Table>
 					<TableHead>
 						<TableHeadCell>#</TableHeadCell>
-						<TableHeadCell>Qty</TableHeadCell>
+
 						<TableHeadCell>Part</TableHeadCell>
+						<TableHeadCell>Qty</TableHeadCell>
 						<TableHeadCell>Unit Price</TableHeadCell>
+						<TableHeadCell>Total Price</TableHeadCell>
 						<TableHeadCell>Supplier</TableHeadCell>
 						<TableHeadCell>
 							<Checkbox
@@ -680,7 +701,7 @@
 								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
 							>
 								<TableBodyCell>{idx + 1}</TableBodyCell>
-								<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
+
 								<TableBodyCell>
 									<div>
 										<p>{part ? part : 'undefined'}</p>
@@ -689,7 +710,9 @@
 										{/if}
 									</div>
 								</TableBodyCell>
+								<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
 								<TableBodyCell>{price ? price : 'undefined'}</TableBodyCell>
+								<TableBodyCell>{price && quantity ? price * quantity : 'undefined'}</TableBodyCell>
 								<TableBodyCell>{supplier ? supplier : 'undefined'}</TableBodyCell>
 								<TableBodyCell>
 									<Checkbox bind:checked={line._import} />
@@ -699,13 +722,23 @@
 					</TableBody>
 					<TableHead>
 						<TableHeadCell>{imported.length}</TableHeadCell>
+						<TableHeadCell />
 						<TableHeadCell>
 							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
 						</TableHeadCell>
-						<TableHeadCell />
 						<TableHeadCell
 							>{imported.reduce(
 								(a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0),
+								0
+							)}</TableHeadCell
+						>
+						<TableHeadCell
+							>{imported.reduce(
+								(a, v) =>
+									a +
+									(v?._import
+										? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']])
+										: 0),
 								0
 							)}</TableHeadCell
 						>

@@ -6,7 +6,19 @@
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
-	import { Button, Input, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+	import {
+		Alert,
+		Button,
+		Input,
+		Modal,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell
+	} from 'flowbite-svelte';
+	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -153,10 +165,11 @@
 				refs.forEach((ref) => {
 					let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
 					let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
-
+					let part = pn === 'Not Fitted' || !pn ? null : pn;
+					description = part ? description : null;
 					let l = {
 						reference: ref,
-						part: pn === 'Not Fitted' ? null : pn,
+						part,
 						description,
 						partByPart: { description: description }
 					};
@@ -169,6 +182,46 @@
 		}
 		console.log('bom.lines', bom?.lines);
 		name = files.accepted[0].name?.split('.xl')?.[0] || 'Unknown name';
+	}
+
+	async function insertEmptyComonents(parts: string[]) {
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		/* 		if (!$page?.data?.user?.processes?.['eng']) {
+			alert(
+				`You do not have permission to insert BOMs. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes || {}
+				)}`
+			);
+			return;
+		} */
+		let mutationResult;
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation insertParts($data: [parts_data_insert_input!] = {}) {
+					insert_parts_data(objects: $data) {
+						returning {
+							id
+						}
+						affected_rows
+					}
+				}
+			`,
+			{
+				data: parts.map((p) => {
+					return { id: p, name: p };
+				})
+			}
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Inserted skeleton parts: ' + mutationResult.data.insert_parts.returning, 'success');
+		}
 	}
 
 	async function insert() {
@@ -187,12 +240,20 @@
 			);
 			return;
 		}
+		if (partsNotInLibrary.length > 0) {
+			skeletonPartsAddModal = true;
+			return;
+		}
 		let mutationResult;
 		let bom_lines = bom?.lines?.map((l) => {
 			if (!l?.part) {
 				console.log('eee', l);
 			}
-			return { reference: l?.reference, part: l?.part, description: l?.description };
+			return {
+				reference: l?.reference,
+				part: l?.part,
+				description: l?.description
+			};
 		});
 		console.log('linesz', bom_lines);
 		mutationResult = await urqlClient.mutation(
@@ -267,13 +328,49 @@
 		return p?.id;
 	});
 
-	$: partsNotInLibrary = (bom?.lines || [])?.map((l) => l?.part)?.filter((x) => x && !partsInLibrary?.includes(x));
+	$: partsNotInLibrary = (bom?.lines || [])
+		?.map((l) => l?.part)
+		?.filter((x) => x && !partsInLibrary?.includes(x))
+		?.filter((v, i, s) => s.indexOf(v) === i);
 	$: canAdd = partsNotInLibrary.length === 0;
-	$: console.log('partsInLibrary', partsInLibrary);
+	$: console.log('partsInLibrary', partsInLibrary, partsNotInLibrary);
 
 	let revision_external = '';
 	let name = '';
+
+	let skeletonPartsAddModal = false;
 </script>
+
+<Modal outsideclose bind:open={skeletonPartsAddModal} size="md">
+	<div class="my-4">
+		<Alert class="!items-start" color="red">
+			<span slot="icon">
+				<InfoCircleSolid slot="icon" class="w-4 h-4" />
+				<span class="sr-only">Info</span>
+			</span>
+			<p class="font-medium">
+				There are {partsNotInLibrary.length} components in this BOM that are not added to the component library, are you sure
+				you want to continue?
+			</p>
+		</Alert>
+		<div class="h-48 overflow-auto">
+			<ul class="ml-4 list-disc list-inside">
+				{#each partsNotInLibrary as p}
+					<li class="rounded p-0.5 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">{p}</li>
+				{/each}
+			</ul>
+		</div>
+		<div class="my-2 mx-auto">
+			<Button
+				color="red"
+				on:click={() => {
+					insertEmptyComonents(partsNotInLibrary);
+					skeletonPartsAddModal = false;
+				}}>Continue...</Button
+			>
+		</div>
+	</div>
+</Modal>
 
 {#if assemblyId}
 	<p>Assembly: {assemblyId} <em>({assemblyInfo?.name})</em></p>
@@ -384,18 +481,3 @@
 		<div class="flex bg-slate-500 h-20">Drag & drop BOM</div>
 	</FileDrop>
 {/if}
-
-<!-- {#if files}
-	<h3>Accepted files</h3>
-	<ul>
-		{#each files.accepted as file}
-			<li>{file.name} - {file.size}</li>
-		{/each}
-	</ul>
-	<h3>Rejected files</h3>
-	<ul>
-		{#each files.rejected as rejected}
-			<li>{rejected.file.name} - {rejected.error.message}</li>
-		{/each}
-	</ul>
-{/if} -->

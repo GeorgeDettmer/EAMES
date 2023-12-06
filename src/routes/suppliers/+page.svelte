@@ -22,12 +22,12 @@
 					name
 					names
 					created_at
-					user_id
 					user {
 						username
 						color
 						first_name
 						last_name
+						initials
 						id
 					}
 					orders_aggregate {

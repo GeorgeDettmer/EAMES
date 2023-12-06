@@ -11,6 +11,7 @@
 		Button,
 		Input,
 		Modal,
+		P,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -200,8 +201,14 @@
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertParts($data: [parts_data_insert_input!] = {}) {
+				mutation insertParts($data: [parts_data_insert_input!] = {}, $data2: : [parts_insert_input!] = {}) {
 					insert_parts_data(objects: $data) {
+						returning {
+							id
+						}
+						affected_rows
+					}
+					insert_parts(objects: $data2) {
 						returning {
 							id
 						}
@@ -212,6 +219,9 @@
 			{
 				data: parts.map((p) => {
 					return { id: p, name: p };
+				}),
+				data2: parts.map((p) => {
+					return { id: p, name: p, part_data_id: p };
 				})
 			}
 		);
@@ -319,7 +329,7 @@
 		`,
 		variables: {
 			parts: bom?.lines?.map((l) => {
-				return l?.part ? l?.part : '';
+				return l?.part ? String(l?.part) : '';
 			})
 		}
 	});
@@ -327,6 +337,14 @@
 	$: partsInLibrary = partsInfo?.map((p) => {
 		return p?.id;
 	});
+
+	$: console.log(
+		'parts:',
+		bom?.lines?.map((l) => {
+			return l?.part ? l?.part : '';
+		}),
+		$partsInfoStore
+	);
 
 	$: partsNotInLibrary = (bom?.lines || [])
 		?.map((l) => l?.part)
@@ -366,8 +384,10 @@
 				on:click={() => {
 					insertEmptyComonents(partsNotInLibrary);
 					skeletonPartsAddModal = false;
-				}}>Continue...</Button
+				}}
 			>
+				Continue...
+			</Button>
 		</div>
 	</div>
 </Modal>

@@ -148,7 +148,14 @@
 			</div>
 		</div>
 		<div class="1/2">
-			{description.split(' ')}
+			<!-- <p class="flex-wrap">{description.split(' ')}</p> -->
+			<div class="ml-8">
+				<ul class="list-disc">
+					{#each description.split(' ').filter((d) => !!d) as t}
+						<li>{t}</li>
+					{/each}
+				</ul>
+			</div>
 			{#each descriptionTokens as token}
 				{#if token?.value && token?.type}
 					<p>{token?.type}: {token?.value}</p>

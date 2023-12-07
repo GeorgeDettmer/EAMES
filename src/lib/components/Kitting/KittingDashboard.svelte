@@ -14,7 +14,7 @@
 		query: gql`
 			subscription recentKitActivityJobs($offset: Int = 0) {
 				jobs(
-					limit: 10
+					limit: 1000
 					offset: $offset
 					where: { jobs_kits_aggregate: { count: { predicate: { _gt: 0 } } } }
 					order_by: { jobs_kits2: { kit: { updated_at: desc_nulls_last } } }

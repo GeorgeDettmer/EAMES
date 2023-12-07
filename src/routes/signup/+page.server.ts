@@ -30,14 +30,7 @@ export const actions: Actions = {
 		};
 
 		// Create a new user
-		const { error } = await createUser(
-			username,
-			firstname,
-			lastname,
-			undefined,
-			password,
-			passcode
-		);
+		const { error } = await createUser(username, firstname, lastname, undefined, password, passcode);
 
 		// If there was an error, return an invalid response
 		if (error) {

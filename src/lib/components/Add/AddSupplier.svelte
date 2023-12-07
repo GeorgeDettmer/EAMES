@@ -67,7 +67,7 @@
 		id,
 		supplierIdentifiers,
 		identifiers,
-		identifiers.every((i) => !supplierIdentifiers.includes(i))
+		identifiers.length > 0 && identifiers.every((i) => supplierIdentifiers.includes(i))
 	);
 	function validate(type: string) {
 		if (type === 'id') {
@@ -88,7 +88,7 @@
 			messagesStore('Supplier id & name must be set', 'warning');
 			return;
 		}
-		if (identifiers.every((i) => !supplierIdentifiers.includes(i))) {
+		if (identifiers.length > 0 && identifiers.every((i) => supplierIdentifiers.includes(i))) {
 			messagesStore(`Supplier with matching identifier (${identifiers}) already exists`, 'warning');
 			return;
 		}

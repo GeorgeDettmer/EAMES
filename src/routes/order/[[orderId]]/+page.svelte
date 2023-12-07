@@ -231,6 +231,8 @@
 	let orderReferenceSearch: string;
 	let dateSearch: string[] = ['', ''];
 
+	$: filtered = idSearch || jobSearch || categorySearch || supplierSearch || buyerSearch || orderReferenceSearch;
+
 	onMount(() => {
 		idSearch = decodeURIComponent($page.url.searchParams.get('id') || '');
 		jobSearch = decodeURIComponent($page.url.searchParams.get('job') || '');
@@ -662,17 +664,22 @@
 			{/each}
 		</TableBody>
 		<TableHead>
-			<TableHeadCell
-				on:click={() => {
-					/* if (!queryOffset) {
-						queryOffset = orders?.[0]?.id;
-					} */
-					oldOrders = orders;
-					queryOffset = Math.max(queryOffset - queryLimit, 0);
-				}}
-			>
-				<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {queryLimit}</div>
-			</TableHeadCell>
+			{#if !filtered}
+				<TableHeadCell
+					on:click={() => {
+						/* if (!queryOffset) {
+					queryOffset = orders?.[0]?.id;
+				} */
+						oldOrders = orders;
+						queryOffset = Math.max(queryOffset - queryLimit, 0);
+					}}
+				>
+					<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {queryLimit}</div>
+				</TableHeadCell>
+			{:else}
+				<TableHeadCell />
+			{/if}
+
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell />
@@ -691,17 +698,21 @@
 					)}
 				</p>
 			</TableHeadCell>
-			<TableHeadCell
-				on:click={() => {
-					/* if (!queryOffset) {
-						queryOffset = orders?.[0]?.id;
-					} */
-					oldOrders = orders;
-					queryOffset += queryLimit;
-				}}
-			>
-				<div class={'flex cursor-point float-right' + classes.link}>Next {queryLimit} <ChevronRight size="16" /></div>
-			</TableHeadCell>
+			{#if !filtered}
+				<TableHeadCell
+					on:click={() => {
+						/* if (!queryOffset) {
+					queryOffset = orders?.[0]?.id;
+				} */
+						oldOrders = orders;
+						queryOffset += queryLimit;
+					}}
+				>
+					<div class={'flex cursor-point float-right' + classes.link}>Next {queryLimit} <ChevronRight size="16" /></div>
+				</TableHeadCell>
+			{:else}
+				<TableHeadCell />
+			{/if}
 		</TableHead>
 	</Table>
 {/if}

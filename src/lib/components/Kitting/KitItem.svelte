@@ -194,7 +194,7 @@
 						{
 							name: 'description',
 							type: 'text',
-							content: part?.description
+							content: part?.description || bomLine?.[0]?.description || 'Unknown'
 						},
 						{
 							name: 'freeissue',
@@ -356,7 +356,7 @@
 									{
 										name: 'description',
 										type: 'text',
-										content: part?.description
+										content: part?.description || bomLine?.[0]?.description || 'Unknown'
 									},
 									{
 										name: 'freeissue',

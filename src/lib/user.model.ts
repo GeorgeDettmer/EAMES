@@ -215,7 +215,7 @@ const loginUsernamePass = async (username: string = '', pass: string) => {
 	const jwtUser = getJwt(user);
 
 	const token = jwt.sign(jwtUser, JWT_ACCESS_SECRET, {
-		expiresIn: '1d'
+		expiresIn: '1y'
 	});
 
 	return { token };
@@ -232,7 +232,7 @@ const loginToken = async (loginToken: string) => {
 	const jwtUser = getJwt(user);
 
 	const token = jwt.sign(jwtUser, JWT_ACCESS_SECRET, {
-		expiresIn: '1d'
+		expiresIn: '1y'
 	});
 
 	return { token };

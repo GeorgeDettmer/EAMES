@@ -132,6 +132,7 @@
 		{/if}
 		<TableHeadCell padding="px-1 py-1">Order Item</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
+		<TableHeadCell padding="px-1 py-1">Category</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 		{#if !hiddenColumns.includes('supplier')}
@@ -182,6 +183,9 @@
 							</p>
 							<p>{datetimeFormat(item.updated_at)}</p>
 						</Tooltip>
+					</TableBodyCell>
+					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+						{item?.category || 'Unknown'}
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{item.part}

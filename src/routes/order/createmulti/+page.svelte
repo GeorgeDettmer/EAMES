@@ -161,7 +161,8 @@
 								tracking_url: '',
 								carrier_code: ''
 							}
-						]
+						],
+						category: 'Component'
 					}
 				];
 				/* order_items.push({

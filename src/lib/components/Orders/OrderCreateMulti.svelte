@@ -21,6 +21,7 @@
 	import { Plus } from 'svelte-heros-v2';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
+	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 
 	export let order;
 	export let user = order?.user || $page?.data?.user;
@@ -46,7 +47,8 @@
 			quantity: Number(newQuantity),
 			user_id: user?.id,
 			created_at: new Date().toISOString(),
-			tracking: newTracking
+			tracking: newTracking,
+			category: 'Component'
 		};
 		if (matchingLine) {
 			matchingLine.quantity += newLine.quantity;
@@ -231,6 +233,7 @@
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>User</TableHeadCell>
 				<TableHeadCell>Time/Date</TableHeadCell>
+				<TableHeadCell>Category</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
 				<TableHeadCell>Unit Cost</TableHeadCell>
@@ -295,6 +298,17 @@
 						<TableBodyCell>
 							<p>{datetimeFormat(item.created_at)}</p>
 						</TableBodyCell>
+
+						<TableBodyCellEditable
+							bind:value={item.category}
+							inputType="dropdown"
+							options={[{ id: '', text: 'Unknown' }, { id: 'Component' }, { id: 'Tooling' }]}
+						>
+							{item?.category || 'Unknown'}
+						</TableBodyCellEditable>
+						<!-- <TableBodyCell>
+							<p>{item?.category || 'Unknown'}</p>
+						</TableBodyCell> -->
 						<!-- 					<TableBodyCell>
 						{item?.order?.supplier?.reference || ''}
 					</TableBodyCell> -->
@@ -374,6 +388,7 @@
 				<TableBodyCell>
 					{orderItems.length + 1}
 				</TableBodyCell>
+				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />

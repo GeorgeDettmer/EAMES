@@ -123,6 +123,8 @@
 	}
 
 	$: orders = $ordersStore?.data?.erp_orders || orders;
+
+	$: console.log(orders[0]?.orders_items?.map((i) => i.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity));
 </script>
 
 <Table>
@@ -142,11 +144,13 @@
 		<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Total</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1" />
+		<TableHeadCell padding="px-1 py-1" />
 	</TableHead>
 	<TableBody>
 		{#each orders as order}
-			{@const orderItems = order.orders_items}
-			{#each orderItems as item, idx}
+			{@const ordersItems = order.orders_items}
+			{#each ordersItems as item, idx}
+				{@const receivedTotal = item?.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity}
 				<TableBodyRow>
 					{#if orders.length > 1}
 						<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
@@ -220,11 +224,44 @@
 							{/each}
 						</div>
 					</TableBodyCell>
+
+					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs">
+						<div class="flex">
+							{#if !receivedTotal}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/ios/50/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-1 uppercase text-xs">Not Received</p>
+							{:else if receivedTotal >= item?.quantity}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/ios/50/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-1 uppercase text-xs">Received</p>
+							{:else}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/ios/50/unpacking.png"
+									alt="unpacking"
+								/>
+								<p class="font-semibold pt-1 pl-1 uppercase text-xs">Partially Received</p>
+							{/if}
+						</div>
+					</TableBodyCell>
 				</TableBodyRow>
 			{/each}
 		{:else}
 			<TableBodyRow>
-				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+				<TableBodyCell colspan="9" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{#if $ordersStore?.fetching}
 						<Spinner color="blue" size="4" />
 					{:else}

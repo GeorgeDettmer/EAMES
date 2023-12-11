@@ -534,6 +534,11 @@
 							<p class={classes.link}>
 								{padString(String(order?.id))}
 							</p>
+							{#if order?.reference}
+								<p class="text-xs">
+									({order.reference})
+								</p>
+							{/if}
 						</a>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible

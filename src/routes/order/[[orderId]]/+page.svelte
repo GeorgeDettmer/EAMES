@@ -535,7 +535,7 @@
 								{padString(String(order?.id))}
 							</p>
 							{#if order?.reference}
-								<p class="text-xs">
+								<p class="pl-1 text-xs">
 									({order.reference})
 								</p>
 							{/if}

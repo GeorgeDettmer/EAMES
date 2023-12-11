@@ -2,23 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
-	import { getParameterInsensitiveAny, toRanges } from '$lib/utils';
+	import { getParameterInsensitiveAny } from '$lib/utils';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
-	import {
-		Alert,
-		Button,
-		Input,
-		Modal,
-		P,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell
-	} from 'flowbite-svelte';
+	import { Alert, Button, Input, Modal } from 'flowbite-svelte';
 	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();

@@ -12,7 +12,7 @@
 	<TableHead theadClass="text-xs uppercase text-center">
 		<TableHeadCell padding="px-1 py-1">Receipt</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
-		<TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell>
+		<!-- <TableHeadCell padding="px-1 py-1">Time/Date</TableHeadCell> -->
 		<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Cost</TableHeadCell>
@@ -28,8 +28,8 @@
 					</p>
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-					<UserIcon user={item?.user} size="sm" />
-					<Tooltip placement="left">
+					<UserIcon user={item?.user} size="xs" />
+					<Tooltip placement="right">
 						<p>
 							{#if item?.user?.first_name}
 								{item?.user?.first_name}
@@ -41,9 +41,9 @@
 						<p>{datetimeFormat(item.updated_at)}</p>
 					</Tooltip>
 				</TableBodyCell>
-				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+				<!-- <TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{datetimeFormat(item.updated_at)}
-				</TableBodyCell>
+				</TableBodyCell> -->
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{item?.quantity}
 				</TableBodyCell>

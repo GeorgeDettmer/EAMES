@@ -352,9 +352,10 @@
 							handleRowClick(idx, references, line, lineKey, e);
 						}}
 					>
-						<TableBodyCell>{idx + 1}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
 
 						<TableBodyCollapsible
+							tdClass="px-6 py-1 whitespace-nowrap font-medium"
 							columnId="part"
 							visible={visibleColumns?.includes('part')}
 							bind:collapsedColumns={$collapsedColumns}
@@ -369,6 +370,7 @@
 						</TableBodyCollapsible>
 
 						<TableBodyCollapsible
+							tdClass="px-6 py-1 whitespace-nowrap font-medium"
 							columnId="description"
 							visible={visibleColumns?.includes('description')}
 							bind:collapsedColumns={$collapsedColumns}
@@ -382,6 +384,7 @@
 						</TableBodyCollapsible>
 
 						<TableBodyCollapsible
+							tdClass="px-6 py-1 whitespace-nowrap font-medium"
 							columnId="references"
 							visible={visibleColumns?.includes('references')}
 							bind:collapsedColumns={$collapsedColumns}
@@ -390,15 +393,15 @@
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}
-							<TableBodyCell>{references?.length}</TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{references?.length}</TableBodyCell>
 						{/if}
 
 						{#if job?.quantity && visibleColumns?.includes('build_quantity')}
-							<TableBodyCell>{buildQty}</TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{buildQty}</TableBodyCell>
 						{/if}
 
 						{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
 									{#each orderItems as orderItem}
 										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
@@ -415,7 +418,7 @@
 						{/if}
 
 						{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
 									{receivedItemQty}
 								</Badge>
@@ -425,19 +428,19 @@
 						{#if job?.jobs_kits}
 							{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 							{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 									{kitItemQty}
 								</Badge>
 							</TableBodyCell>
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 									{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
 								</Badge>
 							</TableBodyCell>
 						{/if}
 						{#if visibleColumns?.includes('kit_button')}
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<div
 									class="cursor-pointer w-fit"
 									on:click|stopPropagation={(e) => {

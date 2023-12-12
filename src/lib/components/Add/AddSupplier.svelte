@@ -54,7 +54,7 @@
 	let name = '';
 	let identifiersInput = '';
 
-	$: identifiers = identifiersInput ? identifiersInput.split(',')?.map((i) => i.toLowerCase()) : [];
+	$: identifiers = identifiersInput ? identifiersInput.split(',')?.map((i) => i.toLowerCase()) : [name.toLowerCase()];
 
 	$: supplierIds = suppliers?.map((s) => s.id) || [];
 	$: supplierIdentifiers = suppliers?.flatMap((s) => s.names) || [];
@@ -147,7 +147,12 @@
 			</div>
 			<div class="w-1/3">
 				<Label>Identifiers</Label>
-				<Input type="text" bind:value={identifiersInput} on:change={() => {}} />
+				<Input
+					type="text"
+					placeholder={identifiersInput ? null : name?.toLowerCase()}
+					bind:value={identifiersInput}
+					on:change={() => {}}
+				/>
 			</div>
 		</div>
 		<!-- <div class="flex">
@@ -237,6 +242,7 @@
 			</TableBody>
 			<TableHead>
 				<TableHeadCell>{suppliers?.length}</TableHeadCell>
+				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />

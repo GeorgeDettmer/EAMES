@@ -46,7 +46,7 @@
 									count
 								}
 							}
-							lines(order_by: { part: asc_nulls_last, reference: asc_nulls_last }) {
+							lines(order_by: { reference: asc_nulls_last }) {
 								id
 								reference
 								part

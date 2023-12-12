@@ -91,6 +91,7 @@
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
+				<TableHeadCell />
 				<TableHeadCell>{suppliers?.reduce((a, v) => a + v?.orders_aggregate?.aggregate?.count || 0, 0)}</TableHeadCell>
 			</TableHead>
 		</Table>

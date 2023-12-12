@@ -19,7 +19,8 @@
 		TableHeadCell,
 		Textarea,
 		Toggle,
-		Badge
+		Badge,
+		Label
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
@@ -53,14 +54,14 @@
 		let rows = stringData.split('\n');
 
 		//Make columns
-		let columns = rows[0].split('\t');
+		let columns = rows[headerRow >= 0 ? headerRow : 0].split(importSeparator);
 
 		let newColumns = columns.map((c, idx) => `${c} (${XLSX.utils.encode_col(idx)})`);
 
 		//Note how we start at rowNr = 1, because 0 is the column row
-		for (let rowNr = 1; rowNr < rows.length; rowNr++) {
+		for (let rowNr = headerRow >= 0 ? 1 : 0; rowNr < rows.length; rowNr++) {
 			let o = {};
-			let data = rows[rowNr].split('\t');
+			let data = rows[rowNr].split(importSeparator);
 			if (rows[rowNr] && data) {
 				//Loop through all the data
 				for (let cellNr = 0; cellNr < data.length; cellNr++) {
@@ -93,6 +94,8 @@
 		return objects;
 	}
 
+	let headerRow: number = 0;
+	let importSeparator: string = '\t';
 	let importText: string = '';
 	let showImport: boolean = false;
 	let imported: any[] = []; //excelToObjects(importText).filter((line) => line?.['Part Number Description'] && line?.['Qty/Unit']);
@@ -495,94 +498,119 @@
 		showImport = files.accepted.length > 0;
 		handleDropAsync(e.detail.event);
 	}}
->
-	<div class="">
-		<div class="flex">
-			<div class="-mb-8 -ml-10 -mt-2">
-				<Button
-					on:click={(e) => {
-						addOrder();
-					}}
-				>
-					<PlusOutline class="text-gray-400" />
-				</Button>
+/>
+<div class="">
+	<div class="flex">
+		<div class="-mb-8 -ml-10 -mt-2">
+			<Button
+				on:click={(e) => {
+					addOrder();
+				}}
+			>
+				<PlusOutline class="text-gray-400" />
+			</Button>
+		</div>
+		<div class="-mb-8 ml-auto space-y-1">
+			<div class="mx-auto">
+				{#if orders.length > 0}
+					<Button
+						color="blue"
+						size="sm"
+						on:click={(e) => {
+							addOrders();
+						}}
+					>
+						Create {orders.length} orders with {ordersItems.length} lines
+					</Button>
+				{/if}
 			</div>
-			<div class="-mb-8 ml-auto space-y-1">
-				<div class="mx-auto">
-					{#if orders.length > 0}
-						<Button
-							color="blue"
-							size="sm"
-							on:click={(e) => {
-								addOrders();
-							}}
-						>
-							Create {orders.length} orders with {ordersItems.length} lines
-						</Button>
-					{/if}
-				</div>
-				<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
+			<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
+		</div>
+	</div>
+
+	<div>
+		{#if orders.length === 0}
+			<div class="mx-auto mt-10">
+				<p>No orders...</p>
+			</div>
+		{:else}
+			<Tabs
+				style="underline"
+				divider
+				defaultClass="flex flex-wrap space-x-1"
+				contentClass="p-4 rounded-lg mt-0"
+				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
+				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+			>
+				{#each orders as order, idx}
+					<TabItem open={openOrderIdx === idx}>
+						<span slot="title">
+							<OrderCreateHeader bind:order />
+						</span>
+						<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
+					</TabItem>
+				{/each}
+			</Tabs>
+		{/if}
+	</div>
+</div>
+
+<div class="p-2">
+	<div class="p-0 grid grid-cols-2">
+		<div class="flex">
+			<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>
+			<div class="my-auto ml-2 flex">
+				{#if files?.accepted?.[0]}
+					<Badge color="green">{files?.accepted?.[0].name}</Badge>
+				{/if}
+				{#if showImport}
+					<div class="float-right">
+						<div class="flex">
+							<input
+								type="number"
+								class="block w-10 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+								bind:value={headerRow}
+								on:input={() => {
+									imported = excelToObjects(importText);
+								}}
+							/>
+							<input
+								type="text"
+								class="block w-10 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+								bind:value={importSeparator}
+								on:input={() => {
+									imported = excelToObjects(importText);
+								}}
+							/>
+							{#if ['\t'].includes(importSeparator)}
+								<p class="-inset-7 text-xs text-gray-500 center">Tab</p>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
-
-		<div>
-			{#if orders.length === 0}
-				<div class="mx-auto mt-10">
-					<p>No orders...</p>
-				</div>
-			{:else}
-				<Tabs
-					style="underline"
-					divider
-					defaultClass="flex flex-wrap space-x-1"
-					contentClass="p-4 rounded-lg mt-0"
-					activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-					inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+		<div class="ml-auto flex">
+			{#if showImport}
+				<Button
+					color="green"
+					size="xs"
+					disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
+					on:click={() => {
+						fillOrderFromImport();
+					}}
 				>
-					{#each orders as order, idx}
-						<TabItem open={openOrderIdx === idx}>
-							<span slot="title">
-								<OrderCreateHeader bind:order />
-							</span>
-							<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
-						</TabItem>
-					{/each}
-				</Tabs>
+					Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
+				</Button>
 			{/if}
 		</div>
 	</div>
 
-	<div class="p-2">
-		<div class="p-0 grid grid-cols-2">
-			<div class="flex">
-				<Toggle color="blue" bind:checked={showImport}>Show import...</Toggle>
-				<div class="my-auto ml-2">
-					{#if files?.accepted?.[0]}
-						<Badge color="green">{files?.accepted?.[0].name}</Badge>
-					{/if}
-				</div>
-			</div>
-			<div class="ml-auto flex">
-				{#if showImport}
-					<Button
-						color="green"
-						size="xs"
-						disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
-						on:click={() => {
-							fillOrderFromImport();
-						}}
-					>
-						Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
-					</Button>
-				{/if}
-			</div>
-		</div>
-
-		{#if showImport}
-			<div class="grid grid-cols-2">
+	{#if showImport}
+		<div class="grid grid-cols-2">
+			<div>
 				<div>
-					<div>
-						<Textarea
+					<!-- <Textarea
 							id="po-paste"
 							placeholder="Import...."
 							rows="6"
@@ -592,64 +620,74 @@
 								imported = excelToObjects(importText);
 								//console.log('import:', imported);
 							}}
-						/>
-					</div>
-					<div class="grid grid-cols-2 gap-2">
-						{#each Object.keys(orderItemProperties) as header}
-							<div class="flex mt-2">
-								<div class="my-auto">
-									<p
-										class:underline={header !== 'spn'}
-										class=" mr-2 w-2/3 text-lg uppercase font-bold dark:text-white text-right"
-									>
-										{header}
-									</p>
-								</div>
-
-								<Select
-									class="w-1/3"
-									items={[{ value: null, name: '' }, ...Object.keys(headers)?.map((h) => ({ value: h, name: h }))]}
-									bind:value={orderItemProperties[header]}
-								/>
-							</div>
-						{/each}
-					</div>
-					{#if missingImportData2.flat(2).includes(true)}
-						<div class="p-2">
-							<Alert class="!items-start" color="red">
-								<span slot="icon">
-									<InfoCircleSolid slot="icon" class="w-4 h-4" />
-									<span class="sr-only">Info</span>
-								</span>
-								<p class="font-medium">
-									The below lines have required information missing, fix or remove them from the import:
+						/> -->
+					<textarea
+						class="block rounded-lg bg-white dark:bg-gray-800 text-black dark:text-white w-full text-sm"
+						placeholder="Import...."
+						rows="6"
+						wrap="off"
+						bind:value={importText}
+						on:input={() => {
+							imported = excelToObjects(importText);
+						}}
+					/>
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					{#each Object.keys(orderItemProperties) as header}
+						<div class="flex mt-2">
+							<div class="my-auto">
+								<p
+									class:underline={header !== 'spn'}
+									class=" mr-2 w-2/3 text-lg uppercase font-bold dark:text-white text-right"
+								>
+									{header}
 								</p>
-								<ol class="mt-1.5 ml-4 list-decimal list-inside">
-									{#each missingImportData2 as missing, idx}
-										{#if missing.flat().includes(true)}
-											<li class:line-through={!imported[idx]?._import} class:text-gray-500={!imported[idx]?._import}>
-												Line {idx + 1} is missing required import data
-											</li>
-											<ul class="ml-4 list-disc list-inside">
-												{#each missing as [isMissing, message]}
-													{#if isMissing}
-														<li
-															class="capitalize"
-															class:line-through={!imported[idx]?._import}
-															class:text-gray-500={!imported[idx]?._import}
-														>
-															{message}
-														</li>
-													{/if}
-												{/each}
-											</ul>
-										{/if}
-									{/each}
-								</ol>
-							</Alert>
+							</div>
+
+							<Select
+								class="w-1/3"
+								items={[{ value: null, name: '' }, ...Object.keys(headers)?.map((h) => ({ value: h, name: h }))]}
+								bind:value={orderItemProperties[header]}
+							/>
 						</div>
-					{/if}
-					<!-- 				{#if missingImportData.includes(true)}
+					{/each}
+				</div>
+				{#if missingImportData2.flat(2).includes(true)}
+					<div class="p-2">
+						<Alert class="!items-start" color="red">
+							<span slot="icon">
+								<InfoCircleSolid slot="icon" class="w-4 h-4" />
+								<span class="sr-only">Info</span>
+							</span>
+							<p class="font-medium">
+								The below lines have required information missing, fix or remove them from the import:
+							</p>
+							<ol class="mt-1.5 ml-4 list-decimal list-inside">
+								{#each missingImportData2 as missing, idx}
+									{#if missing.flat().includes(true)}
+										<li class:line-through={!imported[idx]?._import} class:text-gray-500={!imported[idx]?._import}>
+											Line {idx + 1} is missing required import data
+										</li>
+										<ul class="ml-4 list-disc list-inside">
+											{#each missing as [isMissing, message]}
+												{#if isMissing}
+													<li
+														class="capitalize"
+														class:line-through={!imported[idx]?._import}
+														class:text-gray-500={!imported[idx]?._import}
+													>
+														{message}
+													</li>
+												{/if}
+											{/each}
+										</ul>
+									{/if}
+								{/each}
+							</ol>
+						</Alert>
+					</div>
+				{/if}
+				<!-- 				{#if missingImportData.includes(true)}
 					<div class="p-2">
 						<Alert class="!items-start" color="red">
 							<span slot="icon">
@@ -669,88 +707,81 @@
 						</Alert>
 					</div>
 				{/if} -->
-				</div>
-				<Table>
-					<TableHead>
-						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
-
-						<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
-						<TableHeadCell>
-							<Checkbox
-								checked={true}
-								on:change={(e) => {
-									imported.forEach((i) => {
-										i._import = e?.target?.checked;
-									});
-									imported = imported;
-								}}
-							/>
-						</TableHeadCell>
-					</TableHead>
-					<TableBody>
-						{#each imported as line, idx}
-							{@const quantity = line[orderItemProperties['quantity']]}
-							{@const part = line[orderItemProperties['part']]}
-							{@const spn = line[orderItemProperties['spn']]}
-							{@const price = line[orderItemProperties['price']]}
-							{@const supplier = line[orderItemProperties['supplier']]}
-							<TableBodyRow
-								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
-							>
-								<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
-
-								<TableBodyCell tdClass="px-1 py-1 text-xs">
-									<div>
-										<p>{part ? part : 'undefined'}</p>
-										{#if spn}
-											<p class="text-xs italic">{spn}</p>
-										{/if}
-									</div>
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 text-xs">{quantity ? quantity : 'undefined'}</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 text-xs">{price ? price : 'undefined'}</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 text-xs"
-									>{price && quantity ? price * quantity : 'undefined'}</TableBodyCell
-								>
-								<TableBodyCell tdClass="px-1 py-1 text-xs">{supplier ? supplier : 'undefined'}</TableBodyCell>
-								<TableBodyCell>
-									<Checkbox bind:checked={line._import} />
-								</TableBodyCell>
-							</TableBodyRow>
-						{/each}
-					</TableBody>
-					<TableHead>
-						<TableHeadCell padding="px-1 py-1">{imported.length}</TableHeadCell>
-						<TableHeadCell />
-						<TableHeadCell padding="px-1 py-1">
-							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
-						</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">
-							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0), 0)}
-						</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">
-							{imported.reduce(
-								(a, v) =>
-									a +
-									(v?._import
-										? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']])
-										: 0),
-								0
-							)}
-						</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">
-							{[...new Set(imported.map((i) => i?._import && i?.[orderItemProperties['supplier']]))].filter((i) => i).length}
-						</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">
-							{imported.filter((v) => v._import).length}
-						</TableHeadCell>
-					</TableHead>
-				</Table>
 			</div>
-		{/if}
-	</div>
+			<Table>
+				<TableHead>
+					<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
+
+					<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
+					<TableHeadCell>
+						<Checkbox
+							checked={true}
+							on:change={(e) => {
+								imported.forEach((i) => {
+									i._import = e?.target?.checked;
+								});
+								imported = imported;
+							}}
+						/>
+					</TableHeadCell>
+				</TableHead>
+				<TableBody>
+					{#each imported as line, idx}
+						{@const quantity = line[orderItemProperties['quantity']]}
+						{@const part = line[orderItemProperties['part']]}
+						{@const spn = line[orderItemProperties['spn']]}
+						{@const price = line[orderItemProperties['price']]}
+						{@const supplier = line[orderItemProperties['supplier']]}
+						<TableBodyRow color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
+
+							<TableBodyCell tdClass="px-1 py-1 text-xs">
+								<div>
+									<p>{part ? part : 'undefined'}</p>
+									{#if spn}
+										<p class="text-xs italic">{spn}</p>
+									{/if}
+								</div>
+							</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">{quantity ? quantity : 'undefined'}</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">{price ? price : 'undefined'}</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">{price && quantity ? price * quantity : 'undefined'}</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">{supplier ? supplier : 'undefined'}</TableBodyCell>
+							<TableBodyCell>
+								<Checkbox bind:checked={line._import} />
+							</TableBodyCell>
+						</TableBodyRow>
+					{/each}
+				</TableBody>
+				<TableHead>
+					<TableHeadCell padding="px-1 py-1">{imported.length}</TableHeadCell>
+					<TableHeadCell />
+					<TableHeadCell padding="px-1 py-1">
+						{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
+					</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">
+						{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0), 0)}
+					</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">
+						{imported.reduce(
+							(a, v) =>
+								a +
+								(v?._import ? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']]) : 0),
+							0
+						)}
+					</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">
+						{[...new Set(imported.map((i) => i?._import && i?.[orderItemProperties['supplier']]))].filter((i) => i).length}
+					</TableHeadCell>
+					<TableHeadCell padding="px-1 py-1">
+						{imported.filter((v) => v._import).length}
+					</TableHeadCell>
+				</TableHead>
+			</Table>
+		</div>
+	{/if}
 </div>

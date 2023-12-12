@@ -205,15 +205,15 @@
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{new Intl.NumberFormat('en-GB', {
 							style: 'currency',
-							currency: item?.currencyCode || 'GBP',
-							roundingPriority: 'morePrecision'
+							currency: item?.currencyCode || 'GBP'
+							/* roundingPriority: 'morePrecision' */
 						}).format(item?.price || 0)}
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{new Intl.NumberFormat('en-GB', {
 							style: 'currency',
-							currency: item?.currencyCode || 'GBP',
-							roundingPriority: 'morePrecision'
+							currency: item?.currencyCode || 'GBP'
+							/* roundingPriority: 'morePrecision' */
 						}).format(item?.price * item?.quantity || 0)}
 					</TableBodyCell>
 

@@ -302,7 +302,14 @@
 						<TableBodyCellEditable
 							bind:value={item.category}
 							inputType="dropdown"
-							options={[{ id: null, text: 'Unknown' }, { id: 'Component' }, { id: 'Tooling' }]}
+							options={[
+								{ id: null, text: 'Unknown' },
+								{ id: 'Component' },
+								{ id: 'Tooling' },
+								{ id: 'PCB' },
+								{ id: 'Consumables' },
+								{ id: 'Other' }
+							]}
 						>
 							{item?.category || 'Unknown'}
 						</TableBodyCellEditable>

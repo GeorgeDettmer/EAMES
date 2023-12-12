@@ -672,13 +672,13 @@
 				</div>
 				<Table>
 					<TableHead>
-						<TableHeadCell>#</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
 
-						<TableHeadCell>Part</TableHeadCell>
-						<TableHeadCell>Qty</TableHeadCell>
-						<TableHeadCell>Unit Price</TableHeadCell>
-						<TableHeadCell>Total Price</TableHeadCell>
-						<TableHeadCell>Supplier</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 						<TableHeadCell>
 							<Checkbox
 								checked={true}
@@ -701,9 +701,9 @@
 							<TableBodyRow
 								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
 							>
-								<TableBodyCell>{idx + 1}</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
 
-								<TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
 									<div>
 										<p>{part ? part : 'undefined'}</p>
 										{#if spn}
@@ -711,10 +711,12 @@
 										{/if}
 									</div>
 								</TableBodyCell>
-								<TableBodyCell>{quantity ? quantity : 'undefined'}</TableBodyCell>
-								<TableBodyCell>{price ? price : 'undefined'}</TableBodyCell>
-								<TableBodyCell>{price && quantity ? price * quantity : 'undefined'}</TableBodyCell>
-								<TableBodyCell>{supplier ? supplier : 'undefined'}</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">{quantity ? quantity : 'undefined'}</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">{price ? price : 'undefined'}</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs"
+									>{price && quantity ? price * quantity : 'undefined'}</TableBodyCell
+								>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">{supplier ? supplier : 'undefined'}</TableBodyCell>
 								<TableBodyCell>
 									<Checkbox bind:checked={line._import} />
 								</TableBodyCell>
@@ -722,31 +724,28 @@
 						{/each}
 					</TableBody>
 					<TableHead>
-						<TableHeadCell>{imported.length}</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">{imported.length}</TableHeadCell>
 						<TableHeadCell />
-						<TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
 							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
 						</TableHeadCell>
-						<TableHeadCell
-							>{imported.reduce(
-								(a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0),
-								0
-							)}</TableHeadCell
-						>
-						<TableHeadCell
-							>{imported.reduce(
+						<TableHeadCell padding="px-1 py-1">
+							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0), 0)}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
+							{imported.reduce(
 								(a, v) =>
 									a +
 									(v?._import
 										? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']])
 										: 0),
 								0
-							)}</TableHeadCell
-						>
-						<TableHeadCell>
+							)}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
 							{[...new Set(imported.map((i) => i?._import && i?.[orderItemProperties['supplier']]))].filter((i) => i).length}
 						</TableHeadCell>
-						<TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
 							{imported.filter((v) => v._import).length}
 						</TableHeadCell>
 					</TableHead>

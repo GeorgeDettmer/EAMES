@@ -51,11 +51,17 @@
 			tracking: newTracking,
 			category: 'Component'
 		};
-		if (matchingLine) {
+		/* if (matchingLine) {
 			matchingLine.quantity += newLine.quantity;
-		}
+		} */
 		order.orders_items = [...order.orders_items, newLine];
 		addLineModal = false;
+
+		newPart = '';
+		newSPN = '';
+		newPrice = 0;
+		newQuantity = 0;
+		newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
 	}
 
 	export let selectedSupplierId: undefined | string = order?.id;
@@ -91,7 +97,16 @@
 </script>
 
 <Modal bind:open={addLineModal} size="md">
-	<div class="py-4">
+	<div
+		class="py-4"
+		on:keydown={(e) => {
+			console.log(e);
+			if (e.key === 'Enter') {
+				add();
+				addLineModal = false;
+			}
+		}}
+	>
 		<div class="grid grid-cols-4 gap-2">
 			<div class="col-span-2">
 				<Label for="small-input">Part/Item</Label>
@@ -231,10 +246,13 @@
 				</Table>
 			</div>
 		</div>
-		<div class="my-auto ml-auto pt-4">
-			<Button color="green" size="sm" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}
-				>Add <Plus size="16" /></Button
-			>
+
+		<div class="flex">
+			<div class="my-auto ml-auto pt-4">
+				<Button color="green" size="sm" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}>
+					Add <Plus size="16" />
+				</Button>
+			</div>
 		</div>
 	</div>
 </Modal>
@@ -318,7 +336,7 @@
 						</TableBodyCell> -->
 
 						<TableBodyCellEditable
-							tdClass="px-6 py-1"
+							tdClass="px-6 py-1 cursor-pointer"
 							bind:value={item.category}
 							inputType="dropdown"
 							options={[
@@ -346,11 +364,16 @@
 								{/if}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-1">
+						<!-- <TableBodyCell tdClass="px-6 py-1">
 							<Badge class="mx-0.5" color={'blue'}>
 								{item?.quantity}
 							</Badge>
-						</TableBodyCell>
+						</TableBodyCell> -->
+						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.quantity} inputType="number">
+							<Badge class="mx-0.5" color={'blue'}>
+								{item?.quantity}
+							</Badge>
+						</TableBodyCellEditable>
 						<TableBodyCell tdClass="px-6 py-1">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',

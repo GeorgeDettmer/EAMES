@@ -13,7 +13,8 @@
 		ButtonGroup,
 		Modal,
 		Label,
-		Select
+		Select,
+		Tooltip
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
@@ -89,29 +90,53 @@
 	});
 </script>
 
-<Modal bind:open={addLineModal} size="lg">
+<Modal bind:open={addLineModal} size="md">
 	<div class="py-4">
 		<div class="grid grid-cols-4 gap-2">
 			<div class="col-span-2">
 				<Label for="small-input">Part/Item</Label>
-				<Input id="small-input" size="sm" placeholder="Part" bind:value={newPart} />
+				<!-- <Input id="small-input" size="sm" placeholder="Part" bind:value={newPart} /> -->
+				<input
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					type="text"
+					autocomplete="off"
+					bind:value={newPart}
+				/>
 			</div>
 			<div class="col-span-2">
 				<Label for="small-input">Supplier PN</Label>
-				<Input id="small-input" size="sm" placeholder="Part" bind:value={newSPN} />
+				<input
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					type="text"
+					autocomplete="off"
+					bind:value={newSPN}
+				/>
+				<!-- <Input id="small-input" size="sm" placeholder="Part" bind:value={newSPN} /> -->
 			</div>
 			<div class="col-span-2">
 				<Label for="small-input">Quantity</Label>
-				<Input id="small-input" size="sm" placeholder="Quantity" bind:value={newQuantity} />
+				<input
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					type="number"
+					autocomplete="off"
+					min="0"
+					bind:value={newQuantity}
+				/>
+				<!-- <Input id="small-input" size="sm" placeholder="Quantity" bind:value={newQuantity} /> -->
 			</div>
 			<div class="col-span-2">
 				<Label for="small-input">Unit Price</Label>
-				<Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} />
+				<input
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					type="number"
+					autocomplete="off"
+					min="0"
+					bind:value={newPrice}
+				/>
+				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
-			<div class="my-auto ml-auto pt-4">
-				<Button color="green" size="sm" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}>Add ➕</Button>
-			</div>
-			<div class="col-span-3">
+
+			<!--<div class="col-span-3">
 				<Label for="small-input"
 					>Tracking<span
 						class="cursor-pointer"
@@ -119,25 +144,11 @@
 							newTracking = [...newTracking, { tracking_number: null, carrier_code: 'ups' }];
 						}}
 					>
-						<!-- <Plus size="20" class="hover:text-green-600 cursor-pointer" /> -->
 						➕
 					</span>
 				</Label>
-				{#each newTracking as track, idx}
+				 {#each newTracking as track, idx}
 					<ButtonGroup size="sm">
-						<!-- <Button
-							size="sm"
-							color="none"
-							class="flex-shrink-0 text-gray-900 bg-gray-100 border border-gray-300 dark:border-gray-700 dark:text-white hover:bg-gray-200 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-						>
-							<ChevronDownSolid class="w-2 h-2 ml-2 text-white dark:text-white" />
-						</Button> -->
-						<!-- <Dropdown bind:value={track.carrier_code}>
-							{#each carrier_codes as c}
-								<DropdownItem>{c}</DropdownItem>
-							{/each}
-						</Dropdown> -->
-
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 							type="text"
@@ -160,27 +171,25 @@
 						>
 							❌
 						</span>
-						<!-- <Button color="primary" class="!p-2.5">
-			<SearchOutline class="w-5 h-5" />
-		</Button> -->
 					</ButtonGroup>
-				{/each}
-			</div>
+				{/each} 
+			</div>-->
 		</div>
 
 		<div class="flex pt-4">
-			<Table>
-				<TableHead>
-					<TableHeadCell>User</TableHeadCell>
-					<TableHeadCell>Time/Date</TableHeadCell>
-					<TableHeadCell>Part</TableHeadCell>
-					<TableHeadCell>Order Qty</TableHeadCell>
-					<TableHeadCell>Unit Cost</TableHeadCell>
-					<TableHeadCell>Total Cost</TableHeadCell>
-				</TableHead>
-				<TableBody>
-					<TableBodyRow class="p-0 object-right">
-						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
+			<div class="mx-auto">
+				<Table>
+					<TableHead>
+						<!-- <TableHeadCell>User</TableHeadCell>
+					<TableHeadCell>Time/Date</TableHeadCell> -->
+						<TableHeadCell>Part</TableHeadCell>
+						<TableHeadCell>Order Qty</TableHeadCell>
+						<TableHeadCell>Unit Cost</TableHeadCell>
+						<TableHeadCell>Total Cost</TableHeadCell>
+					</TableHead>
+					<TableBody>
+						<TableBodyRow class="p-0 object-right">
+							<!-- <TableBodyCell tdClass="px-6 py-0 whitespace-nowrap font-sm ">
 							<UserIcon size="xs" user={order?.user}>
 								{order?.user?.first_name}
 								{order?.user?.last_name}
@@ -188,38 +197,44 @@
 						</TableBodyCell>
 						<TableBodyCell>
 							<p>{datetimeFormat(new Date().toISOString())}</p>
-						</TableBodyCell>
-						<!-- 					<TableBodyCell>
+						</TableBodyCell> -->
+							<!-- 					<TableBodyCell>
 				{item?.order?.supplier?.reference || ''}
 			</TableBodyCell> -->
-						<TableBodyCell>
-							<div>
-								<p>{newPart}</p>
-								{#if newSPN}
-									<p class="text-xs italic">{newSPN}</p>
-								{/if}
-							</div>
-						</TableBodyCell>
-						<TableBodyCell>
-							<Badge class="mx-0.5" color={'blue'}>
-								{newQuantity}
-							</Badge>
-						</TableBodyCell>
-						<TableBodyCell>
-							{new Intl.NumberFormat('en-GB', {
-								style: 'currency',
-								currency: 'GBP'
-							}).format(newPrice)}
-						</TableBodyCell>
-						<TableBodyCell>
-							{new Intl.NumberFormat('en-GB', {
-								style: 'currency',
-								currency: 'GBP'
-							}).format(Math.round((newPrice * newQuantity + Number.EPSILON) * 100) / 100 || 0)}
-						</TableBodyCell>
-					</TableBodyRow>
-				</TableBody>
-			</Table>
+							<TableBodyCell>
+								<div>
+									<p>{newPart}</p>
+									{#if newSPN}
+										<p class="text-xs italic">{newSPN}</p>
+									{/if}
+								</div>
+							</TableBodyCell>
+							<TableBodyCell>
+								<Badge class="mx-0.5" color={'blue'}>
+									{newQuantity}
+								</Badge>
+							</TableBodyCell>
+							<TableBodyCell>
+								{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(newPrice)}
+							</TableBodyCell>
+							<TableBodyCell>
+								{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(Math.round((newPrice * newQuantity + Number.EPSILON) * 100) / 100 || 0)}
+							</TableBodyCell>
+						</TableBodyRow>
+					</TableBody>
+				</Table>
+			</div>
+		</div>
+		<div class="my-auto ml-auto pt-4">
+			<Button color="green" size="sm" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}
+				>Add <Plus size="16" /></Button
+			>
 		</div>
 	</div>
 </Modal>
@@ -232,7 +247,7 @@
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>User</TableHeadCell>
-				<TableHeadCell>Time/Date</TableHeadCell>
+				<!-- <TableHeadCell>Time/Date</TableHeadCell> -->
 				<TableHeadCell>Category</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
@@ -286,20 +301,24 @@
 			<TableBody>
 				{#each orderItems as item, idx}
 					<TableBodyRow class="p-0 object-right">
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-1 py-0 whitespace-nowrap font-sm ">
+						<TableBodyCell tdClass="px-6 py-1">
 							<UserIcon size="xs" user={item?.user || order?.user}>
 								{item?.user?.first_name || order?.user?.first_name}
 								{item?.user?.last_name || order?.user?.last_name}
 							</UserIcon>
+							<Tooltip placement="right">
+								<p>{datetimeFormat(item.created_at)}</p>
+							</Tooltip>
 						</TableBodyCell>
-						<TableBodyCell>
+						<!-- <TableBodyCell>
 							<p>{datetimeFormat(item.created_at)}</p>
-						</TableBodyCell>
+						</TableBodyCell> -->
 
 						<TableBodyCellEditable
+							tdClass="px-6 py-1"
 							bind:value={item.category}
 							inputType="dropdown"
 							options={[
@@ -319,7 +338,7 @@
 						<!-- 					<TableBodyCell>
 						{item?.order?.supplier?.reference || ''}
 					</TableBodyCell> -->
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<div>
 								<p>{item?.part}</p>
 								{#if item?.spn}
@@ -327,24 +346,24 @@
 								{/if}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<Badge class="mx-0.5" color={'blue'}>
 								{item?.quantity}
 							</Badge>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
 							}).format(item?.price || 0)}
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<div>
 								<ButtonGroup size="sm">
 									<!-- <Input
@@ -375,7 +394,7 @@
 								</ButtonGroup>
 							</div>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<span
 								class="cursor-pointer"
 								on:click={() => {
@@ -395,7 +414,6 @@
 				<TableBodyCell>
 					{orderItems.length + 1}
 				</TableBodyCell>
-				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />

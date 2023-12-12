@@ -65,8 +65,8 @@
 												supplier_export[selectedSupplierId][type](order);
 											}}
 										>
-											<BarsArrowDown size="20" />
-											<p class="text-xs">{type}</p>
+											<BarsArrowDown size="20" class="text-gray-700 dark:text-gray-200" />
+											<p class="text-xs text-gray-800 dark:text-gray-200">{type}</p>
 										</Button>
 									</div>
 								{/each}

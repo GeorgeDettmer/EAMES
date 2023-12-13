@@ -113,7 +113,7 @@
 						The id {id} is already assigned to another supplier
 					</Helper>
 			</div> -->
-			<div class="w-1/3">
+			<div class="w-2/3">
 				<Label>Name</Label>
 				<Input placeholder={null} type="text" bind:value={name} />
 			</div>

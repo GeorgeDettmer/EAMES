@@ -20,11 +20,11 @@
 	import AssemblyInfoOverview from '../Assembly/AssemblyInfoOverview.svelte';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
-	import SearchList from '../Misc/SearchList.svelte';
 	import AddAssembly from './AddAssembly.svelte';
 	import { Plus, PlusCircle } from 'svelte-heros-v2';
-	import { goto } from '$app/navigation';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
+	import AddComponent from './AddComponent.svelte';
+	import AddCustomer from './AddCustomer.svelte';
 	const urqlClient = getContextClient();
 	$: lastJobIdStore = subscriptionStore({
 		client: getContextClient(),
@@ -111,6 +111,9 @@
 	let leadTime = 1;
 	let createKit = false;
 	let createAssembly = false;
+
+	let createAssemblyVisible = false;
+	let createCustomerVisible = false;
 
 	$: assemblies = $assembliesStore?.data?.assemblies?.map((assembly) => {
 		return {
@@ -258,7 +261,19 @@
 		</div>
 		<div class="">
 			<Label>Customer</Label>
-			<Select items={customers} bind:value={customer} placeholder="Select customer" />
+
+			<div class="flex">
+				<Select items={customers} bind:value={customer} placeholder="Select customer" />
+				<div class="ml-1 my-auto">
+					<span
+						class="hover:text-green-500 cursor-pointer"
+						class:text-green-500={createCustomerVisible}
+						on:click={() => (createCustomerVisible = true)}
+					>
+						<PlusCircle />
+					</span>
+				</div>
+			</div>
 		</div>
 		<div class="flex gap-x-2">
 			<div class="w-1/2">
@@ -294,9 +309,13 @@
 					<div class="flex">
 						<Select items={assemblies} bind:value={assembly} placeholder="Select assembly" />
 						<div class="ml-1 my-auto">
-							<a class="hover:text-green-500 cursor-pointer" target="_blank" href={window.origin + '/add/assembly'}>
+							<span
+								class="hover:text-green-500 cursor-pointer"
+								class:text-green-500={createAssemblyVisible}
+								on:click={() => (createAssemblyVisible = true)}
+							>
 								<PlusCircle />
-							</a>
+							</span>
 						</div>
 					</div>
 				{:else}
@@ -547,3 +566,10 @@
 		<!-- <AssemblyInfoOverview assemblyId={assembly.id} /> -->
 	{/if}
 </div>
+
+<Modal bind:open={createAssemblyVisible} outsideclose size="md">
+	<AddAssembly />
+</Modal>
+<Modal bind:open={createCustomerVisible} outsideclose size="lg">
+	<AddCustomer />
+</Modal>

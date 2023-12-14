@@ -7,6 +7,7 @@
 	export let inputType: HTMLInputTypeAttribute | 'dropdown' = 'text';
 	export let tdClass: string | undefined = undefined;
 	export let adjustWidthToFit: boolean = true;
+	export let clickToEdit: boolean = true;
 
 	interface Options {
 		id: string | number;
@@ -34,6 +35,7 @@
 
 <TableBodyCell
 	on:click={(e) => {
+		if (!clickToEdit) return;
 		editing = true;
 	}}
 	{tdClass}

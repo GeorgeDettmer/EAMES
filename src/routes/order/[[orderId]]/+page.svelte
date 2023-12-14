@@ -499,7 +499,7 @@
 		</TableHead>
 
 		<TableBody>
-			{#each orders as order, idx}
+			{#each orders || [] as order, idx}
 				{@const ordersTotalQty = order?.orders_items_aggregate?.aggregate?.sum?.quantity}
 				{@const ordersTotalReceivedQty = order?.orders_items?.reduce(
 					(a, v) => a + v.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity,

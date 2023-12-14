@@ -220,10 +220,10 @@
 							? 'red'
 							: 'default'}
 					>
-						<TableBodyCell>{idx + 1}</TableBodyCell>
-						<TableBodyCell>{supplier.id}</TableBodyCell>
-						<TableBodyCell>{supplier.name}</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{idx + 1}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{supplier.id}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{supplier.name}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">
 								{#each supplier?.names || [] as identifier}
 									<div>
@@ -232,11 +232,11 @@
 								{/each}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell>{datetimeFormat(supplier.created_at)}</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{datetimeFormat(supplier.created_at)}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
 							<UserIcon size="xs" user={supplier?.user}>{supplier?.user?.username || 'Unknown'}</UserIcon>
 						</TableBodyCell>
-						<TableBodyCell>{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>

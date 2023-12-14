@@ -10,6 +10,7 @@
 	import { messagesStore } from 'svelte-legos';
 	import TableBodyCellEditable from '$lib/components/Misc/Table/TableBodyCellEditable.svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
+	import EditToggle from '$lib/components/Misc/EditToggle.svelte';
 
 	onMount(() => {
 		$windowTitleStore = 'Suppliers';
@@ -52,11 +53,12 @@
 	$: supplierIds = suppliers?.map((s) => s.id) || [];
 	$: suggestedId = name?.toUpperCase()?.replace(/[^A-Za-z0-9]/g, '') || '';
 	$: id = suggestedId;
-	$: console.log('test', supplierIds, suggestedId, id);
+	$: console.log('suppliers', suppliers, suppliersOriginal);
 
 	$: supplierIdentifiers = suppliers?.flatMap((s) => s.names) || [];
 
-	let newSupplier = null;
+	let suppliersOriginal = [];
+	let newSuppliers = [];
 	let addedIds: string[] = [];
 	let adding = false;
 	const urqlClient = getContextClient();
@@ -123,21 +125,31 @@
 				<TableHeadCell />
 			</TableHead>
 			<TableBody>
-				{#each suppliers as supplier, idx (supplier.id)}
+				{#each [...suppliers, ...newSuppliers] as supplier, idx}
 					<TableBodyRow>
-						<TableBodyCellEditable clickToEdit={false} tdClass="px-6 py-1">
+						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}
-						</TableBodyCellEditable>
-						<TableBodyCellEditable
-							inputType="text"
-							clickToEdit={false}
-							bind:value={supplier.id}
-							bind:editing={supplier.__edit}
-							tdClass="px-6 py-1"
-						>
-							{supplier.id}
-						</TableBodyCellEditable>
-						<TableBodyCellEditable
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							{#if supplier.__edit}
+								<span
+									contenteditable="true"
+									bind:innerText={supplier.id}
+									on:keydown={(e) => {
+										if (e.key === 'Enter') {
+											e.target?.blur();
+											e.preventDefault();
+										}
+									}}
+									on:blur={() => {
+										console.log('change', supplier.id);
+									}}
+								/>
+							{:else}
+								{supplier.id}
+							{/if}
+						</TableBodyCell>
+						<TableBodyCell
 							inputType="text"
 							clickToEdit={false}
 							bind:value={supplier.name}
@@ -145,7 +157,7 @@
 							tdClass="px-6 py-1"
 						>
 							{supplier.name}
-						</TableBodyCellEditable>
+						</TableBodyCell>
 						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">
 								{#each supplier?.names || [] as identifier}
@@ -163,17 +175,24 @@
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
-							<span
+							<EditToggle
+								bind:editing={supplier.__edit}
 								on:click={() => {
+									console.log('click');
+									suppliersOriginal[idx] = { ...supplier };
 									supplier.__edit = !supplier?.__edit;
 								}}
-							>
-								{#if supplier.__edit}
-									<Check />
-								{:else}
-									<EditOutline size="sm" />
-								{/if}
-							</span>
+								on:dispose={() => {
+									console.log('dispose changes');
+									supplier.__edit = false;
+									supplier[idx] = suppliersOriginal[idx];
+									suppliersOriginal[idx] = undefined;
+								}}
+								on:save={() => {
+									console.log('save');
+									supplier.__edit = false;
+								}}
+							/>
 						</TableBodyCell>
 					</TableBodyRow>
 				{/each}
@@ -189,14 +208,18 @@
 				<TableHeadCell>
 					<span
 						on:click={() => {
-							newSupplier = {
-								id: '',
-								name: '',
-								names: [],
-								created_at: new Date(),
-								user_id: $page?.data?.user?.id,
-								user: $page?.data?.user
-							};
+							newSuppliers = [
+								...newSuppliers,
+								{
+									id: '',
+									name: '',
+									names: [],
+									created_at: new Date(),
+									user_id: $page?.data?.user?.id,
+									user: $page?.data?.user,
+									__edit: true
+								}
+							];
 						}}
 					>
 						<Plus size="24" class="hover:text-green-600 cursor-pointer" />

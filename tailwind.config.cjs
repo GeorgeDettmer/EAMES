@@ -6,7 +6,7 @@ const config = {
 		extend: {}
 	},
 	darkMode: 'class',
-	plugins: [require('flowbite/plugin'), require('tailwind-scrollbar')]
+	plugins: [require('flowbite/plugin'), require('tailwind-scrollbar')({ nocompatible: true })]
 };
 
 module.exports = config;

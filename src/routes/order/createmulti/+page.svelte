@@ -32,6 +32,7 @@
 	import { getParameterInsensitiveAny } from '$lib/utils';
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
+	import EditableText from '$lib/components/Misc/EditableText.svelte';
 
 	$windowTitleStore = 'New order';
 	onDestroy(() => {
@@ -195,8 +196,8 @@
 		part: 'MPN',
 		quantity: 'Order',
 		price: 'Unit(£)',
-		spn: 'Purchased Part',
-		supplier: 'Supplier'
+		supplier: 'Supplier',
+		spn: 'Purchased Part'
 	};
 	let defaultOrderItemProperties = orderItemProperties;
 
@@ -622,7 +623,7 @@
 							}}
 						/> -->
 					<textarea
-						class="block rounded-lg bg-white dark:bg-gray-800 text-black dark:text-white w-full text-sm"
+						class="scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-600 scrollbar-thumb-rounded block rounded-lg bg-white dark:bg-gray-800 text-black dark:text-white w-full text-sm"
 						placeholder="Import...."
 						rows="6"
 						wrap="off"
@@ -747,10 +748,22 @@
 									{/if}
 								</div>
 							</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">{quantity ? quantity : 'undefined'}</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">{price ? price : 'undefined'}</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">{price && quantity ? price * quantity : 'undefined'}</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">{supplier ? supplier : 'undefined'}</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">
+								<span contenteditable="true" bind:innerText={line[orderItemProperties['quantity']]} />
+								<!-- {quantity ? quantity : 'undefined'} -->
+							</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">
+								<span contenteditable="true" bind:innerText={line[orderItemProperties['price']]} />
+								<!-- {price ? price : 'undefined'} -->
+							</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">
+								{price && quantity ? price * quantity : 'undefined'}
+							</TableBodyCell>
+							<TableBodyCell tdClass="px-1 py-1 text-xs">
+								<EditableText bind:innerText={line[orderItemProperties['supplier']]} />
+								<!-- <span contenteditable="true" bind:innerText={line[orderItemProperties['supplier']]} /> -->
+								<!-- {supplier ? supplier : 'undefined'} -->
+							</TableBodyCell>
 							<TableBodyCell>
 								<Checkbox bind:checked={line._import} />
 							</TableBodyCell>

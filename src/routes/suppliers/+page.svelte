@@ -128,7 +128,7 @@
 				{#each [...suppliers, ...newSuppliers] as supplier, idx}
 					<TableBodyRow>
 						<TableBodyCell tdClass="px-6 py-1">
-							{idx + 1}
+							<p class="cursor-default">{idx + 1}</p>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
 							{#if supplier.__edit}
@@ -149,14 +149,24 @@
 								{supplier.id}
 							{/if}
 						</TableBodyCell>
-						<TableBodyCell
-							inputType="text"
-							clickToEdit={false}
-							bind:value={supplier.name}
-							bind:editing={supplier.__edit}
-							tdClass="px-6 py-1"
-						>
-							{supplier.name}
+						<TableBodyCell tdClass="px-6 py-1">
+							{#if supplier.__edit}
+								<span
+									contenteditable="true"
+									bind:innerText={supplier.name}
+									on:keydown={(e) => {
+										if (e.key === 'Enter') {
+											e.target?.blur();
+											e.preventDefault();
+										}
+									}}
+									on:blur={() => {
+										console.log('change', supplier.name);
+									}}
+								/>
+							{:else}
+								{supplier.name}
+							{/if}
 						</TableBodyCell>
 						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">

@@ -28,6 +28,7 @@
 					name
 					names
 					created_at
+					tags
 					user {
 						username
 						color
@@ -109,6 +110,61 @@
 		}
 		adding = false;
 	}
+
+	interface Supplier {
+		id: string;
+		name: string;
+		names: string[];
+	}
+	let updating;
+	async function update(id: string, updates: Supplier) {
+		if (updating) return;
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		if (!id) {
+			messagesStore('Supplier id must be provided for update', 'warning');
+			return;
+		}
+
+		let identifiers = updates?.names || [];
+		if (identifiers.length > 0 && identifiers.every((i) => supplierIdentifiers.includes(i))) {
+			messagesStore(`Supplier with matching identifier (${identifiers}) already exists`, 'warning');
+			return;
+		}
+		/* if (!$page?.data?.user?.processes['eng']) {
+			alert(
+				`You do not have permission to insert components. You have permission for: ${Object.keys(
+					$page?.data?.user?.processes
+				)}`
+			);
+			return;
+		} */
+		updating = true;
+		let mutationResult;
+
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation updateSupplier($id: String, $_set: erp_suppliers_set_input = {}) {
+					update_erp_suppliers_by_pk(pk_columns: { id: $id: }, _set: $_set) {
+						name
+						names
+						updated_at
+					}
+				}
+			`,
+			{ _set: updates }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+		} else {
+			console.log('MUTATION RESULT: ', mutationResult);
+			messagesStore('Updated supplier: ' + mutationResult.data.update_erp_suppliers_by_pk.id, 'success');
+		}
+		updating = false;
+	}
 </script>
 
 <div class="pt-4 max-h-500px mx-auto">
@@ -119,6 +175,7 @@
 				<TableHeadCell>ID</TableHeadCell>
 				<TableHeadCell>Name</TableHeadCell>
 				<TableHeadCell>Identifiers</TableHeadCell>
+				<TableHeadCell>Tags</TableHeadCell>
 				<TableHeadCell>Created at</TableHeadCell>
 				<TableHeadCell>Created by</TableHeadCell>
 				<TableHeadCell>Orders</TableHeadCell>
@@ -177,6 +234,15 @@
 								{/each}
 							</div>
 						</TableBodyCell>
+						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
+							<div class="flex gap-x-0.5">
+								{#each supplier?.tags || [] as tag}
+									<div>
+										<Badge color="blue">{tag}</Badge>
+									</div>
+								{/each}
+							</div>
+						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
 							{datetimeFormat(supplier.created_at)}
 						</TableBodyCell>
@@ -195,7 +261,7 @@
 								on:dispose={() => {
 									console.log('dispose changes');
 									supplier.__edit = false;
-									supplier[idx] = suppliersOriginal[idx];
+									suppliers[idx] = suppliersOriginal[idx];
 									suppliersOriginal[idx] = undefined;
 								}}
 								on:save={() => {
@@ -208,7 +274,8 @@
 				{/each}
 			</TableBody>
 			<TableHead>
-				<TableHeadCell>{suppliers?.length}</TableHeadCell>
+				<TableHeadCell>{suppliers?.length + newSuppliers?.length}</TableHeadCell>
+				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
@@ -216,7 +283,7 @@
 				<TableHeadCell />
 				<TableHeadCell>{suppliers?.reduce((a, v) => a + v?.orders_aggregate?.aggregate?.count || 0, 0)}</TableHeadCell>
 				<TableHeadCell>
-					<span
+					<!-- <span
 						on:click={() => {
 							newSuppliers = [
 								...newSuppliers,
@@ -233,7 +300,7 @@
 						}}
 					>
 						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
-					</span>
+					</span> -->
 				</TableHeadCell>
 			</TableHead>
 		</Table>

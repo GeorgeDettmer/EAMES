@@ -109,7 +109,7 @@
 	let shipDate;
 	let deliveryDate;
 	let leadTime = 1;
-	let createKit = false;
+	let createKit = true;
 	let createAssembly = false;
 
 	let createAssemblyVisible = false;
@@ -171,6 +171,10 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted job: ' + mutationResult.data.insert_jobs_one.id, 'success');
+			id = undefined;
+			quantity = undefined;
+			customer = undefined;
+			assembly = undefined;
 		}
 		if (createKit) {
 			let job_id = mutationResult.data.insert_jobs_one.id;

@@ -23,7 +23,7 @@
 		Label
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
+	import { EditOutline, InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderCreateHeader from '$lib/components/Orders/OrderCreateHeader.svelte';
 	import { goto } from '$app/navigation';
@@ -741,19 +741,22 @@
 							<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
 
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<div>
-									<p>{part ? part : 'undefined'}</p>
-									{#if spn}
-										<p class="text-xs italic">{spn}</p>
-									{/if}
+								<div class="">
+									<!-- <p>{part ? part : 'undefined'}</p> -->
+									<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
+
+									<span class="text-xs italic">
+										<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>
+									</span>
+									<!-- <p class="text-xs italic">{spn}</p> -->
 								</div>
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<span contenteditable="true" bind:innerText={line[orderItemProperties['quantity']]} />
+								<EditableText bind:innerText={line[orderItemProperties['quantity']]} />
 								<!-- {quantity ? quantity : 'undefined'} -->
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<span contenteditable="true" bind:innerText={line[orderItemProperties['price']]} />
+								<EditableText bind:innerText={line[orderItemProperties['price']]} />
 								<!-- {price ? price : 'undefined'} -->
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
@@ -761,7 +764,6 @@
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
 								<EditableText bind:innerText={line[orderItemProperties['supplier']]} />
-								<!-- <span contenteditable="true" bind:innerText={line[orderItemProperties['supplier']]} /> -->
 								<!-- {supplier ? supplier : 'undefined'} -->
 							</TableBodyCell>
 							<TableBodyCell>

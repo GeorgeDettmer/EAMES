@@ -17,7 +17,12 @@
 		}}
 		on:keydown
 		on:blur
-	/>
+	>
+		{#if innerText?.length < 1}
+			No text...
+			<slot />
+		{/if}
+	</span>
 {:else}
 	{innerText}
 {/if}

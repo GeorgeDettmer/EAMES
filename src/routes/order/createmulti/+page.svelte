@@ -741,15 +741,14 @@
 							<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
 
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<div class="">
-									<!-- <p>{part ? part : 'undefined'}</p> -->
+								<!-- <p>{part ? part : 'undefined'}</p> -->
+								<p>
 									<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
-
-									<span class="text-xs italic">
-										<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>
-									</span>
-									<!-- <p class="text-xs italic">{spn}</p> -->
-								</div>
+								</p>
+								<p class="text-xs italic">
+									<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>
+								</p>
+								<!-- <p class="text-xs italic">{spn}</p> -->
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-1 py-1 text-xs">
 								<EditableText bind:innerText={line[orderItemProperties['quantity']]} />

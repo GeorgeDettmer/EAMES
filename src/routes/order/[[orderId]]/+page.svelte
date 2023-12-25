@@ -72,7 +72,7 @@
 	`;
 
 	let queryOffset: number = 0;
-	let queryLimit: number = 200;
+	let queryLimit = storage(writable(200), 'EAMES_orders_limit');
 	let ordersStore: OperationResultStore;
 	//TODO: Clap upper limit of offset so as not to go past last id...
 	//TODO: If filter applied adjust offset?
@@ -81,7 +81,7 @@
 			client,
 			query,
 			variables: {
-				limit: isFiltered ? 1000 : queryLimit,
+				limit: isFiltered ? 1000 : $queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
 					id: idSearch
@@ -122,6 +122,7 @@
 	let lastRefreshedAt;
 	let oldOrders = [];
 	function refresh() {
+		if ($ordersStore?.fetching) return;
 		if (window.document.visibilityState !== 'visible') return;
 		lastRefreshedAt = new Date();
 		oldOrders = orders || [];
@@ -129,7 +130,7 @@
 			client,
 			query,
 			variables: {
-				limit: isFiltered ? 1000 : queryLimit,
+				limit: isFiltered ? 1000 : $queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
 					id: idSearch
@@ -177,11 +178,6 @@
 					id
 					name
 					names
-					orders_aggregate {
-						aggregate {
-							count
-						}
-					}
 				}
 			}
 		`,
@@ -547,10 +543,14 @@
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<div class="grid grid-cols-2">
-							{#each jobsOrders as jo}
+							{#each jobsOrders || [] as jo}
 								<a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank">
 									<Badge color="blue">{jo?.job?.id}</Badge>
 								</a>
+							{:else}
+								<div>
+									<Badge color="blue">Unknown</Badge>
+								</div>
 							{/each}
 						</div>
 					</TableBodyCollapsible>
@@ -570,7 +570,7 @@
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<div class="grid grid-cols-2">
-							{#each categories as category}
+							{#each categories || [] as category}
 								<div>
 									<Badge color="blue">{category}</Badge>
 								</div>
@@ -676,10 +676,10 @@
 					queryOffset = orders?.[0]?.id;
 				} */
 						oldOrders = orders;
-						queryOffset = Math.max(queryOffset - queryLimit, 0);
+						queryOffset = Math.max(queryOffset - $queryLimit, 0);
 					}}
 				>
-					<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {queryLimit}</div>
+					<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {$queryLimit}</div>
 				</TableHeadCell>
 			{:else}
 				<TableHeadCell />
@@ -710,10 +710,10 @@
 					queryOffset = orders?.[0]?.id;
 				} */
 						oldOrders = orders;
-						queryOffset += queryLimit;
+						queryOffset += $queryLimit;
 					}}
 				>
-					<div class={'flex cursor-point float-right' + classes.link}>Next {queryLimit} <ChevronRight size="16" /></div>
+					<div class={'flex cursor-point float-right' + classes.link}>Next {$queryLimit} <ChevronRight size="16" /></div>
 				</TableHeadCell>
 			{:else}
 				<TableHeadCell />

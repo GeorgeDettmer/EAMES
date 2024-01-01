@@ -112,7 +112,7 @@
 				jobIdsCriteria: jobSearch ? { job_id: { _in: jobSearch.split(',').map((v) => v.replace(/\D/g, '')) } } : {},
 				idsCriteria: idSearch ? { _in: idSearch.split(',').map((v) => v.replace(/\D/g, '')) } : {} */
 			},
-			requestPolicy: 'network-only'
+			requestPolicy: 'cache-and-network'
 		});
 		lastRefreshedAt = new Date();
 	}
@@ -549,7 +549,7 @@
 								</a>
 							{:else}
 								<div>
-									<Badge color="blue">Unknown</Badge>
+									<Badge color="blue">N/A</Badge>
 								</div>
 							{/each}
 						</div>

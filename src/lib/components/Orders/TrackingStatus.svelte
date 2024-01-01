@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	const ENABLE_LOCAL_CACHE = false;
 	onMount(() => {
-		//console.log('local cache:', trackCache);
+		if (ENABLE_LOCAL_CACHE) console.log('local cache:', trackCache);
 	});
 
 	interface TrackingDetails {

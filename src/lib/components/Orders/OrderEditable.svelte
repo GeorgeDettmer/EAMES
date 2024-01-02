@@ -420,7 +420,7 @@
 	{/if}
 	<div on:keydown={(e) => tableKeypress(e)}>
 		{#if editing}
-			<OrderCreateMulti order={[editingOrder]} />
+			<OrderCreateMulti order={editingOrder} />
 		{:else}
 			<Table>
 				<TableHead>
@@ -457,6 +457,7 @@
 									editingOrder.id = undefined;
 									editing = true;
 								}
+								console.log('edit', editingOrder);
 							}}
 						>
 							<EditOutline class="text-gray-500" />

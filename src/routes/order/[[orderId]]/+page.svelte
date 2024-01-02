@@ -122,6 +122,7 @@
 	let lastRefreshedAt;
 	let oldOrders = [];
 	function refresh() {
+		if (orderId) return;
 		if ($ordersStore?.fetching) return;
 		if (window.document.visibilityState !== 'visible') return;
 		lastRefreshedAt = new Date();
@@ -243,7 +244,7 @@
 			}
 		}
 
-		$windowTitleStore = $page?.data?.orderId ? `Order ${$page?.data?.orderId}` : 'Orders';
+		$windowTitleStore = $page?.data?.orderId ? `Order | ${$page?.data?.orderId}` : 'Orders';
 		return () => {
 			$windowTitleStore = '';
 		};
@@ -271,7 +272,7 @@
 {/if}
 
 {#if orderId}
-	{#if $page?.data?.user?.processes && $page?.data?.user?.processes['purchase']}
+	{#if $page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase']}
 		<OrderEditable {orderId} />
 	{:else}
 		<OrderOverview {orderId} />

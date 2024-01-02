@@ -20,7 +20,8 @@
 		Textarea,
 		Toggle,
 		Badge,
-		Label
+		Label,
+		Tooltip
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { EditOutline, InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
@@ -510,6 +511,7 @@
 			>
 				<PlusOutline class="text-gray-400" />
 			</Button>
+			<Tooltip placement="right">Add order</Tooltip>
 		</div>
 		<div class="-mb-8 ml-auto space-y-1">
 			<div class="mx-auto">
@@ -611,17 +613,6 @@
 		<div class="grid grid-cols-2">
 			<div>
 				<div>
-					<!-- <Textarea
-							id="po-paste"
-							placeholder="Import...."
-							rows="6"
-							name="message"
-							bind:value={importText}
-							on:input={() => {
-								imported = excelToObjects(importText);
-								//console.log('import:', imported);
-							}}
-						/> -->
 					<textarea
 						class="scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-600 scrollbar-thumb-rounded block rounded-lg bg-white dark:bg-gray-800 text-black dark:text-white w-full text-sm"
 						placeholder="Import...."
@@ -688,26 +679,6 @@
 						</Alert>
 					</div>
 				{/if}
-				<!-- 				{#if missingImportData.includes(true)}
-					<div class="p-2">
-						<Alert class="!items-start" color="red">
-							<span slot="icon">
-								<InfoCircleSolid slot="icon" class="w-4 h-4" />
-								<span class="sr-only">Info</span>
-							</span>
-							<p class="font-medium">
-								Ensure that the below lines have part, quantity and price defined or remove them from the import:
-							</p>
-							<ul class="mt-1.5 ml-4 list-disc list-inside">
-								{#each missingImportData as missing, idx}
-									{#if missing}
-										<li class:line-through={!imported[idx]?._import}>Line {idx + 1} is missing required import data</li>
-									{/if}
-								{/each}
-							</ul>
-						</Alert>
-					</div>
-				{/if} -->
 			</div>
 			<Table>
 				<TableHead>

@@ -10,7 +10,7 @@
 	export let clickToEdit: boolean = true;
 
 	interface Options {
-		id: string | number;
+		id: string | number | null;
 		text?: string;
 	}
 	export let options: Options[] = [];

@@ -31,6 +31,19 @@
 
 	export let active = true;
 
+	interface Category {
+		id: string | null;
+		text?: string;
+	}
+	export let categories: Array<Category> = [
+		{ id: null, text: 'Unknown' },
+		{ id: 'Component' },
+		{ id: 'Tooling' },
+		{ id: 'PCB' },
+		{ id: 'Consumables' },
+		{ id: 'Other' }
+	];
+
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
 
@@ -49,7 +62,7 @@
 			user_id: user?.id,
 			created_at: new Date().toISOString(),
 			tracking: newTracking,
-			category: 'Component'
+			category: newCategory
 		};
 		/* if (matchingLine) {
 			matchingLine.quantity += newLine.quantity;
@@ -57,6 +70,7 @@
 		order.orders_items = [...order.orders_items, newLine];
 		addLineModal = false;
 
+		newCategory = 'Component';
 		newPart = '';
 		newSPN = '';
 		newPrice = 0;
@@ -68,6 +82,7 @@
 
 	let addLineModal = false;
 
+	let newCategory = 'Component';
 	let newQuantity = 0;
 	let newPart = '';
 	let newSPN = '';
@@ -151,6 +166,21 @@
 				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
 
+			<div class="col-span-2">
+				<Label for="small-input">Category</Label>
+				<select
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					bind:value={newCategory}
+				>
+					{#each categories as { id, text }}
+						<option value={id}>
+							{text || id}
+						</option>
+					{/each}
+				</select>
+				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
+			</div>
+
 			<!--<div class="col-span-3">
 				<Label for="small-input"
 					>Tracking<span
@@ -191,7 +221,7 @@
 			</div>-->
 		</div>
 
-		<div class="flex pt-4">
+		<div class="flex pt-6">
 			<div class="mx-auto">
 				<Table>
 					<TableHead>
@@ -248,8 +278,8 @@
 		</div>
 
 		<div class="flex">
-			<div class="my-auto ml-auto pt-4">
-				<Button color="green" size="sm" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}>
+			<div class="my-auto mx-auto pt-4">
+				<Button color="green" on:click={() => add()} disabled={newQuantity < 1 || newPart === ''}>
 					Add <Plus size="16" />
 				</Button>
 			</div>
@@ -339,14 +369,7 @@
 							tdClass="px-6 py-1 cursor-pointer"
 							bind:value={item.category}
 							inputType="dropdown"
-							options={[
-								{ id: null, text: 'Unknown' },
-								{ id: 'Component' },
-								{ id: 'Tooling' },
-								{ id: 'PCB' },
-								{ id: 'Consumables' },
-								{ id: 'Other' }
-							]}
+							options={categories}
 						>
 							{item?.category || 'Unknown'}
 						</TableBodyCellEditable>

@@ -12,12 +12,11 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		$windowTitleStore = $page?.data?.jobId ? `Kitting ${$page?.data?.jobId}` : 'Kitting';
 		return () => {
 			$windowTitleStore = '';
 		};
 	});
-
+	$: $windowTitleStore = $page?.data?.jobId ? `Kitting | ${$page?.data?.jobId}` : 'Kitting';
 	$: jobId = $page?.data?.jobId;
 
 	$: jobInfoStore = subscriptionStore({

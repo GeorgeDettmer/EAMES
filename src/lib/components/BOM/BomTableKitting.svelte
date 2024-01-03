@@ -279,8 +279,9 @@
 			</TableHeadCell>
 		</TableHead>
 		<TableHead>
-			<TableHeadCell>#</TableHeadCell>
+			<TableHeadCell padding="pl-3 px-2 py-3">#</TableHeadCell>
 			<TableHeadCollapsible
+				padding="px-3 py-3"
 				columnId="part"
 				visible={visibleColumns?.includes('part')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -288,6 +289,7 @@
 				Part
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
+				padding="px-2 py-3"
 				columnId="description"
 				visible={visibleColumns?.includes('description')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -295,6 +297,7 @@
 				Description
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
+				padding="px-2 py-3"
 				columnId="references"
 				visible={visibleColumns?.includes('references')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -302,20 +305,20 @@
 				References
 			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
-				<TableHeadCell>Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Qty</TableHeadCell>
 			{/if}
 			{#if job?.quantity && visibleColumns?.includes('build_quantity')}
-				<TableHeadCell>Build Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Build Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
-				<TableHeadCell>Order Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Order Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
-				<TableHeadCell>Received Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Received Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_kits}
-				<TableHeadCell>Kit Qty</TableHeadCell>
-				<TableHeadCell>Kit Attrition</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Kit Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 py-3">Kit Attrition</TableHeadCell>
 			{/if}
 			{#if visibleColumns?.includes('kit_button')}
 				<TableHeadCell />
@@ -352,10 +355,10 @@
 							handleRowClick(idx, references, line, lineKey, e);
 						}}
 					>
-						<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
+						<TableBodyCell tdClass="pl-3 px-2 py-1 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
 
 						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
+							tdClass="px-2 py-1 whitespace-nowrap font-medium"
 							columnId="part"
 							visible={visibleColumns?.includes('part')}
 							bind:collapsedColumns={$collapsedColumns}
@@ -370,12 +373,15 @@
 						</TableBodyCollapsible>
 
 						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
+							tdClass="px-2 py-1 whitespace-nowrap font-medium"
 							columnId="description"
 							visible={visibleColumns?.includes('description')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<div class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 overflow-x-auto">
+							<div
+								class:max-w-xs={$collapsedColumns && !$collapsedColumns?.includes('references')}
+								class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 overflow-x-auto"
+							>
 								<p class="overflow-hidden text-clip">{description || ''}</p>
 								{#if line?.[0]?.description && line?.[0]?.description !== description}
 									<p class=" text-clip italic text-xs">{line?.[0]?.description}</p>
@@ -384,7 +390,7 @@
 						</TableBodyCollapsible>
 
 						<TableBodyCollapsible
-							tdClass="px-6 py-1 whitespace-nowrap font-medium"
+							tdClass="px-2 py-1 whitespace-nowrap font-medium"
 							columnId="references"
 							visible={visibleColumns?.includes('references')}
 							bind:collapsedColumns={$collapsedColumns}
@@ -393,15 +399,15 @@
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{references?.length}</TableBodyCell>
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{references?.length}</TableBodyCell>
 						{/if}
 
 						{#if job?.quantity && visibleColumns?.includes('build_quantity')}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">{buildQty}</TableBodyCell>
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{buildQty}</TableBodyCell>
 						{/if}
 
 						{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
 									{#each orderItems as orderItem}
 										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
@@ -418,7 +424,7 @@
 						{/if}
 
 						{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
 									{receivedItemQty}
 								</Badge>
@@ -428,12 +434,12 @@
 						{#if job?.jobs_kits}
 							{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 							{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 									{kitItemQty}
 								</Badge>
 							</TableBodyCell>
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
 									{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
 								</Badge>

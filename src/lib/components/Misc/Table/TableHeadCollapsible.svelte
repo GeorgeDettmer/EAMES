@@ -2,6 +2,7 @@
 	import { TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { ChevronDownOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
 
+	export let padding: string = 'px-6 py-3';
 	export let columnId: string;
 	export let visible: boolean = true;
 	export let collapsedColumns: string[] = [];
@@ -18,7 +19,7 @@
 
 {#if visible}
 	{#if !collapsedColumns?.includes(columnId)}
-		<TableHeadCell>
+		<TableHeadCell {padding}>
 			<div class="inline-flex cursor-pointer">
 				<slot />
 				{#if showCollapseButton}

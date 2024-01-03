@@ -440,7 +440,7 @@
 	<hr />
 	<BomTable {bom} {partsInLibrary} />
 {/if}
-<div class="my-4">
+<!-- <div class="my-4">
 	{#if lines?.length > 0}
 		<table>
 			<thead>
@@ -468,7 +468,7 @@
 		</table>
 	{/if}
 	<div bind:this={tbl}>{@html html}</div>
-</div>
+</div> -->
 {#if !files}
 	<FileDrop
 		on:filedrop={(e) => {

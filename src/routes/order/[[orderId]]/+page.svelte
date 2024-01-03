@@ -272,7 +272,7 @@
 {/if}
 
 {#if orderId}
-	{#if $page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase']}
+	{#if $page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase'] && $page?.data?.user?.processes?.['tester']}
 		<OrderEditable {orderId} />
 	{:else}
 		<OrderOverview {orderId} />

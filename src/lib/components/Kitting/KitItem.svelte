@@ -94,7 +94,15 @@
 			console.error('createCarrier error:', result, response);
 		} else {
 			messagesStore('CARRIER CREATED');
-			console.log('createCarrier result:', result, response);
+			console.error('createCarrier result:', {
+				result,
+				response,
+				carrierid,
+				componentname,
+				quantity,
+				owner,
+				batchid: `EAS${jobid} #(${carrierid})`
+			});
 		}
 		return response;
 	}
@@ -210,6 +218,8 @@
 					if (printResult) {
 						messagesStore('LABEL PRINTED');
 					} else {
+						console.error('LABEL PRINT FAILED', { printResult, PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent });
+
 						messagesStore('LABEL PRINT FAILED', 'error');
 					}
 				}
@@ -372,6 +382,7 @@
 								if (printResult) {
 									messagesStore('LABEL PRINTED');
 								} else {
+									console.error('LABEL PRINT FAILED', { printResult, PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent });
 									messagesStore('LABEL PRINT FAILED', 'error');
 								}
 							}

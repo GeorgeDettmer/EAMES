@@ -31,7 +31,7 @@
 	import { getSelectionText } from '$lib/utils';
 	import BomTableLineReferences from './BomTableLineReferences.svelte';
 	import KitItem from '../Kitting/KitItem.svelte';
-	import { PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
+	import { DotsHorizontalOutline, PlusOutline, ShoppingCartSolid } from 'flowbite-svelte-icons';
 	import TableHeadCollapsible from '../Misc/Table/TableHeadCollapsible.svelte';
 	import TableBodyCollapsible from '../Misc/Table/TableBodyCollapsible.svelte';
 	import { XMark } from 'svelte-heros-v2';
@@ -205,6 +205,8 @@
 	let supplierSearch = '';
 	$: ordersSuppliers = job?.jobs_orders?.flatMap((jo) => jo.order?.supplier?.name)?.filter((v, i, a) => a.indexOf(v) === i);
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
+
+	let collapseReferenceRanges = false;
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -303,6 +305,9 @@
 				bind:collapsedColumns={$collapsedColumns}
 			>
 				References
+				<span class="my-auto px-2 focus:outline-none" on:click={() => (collapseReferenceRanges = !collapseReferenceRanges)}
+					><DotsHorizontalOutline size="xs" /></span
+				>
 			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
 				<TableHeadCell padding="px-2 py-3">Qty</TableHeadCell>
@@ -395,7 +400,7 @@
 							visible={visibleColumns?.includes('references')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<BomTableLineReferences pn={lineKey} {references} />
+							<BomTableLineReferences pn={lineKey} {references} conoslidate={collapseReferenceRanges} />
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}

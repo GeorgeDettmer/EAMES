@@ -12,6 +12,7 @@
 	import Viewer, { getComponentGroups } from '../Viewer.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { datetimeFormat } from '$lib/utils';
+	import BomTableLineReferences from './BomTableLineReferences.svelte';
 
 	let items = [];
 
@@ -175,7 +176,7 @@
 					{/if}
 
 					{#if visibleColumns?.includes('description')}
-						<TableBodyCell tdClass="w-1/4">
+						<TableBodyCell tdClass="w-1/4 px-6 ">
 							<p class="overflow-hidden text-clip">{description || ''}</p>
 							{#if line?.[0]?.description && line?.[0]?.description !== description}
 								<p class="overflow-hidden text-clip italic text-xs">{line?.[0]?.description}</p>
@@ -184,8 +185,8 @@
 					{/if}
 
 					{#if visibleColumns?.includes('references')}
-						<TableBodyCell tdClass="overflow-x-auto overflow-y-auto">
-							<div
+						<TableBodyCell tdClass="px-6 overflow-x-auto overflow-y-auto">
+							<!-- <div
 								class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
 							>
 								{#each references as reference}
@@ -202,11 +203,10 @@
 										<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
 									</span>
 									<Tooltip>{reference}</Tooltip>
-									<!-- <Badge class="mx-0.5 hover:shadow-inner hover:shadow-md" color={lineKey ? 'blue' : 'red'}
-										>{reference}</Badge
-									> -->
 								{/each}
-							</div>
+							</div> -->
+							<BomTableLineReferences pn={lineKey} {references} conoslidate />
+							<BomTableLineReferences pn={lineKey} {references} color="red" />
 						</TableBodyCell>
 					{/if}
 

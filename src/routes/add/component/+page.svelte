@@ -9,3 +9,4 @@
 <div class="p-2 bg-slate-500">
 	<AddComponent />
 </div>
+<NewComponent />

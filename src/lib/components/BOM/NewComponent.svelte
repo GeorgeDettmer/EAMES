@@ -90,7 +90,7 @@
 					}
 				}
 			`,
-			{ id, name, description, image_url: image, properties: isSMT ? { type: 'SMT' } : {} }
+			{ id, name, description, image_url: image, properties: type ? { type } : {} }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -102,6 +102,7 @@
 		componentAdding = false;
 	}
 
+	let type: 'THT' | 'SMT' | '';
 	let isSMT = true;
 
 	let descriptionTokens = [];
@@ -144,7 +145,40 @@
 				<Label for="small-input" class="block mb-2">Image</Label>
 				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
 
-				<Checkbox bind:checked={isSMT}>SMT</Checkbox>
+				<!-- <Checkbox bind:checked={isSMT}>SMT</Checkbox>
+				{type} -->
+				<ul>
+					<li class="rounded p-0.5 uppercase">
+						<Label class={'flex items-center'}>
+							<input
+								type="radio"
+								bind:group={type}
+								value="SMT"
+								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+							/>
+							SMT
+						</Label>
+						<Label class={'flex items-center'}>
+							<input
+								type="radio"
+								bind:group={type}
+								value="THT"
+								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+							/>
+							THT
+						</Label>
+						<Label class={'flex items-center'}>
+							<input
+								type="radio"
+								bind:group={type}
+								value=""
+								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+							/>
+							N/A
+						</Label>
+						<!-- <Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper> -->
+					</li>
+				</ul>
 			</div>
 		</div>
 		<div class="1/2">

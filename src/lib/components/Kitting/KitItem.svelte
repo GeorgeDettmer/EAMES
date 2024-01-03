@@ -34,8 +34,7 @@
 	export let kits = [];
 	export let kit = kits?.[0];
 	export let visible = true;
-	export let createCarrier =
-		/* $page?.data?.user?.username !== 'GDettmer' && */ part?.properties?.type?.toLowerCase() === 'smt';
+	export let createCarrier = part?.properties?.type?.toLowerCase() !== 'tht';
 	export let createLabel = false;
 
 	export let arbitraryQuantityVisible = false;
@@ -438,7 +437,7 @@
 	onMount(async () => {
 		let printer = await printerOnline();
 		createLabel = printer;
-		createCarrier = printer;
+		//createCarrier = printer;
 	});
 
 	$: orderTotal = orderItems?.map((i) => i.quantity)?.reduce((a, v) => a + v, 0);

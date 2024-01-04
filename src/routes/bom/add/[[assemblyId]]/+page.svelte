@@ -153,8 +153,9 @@
 			} else {
 				refs.forEach((ref) => {
 					let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
-					pn = pn?.trim();
+					pn = String(pn)?.trim();
 					let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
+					console.log('pn', pn);
 					let part = pn === 'Not Fitted' || !pn ? null : pn;
 					description = part ? String(description) : null;
 					let l = {

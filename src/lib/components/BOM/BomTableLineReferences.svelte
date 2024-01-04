@@ -8,7 +8,7 @@
 	export let conoslidate: boolean = false;
 
 	$: refs = conoslidate ? conoslidateReferences(references).flat() : references;
-	$: console.log('REFS:', refs);
+	//$: console.log('REFS:', refs);
 
 	const dispatch = createEventDispatcher();
 
@@ -31,11 +31,11 @@
 			let refs = normalize(numbers.join(','))
 				.split(',')
 				.map((n) => prefix + n);
-			console.log('refs', refs);
+			//console.log('refs', refs);
 			return refs;
 		});
 
-		console.log(input, prefixes, references);
+		//console.log(input, prefixes, references);
 
 		return references;
 	}

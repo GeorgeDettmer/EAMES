@@ -206,7 +206,7 @@
 								{/each}
 							</div> -->
 							<BomTableLineReferences pn={lineKey} {references} conoslidate />
-							<BomTableLineReferences pn={lineKey} {references} color="red" />
+							<BomTableLineReferences pn={lineKey} {references} color="green" />
 						</TableBodyCell>
 					{/if}
 

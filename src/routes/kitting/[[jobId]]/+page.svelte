@@ -52,6 +52,7 @@
 								description
 								created_at
 								updated_at
+								quantity
 								partByPart {
 									id
 									name

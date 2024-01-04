@@ -55,8 +55,8 @@
 	function add() {
 		let matchingLine = orderItems.filter((i) => i.part === newPart)?.[0];
 		let newLine = {
-			part: newPart,
-			spn: newSPN,
+			part: newPart?.trim(),
+			spn: newSPN?.trim(),
 			price: newPrice,
 			quantity: Number(newQuantity),
 			user_id: user?.id,

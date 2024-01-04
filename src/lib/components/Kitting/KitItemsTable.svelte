@@ -75,9 +75,9 @@
 			</TableBodyRow>
 		{:else}
 			<TableBodyRow>
-				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center"
-					>Not assigned to kit</TableBodyCell
-				>
+				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+					No kit assignments
+				</TableBodyCell>
 			</TableBodyRow>
 		{/each}
 	</TableBody>

@@ -78,7 +78,7 @@
 			</TableBodyRow>
 		{:else}
 			<TableBodyRow>
-				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">No receipts</TableBodyCell>
+				<TableBodyCell colspan="8" tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">No orders</TableBodyCell>
 			</TableBodyRow>
 		{/each}
 	</TableBody>

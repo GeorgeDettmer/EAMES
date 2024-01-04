@@ -90,7 +90,7 @@
 					}
 				}
 			`,
-			{ id, name, description, image_url: image, properties: type ? { type } : {} }
+			{ id: id.trim(), name: name.trim(), description, image_url: image, properties: type ? { type } : {} }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);

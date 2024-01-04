@@ -153,6 +153,7 @@
 			} else {
 				refs.forEach((ref) => {
 					let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
+					pn = pn?.trim();
 					let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
 					let part = pn === 'Not Fitted' || !pn ? null : pn;
 					description = part ? String(description) : null;
@@ -200,7 +201,7 @@
 			`,
 			{
 				data: parts.map((p) => {
-					return { id: p, name: p };
+					return { id: p.trim(), name: p.trim() };
 				})
 			}
 		);
@@ -240,8 +241,8 @@
 			}
 			return {
 				reference: l?.reference,
-				part: l?.part,
-				description: l?.description
+				part: l?.part?.trim(),
+				description: l?.description?.trim()
 			};
 		});
 		console.log('linesz', bom_lines);

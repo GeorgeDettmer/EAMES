@@ -305,9 +305,9 @@
 				bind:collapsedColumns={$collapsedColumns}
 			>
 				References
-				<span class="my-auto px-2 focus:outline-none" on:click={() => (collapseReferenceRanges = !collapseReferenceRanges)}
-					><DotsHorizontalOutline size="xs" /></span
-				>
+				<span class="my-auto px-2 focus:outline-none" on:click={() => (collapseReferenceRanges = !collapseReferenceRanges)}>
+					<DotsHorizontalOutline size="xs" />
+				</span>
 			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
 				<TableHeadCell padding="px-2 py-3">Qty</TableHeadCell>

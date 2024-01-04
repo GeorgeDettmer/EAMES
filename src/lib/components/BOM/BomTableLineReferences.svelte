@@ -62,18 +62,19 @@
 <div class="w-fit flex flex-wrap text-xs">
 	{#each refs as reference}
 		{@const c = color ? color : pn ? 'blue' : 'gray'}
-		<span
-			class={`w-fit hover:shadow m-0.5 h-4  rounded font-medium px-1 bg-${c}-100 text-${c}-800 dark:bg-${c}-900 dark:text-${c}-300`}
-			on:mouseenter={(e) => {
-				dispatch('mouseenter', e);
-			}}
-			on:mouseleave={(e) => {
-				dispatch('mouseleave', e);
-			}}
-		>
-			<p class="text-clip hover:-text-clip text-center">{reference}</p>
-		</span>
 		{#if reference}
+			<span
+				class={`w-fit hover:shadow m-0.5 h-4  rounded font-medium px-1 bg-${c}-100 text-${c}-800 dark:bg-${c}-900 dark:text-${c}-300`}
+				on:mouseenter={(e) => {
+					dispatch('mouseenter', e);
+				}}
+				on:mouseleave={(e) => {
+					dispatch('mouseleave', e);
+				}}
+			>
+				<p class="text-clip hover:-text-clip text-center">{reference}</p>
+			</span>
+
 			<Tooltip defaultClass="py-1 px-2 text-xs font-medium">{expand(reference)}</Tooltip>
 		{/if}
 	{/each}

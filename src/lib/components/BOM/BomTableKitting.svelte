@@ -333,6 +333,7 @@
 			{#each lines.keys() as lineKey, idx}
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
+				{@const lineQty = line?.reduce((a, l) => a + (l?.quantity || 1), 0)}
 				{@const kitItems = job?.jobs_kits
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
@@ -345,7 +346,7 @@
 				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
 				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v.quantity, 0)}
-				{@const buildQty = lineKey ? references?.length * job?.quantity : 0}
+				{@const buildQty = lineKey ? lineQty * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
 				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && (descriptionSearch == '' || description
@@ -404,7 +405,7 @@
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}
-							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{references?.length}</TableBodyCell>
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{lineQty}</TableBodyCell>
 						{/if}
 
 						{#if job?.quantity && visibleColumns?.includes('build_quantity')}

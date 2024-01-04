@@ -545,9 +545,13 @@
 				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 			> -->
-			<Tabs style="full" divider contentClass="px-0 py-4 rounded-lg mt-0">
+			<Tabs style="full" contentClass="px-0 py-4 rounded-lg mt-0">
 				{#each orders as order, idx}
-					<TabItem open={openOrderIdx === idx}>
+					<TabItem
+						open={openOrderIdx === idx}
+						activeClasses="border-b-8 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
+						inactiveClasses="border-b-4 border-opacity-20 border-b-gray-500 rounded-lg rounded-full dark:border-gray-700 hover:dark:bg-gray-700"
+					>
 						<span slot="title">
 							<OrderCreateHeader bind:order />
 						</span>

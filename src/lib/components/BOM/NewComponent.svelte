@@ -3,6 +3,8 @@
 	import { getContextClient, gql } from '@urql/svelte';
 	import { Button, Checkbox, Input, Label, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
+	import { parse } from 'electro-grammar';
+
 	const urqlClient = getContextClient();
 	export let id: string = '';
 	export let name: string = '';
@@ -70,7 +72,9 @@
 		}
 		componentAdding = true;
 		let mutationResult;
-
+		let properties = descriptionTokens;
+		properties.component = properties.type;
+		properties.type = type;
 		mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertComponent(
@@ -90,7 +94,7 @@
 					}
 				}
 			`,
-			{ id: id.trim(), name: name.trim(), description, image_url: image, properties: type ? { type } : {} }
+			{ id: id.trim(), name: name.trim(), description, image_url: image, properties }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -105,7 +109,9 @@
 	let type: 'THT' | 'SMT' | '';
 	let isSMT = true;
 
-	let descriptionTokens = [];
+	$: descriptionTokens = parse(description);
+
+	/* let descriptionTokens = [];
 	$: {
 		let tokens = description.split(' ')?.map((t) => {
 			t = t.toLowerCase();
@@ -129,7 +135,7 @@
 			}
 		});
 		descriptionTokens = [...tokens, ...valueTokens];
-	}
+	} */
 </script>
 
 <div class="grid grid-cols-2">
@@ -183,18 +189,28 @@
 		</div>
 		<div class="1/2">
 			<!-- <p class="flex-wrap">{description.split(' ')}</p> -->
-			<div class="ml-8">
+			<!-- <div class="ml-8">
 				<ul class="list-disc">
 					{#each description.split(' ').filter((d) => !!d) as t}
 						<li>{t}</li>
 					{/each}
 				</ul>
+			</div> -->
+			<div class="ml-8">
+				<ul class="list-none">
+					{#each Object.keys(descriptionTokens) as token}
+						<li><p>{token}: {descriptionTokens[token]}</p></li>
+					{/each}
+				</ul>
 			</div>
-			{#each descriptionTokens as token}
+			<!-- {#each descriptionTokens as token}
 				{#if token?.value && token?.type}
 					<p>{token?.type}: {token?.value}</p>
 				{/if}
-			{/each}
+			{/each} -->
+			<!-- {#each Object.keys(descriptionTokens) as token}
+				<p>{token}: {descriptionTokens[token]}</p>
+			{/each} -->
 		</div>
 	</div>
 

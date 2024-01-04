@@ -317,7 +317,7 @@
 				}
 			}
 			if (!mutationResult?.error) {
-				//TODO: Check all working
+				//TODO: Check all working!!
 				if (createCarrier) {
 					for (const ki of insertedKitItems) {
 						console.log('carrier ki', ki);
@@ -329,7 +329,66 @@
 						messagesStore('Kitting error, label print skipped...', 'error');
 					} else {
 						for (const ki of insertedKitItems) {
-							if (ki?.__carrierInsertResult?.status === 200) {
+							if (createCarrier && ki?.__carrierInsertResult?.status !== 200) {
+								console.error('CARRIER CREATION FAILED', { carrierResult: ki?.__carrierInsertResult, ki });
+								messagesStore('CARRIER CREATION FAILED', 'error');
+								return;
+							}
+							let labelContent: LabelContent[] = [
+								{
+									name: 'barcode',
+									type: 'barcode',
+									content: createCarrier ? 'R' + `EAMES#${ki.id}` : ''
+								},
+								{
+									name: 'barcode_pn',
+									type: 'barcode',
+									content: pn
+								},
+								{
+									name: 'pn',
+									type: 'text',
+									content: pn
+								},
+								{
+									name: 'qty',
+									type: 'text',
+									content: ki.quantity
+								},
+								{
+									name: 'carrier',
+									type: 'text',
+									content: createCarrier ? `EAMES#${ki.id}` : ''
+								},
+								{
+									name: 'notes',
+									type: 'text',
+									content: ''
+								},
+								{
+									name: 'description',
+									type: 'text',
+									content: part?.description || bomLine?.[0]?.description || 'Unknown'
+								},
+								{
+									name: 'freeissue',
+									type: 'text',
+									content: ''
+								},
+								{
+									name: 'batch',
+									type: 'text',
+									content: job?.id
+								}
+							];
+							let printResult = await printLabel(PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent);
+							if (printResult) {
+								messagesStore('LABEL PRINTED');
+							} else {
+								console.error('LABEL PRINT FAILED', { printResult, PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent });
+								messagesStore('LABEL PRINT FAILED', 'error');
+							}
+							/* if (ki?.__carrierInsertResult?.status === 200) {
 								console.log('printing carrier', ki);
 								let labelContent: LabelContent[] = [
 									{
@@ -385,7 +444,10 @@
 									console.error('LABEL PRINT FAILED', { printResult, PUBLIC_CARRIER_LABEL_TEMPLATE_PATH, labelContent });
 									messagesStore('LABEL PRINT FAILED', 'error');
 								}
-							}
+							} else {
+								console.error('CARRIER CREATION FAILED', { carrierResult: ki?.__carrierInsertResult, ki });
+								messagesStore('CARRIER CREATION FAILED', 'error');
+							} */
 						}
 					}
 				}

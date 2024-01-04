@@ -5,6 +5,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
 	import { queryStore, getContextClient, gql } from '@urql/svelte';
+	import { DotsHorizontalOutline, DotsVerticalOutline } from 'flowbite-svelte-icons';
 
 	export let order;
 	export let showSupplierSelect: boolean = false;
@@ -31,8 +32,15 @@
 
 <div class="">
 	<div class="flex col-span-3">
-		<div class="cursor-pointer" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
+		<div class="cursor-pointer">
 			<OrdersListItem {order} interactive={false}>
+				<div class="-mt-6 pl-2" on:click={() => (showSupplierSelect = !showSupplierSelect)}>
+					{#if showSupplierSelect}
+						<DotsVerticalOutline size="xs" />
+					{:else}
+						<DotsHorizontalOutline size="xs" />
+					{/if}
+				</div>
 				{#if showSupplierSelect}
 					<div class=" w-fit flex" on:click|stopPropagation={() => {}}>
 						<div class="pl-2 my-auto">

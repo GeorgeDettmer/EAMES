@@ -537,14 +537,15 @@
 				<p>No orders...</p>
 			</div>
 		{:else}
-			<Tabs
-				style="underline"
+			<!-- <Tabs
+				style="pill"
 				divider
 				defaultClass="flex flex-wrap space-x-1"
 				contentClass="p-4 rounded-lg mt-0"
 				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-			>
+			> -->
+			<Tabs style="full" divider contentClass="px-0 py-4 rounded-lg mt-0">
 				{#each orders as order, idx}
 					<TabItem open={openOrderIdx === idx}>
 						<span slot="title">

@@ -386,7 +386,7 @@
 						>
 							<div
 								class:max-w-xs={$collapsedColumns && !$collapsedColumns?.includes('references')}
-								class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800 overflow-x-auto"
+								class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700 overflow-x-auto"
 							>
 								<p class="text-clip">{description || ''}</p>
 								{#if line?.[0]?.description && line?.[0]?.description !== description}

@@ -390,7 +390,7 @@
 							>
 								<p class="text-clip">{description || ''}</p>
 								{#if line?.[0]?.description && line?.[0]?.description !== description}
-									<p class=" text-clip italic text-xs">{line?.[0]?.description}</p>
+									<p class="text-clip italic text-xs">{line?.[0]?.description}</p>
 								{/if}
 							</div>
 						</TableBodyCollapsible>
@@ -423,9 +423,6 @@
 										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>0</Badge>
 									{/each}
 								</div>
-								<!-- <Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
-									{orderItemQty}
-								</Badge> -->
 							</TableBodyCell>
 						{/if}
 
@@ -511,7 +508,7 @@
 													/>
 												{:else}
 													<img
-														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(310deg)"
 														width="24"
 														height="24"
 														src="https://img.icons8.com/ios/50/unpacking.png"

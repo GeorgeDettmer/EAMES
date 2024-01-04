@@ -91,10 +91,18 @@
 		const result = await response.json();
 		if (response.status !== 200) {
 			messagesStore('CARRIER CREATION ERROR: ' + result?.message, 'error');
-			console.error('createCarrier error:', result, response);
+			console.error('createCarrier result:', {
+				result,
+				response,
+				carrierid,
+				componentname,
+				quantity,
+				owner,
+				batchid: `EAS${jobid} #(${carrierid})`
+			});
 		} else {
 			messagesStore('CARRIER CREATED');
-			console.error('createCarrier result:', {
+			console.log('createCarrier result:', {
 				result,
 				response,
 				carrierid,

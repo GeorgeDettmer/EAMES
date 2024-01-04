@@ -51,7 +51,7 @@
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{item?.order?.supplier?.name || 'Unknown'}
 				</TableBodyCell>
-				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs ">
+				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'

@@ -54,6 +54,7 @@
 						part
 						part_id
 						spn
+						category
 						partByPartId {
 							description
 							name
@@ -417,6 +418,7 @@
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>Buyer</TableHeadCell>
+				<TableHeadCell>Category</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
 				<TableHeadCell>Unit Price</TableHeadCell>
@@ -469,6 +471,9 @@
 							<Popover>
 								<p class="text-xs italic">{datetimeFormat(item.created_at)}</p>
 							</Popover>
+						</TableBodyCell>
+						<TableBodyCell>
+							<p>{item?.category || 'Unknown'}</p>
 						</TableBodyCell>
 						<TableBodyCell>
 							<div

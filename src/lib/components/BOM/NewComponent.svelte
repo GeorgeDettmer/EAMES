@@ -53,7 +53,11 @@
 	async function addComponent() {
 		if (componentAdding) return;
 		if (!$page?.data?.user) {
-			messagesStore('You must be logged in to perform this action', 'warning');
+			messagesStore('You must be logged in to perform this action', 'error');
+			return;
+		}
+		if (type === null) {
+			messagesStore('Component type not set', 'error');
 			return;
 		}
 		if (!name || !description || !image) {
@@ -104,7 +108,7 @@
 		componentAdding = false;
 	}
 
-	let type: 'THT' | 'SMT' | '' = '';
+	let type: 'THT' | 'SMT' | '' | null = null;
 	let descriptionTokens = [];
 	$: {
 		descriptionTokens = parse(description);

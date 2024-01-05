@@ -356,7 +356,8 @@
 		let objects = orders.map((o) => {
 			let obj = {
 				supplier_id: o.supplier.id,
-				user_id: $page?.data?.user?.id
+				user_id: $page?.data?.user?.id,
+				reference: o.reference
 			};
 
 			let items = o.orders_items;

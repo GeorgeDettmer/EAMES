@@ -3,7 +3,7 @@
 	import { getContextClient, gql } from '@urql/svelte';
 	import { Button, Checkbox, Input, Label, Spinner } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-	import { parse } from 'electro-grammar';
+	import { parse, matchCPL } from 'electro-grammar';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -73,8 +73,6 @@
 		componentAdding = true;
 		let mutationResult;
 		let properties = descriptionTokens;
-		properties.component = properties.type;
-		properties.type = type;
 		mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertComponent(
@@ -106,10 +104,17 @@
 		componentAdding = false;
 	}
 
-	let type: 'THT' | 'SMT' | '';
-	let isSMT = true;
-
-	$: descriptionTokens = parse(description);
+	let type: 'THT' | 'SMT' | '' = '';
+	let descriptionTokens = [];
+	$: {
+		descriptionTokens = parse(description);
+		descriptionTokens.component = descriptionTokens.type;
+		descriptionTokens.type = type ? type : undefined;
+		if (!type && descriptionTokens?.size) {
+			type = 'SMT';
+		}
+	}
+	$: cpl = matchCPL(descriptionTokens);
 
 	/* let descriptionTokens = [];
 	$: {
@@ -141,18 +146,22 @@
 <div class="grid grid-cols-2">
 	<div class="flex">
 		<div class="w-1/2">
-			<div>
-				<Label for="small-input" class="block mb-2">Name</Label>
+			<div class="mb-2">
+				<Label for="small-input" class="">Name</Label>
 				<Input id="small-input" size="sm" placeholder="Part name/number" bind:value={name} />
-
-				<Label for="small-input" class="block mb-2">Description</Label>
+			</div>
+			<div class="mb-2">
+				<Label for="small-input" class="">Description</Label>
 				<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
-
-				<Label for="small-input" class="block mb-2">Image</Label>
+			</div>
+			<div class="mb-2">
+				<Label for="small-input" class="">Image</Label>
 				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
+			</div>
+		</div>
 
-				<!-- <Checkbox bind:checked={isSMT}>SMT</Checkbox>
-				{type} -->
+		<div class="w-1/2">
+			<div class="m-2">
 				<ul>
 					<li class="rounded p-0.5 uppercase">
 						<Label class={'flex items-center'}>
@@ -180,29 +189,33 @@
 								value=""
 								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
 							/>
-							N/A
+							Unknown
 						</Label>
 						<!-- <Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper> -->
 					</li>
 				</ul>
 			</div>
-		</div>
-		<div class="1/2">
 			<!-- <p class="flex-wrap">{description.split(' ')}</p> -->
-			<!-- <div class="ml-8">
-				<ul class="list-disc">
-					{#each description.split(' ').filter((d) => !!d) as t}
-						<li>{t}</li>
-					{/each}
-				</ul>
-			</div> -->
-			<div class="ml-8">
-				<ul class="list-none">
-					{#each Object.keys(descriptionTokens) as token}
-						<li><p>{token}: {descriptionTokens[token]}</p></li>
-					{/each}
-				</ul>
+			<div class="flex ml-8 p-1">
+				<div class="pl-1">
+					<ul class="list-disc">
+						{#each description.split(' ').filter((d) => !!d) as t}
+							<li>{t}</li>
+						{/each}
+					</ul>
+				</div>
+				<div class="pl-4">
+					<ul class="list-none">
+						{#each Object.keys(descriptionTokens) as token}
+							<li><p>{token}: {descriptionTokens[token]}</p></li>
+						{/each}
+					</ul>
+				</div>
 			</div>
+			{#if cpl?.length > 0}
+				<a>CPL:{cpl}</a>
+			{/if}
+
 			<!-- {#each descriptionTokens as token}
 				{#if token?.value && token?.type}
 					<p>{token?.type}: {token?.value}</p>
@@ -215,27 +228,29 @@
 	</div>
 
 	<div class="my-2 p-4">
-		<Button color="green" size="sm" on:click={() => addComponent()}>
-			Add ➕
-			{#if componentAdding}
-				<Spinner class="ml-3" size="3" color="white" />
-			{/if}
-		</Button>
-		<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}>
-			<Button color="blue" size="sm" class="w-fit h-fit mx-4">Search Octopart 🔎</Button>
-		</a>
-		<Button
-			color="blue"
-			size="sm"
-			on:click={() => {
-				findImages(name);
-			}}
-		>
-			Find images 📷
-			{#if imageSearching}
-				<Spinner class="ml-3" size="3" color="white" />
-			{/if}
-		</Button>
+		<div>
+			<Button color="green" size="sm" on:click={() => addComponent()}>
+				Add ➕
+				{#if componentAdding}
+					<Spinner class="ml-3" size="3" color="white" />
+				{/if}
+			</Button>
+			<a target="_blank" href={`https://octopart.com/search?q=${name}&currency=GBP`}>
+				<Button color="blue" size="sm" class="w-fit h-fit mx-4">Search Octopart 🔎</Button>
+			</a>
+			<Button
+				color="blue"
+				size="sm"
+				on:click={() => {
+					findImages(name);
+				}}
+			>
+				Find images 📷
+				{#if imageSearching}
+					<Spinner class="ml-3" size="3" color="white" />
+				{/if}
+			</Button>
+		</div>
 		<div class="flex p-1">
 			<div class="w-3/4 m-1">
 				{#if image}

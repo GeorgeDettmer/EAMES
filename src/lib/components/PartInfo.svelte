@@ -94,7 +94,7 @@
 			<div class="flex">
 				{#if partLinkVisible}
 					<div
-						class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}
+						class={'text-base font-bold leading-none text-gray-900 dark:text-white'}
 						class:italic={!$partInfoStore?.data?.parts_data_by_pk}
 					>
 						{#if isGeneric}
@@ -122,8 +122,11 @@
 					<p>{partInfo.manufacturer}</p>
 				{/if}
 			</div>
-			<div class="mb-1 text-sm font-light">
-				{partInfo?.description}
+			<div class="mb-1 text-sm font-semibold flex">
+				<p>{partInfo?.description}</p>
+				{#if ['THT', 'SMT'].includes(partInfo?.properties?.type?.toUpperCase())}
+					<p class="ml-4 font-bold">({partInfo?.properties?.type?.toUpperCase()})</p>
+				{/if}
 			</div>
 			<div class="flex">
 				<div class="w-2/3">

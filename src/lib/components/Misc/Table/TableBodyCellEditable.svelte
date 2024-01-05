@@ -29,6 +29,11 @@
 			input.width = input.value.length || 1;
 			return;
 		}
+		if (inputType === 'number') {
+			//input.width = input.value.length || 1;
+			input.style.width = String((input.value.length || 1) + 8) + 'ch';
+			return;
+		}
 		input.size = input.value.length || 1;
 	}
 </script>

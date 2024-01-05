@@ -23,6 +23,7 @@
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
+	import EditableText from '../Misc/EditableText.svelte';
 
 	export let order;
 	export let user = order?.user || $page?.data?.user;
@@ -381,9 +382,11 @@
 					</TableBodyCell> -->
 						<TableBodyCell tdClass="px-6 py-1">
 							<div>
-								<p>{item?.part}</p>
+								<EditableText bind:innerText={item.part} />
+								<!-- <p>{item?.part}</p> -->
 								{#if item?.spn}
-									<p class="text-xs italic">{item?.spn}</p>
+									<EditableText classes="text-xs italic" bind:innerText={item.spn} />
+									<!-- <p class="text-xs italic">{item?.spn}</p> -->
 								{/if}
 							</div>
 						</TableBodyCell>
@@ -397,12 +400,12 @@
 								{item?.quantity}
 							</Badge>
 						</TableBodyCellEditable>
-						<TableBodyCell tdClass="px-6 py-1">
+						<TableBodyCellEditable tdClass="px-6 py-1" bind:value={item.price} inputType="number">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
 							}).format(item?.price || 0)}
-						</TableBodyCell>
+						</TableBodyCellEditable>
 						<TableBodyCell tdClass="px-6 py-1">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',

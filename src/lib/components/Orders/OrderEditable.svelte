@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { datetimeFormat } from '$lib/utils';
+	import { compareTwoArrayOfObjects, datetimeFormat } from '$lib/utils';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import {
 		Table,
@@ -25,10 +25,18 @@
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
 	import { goto } from '$app/navigation';
-	import { EditOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
+	import {
+		DotsHorizontalOutline,
+		DotsVerticalOutline,
+		EditOutline,
+		InfoCircleSolid,
+		XCircleOutline
+	} from 'flowbite-svelte-icons';
 	import List from '../KnowledgeBase/List.svelte';
 	import OrderCreate from './OrderCreate.svelte';
 	import OrderCreateMulti from './OrderCreateMulti.svelte';
+
+	import { DeepDiff, diff } from 'deep-diff';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -246,6 +254,12 @@
 	let editing = false;
 
 	let editingOrder;
+
+	$: editingDiff = diff(editingOrder?.orders_items || [], order?.orders_items || []);
+	$: changes = editingDiff?.length > 0;
+	$: console.log('changes', changes, editingDiff, editingOrder, order);
+
+	$: console.log('update', editingOrder === order, editingOrder, order);
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
@@ -385,7 +399,45 @@
 	{#if showHeader}
 		<div class="grid grid-cols-2">
 			<div class="flex">
-				<div><OrdersListItem {order} interactive={false} /></div>
+				<div>
+					<OrdersListItem {order} interactive={false}>
+						<div
+							class="-mt-6 pl-2"
+							on:click={() => {
+								if (editing) {
+									editing = false;
+									editingOrder = undefined;
+								} else {
+									editingOrder = structuredClone(order);
+									editingOrder.id = undefined;
+									editing = true;
+								}
+								console.log('edit', editingOrder);
+							}}
+						>
+							{#if editing}
+								{#if changes}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+										width="16"
+										height="16"
+										src="https://img.icons8.com/ios/50/save--v1.png"
+										alt="save"
+										on:click={(e) => {
+											//click('save');
+											console.log('save');
+											e.preventDefault();
+										}}
+									/>
+								{:else}
+									<XCircleOutline />
+								{/if}
+							{:else}
+								<EditOutline />
+							{/if}
+						</div>
+					</OrdersListItem>
+				</div>
 				<div class="pt-2 pl-2">
 					<UserIcon size="sm" user={order?.user}>
 						{order?.user?.first_name}
@@ -420,6 +472,7 @@
 	{/if}
 	<div on:keydown={(e) => tableKeypress(e)}>
 		{#if editing}
+			Editing
 			<OrderCreateMulti order={editingOrder} />
 		{:else}
 			<Table>

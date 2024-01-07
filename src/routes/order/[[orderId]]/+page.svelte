@@ -5,7 +5,17 @@
 	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
 	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
-	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
+	import {
+		Badge,
+		Popover,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Tooltip
+	} from 'flowbite-svelte';
 	import TableHeadCollapsible from '$lib/components/Misc/Table/TableHeadCollapsible.svelte';
 	import { writable } from 'svelte/store';
 	import { intervalFnStore, storage } from 'svelte-legos';
@@ -16,6 +26,7 @@
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
+	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
 
 	export let data: PageData;
 
@@ -84,14 +95,15 @@
 				limit: isFiltered ? 1000 : $queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
-					id: idSearch
-						? {
-								_in: idSearch
-									.split(',')
-									.map((v) => v.replace(/\D/g, ''))
-									.filter((v) => !!v)
-						  }
-						: {},
+					id:
+						idSearch && !orderReferenceSearch
+							? {
+									_in: idSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+							  }
+							: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
 					jobs_orders: jobSearch
 						? {
@@ -134,14 +146,15 @@
 				limit: isFiltered ? 1000 : $queryLimit,
 				offset: isFiltered ? 0 : queryOffset,
 				where: {
-					id: idSearch
-						? {
-								_in: idSearch
-									.split(',')
-									.map((v) => v.replace(/\D/g, ''))
-									.filter((v) => !!v)
-						  }
-						: {},
+					id:
+						idSearch && !orderReferenceSearch
+							? {
+									_in: idSearch
+										.split(',')
+										.map((v) => v.replace(/\D/g, ''))
+										.filter((v) => !!v)
+							  }
+							: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
 					jobs_orders: jobSearch
 						? {
@@ -179,6 +192,8 @@
 					id
 					name
 					names
+					tags
+					image_url
 				}
 			}
 		`,
@@ -189,7 +204,7 @@
 	$: usersStore = queryStore({
 		client: getContextClient(),
 		query: gql`
-			query suppliers {
+			query users {
 				users(where: { orders_items_aggregate: { count: { predicate: { _gt: 0 } } } }, order_by: { username: asc }) {
 					id
 					username
@@ -220,20 +235,35 @@
 
 	let collapsedColumns = storage(writable([]), 'EAMES_orders_collapsedColumns');
 
+	let idRefSearch: string;
 	let idSearch: string;
 	let jobSearch: string;
 	let categorySearch: string;
 	let supplierSearch: string;
 	let buyerSearch: string;
+	//$: orderReferenceSearch = idSearch?.[0] === '#' ? idSearch?.substr(1) : undefined;
 	let orderReferenceSearch: string;
 	let dateSearch: string[] = ['', ''];
+	$: console.log('ref:', orderReferenceSearch);
 
-	$: filtered = idSearch || jobSearch || categorySearch || supplierSearch || buyerSearch || orderReferenceSearch;
+	$: filtered = idRefSearch || jobSearch || categorySearch || supplierSearch || buyerSearch;
 
 	onMount(() => {
 		idSearch = decodeURIComponent($page.url.searchParams.get('id') || '');
 		jobSearch = decodeURIComponent($page.url.searchParams.get('job') || '');
 		supplierSearch = decodeURIComponent($page.url.searchParams.get('supplier') || '');
+		if (!idSearch) {
+			orderReferenceSearch = decodeURIComponent($page.url.searchParams.get('reference') || '');
+		}
+
+		if (idSearch) {
+			idRefSearch = idSearch;
+			orderReferenceSearch = '';
+		} else if (orderReferenceSearch) {
+			idRefSearch = '#' + orderReferenceSearch;
+		} else {
+		}
+
 		buyerSearch = decodeURIComponent($page.url.searchParams.get('buyer') || '');
 		if (buyerSearch === 'me') {
 			if ($page?.data?.user?.id) {
@@ -284,23 +314,35 @@
 				<input
 					class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					type="text"
-					bind:value={idSearch}
+					bind:value={idRefSearch}
 					on:input={() => {
+						if (idRefSearch?.[0] === '#') {
+							idSearch = '';
+							orderReferenceSearch = idRefSearch?.substr(1);
+						} else {
+							orderReferenceSearch = '';
+							idSearch = idRefSearch;
+						}
 						replaceStateWithQuery({
-							id: idSearch
+							id: idSearch,
+							reference: orderReferenceSearch
 						});
 					}}
 				/>
+				<Tooltip placement="right">Start search with '#' to search by order reference</Tooltip>
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
-					class:invisible={!idSearch}
+					class:invisible={!idRefSearch}
 					class="flex my-auto hover:text-red-600"
 					on:click={() => {
 						replaceStateWithQuery({
-							id: ''
+							id: '',
+							reference: ''
 						});
 						idSearch = '';
+						orderReferenceSearch = '';
+						idRefSearch = '';
 					}}
 				>
 					<XMark size="16" />
@@ -364,13 +406,11 @@
 				</div>
 			</TableHeadCollapsible>
 			<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-				<input
+				<!-- <input
 					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					type="text"
 					bind:value={categorySearch}
 				/>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
 					class:invisible={!categorySearch}
 					class="flex my-auto hover:text-red-600"
@@ -378,6 +418,7 @@
 				>
 					<XMark size="16" />
 				</div>
+				 -->
 			</TableHeadCollapsible>
 			<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 				<!-- <input
@@ -520,22 +561,23 @@
 								handleRowClick(idx, e);
 							}}
 						>
-							<div class="my-auto">
+							<div class="my-auto pr-1">
 								{#if openRows?.includes(idx)}
-									<ChevronDown size="16" />
+									<ChevronDown size="20" />
 								{:else}
-									<ChevronRight size="16" />
+									<ChevronRight size="20" />
 								{/if}
 							</div>
-
-							<p class={classes.link}>
-								{padString(String(order?.id))}
-							</p>
-							{#if order?.reference}
-								<p class="pl-1 text-xs">
-									({order.reference})
+							<div>
+								<p class={classes.link}>
+									{padString(String(order?.id))}
 								</p>
-							{/if}
+								{#if order?.reference}
+									<p class="text-xs italic">
+										#{order.reference}
+									</p>
+								{/if}
+							</div>
 						</a>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
@@ -543,14 +585,24 @@
 						columnId="job"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div class="grid grid-cols-2">
+						<div class="w-fit flex flex-wrap text-xs gap-1">
 							{#each jobsOrders || [] as jo}
-								<a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank">
+								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
+								<div
+									class="cursor-pointer"
+									on:click={(e) => {
+										jobSearch = jobSearch === String(jo?.job?.id) ? '' : String(jo?.job?.id);
+										replaceStateWithQuery({
+											job: jobSearch
+										});
+									}}
+								>
 									<Badge color="blue">{jo?.job?.id}</Badge>
-								</a>
+								</div>
+								<!-- </a> -->
 							{:else}
-								<div>
-									<Badge color="blue">N/A</Badge>
+								<div class="cursor-default">
+									<Badge color="dark">N/A</Badge>
 								</div>
 							{/each}
 						</div>
@@ -570,7 +622,7 @@
 						columnId="category"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div class="grid grid-cols-2">
+						<div class="w-fit flex flex-wrap text-xs gap-1">
 							{#each categories || [] as category}
 								<div>
 									<Badge color="blue">{category}</Badge>
@@ -587,7 +639,10 @@
 						columnId="supplier"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<p>{order?.supplier?.name}</p>
+						<p class={classes.popover}>{order?.supplier?.name}</p>
+						<Popover placement="left">
+							<SupplierInfo supplierId={order?.supplier?.id} />
+						</Popover>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"

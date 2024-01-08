@@ -1,9 +1,19 @@
 <script lang="ts">
 	import { classes, datetimeFormat } from '$lib/utils';
-	import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
+	import {
+		Popover,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Tooltip
+	} from 'flowbite-svelte';
 	import { XMark } from 'svelte-heros-v2';
 	import UserIcon from '../UserIcon.svelte';
 	import TrackingStatus from '../Orders/TrackingStatus.svelte';
+	import SupplierInfo from '../Supplier/SupplierInfo.svelte';
 	//import ReceiptItemRemoveButton from './ReceiptItemRemoveButton.svelte';
 
 	export let orderItems = [];
@@ -49,7 +59,14 @@
 					{item?.quantity}
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-					{item?.order?.supplier?.name || 'Unknown'}
+					{#if item?.order?.supplier?.id}
+						<p class={classes.popover}>{item?.order?.supplier?.name}</p>
+						<Popover placement="left">
+							<SupplierInfo supplierId={item?.order?.supplier?.id} />
+						</Popover>
+					{:else}
+						Unknown
+					{/if}
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{new Intl.NumberFormat('en-GB', {

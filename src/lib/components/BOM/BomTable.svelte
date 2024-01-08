@@ -168,7 +168,25 @@
 						handleRowClick(idx, references, line, lineKey, e);
 					}}
 				>
-					<TableBodyCell>{idx + 1}</TableBodyCell>
+					<TableBodyCell>
+						<div class="flex gap-x-1" on:click|stopPropagation>
+							<!-- <input
+								type="checkbox"
+								on:change={(e) => {
+									console.log(e?.target?.checked);
+									let lineIds = line?.map((l) => l.reference);
+									console.log(lineIds);
+									if (lineIds.length) {
+										bom.lines.map((l, i) => {
+											return lineIds.includes(l.reference) ? { ...l, _include: e?.target?.checked } : l;
+										});
+										bom.lines = bom.lines;
+									}
+								}}
+							/> -->
+							<p>{idx + 1}</p>
+						</div>
+					</TableBodyCell>
 					{#if visibleColumns?.includes('part')}
 						<TableBodyCell class={`${partsInLibrary?.includes(lineKey) ? 'underline' : ''} }`}
 							>{lineKey || 'Not Fitted'}</TableBodyCell

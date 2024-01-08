@@ -116,7 +116,8 @@
 						  }
 						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
-					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+					user_id: buyerSearch ? { _eq: buyerSearch } : {},
+					created_at: dateSearch?.[0] ? { _gte: dateSearch[0], _lte: `${dateSearch[0]}T23:59:59` } : {}
 				}
 				/* supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
@@ -167,7 +168,8 @@
 						  }
 						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
-					user_id: buyerSearch ? { _eq: buyerSearch } : {}
+					user_id: buyerSearch ? { _eq: buyerSearch } : {},
+					created_at: dateSearch?.[0] ? { _gte: dateSearch[0], _lte: `${dateSearch[0]}T23:59:59` } : {}
 				}
 			},
 			requestPolicy: 'network-only'
@@ -244,7 +246,7 @@
 	//$: orderReferenceSearch = idSearch?.[0] === '#' ? idSearch?.substr(1) : undefined;
 	let orderReferenceSearch: string;
 	let dateSearch: string[] = ['', ''];
-	$: console.log('ref:', orderReferenceSearch);
+	$: console.log('date:', dateSearch[0] && new Date(dateSearch[0])?.toISOString());
 
 	$: filtered = idRefSearch || jobSearch || categorySearch || supplierSearch || buyerSearch;
 
@@ -272,6 +274,14 @@
 					buyer: buyerSearch
 				});
 			}
+		}
+
+		dateSearch[0] = decodeURIComponent($page.url.searchParams.get('date') || '');
+		if (dateSearch[0] === 'today') {
+			dateSearch[0] = new Date().toISOString().split('T')[0];
+			replaceStateWithQuery({
+				date: dateSearch[0]
+			});
 		}
 
 		$windowTitleStore = $page?.data?.orderId ? `Order | ${$page?.data?.orderId}` : 'Orders';
@@ -329,7 +339,9 @@
 						});
 					}}
 				/>
-				<Tooltip placement="right">Start search with '#' to search by order reference</Tooltip>
+				<Tooltip placement="bottom" defaultClass="py-1 px-1 text-xs font-medium">
+					Start search with '#' to search by order reference (use '%' as wildcard)
+				</Tooltip>
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
@@ -460,13 +472,27 @@
 			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 				<input
 					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-					type="text"
+					type="date"
 					bind:value={dateSearch[0]}
+					on:change={() => {
+						replaceStateWithQuery({
+							date: dateSearch[0]
+						});
+					}}
 				/>
 
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<div class:invisible={!dateSearch[0]} class="flex my-auto hover:text-red-600" on:click={() => (dateSearch[0] = '')}>
+				<div
+					class:invisible={!dateSearch[0]}
+					class="flex my-auto hover:text-red-600"
+					on:click={() => {
+						replaceStateWithQuery({
+							date: ''
+						});
+						dateSearch[0] = '';
+					}}
+				>
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
@@ -612,10 +638,19 @@
 						columnId="buyer"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<UserIcon size="xs" user={order?.user} buttonClass="!p-0 !pr-2 text-white">
-							{order?.user?.first_name}
-							{order?.user?.last_name}
-						</UserIcon>
+						<div
+							on:click={(e) => {
+								buyerSearch = order?.user?.id;
+								replaceStateWithQuery({
+									buyer: buyerSearch
+								});
+							}}
+						>
+							<UserIcon size="xs" user={order?.user} buttonClass="!p-0 !pr-2 text-white">
+								{order?.user?.first_name}
+								{order?.user?.last_name}
+							</UserIcon>
+						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"

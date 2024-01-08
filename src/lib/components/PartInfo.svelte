@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 	import { ArrowTopRightOnSquare } from 'svelte-heros-v2';
 	import ViewerFromJson from './ViewerFromJSON.svelte';
+	import { capacitance } from '$lib/utils/electical';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
@@ -136,7 +137,14 @@
 						{#each properties as [name, value], idx}
 							{@const propertyCount = Object.keys(partInfo.properties).length}
 							<div>
-								<p class="text-sm">{name}: {value}</p>
+								{#if 'CAPACITANCE' === name}
+									<p class="text-sm">{name}: {Number(value)}/{capacitance(Number(value))}</p>
+								{:else if 'RESISTANCE' === name}
+									<p class="text-sm">{name}: {Number(value)}Ω</p>
+								{:else}
+									<p class="text-sm">{name}: {value}</p>
+								{/if}
+
 								{#if idx < propertyCount}
 									<hr />
 								{/if}

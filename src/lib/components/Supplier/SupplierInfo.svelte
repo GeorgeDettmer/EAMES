@@ -49,23 +49,39 @@
 	<p class="text-red-600">{$supplierInfoStore.error.message}</p>
 {:else if supplierInfo}
 	<div class="flex gap-x-2">
-		<div class="my-auto">
+		<div class="my-auto rounded-lg">
 			<a href={supplierInfo?.url} target="_blank">
-				<img
-					class="h-8 p-0.5 rounded-lg bg-gray-100 dark:bg-gray-700"
-					class:hidden={!supplierInfo?.image_url}
-					src={supplierInfo?.image_url}
-					alt={supplierInfo?.name}
-				/>
+				{#if supplierInfo?.image_url}
+					<img
+						class="h-8 p-0.5 rounded-lg bg-gray-200"
+						class:hidden={!supplierInfo?.image_url}
+						src={supplierInfo?.image_url}
+						alt={supplierInfo?.name}
+					/>
+				{:else}
+					<p
+						class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200
+						{supplierInfo?.id === 'STOCK' && 'bg-green-500 text-white'}
+						{supplierInfo?.id === 'FI' && 'bg-yellow-300 text-white'}
+						"
+					>
+						{supplierInfo?.name
+							?.split(' ')
+							?.map((s) => s?.[0]?.toUpperCase())
+							.join('')}
+					</p>
+				{/if}
 			</a>
 		</div>
 		<div class="my-auto">
 			<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
 				<a href="/supplier/{supplierInfo.id}" class="hover:underline">{supplierInfo?.name}</a>
 			</p>
-			<p class="text-xs font-normal whitespace-break-spaces" class:invisible={!supplierInfo?.categories?.length}>
-				{supplierInfo?.categories?.map((c) => c?.[0]?.toUpperCase() + c?.substr(1))?.join(', ')}
-			</p>
+			{#if supplierInfo?.categories?.length}
+				<p class="text-xs font-normal whitespace-break-spaces">
+					{supplierInfo?.categories?.map((c) => c?.[0]?.toUpperCase() + c?.substr(1))?.join(', ')}
+				</p>
+			{/if}
 		</div>
 	</div>
 	{#if supplierInfo?.tags?.length}

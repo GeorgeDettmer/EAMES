@@ -315,12 +315,11 @@ export function getSelectionText() {
 	return text;
 }
 
-export const compareTwoArrayOfObjects = (arr1: Array<Record<string, any>>, arr2: Array<Record<string, any>>) => {
-	if (!arr1?.length || !arr2?.length) return false;
-	return (
-		arr1.length === arr2.length &&
-		arr1.every((element_1) =>
-			arr2.some((element_2) => Object.keys(element_1).every((key) => element_1[key] === element_2[key]))
-		)
-	);
-};
+export function deepEqual(x, y): boolean {
+	const ok = Object.keys,
+		tx = typeof x,
+		ty = typeof y;
+	return x && y && tx === 'object' && tx === ty
+		? ok(x).length === ok(y).length && ok(x).every((key) => deepEqual(x[key], y[key]))
+		: x === y;
+}

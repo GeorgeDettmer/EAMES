@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { compareTwoArrayOfObjects, datetimeFormat } from '$lib/utils';
+	import { datetimeFormat, deepEqual } from '$lib/utils';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import {
 		Table,
@@ -13,7 +13,8 @@
 		Badge,
 		Button,
 		Modal,
-		Alert
+		Alert,
+		Spinner
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
@@ -25,18 +26,9 @@
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
 	import { goto } from '$app/navigation';
-	import {
-		DotsHorizontalOutline,
-		DotsVerticalOutline,
-		EditOutline,
-		InfoCircleSolid,
-		XCircleOutline
-	} from 'flowbite-svelte-icons';
+	import { EditOutline, InfoCircleSolid, XCircleOutline } from 'flowbite-svelte-icons';
 	import List from '../KnowledgeBase/List.svelte';
-	import OrderCreate from './OrderCreate.svelte';
 	import OrderCreateMulti from './OrderCreateMulti.svelte';
-
-	import { DeepDiff, diff } from 'deep-diff';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -64,6 +56,7 @@
 						part
 						part_id
 						spn
+						category
 						partByPartId {
 							description
 							name
@@ -245,6 +238,83 @@
 		}
 	}
 
+	let updating = false;
+	let updateError = false;
+	let updateSuccess = false;
+	async function update(order) {
+		console.log('update order...', order.id, order.orders_items.length);
+		if (updating) return;
+		//TODO: Fix quantity control
+		/* if (recievedQty >= orderItem.quantity || recievedQty + quantity > orderItem.quantity) {
+			messagesStore('Quantity over order total', 'warning');
+			return;
+		} */
+		if (!$page?.data?.user) {
+			messagesStore('You must be logged in to perform this action', 'warning');
+			return;
+		}
+		if ($page?.data?.user?.processes && !$page?.data?.user?.processes?.['purchase']) {
+			messagesStore('You do not have permission to edit this order', 'warning');
+			return;
+		}
+
+		updating = true;
+
+		let updates = order.orders_items.map((oi) => {
+			if (oi?.id) {
+				return {
+					where: { _and: { id: { _eq: oi.id }, order_id: { _eq: order.id } } },
+					_set: {
+						part: oi.part,
+						spn: oi.spn,
+						quantity: oi.quantity,
+						price: oi.price,
+						category: oi.category
+					}
+				};
+			}
+		});
+
+		let mutationResult;
+		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation updateOrder($updates: [erp_orders_items_updates!]!) {
+					update_erp_orders_items_many(updates: $updates) {
+						affected_rows
+					}
+				}
+			`,
+			{ updates }
+		);
+		if (mutationResult?.error) {
+			console.error('MUTATION ERROR: ', mutationResult);
+			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+			updateError = true;
+			setTimeout(() => {
+				updateError = false;
+			}, 5000);
+		} else {
+			editing = false;
+			let affected = mutationResult.data.update_erp_orders_items_many.reduce((a, v) => v.affected_rows, 0);
+			if (!affected) {
+				console.error('MUTATION ERROR NO ROWS UPDATED: ', mutationResult);
+				messagesStore('NO ROWS UPDATED, DO YOU HAVE PERMISSION?', 'warning');
+				updateError = true;
+				setTimeout(() => {
+					updateError = false;
+				}, 5000);
+			} else {
+				updateSuccess = true;
+				setTimeout(() => {
+					updateSuccess = false;
+				}, 2500);
+				console.log('MUTATION RESULT: ', mutationResult);
+				messagesStore('Updated ' + affected + ' rows', 'success');
+			}
+		}
+		updating = false;
+	}
+
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
 	let orderLineDelete = {};
@@ -255,11 +325,9 @@
 
 	let editingOrder;
 
-	$: editingDiff = diff(editingOrder?.orders_items || [], order?.orders_items || []);
-	$: changes = editingDiff?.length > 0;
-	$: console.log('changes', changes, editingDiff, editingOrder, order);
-
-	$: console.log('update', editingOrder === order, editingOrder, order);
+	$: editingDiff = []; //diff(editingOrder?.orders_items || [], order?.orders_items || []);
+	$: changes = deepEqual(editingOrder?.orders_items || [], order?.orders_items || []);
+	$: console.log('changes', changes, editingOrder?.orders_items, order?.orders_items);
 </script>
 
 <Modal autoclose bind:open={recieveModal}>
@@ -401,39 +469,41 @@
 			<div class="flex">
 				<div>
 					<OrdersListItem {order} interactive={false}>
-						<div
-							class="-mt-6 pl-2"
-							on:click={() => {
-								if (editing) {
-									editing = false;
-									editingOrder = undefined;
-								} else {
-									editingOrder = structuredClone(order);
-									editingOrder.id = undefined;
-									editing = true;
-								}
-								console.log('edit', editingOrder);
-							}}
-						>
+						<div class="pl-4 cursor-pointer">
+							<button
+								on:click={() => {
+									if (editing) {
+										editing = false;
+										editingOrder = undefined;
+									} else {
+										editingOrder = structuredClone(order);
+										editingOrder.id = undefined;
+										editing = true;
+									}
+									console.log('edit', editingOrder);
+								}}
+							>
+								{#if editing}
+									<XCircleOutline size="lg" />
+								{:else}
+									<EditOutline size="lg" />
+								{/if}
+							</button>
 							{#if editing}
-								{#if changes}
+								<button>
 									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-										width="16"
-										height="16"
+										width="22"
+										height="22"
 										src="https://img.icons8.com/ios/50/save--v1.png"
 										alt="save"
-										on:click={(e) => {
-											//click('save');
+										class="{updating && 'animate-pulse '}{updateSuccess && ' bg-green-400 rounded-md '}{updateError &&
+											' bg-red-500 rounded-md '}"
+										on:click|preventDefault={(e) => {
+											update({ ...editingOrder, id: order.id });
 											console.log('save');
-											e.preventDefault();
 										}}
 									/>
-								{:else}
-									<XCircleOutline />
-								{/if}
-							{:else}
-								<EditOutline />
+								</button>
 							{/if}
 						</div>
 					</OrdersListItem>
@@ -472,7 +542,6 @@
 	{/if}
 	<div on:keydown={(e) => tableKeypress(e)}>
 		{#if editing}
-			Editing
 			<OrderCreateMulti order={editingOrder} />
 		{:else}
 			<Table>

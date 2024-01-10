@@ -324,9 +324,12 @@
 </Modal>
 
 <Navbar />
-
-<main class="h-screen overflow-y-scroll dark:bg-slate-600">
+<!-- <main class="h-screen overflow-y-scroll dark:bg-slate-600">
 	<div class="mx-auto max-w-8xl pt-14 sm:px-6 lg:px-8">
+		<div class="px-4 py-6 sm:px-0">
+			<div class="rounded-lg"> -->
+<main class="h-screen dark:bg-slate-600">
+	<div class="mx-auto max-w-8xl pt-14 sm:px-6 lg:px-8 dark:bg-slate-600">
 		<div class="px-4 py-6 sm:px-0">
 			<div class="rounded-lg">
 				<div in:fade|global={{ duration: 500 }}>

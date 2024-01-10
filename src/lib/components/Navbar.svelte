@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { dev } from '$app/environment';
 	import { page } from '$app/stores';
 	import { classes } from '$lib/utils';
 	import { enhance } from '$app/forms';
@@ -227,6 +228,8 @@
 							</Helper>
 						{/await}
 					</li>
+				{:else}
+					<p>No printers found?...</p>
 				{/each}
 			</ul>
 		{:else}
@@ -236,12 +239,17 @@
 </Modal>
 
 <NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus openMenuGroups={openMenuGroupsStore} />
-<div class="relative px-0">
-	<Navbar navClass="px-1 sm:px-4 py-1 absolute w-full z-20 top-0 left-0 border-b" let:hidden let:toggle>
-		<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 hidden sm:flex" in:fade|global>
-			<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
-		</div>
-		<!-- <MegaMenu full items={menu} let:item class="bg-slate-200">
+<!-- <div class="relative px-0"> -->
+<Navbar navClass="px-1 py-1 w-full fixed z-20 top-0 left-0 border-b" let:hidden let:toggle>
+	<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 flex" in:fade|global>
+		<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
+		{#if dev}
+			<div class="flex w-0">
+				<p class="font-extrabold text-lg -rotate-90 tracking-widest -ml-1 text-yellow-300 animate-pulse">DEV</p>
+			</div>
+		{/if}
+	</div>
+	<!-- <MegaMenu full items={menu} let:item class="bg-slate-200">
 			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500">{item.name}</a>
 
 			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
@@ -267,111 +275,111 @@
 			</a>
 		</MegaMenu> -->
 
-		<div class="ml-1 sm:ml-10 flex-auto outline-gray-500">
-			<div class="flex">
-				<div class="grid grid-rows-2 grid-flow-col">
-					<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
-						<Barcode
-							boardId={$currentBoard?.boardInfo?.id?.toString()}
-							on:click={() => {
-								boardVisible = true;
-							}}
-						/>
-					</div>
-					{#if $currentBoard?.boardInfo?.id && $currentBoard?.boardInfo.job}
-						<div
-							class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500 {'job-' +
-								$currentBoard?.boardInfo.job?.id}"
-						>
-							EAS{$currentBoard?.boardInfo?.job?.batch}
-						</div>
-						<div
-							class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +
-								$currentBoard?.boardInfo.job?.id}"
-						>
-							<a
-								class="cursor-pointer"
-								target="_blank"
-								href={window.origin + '/assembly/' + $currentBoard?.boardInfo?.assembly?.id}
-							>
-								<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
-								{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
-									?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})</a
-							>
-						</div>
-						<Popover placement="bottom" triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id} class="w-64">
-							<JobPopoverContent job={$currentBoard?.boardInfo.job} />
-						</Popover>
-					{/if}
-				</div>
-			</div>
-		</div>
-
-		<div class="flex items-center">
-			<span>
-				<UserIcon
-					size="sm"
-					user={$page.data?.user}
-					on:click={() => {
-						console.log($page.data?.user);
-						if ($page?.data?.user) {
-							userVisible = !userVisible;
-						} else {
-							loginVisible = true;
-						}
-					}}
-				>
-					<p class="px-1 text-xl hidden md:block">
-						{#if $page?.data?.user?.firstname && $page?.data?.user?.lastname}
-							{$page?.data?.user?.firstname} {$page?.data?.user?.lastname}
-						{:else if $page?.data?.user?.username}
-							{$page?.data?.user?.username}
-						{:else}
-							Sign in
-						{/if}
-					</p>
-					<div class:hidden={true}>
-						<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
-							<div class="bg-blue-700 overflow-hidden" role="progressbar" style={`height: ${(1000 / 100) * 5}%`} />
-						</div>
-					</div>
-				</UserIcon>
-			</span>
-		</div>
-		<Dropdown inline bind={userVisible}>
-			<div slot="header" class="px-4 py-2">
-				{#if $page?.data?.user}
-					<span class="text-sm text-gray-900 dark:text-white">
-						{$page?.data?.user?.firstname}
-						{$page?.data?.user?.lastname}
-					</span>
-					<span
-						class={'block truncate text-sm font-medium' + classes.link}
-						on:click|stopPropagation={() => {
-							userInfoVisible = true;
+	<div class="ml-1 sm:ml-10 flex-auto outline-gray-500">
+		<div class="flex">
+			<div class="grid grid-rows-2 grid-flow-col">
+				<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">
+					<Barcode
+						boardId={$currentBoard?.boardInfo?.id?.toString()}
+						on:click={() => {
+							boardVisible = true;
 						}}
+					/>
+				</div>
+				{#if $currentBoard?.boardInfo?.id && $currentBoard?.boardInfo.job}
+					<div
+						class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500 {'job-' +
+							$currentBoard?.boardInfo.job?.id}"
 					>
-						{$page?.data?.user?.username}
-					</span>
-				{:else}
-					<DropdownItem slot="footer" on:click={() => (loginVisible = true)}>Sign in</DropdownItem>
+						EAS{$currentBoard?.boardInfo?.job?.batch}
+					</div>
+					<div
+						class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +
+							$currentBoard?.boardInfo.job?.id}"
+					>
+						<a
+							class="cursor-pointer"
+							target="_blank"
+							href={window.origin + '/assembly/' + $currentBoard?.boardInfo?.assembly?.id}
+						>
+							<span class="font-normal">{$currentBoard?.boardInfo.job?.customer?.name}</span>
+							{$currentBoard?.boardInfo?.assembly?.name} ({$currentBoard?.boardInfo?.assembly
+								?.revision_external}:{$currentBoard?.boardInfo?.assembly?.revision_internal})</a
+						>
+					</div>
+					<Popover placement="bottom" triggeredBy={'.job-' + $currentBoard?.boardInfo.job?.id} class="w-64">
+						<JobPopoverContent job={$currentBoard?.boardInfo.job} />
+					</Popover>
 				{/if}
 			</div>
-			<DropdownItem on:click={() => (settingsVisible = true)}>Settings</DropdownItem>
-			{#if user}
-				<DropdownItem
-					slot="footer"
-					on:click={() => {
-						loginVisible = true;
-					}}>Switch user</DropdownItem
-				>
+		</div>
+	</div>
 
-				<DropdownItem slot="footer">
-					<form method="POST" action="/login?/logout" use:enhance>
-						<button type="submit" name="logout" value="true">Logout</button>
-					</form>
-				</DropdownItem>
+	<div class="flex items-center">
+		<span>
+			<UserIcon
+				size="sm"
+				user={$page.data?.user}
+				on:click={() => {
+					console.log($page.data?.user);
+					if ($page?.data?.user) {
+						userVisible = !userVisible;
+					} else {
+						loginVisible = true;
+					}
+				}}
+			>
+				<p class="px-1 text-xl hidden md:block">
+					{#if $page?.data?.user?.firstname && $page?.data?.user?.lastname}
+						{$page?.data?.user?.firstname} {$page?.data?.user?.lastname}
+					{:else if $page?.data?.user?.username}
+						{$page?.data?.user?.username}
+					{:else}
+						Sign in
+					{/if}
+				</p>
+				<div class:hidden={true}>
+					<div class="w-full h-1 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
+						<div class="bg-blue-700 overflow-hidden" role="progressbar" style={`height: ${(1000 / 100) * 5}%`} />
+					</div>
+				</div>
+			</UserIcon>
+		</span>
+	</div>
+	<Dropdown inline bind={userVisible}>
+		<div slot="header" class="px-4 py-2">
+			{#if $page?.data?.user}
+				<span class="text-sm text-gray-900 dark:text-white">
+					{$page?.data?.user?.firstname}
+					{$page?.data?.user?.lastname}
+				</span>
+				<span
+					class={'block truncate text-sm font-medium' + classes.link}
+					on:click|stopPropagation={() => {
+						userInfoVisible = true;
+					}}
+				>
+					{$page?.data?.user?.username}
+				</span>
+			{:else}
+				<DropdownItem slot="footer" on:click={() => (loginVisible = true)}>Sign in</DropdownItem>
 			{/if}
-		</Dropdown>
-	</Navbar>
-</div>
+		</div>
+		<DropdownItem on:click={() => (settingsVisible = true)}>Settings</DropdownItem>
+		{#if user}
+			<DropdownItem
+				slot="footer"
+				on:click={() => {
+					loginVisible = true;
+				}}>Switch user</DropdownItem
+			>
+
+			<DropdownItem slot="footer">
+				<form method="POST" action="/login?/logout" use:enhance>
+					<button type="submit" name="logout" value="true">Logout</button>
+				</form>
+			</DropdownItem>
+		{/if}
+	</Dropdown>
+</Navbar>
+<!-- </div> -->

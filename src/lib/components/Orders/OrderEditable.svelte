@@ -261,19 +261,21 @@
 		updating = true;
 
 		let updates = order.orders_items.map((oi) => {
-			if (oi?.id) {
-				return {
-					where: { _and: { id: { _eq: oi.id }, order_id: { _eq: order.id } } },
-					_set: {
-						part: oi.part,
-						spn: oi.spn,
-						quantity: oi.quantity,
-						price: oi.price,
-						category: oi.category
-					}
-				};
-			}
+			//if (oi?.id) {
+			return {
+				where: { _and: { id: { _eq: oi.id }, order_id: { _eq: order.id } } },
+				_set: {
+					part: oi.part,
+					spn: oi.spn,
+					quantity: oi.quantity,
+					price: oi.price,
+					category: oi.category
+				}
+			};
+			//}
 		});
+
+		console.log('updates:', updates);
 
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
@@ -327,7 +329,7 @@
 
 	$: editingDiff = []; //diff(editingOrder?.orders_items || [], order?.orders_items || []);
 	$: changes = deepEqual(editingOrder?.orders_items || [], order?.orders_items || []);
-	$: console.log('changes', changes, editingOrder?.orders_items, order?.orders_items);
+	//$: console.log('changes', changes, editingOrder?.orders_items, order?.orders_items);
 </script>
 
 <Modal autoclose bind:open={recieveModal}>

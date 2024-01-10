@@ -1,3 +1,5 @@
+import { dev } from '$app/environment';
+
 import { handleErrorWithSentry, Replay } from '@sentry/sveltekit';
 import * as Sentry from '@sentry/sveltekit';
 
@@ -19,7 +21,9 @@ Sentry.init({
 			maskAllText: false,
 			blockAllMedia: false
 		})
-	]
+	],
+	environment: dev ? 'development' : 'production'
+	//enabled: !dev
 });
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`

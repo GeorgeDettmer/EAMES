@@ -8,6 +8,7 @@
 	import { Client, setContextClient, cacheExchange, fetchExchange, subscriptionExchange, mapExchange } from '@urql/svelte';
 	import { devtoolsExchange } from '@urql/devtools';
 	import { createClient as createWSClient } from 'graphql-ws';
+	import * as Sentry from '@sentry/sveltekit';
 	import {
 		PUBLIC_HASURA_URL,
 		PUBLIC_BARCODE_endKey,
@@ -19,6 +20,27 @@
 	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
+
+	$: {
+		let u = $page?.data?.user;
+		Sentry.setUser({
+			id: u?.id,
+			username: u?.username,
+			firstname: u?.firstname,
+			lastname: u?.lastname,
+			initials: u?.initials,
+			tester: !!u?.permissions?.tester
+		});
+		console.log('Sentry.setUser:', {
+			id: u?.id,
+			username: u?.username,
+			firstname: u?.firstname,
+			lastname: u?.lastname,
+			initials: u?.initials,
+			tester: !!u?.permissions?.tester
+		});
+	}
+
 	import { onlineStore } from 'svelte-legos';
 
 	const isOnline = onlineStore();

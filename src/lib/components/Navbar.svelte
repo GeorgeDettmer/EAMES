@@ -241,11 +241,16 @@
 <NavDrawer bind:hidden={navDrawerHidden} bind:search={navDrawerSearch} bind:menus openMenuGroups={openMenuGroupsStore} />
 <!-- <div class="relative px-0"> -->
 <Navbar navClass="px-1 py-1 w-full fixed z-20 top-0 left-0 border-b" let:hidden let:toggle>
-	<div class="cursor-pointer h-12 ring-indigo-800 hover:ring-4 flex" in:fade|global>
-		<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
+	<div class="h-12 ring-blue-900 ring-opacity-75 bg-indigo-950 rounded-sm flex" in:fade|global>
+		<img
+			src={logo}
+			class="cursor-pointer p-0.5 hover:p-1"
+			alt="EASL"
+			on:click={() => (navDrawerHidden = !navDrawerHidden)}
+		/>
 		{#if dev}
 			<div class="flex w-0">
-				<p class="font-extrabold text-lg -rotate-90 tracking-widest -ml-1 text-orange-500 animate-pulse">DEV</p>
+				<p class="font-extrabold text-lg -rotate-90 tracking-widest -ml-0 text-orange-500 animate-pulse">DEV</p>
 			</div>
 		{/if}
 	</div>
@@ -275,7 +280,7 @@
 			</a>
 		</MegaMenu> -->
 
-	<div class="ml-1 sm:ml-10 flex-auto outline-gray-500">
+	<div class="ml-1 sm:ml-10 flex-auto outline-gray-500" class:hidden={!$page.url.pathname.startsWith('/board')}>
 		<div class="flex">
 			<div class="grid grid-rows-2 grid-flow-col">
 				<div class="px-2 row-span-3 rounded-bl-lg rounded-tl-lg border-2 border-slate-500">

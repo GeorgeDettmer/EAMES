@@ -60,7 +60,7 @@
 			spn: newSPN?.trim(),
 			price: newPrice,
 			quantity: Number(newQuantity),
-			user_id: user?.id,
+			/* user_id: user?.id, */
 			created_at: new Date().toISOString(),
 			tracking: newTracking,
 			category: newCategory

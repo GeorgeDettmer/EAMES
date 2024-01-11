@@ -135,7 +135,8 @@
 		<TableHeadCell padding="px-1 py-1">Order Item</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Category</TableHeadCell>
-		<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
+		<TableHeadCell padding="px-1 py-1">PN</TableHeadCell>
+		<TableHeadCell padding="px-1 py-1">SPN</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 		{#if !hiddenColumns.includes('supplier')}
 			<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
@@ -193,6 +194,9 @@
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{item.part}
+					</TableBodyCell>
+					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+						{item.spn}
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{item?.quantity}

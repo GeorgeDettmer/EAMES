@@ -46,14 +46,12 @@
 					aggregate {
 						count
 						sum {
-							price
 							quantity
 						}
 					}
 				}
 				orders_items {
 					category
-					quantity
 					orders_items_receiveds_aggregate {
 						aggregate {
 							sum {

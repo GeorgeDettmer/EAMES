@@ -3,7 +3,6 @@
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
 	import OrderEditable from '$lib/components/Orders/OrderEditable.svelte';
 	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
-	import type { PageData } from './$types';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import {
 		Badge,
@@ -25,10 +24,7 @@
 	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
-	import OrdersListItem from '$lib/components/Orders/OrdersListItem.svelte';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
-
-	export let data: PageData;
 
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result
@@ -137,8 +133,8 @@
 
 	$: isFiltered = supplierSearch || buyerSearch || orderReferenceSearch || jobSearch || idSearch;
 
-	let lastRefreshedAt;
-	let oldOrders = [];
+	let lastRefreshedAt: Date;
+	let oldOrders: string | any[] = [];
 	async function refresh() {
 		if (orderId) return;
 		if ($ordersStore?.fetching) return;
@@ -189,7 +185,7 @@
 			'REFRESH @ ',
 			lastRefreshedAt.toTimeString()?.split(' ')?.[0],
 			oldOrders.length,
-			ordersStore?.data?.erp_orders?.length
+			$ordersStore?.data?.erp_orders?.length
 		);
 	}
 
@@ -429,6 +425,8 @@
 						</option>
 					{/each}
 				</select>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
 					class:invisible={!buyerSearch}
 					class="flex my-auto hover:text-red-600"
@@ -548,6 +546,8 @@
 					</div> -->
 
 					<div class="flex ml-auto">
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div
 							class:invisible={!isFiltered}
 							class="flex my-auto hover:text-red-600 pr-1 outline-none cursor-pointer"
@@ -667,6 +667,8 @@
 						<div class="w-fit flex flex-wrap text-xs gap-1">
 							{#each jobsOrders || [] as jo}
 								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
 								<div
 									class="cursor-pointer"
 									on:click={(e) => {
@@ -691,6 +693,8 @@
 						columnId="buyer"
 						bind:collapsedColumns={$collapsedColumns}
 					>
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div
 							on:click={(e) => {
 								buyerSearch = order?.user?.id;
@@ -727,7 +731,20 @@
 						columnId="supplier"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<p class={classes.popover}>{order?.supplier?.name}</p>
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+						<p
+							on:click={(e) => {
+								supplierSearch = order?.supplier?.id;
+								replaceStateWithQuery({
+									supplier: supplierSearch
+								});
+							}}
+							class={classes.popover}
+						>
+							{order?.supplier?.name}
+						</p>
 						<Popover placement="left">
 							<SupplierInfo supplierId={order?.supplier?.id} />
 						</Popover>
@@ -840,11 +857,7 @@
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'
-					}).format(
-						orders
-							?.flatMap((o) => o?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))
-							?.reduce((a, v) => a + v, 0)
-					)}
+					}).format(orders?.reduce((a, o) => a + (o?.total || 0), 0))}
 				</p>
 			</TableHeadCell>
 			{#if !filtered}

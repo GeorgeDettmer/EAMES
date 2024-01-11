@@ -13,7 +13,8 @@
 		Badge,
 		Button,
 		Modal,
-		Alert
+		Alert,
+		Label
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
@@ -27,6 +28,8 @@
 	import { goto } from '$app/navigation';
 	import { InfoCircleSolid } from 'flowbite-svelte-icons';
 	import List from '../KnowledgeBase/List.svelte';
+	import OrderAddLine from './OrderAddLine.svelte';
+	import { Plus } from 'svelte-heros-v2';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -236,12 +239,17 @@
 		}
 	}
 
+	let addLineModal = false;
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
 	let orderLineDelete = {};
 
 	let kbItems;
 </script>
+
+<Modal bind:open={addLineModal} size="md">
+	<OrderAddLine />
+</Modal>
 
 <Modal autoclose bind:open={recieveModal}>
 	{@const recievedQty = orderItemSelected?.orders_items_receiveds?.reduce((a, v) => a + (v?.quantity || 0), 0)}
@@ -587,8 +595,18 @@
 							{totalRecieved}
 						</Badge>
 					</TableBodyCell>
+				{:else}
+					<TableBodyCell />
 				{/if}
-				<TableBodyCell />
+				<TableBodyCell>
+					<span
+						on:click={() => {
+							addLineModal = true;
+						}}
+					>
+						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+					</span>
+				</TableBodyCell>
 				<slot name="foot" />
 			</TableHead>
 		</Table>

@@ -245,7 +245,7 @@
 		<img src={logo} class="" alt="EASL" on:click={() => (navDrawerHidden = !navDrawerHidden)} />
 		{#if dev}
 			<div class="flex w-0">
-				<p class="font-extrabold text-lg -rotate-90 tracking-widest -ml-1 text-yellow-300 animate-pulse">DEV</p>
+				<p class="font-extrabold text-lg -rotate-90 tracking-widest -ml-1 text-orange-500 animate-pulse">DEV</p>
 			</div>
 		{/if}
 	</div>

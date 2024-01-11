@@ -797,8 +797,8 @@
 				</TableBodyRow>
 				{#if openRows?.includes(idx)}
 					<TableBodyRow class="h-24 ">
-						<TableBodyCell colspan="9" class="p-0">
-							<div class="px-1 py-1 mx-auto">
+						<TableBodyCell colspan="9" tdClass="p-0">
+							<div class="">
 								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
 							</div>
 						</TableBodyCell>

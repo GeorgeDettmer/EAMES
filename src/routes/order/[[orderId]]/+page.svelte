@@ -39,6 +39,7 @@
 				id
 				reference
 				created_at
+				total
 				jobs_orders {
 					job {
 						id
@@ -134,7 +135,7 @@
 
 	let lastRefreshedAt;
 	let oldOrders = [];
-	function refresh() {
+	async function refresh() {
 		if (orderId) return;
 		if ($ordersStore?.fetching) return;
 		if (window.document.visibilityState !== 'visible') return;
@@ -174,7 +175,7 @@
 			},
 			requestPolicy: 'network-only'
 		});
-
+		if (!isActive) resume();
 		console.log(
 			'REFRESH @ ',
 			lastRefreshedAt.toTimeString()?.split(' ')?.[0],
@@ -182,7 +183,13 @@
 			ordersStore?.data?.erp_orders?.length
 		);
 	}
+
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
+		if ($ordersStore?.error) {
+			console.error('QUERY ERROR: Error refreshing orders', $ordersStore?.error?.message, $ordersStore?.error);
+			pause();
+			return;
+		}
 		refresh();
 	}, Number(localStorage.getItem('EAMES_orders_refreshInterval') || '15') * 1000);
 
@@ -498,15 +505,13 @@
 			</TableHeadCollapsible>
 			<TableHeadCell colspan="3">
 				<div class="flex">
-					{#if $ordersStore?.error}
-						<div class="ml-auto">
+					<!-- <div class="ml-auto">
+						{#if $ordersStore?.error}
 							<p class="text-red-600 font-bold">Query Error...</p>
-						</div>
-					{:else if !$ordersStore?.fetching && orders.length === 0}
-						<div class="ml-auto">
+						{:else if !$ordersStore?.fetching && orders.length === 0}
 							<p class="text-red-600 font-bold">No results...</p>
-						</div>
-					{/if}
+						{/if}
+					</div> -->
 
 					<div class="flex ml-auto">
 						<div
@@ -522,14 +527,23 @@
 						>
 							<XMark size="16" />
 						</div>
-						<p class="mr-1">{orders?.length} result{orders?.length === 1 ? '' : 's'}</p>
+						<!-- <p class="mr-1">{orders?.length} result{orders?.length === 1 ? '' : 's'}</p> -->
+						<div class="mr-1">
+							{#if $ordersStore?.error}
+								<p class="text-red-600 font-bold">Query Error!</p>
+							{:else if !$ordersStore?.fetching && orders.length === 0}
+								<p class="text-red-600 font-bold">No results...</p>
+							{:else}
+								{orders?.length} result{orders?.length === 1 ? '' : 's'}
+							{/if}
+						</div>
 						<svg
 							on:click={() => {
 								refresh();
 							}}
+							class="w-4 h-4 text-gray-500 dark:text-white hover:text-gray-800 outline-none"
 							class:cursor-pointer={!$ordersStore?.fetching}
 							class:animate-spin={$ordersStore?.fetching}
-							class="w-4 h-4 text-gray-500 dark:text-white hover:text-gray-800 outline-none"
 							aria-hidden="true"
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -540,11 +554,16 @@
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
+								class:stroke-red-600={$ordersStore?.error}
 								d="M16 1v5h-5M2 19v-5h5m10-4a8 8 0 0 1-14.947 3.97M1 10a8 8 0 0 1 14.947-3.97"
 							/>
 						</svg>
 						<Tooltip placement="left">
-							<p class="text-xs">Last updated: {lastRefreshedAt?.toTimeString().split(' ')?.[0]}</p>
+							{#if $ordersStore?.error}
+								<p class="text-red-600 text-xs">{$ordersStore?.error?.message}</p>
+							{:else}
+								<p class="text-xs">Last updated: {lastRefreshedAt?.toTimeString().split(' ')?.[0]}</p>
+							{/if}
 						</Tooltip>
 					</div>
 				</div>
@@ -703,6 +722,12 @@
 								style: 'currency',
 								currency: 'GBP'
 							}).format(order?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))}
+						</p>
+						<p>
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(order?.total)}
 						</p>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible

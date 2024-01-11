@@ -1,6 +1,7 @@
 import { dev } from '$app/environment';
 
 import { handleErrorWithSentry, Replay } from '@sentry/sveltekit';
+import { CaptureConsole } from '@sentry/integrations';
 import * as Sentry from '@sentry/sveltekit';
 
 Sentry.init({
@@ -20,6 +21,9 @@ Sentry.init({
 		new Replay({
 			maskAllText: false,
 			blockAllMedia: false
+		}),
+		new CaptureConsole({
+			levels: ['error']
 		})
 	],
 	environment: dev ? 'development' : 'production'

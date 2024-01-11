@@ -159,7 +159,7 @@
 						price,
 						quantity: quantity,
 						created_at: new Date(),
-						user_id: $page?.data?.user?.id,
+						/* user_id: $page?.data?.user?.id, */
 						tracking: [
 							{
 								tracking_number: '',
@@ -686,93 +686,99 @@
 					</div>
 				{/if}
 			</div>
-			<Table>
-				<TableHead>
-					<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
+			<div class="max-h-96 overflow-y-auto">
+				<Table>
+					<TableHead>
+						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
 
-					<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
-					<TableHeadCell>
-						<Checkbox
-							checked={true}
-							on:change={(e) => {
-								imported.forEach((i) => {
-									i._import = e?.target?.checked;
-								});
-								imported = imported;
-							}}
-						/>
-					</TableHeadCell>
-				</TableHead>
-				<TableBody>
-					{#each imported as line, idx}
-						{@const quantity = line[orderItemProperties['quantity']]}
-						{@const part = line[orderItemProperties['part']]}
-						{@const spn = line[orderItemProperties['spn']]}
-						{@const price = line[orderItemProperties['price']]}
-						{@const supplier = line[orderItemProperties['supplier']]}
-						<TableBodyRow color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
+						<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
+						<TableHeadCell>
+							<Checkbox
+								checked={true}
+								on:change={(e) => {
+									imported.forEach((i) => {
+										i._import = e?.target?.checked;
+									});
+									imported = imported;
+								}}
+							/>
+						</TableHeadCell>
+					</TableHead>
+					<TableBody>
+						{#each imported as line, idx}
+							{@const quantity = line[orderItemProperties['quantity']]}
+							{@const part = line[orderItemProperties['part']]}
+							{@const spn = line[orderItemProperties['spn']]}
+							{@const price = line[orderItemProperties['price']]}
+							{@const supplier = line[orderItemProperties['supplier']]}
+							<TableBodyRow
+								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
+							>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">{idx + 1}</TableBodyCell>
 
-							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<!-- <p>{part ? part : 'undefined'}</p> -->
-								<p>
-									<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
-								</p>
-								<p class="text-xs italic">
-									<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>
-								</p>
-								<!-- <p class="text-xs italic">{spn}</p> -->
-							</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<EditableText bind:innerText={line[orderItemProperties['quantity']]} />
-								<!-- {quantity ? quantity : 'undefined'} -->
-							</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<EditableText bind:innerText={line[orderItemProperties['price']]} />
-								<!-- {price ? price : 'undefined'} -->
-							</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								{price && quantity ? price * quantity : 'undefined'}
-							</TableBodyCell>
-							<TableBodyCell tdClass="px-1 py-1 text-xs">
-								<EditableText bind:innerText={line[orderItemProperties['supplier']]} />
-								<!-- {supplier ? supplier : 'undefined'} -->
-							</TableBodyCell>
-							<TableBodyCell>
-								<Checkbox bind:checked={line._import} />
-							</TableBodyCell>
-						</TableBodyRow>
-					{/each}
-				</TableBody>
-				<TableHead>
-					<TableHeadCell padding="px-1 py-1">{imported.length}</TableHeadCell>
-					<TableHeadCell />
-					<TableHeadCell padding="px-1 py-1">
-						{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
-					</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">
-						{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0), 0)}
-					</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">
-						{imported.reduce(
-							(a, v) =>
-								a +
-								(v?._import ? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']]) : 0),
-							0
-						)}
-					</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">
-						{[...new Set(imported.map((i) => i?._import && i?.[orderItemProperties['supplier']]))].filter((i) => i).length}
-					</TableHeadCell>
-					<TableHeadCell padding="px-1 py-1">
-						{imported.filter((v) => v._import).length}
-					</TableHeadCell>
-				</TableHead>
-			</Table>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
+									<!-- <p>{part ? part : 'undefined'}</p> -->
+									<p>
+										<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
+									</p>
+									<p class="text-xs italic">
+										<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>
+									</p>
+									<!-- <p class="text-xs italic">{spn}</p> -->
+								</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
+									<EditableText bind:innerText={line[orderItemProperties['quantity']]} />
+									<!-- {quantity ? quantity : 'undefined'} -->
+								</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
+									<EditableText bind:innerText={line[orderItemProperties['price']]} />
+									<!-- {price ? price : 'undefined'} -->
+								</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
+									{price && quantity ? price * quantity : 'undefined'}
+								</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 text-xs">
+									<EditableText bind:innerText={line[orderItemProperties['supplier']]} />
+									<!-- {supplier ? supplier : 'undefined'} -->
+								</TableBodyCell>
+								<TableBodyCell>
+									<Checkbox bind:checked={line._import} />
+								</TableBodyCell>
+							</TableBodyRow>
+						{/each}
+					</TableBody>
+					<TableHead>
+						<TableHeadCell padding="px-1 py-1">{imported.length}</TableHeadCell>
+						<TableHeadCell />
+						<TableHeadCell padding="px-1 py-1">
+							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['quantity']]) : 0), 0)}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
+							{imported.reduce((a, v) => a + (v?._import ? Number(v?.[orderItemProperties['price']]) : 0), 0)}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
+							{imported.reduce(
+								(a, v) =>
+									a +
+									(v?._import
+										? Number(v?.[orderItemProperties['price']]) * Number(v?.[orderItemProperties['quantity']])
+										: 0),
+								0
+							)}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
+							{[...new Set(imported.map((i) => i?._import && i?.[orderItemProperties['supplier']]))].filter((i) => i).length}
+						</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">
+							{imported.filter((v) => v._import).length}
+						</TableHeadCell>
+					</TableHead>
+				</Table>
+			</div>
 		</div>
 	{/if}
 </div>

@@ -57,7 +57,6 @@
 				}
 				orders_items {
 					category
-					price
 					quantity
 					orders_items_receiveds_aggregate {
 						aggregate {
@@ -118,7 +117,12 @@
 						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 					user_id: buyerSearch ? { _eq: buyerSearch } : {},
-					created_at: dateSearch?.[0] ? { _gte: dateSearch[0], _lte: `${dateSearch[0]}T23:59:59` } : {}
+					created_at: dateSearch?.[0]
+						? {
+								_gte: dateSearch[0],
+								_lte: `${dateSearch?.[1] ? dateSearch?.[1] : dateSearch[0]}T23:59:59`
+						  }
+						: {}
 				}
 				/* supplierIdCriteria: supplierSearch ? { _eq: supplierSearch } : {},
 				userIdCriteria: buyerSearch ? { _eq: buyerSearch } : {},
@@ -170,7 +174,12 @@
 						: undefined,
 					reference: orderReferenceSearch ? { _ilike: `%${orderReferenceSearch}%` } : {},
 					user_id: buyerSearch ? { _eq: buyerSearch } : {},
-					created_at: dateSearch?.[0] ? { _gte: dateSearch[0], _lte: `${dateSearch[0]}T23:59:59` } : {}
+					created_at: dateSearch?.[0]
+						? {
+								_gte: dateSearch[0],
+								_lte: `${dateSearch?.[1] ? dateSearch?.[1] : dateSearch[0]}T23:59:59`
+						  }
+						: {}
 				}
 			},
 			requestPolicy: 'network-only'
@@ -291,6 +300,15 @@
 			});
 		}
 
+		if (dateSearch[0]) {
+			dateSearch[1] = decodeURIComponent($page.url.searchParams.get('dateEnd') || '');
+			if (dateSearch[1] === 'today') {
+				dateSearch[1] = new Date().toISOString().split('T')[0];
+				replaceStateWithQuery({
+					dateEnd: dateSearch[1]
+				});
+			}
+		}
 		$windowTitleStore = $page?.data?.orderId ? `Order | ${$page?.data?.orderId}` : 'Orders';
 		return () => {
 			$windowTitleStore = '';
@@ -477,16 +495,30 @@
 				</div>
 			</TableHeadCollapsible>
 			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
-				<input
-					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-					type="date"
-					bind:value={dateSearch[0]}
-					on:change={() => {
-						replaceStateWithQuery({
-							date: dateSearch[0]
-						});
-					}}
-				/>
+				<div class="block h-2">
+					<input
+						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+						type="date"
+						bind:value={dateSearch[0]}
+						on:change={() => {
+							replaceStateWithQuery({
+								date: dateSearch[0]
+							});
+						}}
+					/>
+					{#if dateSearch?.[0]}
+						<input
+							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+							type="date"
+							bind:value={dateSearch[1]}
+							on:change={() => {
+								replaceStateWithQuery({
+									dateEnd: dateSearch[1]
+								});
+							}}
+						/>
+					{/if}
+				</div>
 
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -495,9 +527,11 @@
 					class="flex my-auto hover:text-red-600"
 					on:click={() => {
 						replaceStateWithQuery({
-							date: ''
+							date: '',
+							dateEnd: ''
 						});
 						dateSearch[0] = '';
+						dateSearch[1] = '';
 					}}
 				>
 					<XMark size="16" />
@@ -598,32 +632,32 @@
 						columnId="id"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<a
-							class="flex cursor-pointer"
-							href={`${window.origin}/order/${order?.id}`}
-							target="_blank"
-							on:click|preventDefault={(e) => {
-								handleRowClick(idx, e);
-							}}
-						>
-							<div class="my-auto pr-1">
+						<div class="flex">
+							<button
+								class="my-auto -ml-6 mr-1 p-0 cursor-pointer"
+								on:click|preventDefault={(e) => {
+									handleRowClick(idx, e);
+								}}
+							>
 								{#if openRows?.includes(idx)}
 									<ChevronDown size="20" />
 								{:else}
 									<ChevronRight size="20" />
 								{/if}
-							</div>
-							<div>
-								<p class={classes.link}>
-									{padString(String(order?.id))}
-								</p>
-								{#if order?.reference}
-									<p class="text-xs italic">
-										#{order.reference}
+							</button>
+							<a href={`${window.origin}/order/${order?.id}`}>
+								<div>
+									<p class={classes.link}>
+										{padString(String(order?.id))}
 									</p>
-								{/if}
-							</div>
-						</a>
+									{#if order?.reference}
+										<p class="text-xs italic">
+											#{order.reference}
+										</p>
+									{/if}
+								</div>
+							</a>
+						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"
@@ -717,12 +751,6 @@
 						columnId="total"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<p>
-							{new Intl.NumberFormat('en-GB', {
-								style: 'currency',
-								currency: 'GBP'
-							}).format(order?.orders_items?.reduce((a, v) => a + v.price * v.quantity, 0))}
-						</p>
 						<p>
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',

@@ -26,9 +26,10 @@
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
 	import { goto } from '$app/navigation';
-	import { InfoCircleSolid } from 'flowbite-svelte-icons';
+	import { EditOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
 	import List from '../KnowledgeBase/List.svelte';
-	import OrderAddLine from './OrderAddLine.svelte';
+	import OrderAddLine from '$lib/components/Orders/OrderAddLine.svelte';
+	import OrderEditLine from '$lib/components/Orders/OrderEditLine.svelte';
 	import { Plus } from 'svelte-heros-v2';
 
 	export let orderId: number;
@@ -240,16 +241,25 @@
 	}
 
 	let addLineModal = false;
+	let editLineModal = false;
+	let editLine = null;
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
 	let orderLineDelete = {};
-
+	$: console.log('editLine', editLine);
 	let kbItems;
+
+	export let editable = false;
 </script>
 
-<Modal bind:open={addLineModal} size="md">
-	<OrderAddLine />
-</Modal>
+{#if editable}
+	<Modal bind:open={addLineModal} size="md">
+		<OrderAddLine {order} />
+	</Modal>
+	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md">
+		<OrderEditLine line={editLine} />
+	</Modal>
+{/if}
 
 <Modal autoclose bind:open={recieveModal}>
 	{@const recievedQty = orderItemSelected?.orders_items_receiveds?.reduce((a, v) => a + (v?.quantity || 0), 0)}
@@ -553,15 +563,27 @@
 							</TableBodyCell>
 						{/if}
 						<TableBodyCell>
-							<Button
-								disabled={item?.user?.id !== $page?.data?.user?.id && order?.user?.id !== $page?.data?.user?.id}
-								on:click={() => {
-									orderLineDeleteModal = true;
-									orderLineDelete = item;
-								}}
-							>
-								❌
-							</Button>
+							{#if editable}
+								<div class="flex my-auto">
+									<Button
+										disabled={item?.user?.id !== $page?.data?.user?.id && order?.user?.id !== $page?.data?.user?.id}
+										on:click={() => {
+											orderLineDeleteModal = true;
+											orderLineDelete = item;
+										}}
+									>
+										❌
+									</Button>
+									<Button
+										on:click={() => {
+											editLineModal = true;
+											editLine = item;
+										}}
+									>
+										<EditOutline />
+									</Button>
+								</div>
+							{/if}
 						</TableBodyCell>
 						<slot name="body" />
 					</TableBodyRow>
@@ -570,6 +592,7 @@
 				{/each}
 			</TableBody>
 			<TableHead>
+				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell />
@@ -595,17 +618,18 @@
 							{totalRecieved}
 						</Badge>
 					</TableBodyCell>
-				{:else}
-					<TableBodyCell />
 				{/if}
 				<TableBodyCell>
-					<span
-						on:click={() => {
-							addLineModal = true;
-						}}
-					>
-						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
-					</span>
+					{#if editable}
+						<Button
+							size="sm"
+							on:click={() => {
+								addLineModal = true;
+							}}
+						>
+							<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+						</Button>
+					{/if}
 				</TableBodyCell>
 				<slot name="foot" />
 			</TableHead>

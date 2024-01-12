@@ -12,7 +12,7 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import { Plus } from 'svelte-heros-v2';
+	import { EditOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 
 	interface Category {
@@ -20,12 +20,12 @@
 		text?: string;
 	}
 
-	export let order;
-	export let part: string = '';
-	export let spn: string = '';
-	export let quantity: number = 0;
-	export let price: number = 0;
-	export let category: string = 'Component';
+	export let line;
+	export let part: string = line?.part || '';
+	export let spn: string = line?.spn || '';
+	export let quantity: number = line?.quantity || 0;
+	export let price: number = line?.price || 0;
+	export let category: string = line?.category || 'Component';
 	export let categories: Category[] = [
 		{ id: null, text: 'Unknown' },
 		{ id: 'Component' },
@@ -36,9 +36,15 @@
 	];
 	export let adding = false;
 
+	let originalPart = part;
+	let originalSPN = spn;
+	let originalQuantity = quantity;
+	let originalPrice = price;
+	let originalCategory = category;
+
 	const urqlClient = getContextClient();
 
-	async function add() {
+	async function save() {
 		adding = false;
 		if (adding) return;
 		if (!$page?.data?.user) {
@@ -58,20 +64,20 @@
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation addOrderItem($object: erp_orders_items_insert_input!) {
-					insert_erp_orders_items_one(object: $object) {
+				mutation updateOrderItem($_set: erp_orders_items_set_input!, $id: uuid!) {
+					update_erp_orders_items_by_pk(pk_columns: { id: $id }, _set: $_set) {
 						id
 					}
 				}
 			`,
-			{ object: { order_id: order.id, part, spn, quantity, price, category } }
+			{ id: line?.id, _set: { category, part, spn, price, quantity } }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
 			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Inserted: ' + mutationResult.data.insert_erp_orders_items_one.id, 'success');
+			messagesStore('Updated: ' + mutationResult.data.update_erp_orders_items_by_pk.id, 'success');
 			part = '';
 			spn = '';
 			category = 'Component';
@@ -181,8 +187,20 @@
 
 <div class="flex">
 	<div class="my-auto mx-auto pt-4">
-		<Button color="green" on:click={() => add()} disabled={quantity <= 0 || price < 0 || !part}>
-			Add <Plus size="16" />
+		<Button
+			color="green"
+			on:click={() => save()}
+			disabled={quantity <= 0 ||
+				price < 0 ||
+				!part ||
+				adding ||
+				(originalPart === part &&
+					originalSPN === spn &&
+					originalQuantity === quantity &&
+					originalPrice === price &&
+					originalCategory === category)}
+		>
+			Update <EditOutline size="md" />
 		</Button>
 	</div>
 </div>

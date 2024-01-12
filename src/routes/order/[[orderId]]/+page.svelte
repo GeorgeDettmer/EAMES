@@ -334,7 +334,12 @@
 	<!-- {#if $page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase'] && $page?.data?.user?.permissions?.['tester']}
 		<OrderEditable {orderId} />
 	{:else} -->
-	<OrderOverview {orderId} />
+	<OrderOverview
+		{orderId}
+		editable={$page?.data?.user?.processes &&
+			$page?.data?.user?.processes?.['purchase'] &&
+			$page?.data?.user?.permissions?.['tester']}
+	/>
 	<!-- {/if} -->
 {:else}
 	<Table shadow hoverable>

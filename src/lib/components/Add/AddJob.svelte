@@ -160,6 +160,7 @@
 						object: { id: $id, customer_id: $customer_id, batch: $batch, quantity: $quantity, assembly_id: $assembly_id }
 					) {
 						id
+						batch
 					}
 				}
 			`,
@@ -178,6 +179,7 @@
 		}
 		if (createKit) {
 			let job_id = mutationResult.data.insert_jobs_one.id;
+			let batch_id = mutationResult.data.insert_jobs_one.batch;
 			mutationResult = await urqlClient.mutation(
 				gql`
 					mutation createKit {
@@ -197,13 +199,13 @@
 				messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one.id, 'success');
 				mutationResult = await urqlClient.mutation(
 					gql`
-						mutation createJobKit($job_id: bigint!, $kit_id: uuid!) {
-							insert_material_jobs_kits_one(object: { job_id: $job_id, kit_id: $kit_id }) {
+						mutation createJobKit($job_id: bigint!, $batch: int = 0, $kit_id: uuid!) {
+							insert_material_jobs_kits_one(object: { job_id: $job_id, batch_id: $batch, kit_id: $kit_id }) {
 								id
 							}
 						}
 					`,
-					{ job_id, kit_id }
+					{ job_id, kit_id, batch_id }
 				);
 				if (mutationResult?.error) {
 					console.error('MUTATION ERROR: ', mutationResult);

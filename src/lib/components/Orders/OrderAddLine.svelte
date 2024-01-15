@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { carrier_codes, carrier_names, carrier_urls } from '$lib/utils';
 	import { getContextClient, gql } from '@urql/svelte';
 	import {
 		Badge,
@@ -12,12 +14,19 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import { Plus } from 'svelte-heros-v2';
+	import { PlusOutline } from 'flowbite-svelte-icons';
+	import { ArrowRight, Plus, PlusCircle, XMark } from 'svelte-heros-v2';
 	import { messagesStore } from 'svelte-legos';
+	import OrderSetTracking from './OrderSetTracking.svelte';
 
 	interface Category {
 		id: string | null;
 		text?: string;
+	}
+	interface Tracking {
+		carrier_code?: string;
+		tracking_number?: string;
+		tracking_url?: string;
 	}
 
 	export let order;
@@ -34,6 +43,7 @@
 		{ id: 'Consumables' },
 		{ id: 'Other' }
 	];
+	export let tracking: Tracking[] = [];
 	export let adding = false;
 
 	const urqlClient = getContextClient();
@@ -64,7 +74,17 @@
 					}
 				}
 			`,
-			{ object: { order_id: order.id, part, spn, quantity, price, category } }
+			{
+				object: {
+					order_id: order.id,
+					part,
+					spn,
+					quantity,
+					price,
+					category,
+					tracking: tracking.length ? tracking : undefined
+				}
+			}
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -77,9 +97,12 @@
 			category = 'Component';
 			price = 0;
 			quantity = 0;
+			tracking = [];
 		}
 		adding = false;
 	}
+
+	$: console.log(tracking);
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -121,7 +144,6 @@
 			bind:value={price}
 		/>
 	</div>
-
 	<div class="col-span-2">
 		<Label for="small-input">Category</Label>
 		<select
@@ -134,6 +156,21 @@
 				</option>
 			{/each}
 		</select>
+	</div>
+	<div />
+	<div class="col-span-4">
+		<Label for="small-input"
+			>Tracking
+			<button
+				class="hover:text-green-600"
+				on:click={() => {
+					tracking = [...tracking, { tracking_number: '', carrier_code: undefined }];
+				}}><PlusOutline size="xs" /></button
+			>
+		</Label>
+		<div class="">
+			<OrderSetTracking bind:tracking />
+		</div>
 	</div>
 </div>
 

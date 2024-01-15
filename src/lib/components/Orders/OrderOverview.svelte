@@ -31,6 +31,7 @@
 	import OrderAddLine from '$lib/components/Orders/OrderAddLine.svelte';
 	import OrderEditLine from '$lib/components/Orders/OrderEditLine.svelte';
 	import { Plus } from 'svelte-heros-v2';
+	import OrderSetTrackingBulk from './OrderSetTrackingBulk.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -50,7 +51,7 @@
 							batch
 						}
 					}
-					orders_items {
+					orders_items(order_by: { created_at: asc_nulls_last }) {
 						id
 						tracking
 						created_at
@@ -242,6 +243,7 @@
 
 	let addLineModal = false;
 	let editLineModal = false;
+	let editTrackingModal = false;
 	let editLine = null;
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
@@ -258,6 +260,11 @@
 	</Modal>
 	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md">
 		<OrderEditLine line={editLine} />
+	</Modal>
+	<Modal bind:open={editTrackingModal} size="lg">
+		<div class="pt-8">
+			<OrderSetTrackingBulk orders_items={order.orders_items} />
+		</div>
 	</Modal>
 {/if}
 
@@ -441,7 +448,20 @@
 				<TableHeadCell>Order Qty</TableHeadCell>
 				<TableHeadCell>Unit Price</TableHeadCell>
 				<TableHeadCell>Total Price</TableHeadCell>
-				<TableHeadCell />
+				<TableHeadCell>
+					<div class="flex">
+						<p class="my-auto">Tracking</p>
+						{#if editable}
+							<Button
+								on:click={() => {
+									editTrackingModal = true;
+								}}
+							>
+								<EditOutline />
+							</Button>
+						{/if}
+					</div>
+				</TableHeadCell>
 				<TableHeadCell />
 				{#if showRecieved}
 					<TableHeadCell>Received Qty</TableHeadCell>

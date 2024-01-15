@@ -12,12 +12,19 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import { EditOutline } from 'flowbite-svelte-icons';
+	import { EditOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
+	import OrderSetTracking from './OrderSetTracking.svelte';
+	import { deepEqual } from '$lib/utils';
 
 	interface Category {
 		id: string | null;
 		text?: string;
+	}
+	interface Tracking {
+		carrier_code?: string;
+		tracking_number?: string;
+		tracking_url?: string;
 	}
 
 	export let line;
@@ -25,6 +32,7 @@
 	export let spn: string = line?.spn || '';
 	export let quantity: number = line?.quantity || 0;
 	export let price: number = line?.price || 0;
+	export let tracking: Tracking[] = line?.tracking || [];
 	export let category: string = line?.category || 'Component';
 	export let categories: Category[] = [
 		{ id: null, text: 'Unknown' },
@@ -34,6 +42,7 @@
 		{ id: 'Consumables' },
 		{ id: 'Other' }
 	];
+
 	export let adding = false;
 
 	let originalPart = part;
@@ -41,6 +50,7 @@
 	let originalQuantity = quantity;
 	let originalPrice = price;
 	let originalCategory = category;
+	let originalTracking: Tracking[] = structuredClone(tracking);
 
 	const urqlClient = getContextClient();
 
@@ -78,14 +88,26 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Updated: ' + mutationResult.data.update_erp_orders_items_by_pk.id, 'success');
+			line.tracking = tracking;
 			part = '';
 			spn = '';
 			category = 'Component';
 			price = 0;
 			quantity = 0;
+			tracking = [];
 		}
 		adding = false;
 	}
+
+	$: trackingChange =
+		originalTracking.length !== tracking.length ||
+		!tracking.map((t, i) => deepEqual(t, originalTracking?.[i])).every((v) => v);
+	$: console.log(
+		'trackingChange',
+		trackingChange,
+		tracking.map((t, i) => [t, originalTracking?.[i], deepEqual(t, originalTracking?.[i])])
+	);
+	$: console.log('originalTracking', originalTracking);
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -140,6 +162,21 @@
 				</option>
 			{/each}
 		</select>
+	</div>
+
+	<div class="col-span-4">
+		<Label for="small-input"
+			>Tracking
+			<button
+				class="hover:text-green-600"
+				on:click={() => {
+					tracking = [...tracking, { tracking_number: '', carrier_code: undefined }];
+				}}><PlusOutline size="xs" /></button
+			>
+		</Label>
+		<div class="">
+			<OrderSetTracking bind:tracking />
+		</div>
 	</div>
 </div>
 
@@ -198,7 +235,8 @@
 					originalSPN === spn &&
 					originalQuantity === quantity &&
 					originalPrice === price &&
-					originalCategory === category)}
+					originalCategory === category &&
+					!trackingChange)}
 		>
 			Update <EditOutline size="md" />
 		</Button>

@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { datetimeFormat } from '$lib/utils';
+	import { error } from '@sveltejs/kit';
 	import { Popover, Spinner, Tooltip } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	const ENABLE_LOCAL_CACHE = false;
@@ -30,12 +31,13 @@
 		const response = await fetch(`/api/shipengine/track?tracking_number=${tracking}&carrier_code=${carrier}`);
 		const result = await response.json();
 		if (result?.statusCode) {
-			//console.log('tracking request success', tracking, carrier, result);
+			console.log('tracking request success', tracking, carrier, result);
 			trackCache.set(cacheId, await result);
 			//console.log('local cached', cacheId, trackCache.get(cacheId));
 			return result;
 		} else {
 			console.log('tracking request fail', tracking, carrier, response);
+			return { error: response.status };
 		}
 	}
 
@@ -136,7 +138,7 @@
 	<a target="_blank" href={tracking.tracking_url}>
 		<div class="flex">
 			<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-			<div class="my-auto"><Spinner size="4" color="blue" /></div>
+			<div class="my-auto"><Spinner size="4" color={trackingResult?.error?.status !== 200 ? 'red' : 'blue'} /></div>
 		</div>
 	</a>
 {:else}

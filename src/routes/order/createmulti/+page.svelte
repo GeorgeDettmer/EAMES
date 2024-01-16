@@ -310,7 +310,12 @@
 	function removeOrder(idx: number) {
 		orders = orders.filter((o, i) => i !== idx);
 		shipments = shipments.filter((s, i) => i !== idx);
-		openOrderIdx = 0;
+		tabState = tabState.filter((s, i) => i !== idx);
+
+		if (!orders.length) {
+			addOrder();
+		}
+		tabState = [true];
 	}
 
 	const urqlClient = getContextClient();
@@ -503,8 +508,13 @@
 		carrier: carriers?.[0],
 		expected_delivery_date: new Date().toLocaleDateString()
 	};
+	let shipments = [];
 	$: shipments = [[{ ...shipmentTemplate }]];
 	$: console.log('shipments', shipments);
+	$: console.log('tabState', tabState, openOrderIdx);
+
+	let tabState = [true];
+	$: openOrderIdx = tabState.findIndex((v) => v);
 </script>
 
 <div
@@ -552,9 +562,9 @@
 				<Tooltip placement="top">Add order</Tooltip>
 			</Button>
 			{#each shipments?.[openOrderIdx] || [] as shipment, idx}
-				<div class="flex ml-auto bg-slate-500 rounded">
+				<div class="flex ml-auto text-white bg-slate-500 rounded">
 					<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-					<OrderShipment {shipment} showItems={false} />
+					<OrderShipment {shipment} showItems={false} showDetailsModal={false} />
 				</div>
 			{/each}
 		</div>
@@ -581,7 +591,7 @@
 		<Tabs style="full" contentClass="px-0 py-4 rounded-lg mt-0">
 			{#each orders as order, idx}
 				<TabItem
-					open={openOrderIdx === idx}
+					bind:open={tabState[idx]}
 					activeClasses="border-b-8 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
 					inactiveClasses="border-b-4 border-opacity-20 border-b-gray-500 rounded-lg rounded-full dark:border-gray-700 hover:dark:bg-gray-700"
 				>

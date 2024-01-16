@@ -101,7 +101,7 @@
 
 	$: trackingChange =
 		originalTracking.length !== tracking.length ||
-		!tracking.map((t, i) => deepEqual(t, originalTracking?.[i])).every((v) => v);
+		!tracking?.map((t, i) => deepEqual(t, originalTracking?.[i])).every((v) => v);
 	$: console.log(
 		'trackingChange',
 		trackingChange,

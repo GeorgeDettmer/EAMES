@@ -10,3 +10,12 @@ export interface Supplier {
 	categories: string[] | null;
 	url: string | null;
 }
+
+export interface Shipment {
+	id: number;
+	tracking_id: string | undefined;
+	expected_delivery_date: string | undefined;
+	created_at: string | undefined;
+	updated_at: string | undefined;
+	user_id: string | undefined;
+}

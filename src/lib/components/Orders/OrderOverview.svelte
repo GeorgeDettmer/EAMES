@@ -32,15 +32,14 @@
 	import OrderEditLine from '$lib/components/Orders/OrderEditLine.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import OrderSetTrackingBulk from './OrderSetTrackingBulk.svelte';
+	import OrderShipments from './OrderShipment.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
 	export let showHeader: boolean = true;
 
-	$: orderStore = subscriptionStore({
-		client: getContextClient(),
-		query: gql`
-			subscription order($orderId: bigint!) {
+	/*
+subscription order($orderId: bigint!) {
 				erp_orders_by_pk(id: $orderId) {
 					id
 					kb
@@ -86,6 +85,87 @@
 								last_name
 								initials
 								color
+							}
+						}
+					}
+					supplier {
+						id
+						name
+					}
+					user {
+						id
+						username
+						first_name
+						last_name
+						initials
+						color
+					}
+				}
+			}
+*/
+
+	$: orderStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription order($orderId: bigint!) {
+				erp_orders_by_pk(id: $orderId) {
+					id
+					kb
+					reference
+					jobs_orders {
+						job {
+							id
+							batch
+						}
+					}
+					orders_items(order_by: { created_at: asc_nulls_last }) {
+						id
+						created_at
+						order_id
+						part
+						part_id
+						spn
+						category
+						partByPartId {
+							description
+							name
+						}
+						price
+						quantity
+						user {
+							id
+							username
+							first_name
+							last_name
+							initials
+							color
+						}
+						orders_items_receiveds {
+							id
+							quantity
+							created_at
+							updated_at
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+						}
+						orders_items_shipments {
+							quantity
+							shipment {
+								id
+								expected_delivery_date
+								tracking {
+									id
+									carrier_code
+									tracking_number
+									tracking_url
+									status
+								}
 							}
 						}
 					}
@@ -252,16 +332,21 @@
 	let kbItems;
 
 	export let editable = false;
+
+	$: shipmentIds = order?.orders_items
+		?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((s) => s.shipment.id))
+		?.filter((v, i, s) => s.indexOf(v) === i);
+	$: console.log('shipments', shipmentIds);
 </script>
 
 {#if editable}
-	<Modal bind:open={addLineModal} size="md">
+	<Modal bind:open={addLineModal} size="md" outsideclose>
 		<OrderAddLine {order} />
 	</Modal>
-	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md">
+	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md" outsideclose>
 		<OrderEditLine line={editLine} />
 	</Modal>
-	<Modal bind:open={editTrackingModal} size="lg">
+	<Modal bind:open={editTrackingModal} size="lg" outsideclose>
 		<div class="pt-8">
 			<OrderSetTrackingBulk orders_items={order.orders_items} />
 		</div>
@@ -413,28 +498,38 @@
 					</UserIcon>
 				</div>
 			</div>
-			<div class="my-auto ml-auto">
-				{#each order?.jobs_orders as { job }}
-					<a
-						class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-						href={window.origin + '/receiving/' + (job?.id || '')}
-					>
-						<div class="overflow-hidden grid grid-cols-2 gap-x-2">
-							<div>
-								<p class="font-bold">{job?.id}</p>
-							</div>
-							<div>
-								<p class="float-right" />
-							</div>
-							<div>
-								<p />
-							</div>
-							<div>
-								<p class="float-right">{order?.jobs_orders?.length}</p>
-							</div>
+			<div class="my-auto ml-auto flex">
+				<div class="flex gap-x-1 pr-2">
+					{#each shipmentIds as shipmentId, idx}
+						<div class="flex bg-slate-500 rounded">
+							<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
+							<OrderShipments {shipmentId} showItems />
 						</div>
-					</a>
-				{/each}
+					{/each}
+				</div>
+				<div>
+					{#each order?.jobs_orders as { job }}
+						<a
+							class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+							href={window.origin + '/receiving/' + (job?.id || '')}
+						>
+							<div class="overflow-hidden grid grid-cols-2 gap-x-2">
+								<div>
+									<p class="font-bold">{job?.id}</p>
+								</div>
+								<div>
+									<p class="float-right" />
+								</div>
+								<div>
+									<p />
+								</div>
+								<div>
+									<p class="float-right">{order?.jobs_orders?.length}</p>
+								</div>
+							</div>
+						</a>
+					{/each}
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -544,13 +639,34 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell>
-							{#if item?.tracking?.length > 0}
+							<!-- {#if item?.tracking?.length > 0}
 								{#each item?.tracking || [item?.tracking?.[0]] as t}
 									<TrackingStatus tracking={t} bind:trackingResult={trackings[idx]} />
 								{/each}
 							{:else}
 								<TrackingStatus bind:trackingResult={trackings[idx]} />
-							{/if}
+							{/if} -->
+							<div class="flex-wrap gap-x-1">
+								{#each item?.orders_items_shipments as { shipment }, idx}
+									<div class="flex">
+										<TrackingStatus tracking={shipment?.tracking} bind:trackingResult={trackings[idx]} />
+										{#if item?.orders_items_shipments?.length > 1}
+											<p class="align-super text-xs italic">({idx + 1})</p>
+										{/if}
+									</div>
+								{:else}
+									<div class="flex">
+										<img
+											style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+											width="24"
+											height="24"
+											src="https://img.icons8.com/ios/50/cardboard-box.png"
+											alt="box-other"
+										/>
+										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+									</div>
+								{/each}
+							</div>
 						</TableBodyCell>
 						<TableBodyCell>
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />

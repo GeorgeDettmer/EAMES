@@ -30,10 +30,11 @@
 	import { goto } from '$app/navigation';
 	import { filedrop, type FileDropOptions, type Files } from 'filedrop-svelte';
 	import XLSX from 'xlsx';
-	import { getParameterInsensitiveAny } from '$lib/utils';
+	import { datetimeFormat, getParameterInsensitiveAny } from '$lib/utils';
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
+	import OrderShipment from '$lib/components/Orders/OrderShipment.svelte';
 
 	$windowTitleStore = 'New order';
 	onDestroy(() => {
@@ -113,18 +114,11 @@
 			);
 			return;
 		}
-		/* if (importSuppliers.size > 1) {
-			messagesStore(
-				`Currently only import for 1 supplier at a time is supported. Suppliers: ${[...importSuppliers.values()]}`
-			);
-			return;
-		} */
 		showImport = false;
 		let order = {};
 		let order_items = [];
 		let importOrders = {};
 		toImport.forEach((line, idx) => {
-			//console.log('line add', line);
 			if (line) {
 				let part = line?.[orderItemProperties['part']];
 				let spn = line?.[orderItemProperties['spn']];
@@ -170,27 +164,18 @@
 						category: 'Component'
 					}
 				];
-				/* order_items.push({
-					part,
-					spn,
-					price,
-					quantity: quantity,
-					created_at: new Date(),
-					user_id: $page?.data?.user?.id
-				}); */
+				shipments[idx] = {
+					carrier_id: 'UPS',
+					carrier: {
+						id: 'UPS',
+						name: 'UPS'
+					},
+					expected_delviery_date: new Date(new Date().getDate() + 1).toISOString()
+				};
 			}
 		});
 		console.log('importOrders', importOrders, Object.values(importOrders));
 		orders = Object.values(importOrders);
-		/* let importSuppierName = toImport?.[0]?.[orderItemProperties['supplier']];
-		let importSupplier = suppliers?.filter((s) => s.names?.includes(importSuppierName?.toLowerCase()))?.[0];
-		selectedSupplierId = importSupplier?.id;
-		order.user = $page?.data?.user;
-		order.supplier_id = selectedSupplierId;
-		order.supplier.id = importSupplier?.id;
-		order.supplier.name = importSupplier?.name;
-		order.supplier.names = importSupplier?.names;
-		order.orders_items = order_items; */
 	}
 
 	let orderItemProperties = {
@@ -312,10 +297,20 @@
 				user
 			}
 		];
+		shipments = [
+			...shipments,
+			[
+				{
+					...shipmentTemplate
+				}
+			]
+		];
 	}
 
 	function removeOrder(idx: number) {
 		orders = orders.filter((o, i) => i !== idx);
+		shipments = shipments.filter((s, i) => i !== idx);
+		openOrderIdx = 0;
 	}
 
 	const urqlClient = getContextClient();
@@ -490,6 +485,26 @@
 		}
 	}
 	$: console.log(orderItemProperties);
+
+	$: carriersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query carriers {
+				erp_carriers(order_by: { shipments_aggregate: { count: desc_nulls_last } }) {
+					id
+					name
+					image_url
+				}
+			}
+		`
+	});
+	$: carriers = $carriersStore?.data?.erp_carriers;
+	$: shipmentTemplate = {
+		carrier: carriers?.[0],
+		expected_delivery_date: new Date().toLocaleDateString()
+	};
+	$: shipments = [[{ ...shipmentTemplate }]];
+	$: console.log('shipments', shipments);
 </script>
 
 <div
@@ -502,43 +517,50 @@
 		handleDropAsync(e.detail.event);
 	}}
 />
-<div class="">
-	<div class="flex">
-		<div class="-mb-8 -ml-10 -mt-2">
-			<Button
-				on:click={(e) => {
-					addOrder();
-				}}
-			>
-				<PlusOutline class="text-gray-400" />
-			</Button>
-			<Tooltip placement="right">Add order</Tooltip>
-		</div>
-		<div class="-mb-8 ml-auto space-y-1">
-			<div class="mx-auto">
-				{#if orders.length > 0}
-					<Button
-						color="blue"
-						size="sm"
-						on:click={(e) => {
-							addOrders();
-						}}
-					>
-						Create {orders.length} orders with {ordersItems.length} lines
-					</Button>
-				{/if}
+<div class="space-y-2">
+	<div class="flex 2">
+		<div class="ml-auto flex space-x-1">
+			{#if orders.length > 0}
+				<Button
+					color="blue"
+					size="sm"
+					on:click={(e) => {
+						addOrders();
+					}}
+				>
+					Create {orders.length} orders with {ordersItems.length} lines
+				</Button>
+			{/if}
+			<div class="w-full">
+				<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
 			</div>
-			<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
 		</div>
 	</div>
-
-	<div>
-		{#if orders.length === 0}
-			<div class="mx-auto mt-10">
-				<p>No orders...</p>
-			</div>
-		{:else}
-			<!-- <Tabs
+	<div class="flex">
+		<div class="flex ml-auto">
+			<Button
+				on:click={(e) => {
+					shipments[openOrderIdx] = [
+						...shipments[openOrderIdx],
+						{
+							...shipmentTemplate
+						}
+					];
+				}}
+			>
+				<PlusOutline class="text-gray-400 hover:text-green-600" />
+				<Tooltip placement="top">Add order</Tooltip>
+			</Button>
+			{#each shipments?.[openOrderIdx] || [] as shipment, idx}
+				<div class="flex ml-auto bg-slate-500 rounded">
+					<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
+					<OrderShipment {shipment} showItems={false} />
+				</div>
+			{/each}
+		</div>
+	</div>
+	<div class="">
+		<!-- <Tabs
 				style="pill"
 				divider
 				defaultClass="flex flex-wrap space-x-1"
@@ -546,21 +568,30 @@
 				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 			> -->
-			<Tabs style="full" contentClass="px-0 py-4 rounded-lg mt-0">
-				{#each orders as order, idx}
-					<TabItem
-						open={openOrderIdx === idx}
-						activeClasses="border-b-8 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
-						inactiveClasses="border-b-4 border-opacity-20 border-b-gray-500 rounded-lg rounded-full dark:border-gray-700 hover:dark:bg-gray-700"
-					>
-						<span slot="title">
-							<OrderCreateHeader bind:order />
-						</span>
-						<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
-					</TabItem>
-				{/each}
-			</Tabs>
-		{/if}
+		<div class="-mb-8 -ml-11">
+			<Button
+				on:click={(e) => {
+					addOrder();
+				}}
+			>
+				<PlusOutline class="text-gray-400 hover:text-green-600" />
+				<Tooltip placement="top">Add order</Tooltip>
+			</Button>
+		</div>
+		<Tabs style="full" contentClass="px-0 py-4 rounded-lg mt-0">
+			{#each orders as order, idx}
+				<TabItem
+					open={openOrderIdx === idx}
+					activeClasses="border-b-8 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
+					inactiveClasses="border-b-4 border-opacity-20 border-b-gray-500 rounded-lg rounded-full dark:border-gray-700 hover:dark:bg-gray-700"
+				>
+					<span slot="title">
+						<OrderCreateHeader bind:order />
+					</span>
+					<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
+				</TabItem>
+			{/each}
+		</Tabs>
 	</div>
 </div>
 

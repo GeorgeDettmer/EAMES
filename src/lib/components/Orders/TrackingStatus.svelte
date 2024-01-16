@@ -22,6 +22,7 @@
 	export let showText: boolean = true;
 	export let width: number = 24;
 	export let height: number = 24;
+	export let showPopover: boolean = true;
 	async function track(tracking: string, carrier: string) {
 		if (!tracking || !carrier) return {};
 		let cacheId = `${carrier}_${tracking}`;
@@ -109,30 +110,32 @@
 			{/if}
 			{#if showText}
 				<p class="font-semibold pt-1 pl-2 uppercase text-xs">{trackingResult?.statusDescription || ''}</p>
-			{:else}
+			{:else if showPopover}
 				<Tooltip placement={'left'}>{trackingResult?.statusDescription || ''}</Tooltip>
 			{/if}
 		</div>
-		<Popover placement={'left'} defaultClass="py-1 px-2">
-			<div class="text-xs">
-				{#if trackingResult?.events?.[0]}
-					<p>
-						{trackingResult?.statusDescription || ''}
-						<em>({datetimeFormat(trackingResult?.events?.[0]?.occurredAt)})</em>
-					</p>
-					<p>
-						{trackingResult?.events?.[0]?.description || ''}
-					</p>
-					<!-- 					<p>{trackingResult?.events?.[0]?.cityLocality || ''} {trackingResult?.events?.[0]?.countryCode || ''}</p>
+		{#if showPopover}
+			<Popover placement={'left'} defaultClass="py-1 px-2">
+				<div class="text-xs">
+					{#if trackingResult?.events?.[0]}
+						<p>
+							{trackingResult?.statusDescription || ''}
+							<em>({datetimeFormat(trackingResult?.events?.[0]?.occurredAt)})</em>
+						</p>
+						<p>
+							{trackingResult?.events?.[0]?.description || ''}
+						</p>
+						<!-- 					<p>{trackingResult?.events?.[0]?.cityLocality || ''} {trackingResult?.events?.[0]?.countryCode || ''}</p>
  -->
-					{#if trackingResult?.events?.[0]?.signer}
-						<p>Signed: {trackingResult?.events?.[0]?.signer}</p>
+						{#if trackingResult?.events?.[0]?.signer}
+							<p>Signed: {trackingResult?.events?.[0]?.signer}</p>
+						{/if}
+					{:else}
+						<p>No tracking events</p>
 					{/if}
-				{:else}
-					<p>No tracking events</p>
-				{/if}
-			</div>
-		</Popover>
+				</div>
+			</Popover>
+		{/if}
 	</a>
 {:else if tracking?.tracking_url}
 	<a target="_blank" href={tracking.tracking_url}>
@@ -146,7 +149,7 @@
 		<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
 		{#if showText}
 			<p class="font-semibold pt-1 pl-2 uppercase text-xs">No tracking</p>
-		{:else}
+		{:else if showPopover}
 			<Tooltip placement={'left'}>No tracking</Tooltip>
 		{/if}
 	</div>

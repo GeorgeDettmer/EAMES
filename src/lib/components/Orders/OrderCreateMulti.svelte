@@ -400,7 +400,7 @@
 								{item?.quantity}
 							</Badge>
 						</TableBodyCellEditable>
-						<TableBodyCellEditable tdClass="px-6 py-1" bind:value={item.price} inputType="number">
+						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.price} inputType="number">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'

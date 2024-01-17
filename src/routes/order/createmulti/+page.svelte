@@ -35,6 +35,7 @@
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
 	import OrderShipment from '$lib/components/Orders/OrderShipment.svelte';
+	import type { Shipment } from '$lib/types';
 
 	$windowTitleStore = 'New order';
 	onDestroy(() => {
@@ -170,7 +171,7 @@
 		console.log('importOrders', importOrders, Object.values(importOrders));
 		orders = Object.values(importOrders);
 		importShipments = orders.map((o) => {
-			return [{ ...shipmentTemplate }];
+			return [{ ...structuredClone(shipmentTemplate) }];
 		});
 		shipments = importShipments;
 	}
@@ -283,6 +284,7 @@
 
 	function addOrder(force: boolean = true) {
 		let supplier = Object.assign({}, suppliers?.[0] || {});
+		shipments = [...shipments, [{ ...structuredClone(shipmentTemplate) }]];
 		orders = [
 			...orders,
 			{
@@ -293,14 +295,6 @@
 				user_id: $page?.data?.user?.id,
 				user
 			}
-		];
-		shipments = [
-			...shipments,
-			[
-				{
-					...shipmentTemplate
-				}
-			]
 		];
 	}
 
@@ -349,30 +343,120 @@
 
 		ordersAdding = true;
 		let mutationResult;
+
+		/**
+		mutation addShipments($shipments: [erp_shipments_insert_input!] = {}) {
+  insert_erp_shipments(objects: $shipments) {
+    affected_rows
+    returning {
+      id
+    }
+  }
+}
+*/
+
+		console.log('addShipments', shipments);
+		let shipmentIds = [];
+		for (const orderShipments of shipments) {
+			let ship = orderShipments.map((shipment) => {
+				return {
+					carrier_id: shipment?.carrier?.id,
+					expected_delivery_date: shipment?.expected_delivery_date,
+					tracking: {
+						data: shipment?.tracking
+					}
+				};
+			});
+			mutationResult = await urqlClient.mutation(
+				gql`
+					mutation addShipments($shipments: [erp_shipments_insert_input!] = {}) {
+						insert_erp_shipments(objects: $shipments) {
+							affected_rows
+							returning {
+								id
+							}
+						}
+					}
+				`,
+				{
+					shipments: ship
+				}
+			);
+			if (mutationResult?.error) {
+				console.error('MUTATION ERROR: ', mutationResult);
+				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				return shipmentIds.push([]);
+			} else {
+				console.log('MUTATION RESULT: ', mutationResult);
+				shipmentIds.push(mutationResult?.data?.insert_erp_shipments?.returning?.map((s) => s.id));
+			}
+		}
+		/* shipments.map(async (s) => {
+			let ship = s.map((ss) => {
+				return {
+					carrier_id: ss?.carrier?.id,
+					expected_delivery_date: ss?.expected_delivery_date
+				};
+			});
+			mutationResult = await urqlClient.mutation(
+				gql`
+					mutation addShipments($shipments: [erp_shipments_insert_input!] = {}) {
+						insert_erp_shipments(objects: $shipments) {
+							affected_rows
+							returning {
+								id
+							}
+						}
+					}
+				`,
+				{
+					shipments: ship
+				}
+			);
+			if (mutationResult?.error) {
+				console.error('MUTATION ERROR: ', mutationResult);
+				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
+				return [];
+			} else {
+				console.log('MUTATION RESULT: ', mutationResult);
+				return mutationResult?.data?.insert_erp_shipments?.returning?.map((s) => s.id);
+			}
+		}); */
+		messagesStore('Inserted shipment(s): ' + shipmentIds.flat(), 'success');
+		if (shipmentIds.length === 0 || shipmentIds.every((v) => v?.length === 0)) {
+			console.error('SHIPMENT CREATE ERROR', shipmentIds);
+			return;
+		} else {
+			console.log('addSHIPMENTS', shipmentIds);
+		}
 		console.log('addOrders', orders);
-		let objects = orders.map((o) => {
+		let objects = orders.map((o, orderIdx) => {
 			let obj = {
 				supplier_id: o.supplier.id,
 				user_id: $page?.data?.user?.id,
 				reference: o.reference
 			};
 
-			let items = o.orders_items;
-			/* items.forEach((i) => {
-				if (!i?.tracking) {
-					if (carrier_urls?.[orderTracking?.carrier_code]) {
-						orderTracking.tracking_url = carrier_urls?.[orderTracking?.carrier_code](orderTracking?.tracking_number);
-					}
-					i.tracking = [orderTracking];
-				} else {
-					i?.tracking?.map((t) => {
-						if (carrier_urls?.[orderTracking?.carrier_code]) {
-							t.tracking_url = carrier_urls?.[t?.carrier_code](t?.tracking_number);
-						}
-					});
+			let items = o.orders_items.map((i) => {
+				let item = {
+					category: i?.category,
+					part: i?.part,
+					spn: i?.spn,
+					quantity: i?.quantity,
+					price: i?.price,
+					created_at: i?.created_at
+				};
+				if (shipmentIds?.[orderIdx]?.[i.__shipmentIdx]) {
+					item.orders_items_shipments = {
+						data: [
+							{
+								shipment_id: shipmentIds[orderIdx][i.__shipmentIdx]
+							}
+						]
+					};
 				}
-				console.log('tracking set:', i?.tracking);
-			}); */
+				return item;
+			});
 
 			obj.orders_items = {
 				data: items
@@ -390,6 +474,8 @@
 
 			return obj;
 		});
+
+		console.log('objects', objects);
 
 		mutationResult = await urqlClient.mutation(
 			gql`
@@ -503,10 +589,13 @@
 	$: carriers = $carriersStore?.data?.erp_carriers;
 	$: shipmentTemplate = {
 		carrier: carriers?.[0],
-		expected_delivery_date: new Date().toLocaleDateString()
+		expected_delivery_date: new Date().toISOString(),
+		tracking: {
+			tracking_number: ''
+		}
 	};
-	let shipments = [];
-	$: shipments = [[{ ...shipmentTemplate }]];
+	let shipments: Shipment[][] = [];
+	$: shipments = [[{ ...structuredClone(shipmentTemplate) }]];
 	$: console.log('shipments', shipments);
 	$: console.log('tabState', tabState, openOrderIdx);
 
@@ -524,8 +613,8 @@
 		handleDropAsync(e.detail.event);
 	}}
 />
-<div class="space-y-2">
-	<div class="flex 2">
+<div class="">
+	<div class="flex pb-2">
 		<div class="ml-auto flex space-x-1">
 			{#if orders.length > 0}
 				<Button
@@ -548,12 +637,7 @@
 			<button
 				class="pr-2"
 				on:click={(e) => {
-					shipments[openOrderIdx] = [
-						...shipments[openOrderIdx],
-						{
-							...shipmentTemplate
-						}
-					];
+					shipments[openOrderIdx] = [...shipments[openOrderIdx], { ...structuredClone(shipmentTemplate) }];
 				}}
 			>
 				<PlusOutline class="text-gray-400 hover:text-green-600" />
@@ -563,13 +647,13 @@
 				{#each shipments?.[openOrderIdx] || [] as shipment, idx}
 					<div class="flex text-white bg-slate-500 rounded">
 						<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-						<OrderShipment {shipment} showItems={false} showDetailsModal={false} />
+						<OrderShipment {shipment} showItems={false} showDetailsModal={true} allowEdit tooltipPlacement={'bottom-end'} />
 					</div>
 				{/each}
 			</div>
 		</div>
 	</div>
-	<div class="">
+	<div class="pt-6">
 		<!-- <Tabs
 				style="pill"
 				divider
@@ -593,12 +677,12 @@
 				<TabItem
 					bind:open={tabState[idx]}
 					activeClasses="border-b-8 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
-					inactiveClasses="border-b-4 border-opacity-20 border-b-gray-500 rounded-lg rounded-full dark:border-gray-700 hover:dark:bg-gray-700"
+					inactiveClasses="border hover:border-b-4 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
 				>
 					<span slot="title">
 						<OrderCreateHeader bind:order />
 					</span>
-					<OrderCreateMulti bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
+					<OrderCreateMulti shipments={shipments[idx]} bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
 				</TabItem>
 			{/each}
 		</Tabs>

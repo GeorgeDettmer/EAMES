@@ -18,12 +18,13 @@
 	});
 	$: $windowTitleStore = $page?.data?.jobId ? `Kitting | ${$page?.data?.jobId}` : 'Kitting';
 	$: jobId = $page?.data?.jobId;
+	$: batchId = $page?.data?.batchId || 0;
 
 	$: jobInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription jobInfo($jobId: bigint!) {
-				jobs_by_pk(id: $jobId) {
+			subscription jobInfo($jobId: bigint!, $batchId: Int = 0) {
+				jobs_by_pk(id: $jobId, batch: $batchId) {
 					id
 					quantity
 					batch
@@ -178,7 +179,7 @@
 				}
 			}
 		`,
-		variables: { jobId }
+		variables: { jobId, batchId }
 	});
 	$: jobInfo = $jobInfoStore?.data?.jobs_by_pk;
 	$: orders = jobInfo?.jobs_orders || [];

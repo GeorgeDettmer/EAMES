@@ -24,8 +24,10 @@
 	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 	import EditableText from '../Misc/EditableText.svelte';
+	import type { Shipment } from '$lib/types';
 
 	export let order;
+	export let shipments: Shipment[] = [];
 	export let user = order?.user || $page?.data?.user;
 	export let allowAddLine: boolean = true;
 	export let showHeader: boolean = true;
@@ -63,7 +65,8 @@
 			/* user_id: user?.id, */
 			created_at: new Date().toISOString(),
 			tracking: newTracking,
-			category: newCategory
+			category: newCategory,
+			__shipmentIdx: newShipmentIdx
 		};
 		/* if (matchingLine) {
 			matchingLine.quantity += newLine.quantity;
@@ -76,6 +79,7 @@
 		newSPN = '';
 		newPrice = 0;
 		newQuantity = 0;
+		newShipmentIdx = undefined;
 		newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
 	}
 
@@ -83,12 +87,13 @@
 
 	let addLineModal = false;
 
-	let newCategory = 'Component';
-	let newQuantity = 0;
-	let newPart = '';
-	let newSPN = '';
-	let newPrice = 0;
+	let newCategory: string = 'Component';
+	let newQuantity: number = 0;
+	let newPart: string = '';
+	let newSPN: string = '';
+	let newPrice: number = 0;
 	let newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
+	let newShipmentIdx: number | undefined = undefined;
 
 	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
 	$: console.log(orderTracking);
@@ -106,6 +111,21 @@
 		});
 		order = order;
 		console.log('ttttttttt', order);
+	}
+
+	let selectedGroupShipmentIdx: number | undefined;
+	function updateOrderLinesShipments(shipmentIdx: number = 0) {
+		order?.orders_items?.forEach((i) => {
+			i.__shipmentIdx = shipmentIdx;
+		});
+		order = order;
+		console.log(
+			'updateOrderLinesShipments',
+			shipmentIdx,
+			order?.orders_items?.map((i, idx) => {
+				return { line: idx, part: i?.part, __shipmentIdx: shipmentIdx, shipment: shipments[shipmentIdx] };
+			})
+		);
 	}
 	onDestroy(() => {
 		console.log('OrderCreateMulti', 'destroy');
@@ -181,45 +201,20 @@
 				</select>
 				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
-
-			<!--<div class="col-span-3">
-				<Label for="small-input"
-					>Tracking<span
-						class="cursor-pointer"
-						on:click={() => {
-							newTracking = [...newTracking, { tracking_number: null, carrier_code: 'ups' }];
-						}}
-					>
-						➕
-					</span>
-				</Label>
-				 {#each newTracking as track, idx}
-					<ButtonGroup size="sm">
-						<Input
-							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-							type="text"
-							placeholder="Carrier code"
-							size="sm"
-							bind:value={track.carrier_code}
-						/>
-						<Input
-							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-							type="text"
-							placeholder="Tracking number"
-							size="sm"
-							bind:value={track.tracking_number}
-						/>
-						<span
-							class="cursor-pointer"
-							on:click={() => {
-								newTracking = newTracking.toSpliced(idx, 1);
-							}}
-						>
-							❌
-						</span>
-					</ButtonGroup>
-				{/each} 
-			</div>-->
+			<div class="col-span-2">
+				<Label for="small-input">Shipment</Label>
+				<select
+					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+					bind:value={newShipmentIdx}
+				>
+					{#each shipments as shipment, idx}
+						<option value={idx}>
+							{idx + 1}) {shipment?.carrier?.name}
+						</option>
+					{/each}
+				</select>
+				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
+			</div>
 		</div>
 
 		<div class="flex pt-6">
@@ -303,7 +298,7 @@
 				<TableHeadCell>Unit Cost</TableHeadCell>
 				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell>
-					<ButtonGroup size="sm">
+					<!-- <ButtonGroup size="sm">
 						<Select
 							items={[
 								{ value: null, name: 'Other' },
@@ -315,14 +310,6 @@
 							placeholder="Carrier"
 							size="sm"
 						/>
-						<!-- <Input
-							defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
-							type="text"
-							placeholder="Carrier code"
-							size="sm"
-							bind:value={order.carrier_code}
-							on:change={() => updateOrderLinesTracking()}
-						/> -->
 						<Input
 							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
 							type="text"
@@ -333,7 +320,22 @@
 						<Button color="primary" class="!p-2.5" on:click={() => updateOrderLinesTracking()}>
 							<ChevronDoubleDownOutline class="text-gray-400" />
 						</Button>
-					</ButtonGroup>
+					</ButtonGroup> -->
+					<div class="flex">
+						<select
+							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							bind:value={selectedGroupShipmentIdx}
+						>
+							{#each shipments as shipment, idx}
+								<option value={idx}>
+									{idx + 1}) {shipment?.carrier?.name}
+								</option>
+							{/each}
+						</select>
+						<Button color="primary" class="!p-2.5" on:click={(e) => updateOrderLinesShipments(selectedGroupShipmentIdx)}>
+							<ChevronDoubleDownOutline class="text-gray-400" />
+						</Button>
+					</div>
 				</TableHeadCell>
 				<TableHeadCell>
 					<span
@@ -413,15 +415,8 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
-							<div>
+							<!-- <div>
 								<ButtonGroup size="sm">
-									<!-- <Input
-										defaultClass="block w-24 disabled:cursor-not-allowed disabled:opacity-50"
-										type="text"
-										placeholder="Carrier code"
-										size="sm"
-										bind:value={item.tracking[0].carrier_code}
-									/> -->
 									<Select
 										items={[
 											{ value: null, name: 'Other' },
@@ -441,6 +436,18 @@
 										bind:value={item.tracking[0].tracking_number}
 									/>
 								</ButtonGroup>
+							</div> -->
+							<div>
+								<select
+									class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+									bind:value={item.__shipmentIdx}
+								>
+									{#each shipments as shipment, idx}
+										<option value={idx}>
+											{idx + 1}) {shipment?.carrier?.name}
+										</option>
+									{/each}
+								</select>
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">

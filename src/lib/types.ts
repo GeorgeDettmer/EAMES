@@ -12,7 +12,7 @@ export interface Supplier {
 }
 
 export interface Shipment {
-	id: number;
+	id: number | undefined;
 	tracking_id: string | undefined;
 	expected_delivery_date: string | undefined;
 	created_at: string | undefined;

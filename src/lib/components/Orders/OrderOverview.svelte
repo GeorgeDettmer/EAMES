@@ -564,7 +564,7 @@ subscription order($orderId: bigint!) {
 				<TableHeadCell>Total Price</TableHeadCell>
 				<TableHeadCell>
 					<div class="flex">
-						<p class="my-auto">Tracking</p>
+						<p class="my-auto">Shipments</p>
 						{#if editable}
 							<Button
 								on:click={() => {
@@ -666,7 +666,8 @@ subscription order($orderId: bigint!) {
 								<TrackingStatus bind:trackingResult={trackings[idx]} />
 							{/if} -->
 							<div class="flex-wrap gap-x-1">
-								{#each item?.orders_items_shipments as { shipment }, idx}
+								{#each item?.orders_items_shipments as oi, idx}
+									{@const shipment = oi?.shipment}
 									<div class="flex">
 										<div class="flex rounded {selectedShipmentId === shipment?.id ? 'bg-green-500' : 'bg-slate-500'}">
 											{#if shipmentIds?.length > 1}
@@ -677,6 +678,11 @@ subscription order($orderId: bigint!) {
 											<Badge color="blue">
 												<TrackingStatus tracking={shipment?.tracking} />
 											</Badge>
+											{#if shipmentIds?.length > 1 && oi?.quantity}
+												<p class="text-xs text-white my-auto text-center font-semibold w-4 pr-1">
+													{oi?.quantity}
+												</p>
+											{/if}
 										</div>
 									</div>
 								{:else}

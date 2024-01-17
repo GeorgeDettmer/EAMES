@@ -26,8 +26,8 @@ Sentry.init({
 			levels: ['error']
 		})
 	],
-	environment: dev ? 'development' : 'production'
-	//enabled: !dev
+	environment: dev ? 'development' : 'production',
+	enabled: !dev
 });
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`

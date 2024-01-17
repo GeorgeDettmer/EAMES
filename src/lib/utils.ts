@@ -168,9 +168,10 @@ export let getParameterInsensitive = (object: { [x: string]: any }, key: string)
 export let carrier_codes = ['ups', 'fedex', 'dhl_express'];
 export let carrier_names = ['UPS', 'FEDEX', 'DHL'];
 export let carrier_urls = {
-	ups: (t) => `https://www.ups.com/track?track=yes&trackNums=${t}`,
-	fedex: (t) => `https://www.fedex.com/fedextrack/?tracknumbers=${t}`,
-	dhl_express: (t) => `https://www.dhl.com/gb-en/home/tracking/tracking-parcel.html?submit=1&tracking-id=${t}`
+	ups: (t: string): string => `https://www.ups.com/track?track=yes&trackNums=${t}`,
+	fedex: (t: string): string => `https://www.fedex.com/fedextrack/?tracknumbers=${t}`,
+	dhl_express: (t: string): string =>
+		`https://www.dhl.com/gb-en/home/tracking/tracking-parcel.html?submit=1&tracking-id=${t}`
 };
 
 export let downloadFileFromText = (blob: Blob, name: string) => {

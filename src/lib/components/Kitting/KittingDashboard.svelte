@@ -15,6 +15,7 @@
 			subscription recentKitActivityJobs($offset: Int = 0) {
 				jobs(limit: 1000, offset: $offset, order_by: { jobs_kits2: { kit: { updated_at: desc_nulls_last } } }) {
 					id
+					batch
 					quantity
 					customer {
 						name

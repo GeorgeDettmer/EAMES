@@ -4,6 +4,7 @@
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import {
 		Badge,
+		Label,
 		Modal,
 		Popover,
 		Spinner,
@@ -16,9 +17,10 @@
 		Tooltip
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
-	import { datetimeFormat, padString } from '$lib/utils';
+	import { carrier_urls, datetimeFormat, padString } from '$lib/utils';
 	import TrackingStatus from './TrackingStatus.svelte';
 	import TrackingTimeline from '../Tracking/TrackingTimeline.svelte';
+	import { SearchOutline } from 'flowbite-svelte-icons';
 
 	export let shipmentId: string = '';
 	export let shipment: Shipment | undefined = undefined;
@@ -27,6 +29,7 @@
 	export let showDetailsModal: boolean = true;
 	export let modalOpen: boolean = false;
 	export let popover: boolean = true;
+	export let allowEdit: boolean = false;
 
 	let shipmentInfoStore;
 	$: if (shipmentId) {
@@ -93,6 +96,35 @@
 	}
 
 	$: shipmentInfo = shipmentId ? $shipmentInfoStore?.data?.erp_shipments_by_pk : shipment;
+
+	let carriersStore;
+	$: if (allowEdit) {
+		carriersStore = queryStore({
+			client: getContextClient(),
+			query: gql`
+				query carriers {
+					erp_carriers(order_by: { shipments_aggregate: { count: desc_nulls_last } }) {
+						id
+						name
+						image_url
+						suppliers {
+							id
+							name
+						}
+					}
+				}
+			`
+		});
+	}
+	$: carriers = $carriersStore?.data?.erp_carriers;
+	$: console.log('shipmentInfo', shipmentInfo);
+	let showTrackingStatus = false;
+	function getTrackingUrl(carrier: string, tracking: string): string {
+		if (!carrier || !tracking) return '';
+		let url = carrier_urls?.[carrier]?.(tracking);
+		if (!url) return '';
+		return url;
+	}
 </script>
 
 {#if $shipmentInfoStore?.fetching}
@@ -177,17 +209,22 @@
 					<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
 						<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
 					</p>
-					{#if shipmentInfo?.tracking?.tracking_number}
-						{#if shipmentInfo?.tracking?.tracking_url}
-							<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
-								{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-							</a>
-						{:else}
-							<p class="text-xs">
-								{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-							</p>
+					<div class="flex gap-x-1">
+						{#if shipmentInfo?.tracking?.tracking_number}
+							{#if shipmentInfo?.tracking?.tracking_url}
+								<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
+									{shipmentInfo?.tracking?.tracking_number}
+								</a>
+							{:else}
+								<p class="text-xs">
+									{shipmentInfo?.tracking?.tracking_number}
+								</p>
+							{/if}
+							{#if shipmentInfo?.tracking?.id}
+								<p class="text-xs">({shipmentInfo?.tracking?.id})</p>
+							{/if}
 						{/if}
-					{/if}
+					</div>
 				</div>
 			</div>
 			{#if shipmentInfo?.tracking?.events?.[0]}
@@ -232,19 +269,33 @@
 				<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
 					<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
 				</p>
-				{#if shipmentInfo?.tracking?.tracking_number}
-					{#if shipmentInfo?.tracking?.tracking_url}
-						<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
-							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-						</a>
-					{:else}
-						<p class="text-xs">
-							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-						</p>
+				<div class="flex gap-x-1">
+					{#if shipmentInfo?.tracking?.tracking_number}
+						{#if shipmentInfo?.tracking?.tracking_url}
+							<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
+								{shipmentInfo?.tracking?.tracking_number}
+							</a>
+						{:else}
+							<p class="text-xs">
+								{shipmentInfo?.tracking?.tracking_number}
+							</p>
+						{/if}
+						{#if shipmentInfo?.tracking?.id}
+							<p class="text-xs">({shipmentInfo?.tracking?.id})</p>
+						{/if}
 					{/if}
-				{/if}
+				</div>
 			</div>
-			{#if shipmentInfo?.tracking?.events?.[0]}
+			{#if allowEdit}
+				<div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
+					<input
+						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+						type="date"
+						min={new Date().toISOString().split('T')[0]}
+						bind:value={shipmentInfo.expected_delivery_date}
+					/>
+				</div>
+			{:else if shipmentInfo?.tracking?.events?.[0]}
 				<!-- <TrackingTimeline trackingEvents={shipmentInfo?.tracking?.events} /> -->
 				{@const event = shipmentInfo?.tracking?.events[0]}
 				<div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
@@ -254,6 +305,74 @@
 						<p class="italic text-xs">{datetimeFormat(event?.occurredAt)} {event?.signer ? `(${event?.signer})` : ''}</p>
 					</div>
 					<!-- {/each} -->
+				</div>
+			{/if}
+		</div>
+		<div>
+			{#if allowEdit}
+				<div class="flex gap-x-1">
+					<div>
+						<Label>Carrier</Label>
+						<select
+							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							bind:value={shipmentInfo.carrier}
+							on:change={() => {
+								shipmentInfo.tracking.carrier_code = shipmentInfo.carrier.id?.toLowerCase();
+								shipmentInfo.tracking.tracking_url = getTrackingUrl(
+									shipmentInfo.carrier.id?.toLowerCase(),
+									shipmentInfo.tracking.tracking_number
+								);
+								showTrackingStatus = false;
+							}}
+						>
+							{#each carriers as carrier, idx}
+								<option value={carrier}>
+									{carrier?.name}
+								</option>
+							{/each}
+						</select>
+					</div>
+					<div>
+						<Label>Tracking number</Label>
+						<input
+							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
+							type="text"
+							bind:value={shipmentInfo.tracking.tracking_number}
+							on:input={() => {
+								shipmentInfo.tracking.tracking_url = getTrackingUrl(
+									shipmentInfo.carrier.id?.toLowerCase(),
+									shipmentInfo.tracking.tracking_number
+								);
+								showTrackingStatus = false;
+							}}
+						/>
+					</div>
+					<div>
+						<Label>Tracking URL</Label>
+						<div class="flex gap-x-2">
+							<input
+								class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
+								type="text"
+								value={shipmentInfo.tracking.tracking_url}
+								on:dblclick={() => {
+									if (!shipmentInfo.tracking.tracking_url) return;
+									window.open(shipmentInfo.tracking.tracking_url, '_blank');
+								}}
+							/>
+
+							{#if showTrackingStatus}
+								<TrackingStatus
+									tracking={{
+										tracking_number: shipmentInfo.tracking.tracking_number,
+										tracking_url: shipmentInfo.tracking.tracking_number,
+										carrier_code: shipmentInfo.carrier.id?.toLowerCase()
+									}}
+								/>
+							{:else}
+								<button on:click={() => (showTrackingStatus = true)}><SearchOutline /></button>
+							{/if}
+						</div>
+					</div>
 				</div>
 			{/if}
 		</div>

@@ -18,6 +18,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import { datetimeFormat, padString } from '$lib/utils';
 	import TrackingStatus from './TrackingStatus.svelte';
+	import TrackingTimeline from '../Tracking/TrackingTimeline.svelte';
 
 	export let shipmentId: string = '';
 	export let shipment: Shipment | undefined = undefined;
@@ -25,6 +26,7 @@
 	export let tooltipPlacement: Placement = 'left';
 	export let showDetailsModal: boolean = true;
 	export let modalOpen: boolean = false;
+	export let popover: boolean = true;
 
 	let shipmentInfoStore;
 	$: if (shipmentId) {
@@ -129,6 +131,7 @@
 				</div>
 			</div>
 			<div class="w-fit">
+				<!-- TODO: Use different icons, tracking should be 'van', box with tick should be our confirmation of delivery -->
 				<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} />
 				<!-- <p>
 					{shipmentInfo?.tracking?.tracking_number}
@@ -136,7 +139,11 @@
 			</div>
 			<div>
 				<!-- <p class="float-right">{shipmentInfo?.orders_items_shipments?.length}</p> -->
-				<p class="float-right">{shipmentInfo?.expected_delivery_date}</p>
+				<p class="float-right">
+					{new Intl.DateTimeFormat('en-GB', {
+						dateStyle: 'short'
+					}).format(new Date(shipmentInfo?.expected_delivery_date))}
+				</p>
 			</div>
 		</div>
 		<slot />
@@ -144,56 +151,58 @@
 	<!-- <div on:click={() => (modalOpen = !modalOpen)} class:cursor-pointer={showDetails}>
 		<img src="https://img.icons8.com/ios/50/cardboard-box.png" alt="cardboard-box" />
 	</div> -->
-	<Popover placement={tooltipPlacement}>
-		<div class="flex gap-x-2">
-			<div class="my-auto rounded-lg">
-				<a href={shipmentInfo?.url} target="_blank">
-					{#if shipmentInfo?.carrier?.image_url}
-						<img
-							class="h-8 p-0.5 rounded-lg bg-gray-200"
-							class:hidden={!shipmentInfo?.carrier?.image_url}
-							src={shipmentInfo?.carrier?.image_url}
-							alt={shipmentInfo?.carrier?.name}
-						/>
-					{:else}
-						<p class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200">
-							{shipmentInfo?.carrier?.name
-								?.split(' ')
-								?.map((s) => s?.[0]?.toUpperCase())
-								.join('')}
-						</p>
-					{/if}
-				</a>
-			</div>
-			<div class="my-auto">
-				<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
-					<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
-				</p>
-				{#if shipmentInfo?.tracking?.tracking_number}
-					{#if shipmentInfo?.tracking?.tracking_url}
-						<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
-							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-						</a>
-					{:else}
-						<p class="text-xs">
-							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
-						</p>
-					{/if}
-				{/if}
-			</div>
-		</div>
-		{#if shipmentInfo?.tracking?.events?.[0]}
-			{@const event = shipmentInfo?.tracking?.events[0]}
-			<div class="flex-wrap max-w-sm">
-				<!-- 	{#each shipmentInfo?.tracking?.events as event, i} -->
-				<div class="text-xs">
-					<p class="break-words">{event?.description}</p>
-					<p class="italic text-xs">{datetimeFormat(event?.occurredAt)} {event?.signer ? `(${event?.signer})` : ''}</p>
+	{#if popover}
+		<Popover placement={tooltipPlacement}>
+			<div class="flex gap-x-2">
+				<div class="my-auto rounded-lg">
+					<a href={shipmentInfo?.url} target="_blank">
+						{#if shipmentInfo?.carrier?.image_url}
+							<img
+								class="h-8 p-0.5 rounded-lg bg-gray-200"
+								class:hidden={!shipmentInfo?.carrier?.image_url}
+								src={shipmentInfo?.carrier?.image_url}
+								alt={shipmentInfo?.carrier?.name}
+							/>
+						{:else}
+							<p class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200">
+								{shipmentInfo?.carrier?.name
+									?.split(' ')
+									?.map((s) => s?.[0]?.toUpperCase())
+									.join('')}
+							</p>
+						{/if}
+					</a>
 				</div>
-				<!-- {/each} -->
+				<div class="my-auto">
+					<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
+						<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
+					</p>
+					{#if shipmentInfo?.tracking?.tracking_number}
+						{#if shipmentInfo?.tracking?.tracking_url}
+							<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
+								{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
+							</a>
+						{:else}
+							<p class="text-xs">
+								{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
+							</p>
+						{/if}
+					{/if}
+				</div>
 			</div>
-		{/if}
-	</Popover>
+			{#if shipmentInfo?.tracking?.events?.[0]}
+				{@const event = shipmentInfo?.tracking?.events[0]}
+				<div class="flex-wrap max-w-sm">
+					<!-- 	{#each shipmentInfo?.tracking?.events as event, i} -->
+					<div class="text-xs">
+						<p class="break-words">{event?.description}</p>
+						<p class="italic text-xs">{datetimeFormat(event?.occurredAt)} {event?.signer ? `(${event?.signer})` : ''}</p>
+					</div>
+					<!-- {/each} -->
+				</div>
+			{/if}
+		</Popover>
+	{/if}
 {:else}
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Shipment info unavailable...</div>
 {/if}
@@ -226,18 +235,19 @@
 				{#if shipmentInfo?.tracking?.tracking_number}
 					{#if shipmentInfo?.tracking?.tracking_url}
 						<a class="text-xs hover:underline" href={shipmentInfo?.tracking?.tracking_url} target="_blank">
-							{shipmentInfo?.tracking?.tracking_number}
+							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
 						</a>
 					{:else}
 						<p class="text-xs">
-							{shipmentInfo?.tracking?.tracking_number}
+							{shipmentInfo?.tracking?.tracking_number} ({shipmentInfo?.tracking?.id})
 						</p>
 					{/if}
 				{/if}
 			</div>
 			{#if shipmentInfo?.tracking?.events?.[0]}
+				<!-- <TrackingTimeline trackingEvents={shipmentInfo?.tracking?.events} /> -->
 				{@const event = shipmentInfo?.tracking?.events[0]}
-				<div class="flex-wrap max-w-sm">
+				<div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
 					<!-- 	{#each shipmentInfo?.tracking?.events as event, i} -->
 					<div class="text-xs">
 						<p class="break-words">{event?.description}</p>

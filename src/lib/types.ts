@@ -19,3 +19,21 @@ export interface Shipment {
 	updated_at: string | undefined;
 	user_id: string | undefined;
 }
+
+export interface TrackingEvent {
+	carrierDetailCode: string | null;
+	carrierOccurredAt: string | null;
+	carrierStatusCode: string | null;
+	cityLocality: string | null;
+	companyName: string | null;
+	countryCode: string | null;
+	description: string | null;
+	eventCode: string | null;
+	latitude: number | null;
+	longitude: number | null;
+	occurredAt: string | null;
+	postalCode: string | null;
+	signer: string | null;
+	stateProvince: string | null;
+	statusCode: string | null;
+}

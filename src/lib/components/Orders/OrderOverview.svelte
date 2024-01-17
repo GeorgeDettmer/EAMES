@@ -336,7 +336,9 @@ subscription order($orderId: bigint!) {
 	$: shipmentIds = order?.orders_items
 		?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((s) => s.shipment.id))
 		?.filter((v, i, s) => s.indexOf(v) === i);
-	$: console.log('shipments', shipmentIds);
+	$: console.log('shipments', shipmentIds, selectedShipmentId);
+
+	let selectedShipmentId: number | undefined = undefined;
 </script>
 
 {#if editable}
@@ -501,9 +503,26 @@ subscription order($orderId: bigint!) {
 			<div class="my-auto ml-auto flex">
 				<div class="flex gap-x-1 pr-2">
 					{#each shipmentIds as shipmentId, idx}
-						<div class="flex bg-slate-500 rounded">
-							<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-							<OrderShipments {shipmentId} showItems />
+						<div
+							class="flex rounded {selectedShipmentId === shipmentId ? 'bg-green-500' : 'bg-slate-500'}"
+							on:mouseenter={() => (selectedShipmentId = shipmentId)}
+							on:mouseleave={() => (selectedShipmentId = undefined)}
+						>
+							{#if shipmentIds?.length > 1}
+								<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
+							{/if}
+							<OrderShipments {shipmentId} showItems popover={false} />
+						</div>
+					{:else}
+						<div class="flex rounded bg-orange-500 p-4 gap-x-2">
+							<img
+								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+								width="24"
+								height="24"
+								src="https://img.icons8.com/ios/50/cardboard-box.png"
+								alt="box-other"
+							/>
+							<p class="my-auto text-center text-white font-semibold uppercase">No shipments</p>
 						</div>
 					{/each}
 				</div>
@@ -649,10 +668,16 @@ subscription order($orderId: bigint!) {
 							<div class="flex-wrap gap-x-1">
 								{#each item?.orders_items_shipments as { shipment }, idx}
 									<div class="flex">
-										<TrackingStatus tracking={shipment?.tracking} bind:trackingResult={trackings[idx]} />
-										{#if item?.orders_items_shipments?.length > 1}
-											<p class="align-super text-xs italic">({idx + 1})</p>
-										{/if}
+										<div class="flex rounded {selectedShipmentId === shipment?.id ? 'bg-green-500' : 'bg-slate-500'}">
+											{#if shipmentIds?.length > 1}
+												<p class="text-xs text-white my-auto text-center font-semibold w-4">
+													{shipmentIds.findIndex((v) => v === shipment?.id) + 1}
+												</p>
+											{/if}
+											<Badge color="blue">
+												<TrackingStatus tracking={shipment?.tracking} />
+											</Badge>
+										</div>
 									</div>
 								{:else}
 									<div class="flex">

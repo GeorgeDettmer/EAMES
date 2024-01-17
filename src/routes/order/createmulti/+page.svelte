@@ -118,6 +118,7 @@
 		let order = {};
 		let order_items = [];
 		let importOrders = {};
+		let importShipments = [];
 		toImport.forEach((line, idx) => {
 			if (line) {
 				let part = line?.[orderItemProperties['part']];
@@ -164,18 +165,14 @@
 						category: 'Component'
 					}
 				];
-				shipments[idx] = {
-					carrier_id: 'UPS',
-					carrier: {
-						id: 'UPS',
-						name: 'UPS'
-					},
-					expected_delviery_date: new Date(new Date().getDate() + 1).toISOString()
-				};
 			}
 		});
 		console.log('importOrders', importOrders, Object.values(importOrders));
 		orders = Object.values(importOrders);
+		importShipments = orders.map((o) => {
+			return [{ ...shipmentTemplate }];
+		});
+		shipments = importShipments;
 	}
 
 	let orderItemProperties = {
@@ -548,7 +545,8 @@
 	</div>
 	<div class="flex">
 		<div class="flex ml-auto">
-			<Button
+			<button
+				class="pr-2"
 				on:click={(e) => {
 					shipments[openOrderIdx] = [
 						...shipments[openOrderIdx],
@@ -559,14 +557,16 @@
 				}}
 			>
 				<PlusOutline class="text-gray-400 hover:text-green-600" />
-				<Tooltip placement="top">Add order</Tooltip>
-			</Button>
-			{#each shipments?.[openOrderIdx] || [] as shipment, idx}
-				<div class="flex ml-auto text-white bg-slate-500 rounded">
-					<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-					<OrderShipment {shipment} showItems={false} showDetailsModal={false} />
-				</div>
-			{/each}
+				<Tooltip placement="left">Add shipment</Tooltip>
+			</button>
+			<div class="flex gap-x-1">
+				{#each shipments?.[openOrderIdx] || [] as shipment, idx}
+					<div class="flex text-white bg-slate-500 rounded">
+						<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
+						<OrderShipment {shipment} showItems={false} showDetailsModal={false} />
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 	<div class="">
@@ -578,15 +578,15 @@
 				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 			> -->
-		<div class="-mb-8 -ml-11">
-			<Button
+		<div class="-mb-12 -ml-6">
+			<button
 				on:click={(e) => {
 					addOrder();
 				}}
 			>
 				<PlusOutline class="text-gray-400 hover:text-green-600" />
 				<Tooltip placement="top">Add order</Tooltip>
-			</Button>
+			</button>
 		</div>
 		<Tabs style="full" contentClass="px-0 py-4 rounded-lg mt-0">
 			{#each orders as order, idx}

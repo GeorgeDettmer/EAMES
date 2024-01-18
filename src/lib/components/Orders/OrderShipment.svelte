@@ -325,6 +325,7 @@
 								showTrackingStatus = false;
 							}}
 						>
+							<option value={{ id: null }}> Unknown </option>
 							{#each carriers as carrier, idx}
 								<option value={carrier}>
 									{carrier?.name}

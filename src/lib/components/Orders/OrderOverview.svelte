@@ -679,7 +679,7 @@ subscription order($orderId: bigint!) {
 												<TrackingStatus tracking={shipment?.tracking} />
 											</Badge>
 											{#if shipmentIds?.length > 1 && oi?.quantity}
-												<p class="text-xs text-white my-auto text-center font-semibold w-4 pr-1">
+												<p class="text-xs text-white my-auto text-center font-semibold w-4 p-1 mr-1">
 													{oi?.quantity}
 												</p>
 											{/if}

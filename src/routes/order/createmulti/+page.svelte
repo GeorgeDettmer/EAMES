@@ -344,21 +344,10 @@
 		ordersAdding = true;
 		let mutationResult;
 
-		/**
-		mutation addShipments($shipments: [erp_shipments_insert_input!] = {}) {
-  insert_erp_shipments(objects: $shipments) {
-    affected_rows
-    returning {
-      id
-    }
-  }
-}
-*/
-
 		console.log('addShipments', shipments);
-		let shipmentIds = [];
+		let shipmentIds: number[][] = [];
 		for (const orderShipments of shipments) {
-			let ship = orderShipments.map((shipment) => {
+			let shipmentMutationObject = orderShipments.map((shipment) => {
 				return {
 					carrier_id: shipment?.carrier?.id,
 					expected_delivery_date: shipment?.expected_delivery_date,
@@ -379,7 +368,7 @@
 					}
 				`,
 				{
-					shipments: ship
+					shipments: shipmentMutationObject
 				}
 			);
 			if (mutationResult?.error) {
@@ -391,40 +380,9 @@
 				shipmentIds.push(mutationResult?.data?.insert_erp_shipments?.returning?.map((s) => s.id));
 			}
 		}
-		/* shipments.map(async (s) => {
-			let ship = s.map((ss) => {
-				return {
-					carrier_id: ss?.carrier?.id,
-					expected_delivery_date: ss?.expected_delivery_date
-				};
-			});
-			mutationResult = await urqlClient.mutation(
-				gql`
-					mutation addShipments($shipments: [erp_shipments_insert_input!] = {}) {
-						insert_erp_shipments(objects: $shipments) {
-							affected_rows
-							returning {
-								id
-							}
-						}
-					}
-				`,
-				{
-					shipments: ship
-				}
-			);
-			if (mutationResult?.error) {
-				console.error('MUTATION ERROR: ', mutationResult);
-				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-				return [];
-			} else {
-				console.log('MUTATION RESULT: ', mutationResult);
-				return mutationResult?.data?.insert_erp_shipments?.returning?.map((s) => s.id);
-			}
-		}); */
 		messagesStore('Inserted shipment(s): ' + shipmentIds.flat(), 'success');
 		if (shipmentIds.length === 0 || shipmentIds.every((v) => v?.length === 0)) {
-			console.error('SHIPMENT CREATE ERROR', shipmentIds);
+			console.error('SHIPMENT CREATE ERROR', shipmentIds, shipments);
 			return;
 		} else {
 			console.log('addSHIPMENTS', shipmentIds);

@@ -11,6 +11,14 @@ export interface Supplier {
 	url: string | null;
 }
 
+export interface Tracking {
+	id: number | undefined;
+	carrier_code: string | undefined;
+	tracking_number: string | undefined;
+	tacking_url: string | undefined;
+	status: string | undefined;
+}
+
 export interface Shipment {
 	id: number | undefined;
 	tracking_id: string | undefined;
@@ -18,6 +26,13 @@ export interface Shipment {
 	created_at: string | undefined;
 	updated_at: string | undefined;
 	user_id: string | undefined;
+	tracking: Tracking | undefined;
+}
+
+export interface OrderItemShipments {
+	id: number | undefined;
+	quantity: number | undefined;
+	shipment: Shipment | undefined;
 }
 
 export interface TrackingEvent {

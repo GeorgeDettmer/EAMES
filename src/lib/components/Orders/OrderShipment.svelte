@@ -17,7 +17,7 @@
 		Tooltip
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
-	import { carrier_urls, datetimeFormat, padString } from '$lib/utils';
+	import { carrier_urls, classes, datetimeFormat, padString } from '$lib/utils';
 	import TrackingStatus from './TrackingStatus.svelte';
 	import TrackingTimeline from '../Tracking/TrackingTimeline.svelte';
 	import { SearchOutline } from 'flowbite-svelte-icons';
@@ -148,33 +148,33 @@
 			? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
 			: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 '}"
 	>
-		<div class="overflow-hidden grid grid-cols-2 gap-x-2">
-			<div>
+		<div class="flex gap-x-4 overflow-hidden">
+			<div class="flex-col">
 				<p class="font-bold">{shipmentInfo?.carrier?.name}</p>
+				<div class="flex">
+					<!-- TODO: Use different icons, tracking should be 'van', box with tick should be our confirmation of delivery -->
+					<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} />
+					{#if true}
+						<img
+							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+							width="24"
+							height="24"
+							src="https://img.icons8.com/windows/32/delivered-box.png"
+							alt="delivered-box"
+						/>
+					{/if}
+				</div>
 			</div>
-			<div class="justify-end text-right">
-				<div>
+			<div class="flex-col">
+				<div class="justify-end text-right">
 					<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 				</div>
-				<div>
-					<!-- {#if order?.reference}
-						<p class="text-xs">#{order.reference}</p>
-					{/if} -->
-				</div>
-			</div>
-			<div class="w-fit">
-				<!-- TODO: Use different icons, tracking should be 'van', box with tick should be our confirmation of delivery -->
-				<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} />
-				<!-- <p>
-					{shipmentInfo?.tracking?.tracking_number}
-				</p> -->
-			</div>
-			<div>
-				<!-- <p class="float-right">{shipmentInfo?.orders_items_shipments?.length}</p> -->
-				<p class="float-right">
-					{new Intl.DateTimeFormat('en-GB', {
-						dateStyle: 'short'
-					}).format(new Date(shipmentInfo?.expected_delivery_date))}
+				<p class="float-right text-sm text-pretty">
+					{new Date(shipmentInfo?.expected_delivery_date).toLocaleDateString('en-GB', {
+						day: '2-digit',
+						month: '2-digit',
+						year: '2-digit'
+					})}
 				</p>
 			</div>
 		</div>
@@ -244,7 +244,7 @@
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Shipment info unavailable...</div>
 {/if}
 {#if showDetailsModal}
-	<Modal outsideclose bind:open={modalOpen}>
+	<Modal outsideclose bind:open={modalOpen} size="lg">
 		<div class="flex gap-x-2">
 			<div class="my-auto rounded-lg">
 				<a href={shipmentInfo?.url} target="_blank">
@@ -381,7 +381,8 @@
 			{#if showItems}
 				<Table>
 					<TableHead theadClass="text-xs uppercase text-center">
-						<TableHeadCell padding="px-1 py-1">Shipment Item</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
+						<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">Category</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">PN</TableHeadCell>
@@ -397,6 +398,11 @@
 									<p class={'uppercase'}>
 										{idx + 1}
 									</p>
+								</TableBodyCell>
+								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+									<a href={`${window.origin}/order/${item?.order_id}`} target="_blank" class={classes.link}>
+										{item?.order_id}
+									</a>
 								</TableBodyCell>
 								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 									<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white" />

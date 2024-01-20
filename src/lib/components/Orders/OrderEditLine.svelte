@@ -15,7 +15,9 @@
 	import { EditOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	import OrderSetTracking from './OrderSetTracking.svelte';
-	import { deepEqual } from '$lib/utils';
+	import { deepEqual, padString } from '$lib/utils';
+	import type { OrderItemShipments, Shipment } from '$lib/types';
+	import OrderShipment from './OrderShipment.svelte';
 
 	interface Category {
 		id: string | null;
@@ -42,6 +44,8 @@
 		{ id: 'Consumables' },
 		{ id: 'Other' }
 	];
+	export let shipments: Shipment[] = [];
+	export let itemShipments: OrderItemShipments[] = line?.orders_items_shipments || [];
 
 	export let adding = false;
 
@@ -51,6 +55,7 @@
 	let originalPrice = price;
 	let originalCategory = category;
 	let originalTracking: Tracking[] = structuredClone(tracking);
+	let originalItemShipments: OrderItemShipments[] = structuredClone(itemShipments);
 
 	const urqlClient = getContextClient();
 
@@ -108,6 +113,8 @@
 		tracking.map((t, i) => [t, originalTracking?.[i], deepEqual(t, originalTracking?.[i])])
 	);
 	$: console.log('originalTracking', originalTracking);
+
+	$: unallocatedToShipmentQuantity = quantity - itemShipments?.reduce((a, b) => a + b.quantity, 0);
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -166,16 +173,97 @@
 
 	<div class="col-span-4">
 		<Label for="small-input"
-			>Tracking
+			>Shipment(s)
 			<button
 				class="hover:text-green-600"
 				on:click={() => {
 					tracking = [...tracking, { tracking_number: '', carrier_code: undefined }];
 				}}><PlusOutline size="xs" /></button
 			>
+			{#if unallocatedToShipmentQuantity > 0}
+				<span class="text-red-600">{unallocatedToShipmentQuantity} unallocated to shipment</span>
+			{/if}
 		</Label>
 		<div class="">
-			<OrderSetTracking bind:tracking />
+			<div>
+				{#each itemShipments as ois, idx (ois.id)}
+					<div class="flex gap-x-1">
+						<input
+							class="block w-1/3 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="text"
+							autocomplete="off"
+							placeholder={String(unallocatedToShipmentQuantity)}
+							bind:value={ois.quantity}
+						/>
+						{ois.shipment.id}
+						<select
+							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							bind:value={ois.shipment}
+						>
+							{#each shipments as shipment, idx}
+								<option value={shipment}>
+									{!shipment?.id ? '' : shipment.id} ({shipment?.carrier?.name})
+								</option>
+							{/each}
+						</select>
+
+						<OrderShipment shipment={ois.shipment} showDetailsModal={false} popover={false} />
+						<!-- <div
+							class="w-auto p-0.5 rounded font-medium inline-flex items-center justify-center {ois.shipment
+								?.orders_items_shipments?.length
+								? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
+								: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 '}"
+						>
+							<div class="flex gap-x-4">
+								<p class="font-bold">{ois.shipment?.carrier?.name}</p>
+								<p>SHP{padString(String(ois.shipment?.id || ''), 4)}</p>
+							</div>
+						</div> -->
+						<!--
+						<input
+							class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="text"
+							autocomplete="off"
+							placeholder="Tracking number"
+							bind:value={shipment.tracking_number}
+						/>
+						<button
+							class="hover:text-green-600"
+							class:text-orange-500={!shipment.tracking_number || !shipment.carrier_code}
+							class:invisible={!carrier_urls?.[shipment.carrier_code]}
+							on:click={() => {
+								if (!shipment.tracking_number || !shipment.carrier_code) return;
+								let url = carrier_urls?.[shipment.carrier_code]?.(shipment.tracking_number);
+								if (!url) return;
+								shipment.tracking_url = url;
+							}}
+						>
+							<ArrowRight size="24" />
+						</button>
+						<input
+							class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="text"
+							autocomplete="off"
+							placeholder="Tracking url"
+							bind:value={shipment.tracking_url}
+							on:dblclick={() => {
+								if (!shipment?.tracking_url) return;
+								window.open(shipment.tracking_url, '_blank');
+							}}
+						/>
+						<button
+							class="hover:text-red-600"
+							on:click={() => {
+								tracking = tracking.filter((v, i) => i !== idx);
+							}}
+						>
+							<XMark />
+						</button> -->
+					</div>
+				{:else}
+					<slot />
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>

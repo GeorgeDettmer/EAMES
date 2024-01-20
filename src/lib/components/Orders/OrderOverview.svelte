@@ -103,6 +103,68 @@ subscription order($orderId: bigint!) {
 				}
 			}
 */
+	$: shipmentsStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription shipments($orderId: bigint!) {
+				erp_shipments(where: { orders_items_shipments: { orders_item: { order_id: { _eq: $orderId } } } }) {
+					id
+					tracking_id
+					carrier_id
+					expected_delivery_date
+					created_at
+					updated_at
+					orders_items_shipments {
+						orders_item {
+							part
+							spn
+							category
+							quantity
+							order_id
+							updated_at
+							user {
+								id
+								initials
+								first_name
+								last_name
+								color
+							}
+						}
+						quantity
+					}
+					tracking {
+						id
+						carrier_code
+						tracking_number
+						tracking_url
+						status
+						estimated_delivery_date
+						delivery_date
+						created_at
+						ship_date
+						updated_at
+						events
+					}
+					carrier {
+						id
+						name
+						image_url
+					}
+					user {
+						id
+						initials
+						first_name
+						last_name
+						color
+					}
+				}
+			}
+		`,
+		variables: { orderId }
+	});
+	let availableShipments = [];
+	let shipments = [];
+	$: shipments = [...availableShipments, ...($shipmentsStore?.data?.erp_shipments || [])];
 
 	$: orderStore = subscriptionStore({
 		client: getContextClient(),
@@ -155,10 +217,16 @@ subscription order($orderId: bigint!) {
 							}
 						}
 						orders_items_shipments {
+							id
 							quantity
 							shipment {
 								id
 								expected_delivery_date
+								carrier {
+									id
+									name
+									image_url
+								}
 								tracking {
 									id
 									carrier_code
@@ -332,11 +400,10 @@ subscription order($orderId: bigint!) {
 	let kbItems;
 
 	export let editable = false;
-
 	$: shipmentIds = order?.orders_items
 		?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((s) => s.shipment.id))
 		?.filter((v, i, s) => s.indexOf(v) === i);
-	$: console.log('shipments', shipmentIds, selectedShipmentId);
+	$: console.log('shipments', shipmentIds, shipments, selectedShipmentId);
 
 	let selectedShipmentId: number | undefined = undefined;
 </script>
@@ -346,7 +413,7 @@ subscription order($orderId: bigint!) {
 		<OrderAddLine {order} />
 	</Modal>
 	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md" outsideclose>
-		<OrderEditLine line={editLine} />
+		<OrderEditLine line={editLine} {shipments} />
 	</Modal>
 	<Modal bind:open={editTrackingModal} size="lg" outsideclose>
 		<div class="pt-8">
@@ -502,16 +569,17 @@ subscription order($orderId: bigint!) {
 			</div>
 			<div class="my-auto ml-auto flex">
 				<div class="flex gap-x-1 pr-2">
-					{#each shipmentIds as shipmentId, idx}
+					{#each shipments as shipment, idx}
+						{@const shipmentId = shipment?.id}
 						<div
-							class="flex rounded {selectedShipmentId === shipmentId ? 'bg-green-500' : 'bg-slate-500'}"
-							on:mouseenter={() => (selectedShipmentId = shipmentId)}
+							class="flex rounded {selectedShipmentId === idx ? 'bg-green-500' : 'bg-slate-500'}"
+							on:mouseenter={() => (selectedShipmentId = idx)}
 							on:mouseleave={() => (selectedShipmentId = undefined)}
 						>
-							{#if shipmentIds?.length > 1}
+							{#if shipments?.length > 1}
 								<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
 							{/if}
-							<OrderShipments {shipmentId} showItems popover={false} />
+							<OrderShipments {shipment} showItems popover={false} />
 						</div>
 					{:else}
 						<div class="flex rounded bg-orange-500 p-4 gap-x-2">
@@ -555,14 +623,14 @@ subscription order($orderId: bigint!) {
 	<div on:keydown={(e) => tableKeypress(e)}>
 		<Table>
 			<TableHead>
-				<TableHeadCell>#</TableHeadCell>
-				<TableHeadCell>Buyer</TableHeadCell>
-				<TableHeadCell>Category</TableHeadCell>
-				<TableHeadCell>Part</TableHeadCell>
-				<TableHeadCell>Order Qty</TableHeadCell>
-				<TableHeadCell>Unit Price</TableHeadCell>
-				<TableHeadCell>Total Price</TableHeadCell>
-				<TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">#</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Buyer</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Category</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Part</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Order Qty</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Unit Price</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Total Price</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">
 					<div class="flex">
 						<p class="my-auto">Shipments</p>
 						{#if editable}
@@ -576,11 +644,11 @@ subscription order($orderId: bigint!) {
 						{/if}
 					</div>
 				</TableHeadCell>
-				<TableHeadCell />
+				<TableHeadCell padding="px-3 py-1" />
 				{#if showRecieved}
-					<TableHeadCell>Received Qty</TableHeadCell>
+					<TableHeadCell padding="px-3 py-1">Received Qty</TableHeadCell>
 				{/if}
-				<TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">
 					<Button
 						disabled={!order?.orders_items
 							?.flat()
@@ -608,10 +676,10 @@ subscription order($orderId: bigint!) {
 							? 'green'
 							: 'default'}
 					>
-						<TableBodyCell>
+						<TableBodyCell tdClass="pl-3 px-2 py-1 whitespace-nowrap font-medium">
 							<p>{idx + 1}</p>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<UserIcon size="xs" user={item?.user}>
 								{#if item?.user}
 									{item?.user?.first_name}
@@ -624,10 +692,10 @@ subscription order($orderId: bigint!) {
 								<p class="text-xs italic">{datetimeFormat(item.created_at)}</p>
 							</Popover>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<p>{item?.category || 'Unknown'}</p>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<div
 								class={highlightOrderItem?.id === item?.id ||
 								highlightOrderItems?.filter((i) => i?.id === item?.id)?.length > 0
@@ -640,50 +708,45 @@ subscription order($orderId: bigint!) {
 								{/if}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<Badge class="mx-0.5" color={'blue'}>
 								{item?.quantity}
 							</Badge>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
 							}).format(item?.price || 0)}
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
-						<TableBodyCell>
-							<!-- {#if item?.tracking?.length > 0}
-								{#each item?.tracking || [item?.tracking?.[0]] as t}
-									<TrackingStatus tracking={t} bind:trackingResult={trackings[idx]} />
-								{/each}
-							{:else}
-								<TrackingStatus bind:trackingResult={trackings[idx]} />
-							{/if} -->
-							<div class="flex-wrap gap-x-1">
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
+							<div class=" gap-x-1">
 								{#each item?.orders_items_shipments as oi, idx}
 									{@const shipment = oi?.shipment}
-									<div class="flex">
-										<div class="flex rounded {selectedShipmentId === shipment?.id ? 'bg-green-500' : 'bg-slate-500'}">
-											{#if shipmentIds?.length > 1}
-												<p class="text-xs text-white my-auto text-center font-semibold w-4">
-													{shipmentIds.findIndex((v) => v === shipment?.id) + 1}
-												</p>
-											{/if}
-											<Badge color="blue">
-												<TrackingStatus tracking={shipment?.tracking} />
-											</Badge>
-											{#if shipmentIds?.length > 1 && oi?.quantity}
-												<p class="text-xs text-white my-auto text-center font-semibold w-4 p-1 mr-1">
-													{oi?.quantity}
-												</p>
-											{/if}
-										</div>
+									<div
+										class="flex w-fit rounded {selectedShipmentId === idx ? 'bg-green-500' : 'bg-slate-500'}"
+										on:mouseenter={() => (selectedShipmentId = idx)}
+										on:mouseleave={() => (selectedShipmentId = undefined)}
+									>
+										{#if shipments?.length > 1}
+											<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
+												{idx + 1}
+											</p>
+										{/if}
+										<Badge color="blue">
+											<TrackingStatus tracking={shipment?.tracking} />
+										</Badge>
+										{#if shipments?.length > 1 && oi?.quantity}
+											<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default mx-1">
+												{oi?.quantity}
+											</p>
+										{/if}
 									</div>
 								{:else}
 									<div class="flex">
@@ -699,13 +762,13 @@ subscription order($orderId: bigint!) {
 								{/each}
 							</div>
 						</TableBodyCell>
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<ReceivingStatus order={item} receiveds={item?.orders_items_receiveds} />
 						</TableBodyCell>
 						{#if showRecieved}
 							{@const remaining = item?.quantity - recievedQty}
 
-							<TableBodyCell>
+							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<span
 									class="cursor-pointer"
 									on:click={() => {
@@ -729,7 +792,7 @@ subscription order($orderId: bigint!) {
 								</span>
 							</TableBodyCell>
 						{/if}
-						<TableBodyCell>
+						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							{#if editable}
 								<div class="flex my-auto">
 									<Button
@@ -755,38 +818,40 @@ subscription order($orderId: bigint!) {
 						<slot name="body" />
 					</TableBodyRow>
 				{:else}
-					<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
+					<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium" colspan="5"
+						>No items allocated to this order</TableBodyCell
+					>
 				{/each}
 			</TableBody>
 			<TableHead>
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell>
+				<TableBodyCell padding="px-3 py-1" />
+				<TableBodyCell padding="px-3 py-1" />
+				<TableBodyCell padding="px-3 py-1" />
+				<TableBodyCell padding="px-3 py-1" />
+				<TableBodyCell padding="px-3 py-1">
 					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
 				</TableBodyCell>
-				<TableBodyCell />
-				<TableBodyCell>
+				<TableBodyCell padding="px-3 py-1" />
+				<TableBodyCell padding="px-3 py-1">
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
-				<TableBodyCell>
+				<TableBodyCell padding="px-3 py-1">
 					<TrackingStatus isDelivered={trackings.filter((t) => t?.statusCode === 'DE').length === orderItems.length} />
 				</TableBodyCell>
-				<TableBodyCell>
+				<TableBodyCell padding="px-3 py-1">
 					<ReceivingStatus isReceived={totalRecieved === totalOrdered} />
 				</TableBodyCell>
 				{#if showRecieved}
-					<TableBodyCell>
+					<TableBodyCell padding="px-3 py-1">
 						<Badge class="mx-0.5" color={!totalRecieved ? 'red' : totalOrdered === totalRecieved ? 'green' : 'yellow'}>
 							{totalRecieved}
 						</Badge>
 					</TableBodyCell>
 				{/if}
-				<TableBodyCell>
+				<TableBodyCell padding="px-3 py-1">
 					{#if editable}
 						<Button
 							size="sm"

@@ -83,10 +83,10 @@
 		<div class="flex">
 			{#if trackingResult?.statusCode === 'DE'}
 				<img
-					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
 					{width}
 					{height}
-					src="https://img.icons8.com/windows/32/delivered-box.png"
+					src="https://img.icons8.com/ios-glyphs/30/shipped--v1.png"
 					alt="delivered-box"
 				/>
 			{:else if trackingResult?.statusCode === 'EX'}

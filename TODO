@@ -1,3 +1,11 @@
+ERP:
+  Shipments:
+    ☐ Set estimated ship date
+    ☐ Add shipments after order placed
+    ☐ Allocate lines to shipments
+    ☐ Adjust quantities assigned to shipments
+
+
 CAD Viewer:
   Parser:
     ☐ Add ODB++ parser (Just x/y/rotation and footprint information)

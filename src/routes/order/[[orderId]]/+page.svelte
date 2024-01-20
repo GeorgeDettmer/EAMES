@@ -511,6 +511,7 @@
 						<input
 							class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 							type="date"
+							min={dateSearch[0]}
 							bind:value={dateSearch[1]}
 							on:change={() => {
 								replaceStateWithQuery({

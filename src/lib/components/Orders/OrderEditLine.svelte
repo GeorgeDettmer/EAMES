@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { getContextClient, gql } from '@urql/svelte';
+	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import {
 		Badge,
 		Button,
@@ -10,14 +10,15 @@
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell
+		TableHeadCell,
+		Tooltip
 	} from 'flowbite-svelte';
 	import { EditOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
-	import OrderSetTracking from './OrderSetTracking.svelte';
 	import { deepEqual, padString } from '$lib/utils';
 	import type { OrderItemShipments, Shipment } from '$lib/types';
 	import OrderShipment from './OrderShipment.svelte';
+	import { XMark } from 'svelte-heros-v2';
 
 	interface Category {
 		id: string | null;
@@ -47,7 +48,7 @@
 	export let shipments: Shipment[] = [];
 	export let itemShipments: OrderItemShipments[] = line?.orders_items_shipments || [];
 
-	export let adding = false;
+	export let updating = false;
 
 	let originalPart = part;
 	let originalSPN = spn;
@@ -59,9 +60,9 @@
 
 	const urqlClient = getContextClient();
 
-	async function save() {
-		adding = false;
-		if (adding) return;
+	async function update() {
+		updating = false;
+		if (updating) return;
 		if (!$page?.data?.user) {
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
@@ -75,7 +76,7 @@
 			return;
 		}
 
-		adding = true;
+		updating = true;
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
 			gql`
@@ -101,20 +102,34 @@
 			quantity = 0;
 			tracking = [];
 		}
-		adding = false;
+		updating = false;
 	}
 
-	$: trackingChange =
-		originalTracking.length !== tracking.length ||
-		!tracking?.map((t, i) => deepEqual(t, originalTracking?.[i])).every((v) => v);
+	$: carriersStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query carriers {
+				erp_carriers(order_by: { shipments_aggregate: { count: desc_nulls_last } }) {
+					id
+					name
+					image_url
+				}
+			}
+		`
+	});
+	$: carriers = $carriersStore?.data?.erp_carriers;
+
+	$: shipmentsChange =
+		originalItemShipments.length !== itemShipments.length ||
+		!itemShipments?.map((t, i) => deepEqual(t, originalItemShipments?.[i])).every((v) => v);
 	$: console.log(
-		'trackingChange',
-		trackingChange,
-		tracking.map((t, i) => [t, originalTracking?.[i], deepEqual(t, originalTracking?.[i])])
+		'shipmentsChange',
+		shipmentsChange,
+		itemShipments.map((t, i) => [t, originalItemShipments?.[i], deepEqual(t, originalItemShipments?.[i])])
 	);
 	$: console.log('originalTracking', originalTracking);
 
-	$: unallocatedToShipmentQuantity = quantity - itemShipments?.reduce((a, b) => a + b.quantity, 0);
+	$: unallocatedToShipmentQuantity = quantity - itemShipments?.reduce((a, b) => a + (b?.quantity || line.quantity), 0);
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -172,14 +187,8 @@
 	</div>
 
 	<div class="col-span-4">
-		<Label for="small-input"
-			>Shipment(s)
-			<button
-				class="hover:text-green-600"
-				on:click={() => {
-					tracking = [...tracking, { tracking_number: '', carrier_code: undefined }];
-				}}><PlusOutline size="xs" /></button
-			>
+		<Label for="small-input">
+			Shipment(s)
 			{#if unallocatedToShipmentQuantity > 0}
 				<span class="text-red-600">{unallocatedToShipmentQuantity} unallocated to shipment</span>
 			{/if}
@@ -187,38 +196,37 @@
 		<div class="">
 			<div>
 				{#each itemShipments as ois, idx (ois.id)}
-					<div class="flex gap-x-1">
+					<div class="flex gap-x-1 bg-slate-500 p-1 rounded">
 						<input
-							class="block w-1/3 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-							type="text"
-							autocomplete="off"
-							placeholder={String(unallocatedToShipmentQuantity)}
+							class="block w-24 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							type="number"
+							min="1"
+							placeholder={ois?.quantity ? String(unallocatedToShipmentQuantity) : line?.quantity}
 							bind:value={ois.quantity}
 						/>
-						{ois.shipment.id}
 						<select
-							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+							class="block w-fit text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 							bind:value={ois.shipment}
 						>
 							{#each shipments as shipment, idx}
 								<option value={shipment}>
-									{!shipment?.id ? '' : shipment.id} ({shipment?.carrier?.name})
+									SHP{padString(String(shipment?.id || ''), 4)} ({shipment?.carrier?.name})
 								</option>
 							{/each}
 						</select>
-
 						<OrderShipment shipment={ois.shipment} showDetailsModal={false} popover={false} />
-						<!-- <div
-							class="w-auto p-0.5 rounded font-medium inline-flex items-center justify-center {ois.shipment
-								?.orders_items_shipments?.length
-								? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
-								: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 '}"
+						<button
+							class="ml-auto my-auto"
+							on:click={() => {
+								itemShipments = itemShipments.filter((v, i) => i !== idx);
+							}}
 						>
-							<div class="flex gap-x-4">
-								<p class="font-bold">{ois.shipment?.carrier?.name}</p>
-								<p>SHP{padString(String(ois.shipment?.id || ''), 4)}</p>
-							</div>
-						</div> -->
+							<XMark class="hover:text-red-600" />
+						</button>
+						<Tooltip defaultClass="py-1 px-1 text-xs w-20 break-words">
+							Remove allocation {ois.id} from shipment {ois.shipment.id}
+						</Tooltip>
+
 						<!--
 						<input
 							class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
@@ -314,17 +322,17 @@
 	<div class="my-auto mx-auto pt-4">
 		<Button
 			color="green"
-			on:click={() => save()}
+			on:click={() => update()}
 			disabled={quantity <= 0 ||
 				price < 0 ||
 				!part ||
-				adding ||
+				updating ||
 				(originalPart === part &&
 					originalSPN === spn &&
 					originalQuantity === quantity &&
 					originalPrice === price &&
 					originalCategory === category &&
-					!trackingChange)}
+					!shipmentsChange)}
 		>
 			Update <EditOutline size="md" />
 		</Button>

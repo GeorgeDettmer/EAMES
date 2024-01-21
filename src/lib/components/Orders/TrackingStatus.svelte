@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { datetimeFormat } from '$lib/utils';
+	import type { Placement } from '@popperjs/core';
 	import { error } from '@sveltejs/kit';
 	import { Popover, Spinner, Tooltip } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
@@ -23,6 +24,7 @@
 	export let width: number = 24;
 	export let height: number = 24;
 	export let showPopover: boolean = true;
+	export let popoverPlacement: Placement = 'left';
 	async function track(tracking: string, carrier: string) {
 		if (!tracking || !carrier) return {};
 		let cacheId = `${carrier}_${tracking}`;
@@ -111,11 +113,11 @@
 			{#if showText}
 				<p class="font-semibold pt-1 pl-2 uppercase text-xs">{trackingResult?.statusDescription || ''}</p>
 			{:else if showPopover}
-				<Tooltip placement={'left'}>{trackingResult?.statusDescription || ''}</Tooltip>
+				<Tooltip placement={popoverPlacement}>{trackingResult?.statusDescription || ''}</Tooltip>
 			{/if}
 		</div>
 		{#if showPopover}
-			<Popover placement={'left'} defaultClass="py-1 px-2">
+			<Popover placement={popoverPlacement} defaultClass="py-1 px-2">
 				<div class="text-xs">
 					{#if trackingResult?.events?.[0]}
 						<p>
@@ -150,7 +152,7 @@
 		{#if showText}
 			<p class="font-semibold pt-1 pl-2 uppercase text-xs">No tracking</p>
 		{:else if showPopover}
-			<Tooltip placement={'left'}>No tracking</Tooltip>
+			<Tooltip placement={popoverPlacement}>No tracking</Tooltip>
 		{/if}
 	</div>
 {/if}

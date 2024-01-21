@@ -42,6 +42,16 @@
 						tracking_id
 						carrier_id
 						expected_delivery_date
+						confirmed_delivery_date
+						confirmed_delivery_user_id
+						confirmed_delivery_user {
+							id
+							username
+							initials
+							first_name
+							last_name
+							color
+						}
 						created_at
 						updated_at
 						orders_items_shipments {
@@ -143,38 +153,39 @@
 {:else if shipmentInfo}
 	<div
 		on:click={() => (modalOpen = true)}
-		class="cursor-pointer h-14 w-auto p-4 rounded font-medium inline-flex items-center justify-center {shipmentInfo
-			?.orders_items_shipments?.length
-			? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
-			: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 '}"
+		class="cursor-pointer h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center {shipmentInfo?.confirmed_delivery_date
+			? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 '
+			: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '}"
 	>
 		<div class="flex gap-x-4 overflow-hidden">
 			<div class="flex-col">
 				<p class="font-bold">{shipmentInfo?.carrier?.name}</p>
 				<div class="flex">
 					<!-- TODO: Use different icons, tracking should be 'van', box with tick should be our confirmation of delivery -->
-					<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} />
-					{#if true}
-						<img
-							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
-							width="24"
-							height="24"
-							src="https://img.icons8.com/windows/32/delivered-box.png"
-							alt="delivered-box"
-						/>
-					{/if}
+					<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} width={20} height={20} />
+					<img
+						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+						width="20"
+						height="20"
+						src="https://img.icons8.com/windows/32/delivered-box.png"
+						alt="delivered-box"
+						class:invisible={!shipmentInfo?.confirmed_delivery_date}
+					/>
 				</div>
 			</div>
 			<div class="flex-col">
 				<div class="justify-end text-right">
 					<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 				</div>
-				<p class="float-right text-sm text-pretty">
-					{new Date(shipmentInfo?.expected_delivery_date).toLocaleDateString('en-GB', {
-						day: '2-digit',
-						month: '2-digit',
-						year: '2-digit'
-					})}
+				<p class="float-right text-sm">
+					{new Date(shipmentInfo?.confirmed_delivery_date || shipmentInfo?.expected_delivery_date).toLocaleDateString(
+						'en-GB',
+						{
+							day: '2-digit',
+							month: '2-digit',
+							year: '2-digit'
+						}
+					)}
 				</p>
 			</div>
 		</div>
@@ -306,6 +317,23 @@
 					</div>
 					<!-- {/each} -->
 				</div>
+			{/if}
+			<div class="flex max-w-sm ml-auto my-auto pr-8 gap-x-2" class:invisible={!shipmentInfo?.confirmed_delivery_date}>
+				<UserIcon size="xs" user={shipmentInfo?.confirmed_delivery_user} buttonClass="!p-0 !pr-2 text-white" />
+				<img
+					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+					width="20"
+					height="20"
+					src="https://img.icons8.com/windows/32/delivered-box.png"
+					alt="delivered-box"
+				/>
+			</div>
+			{#if shipmentInfo?.confirmed_delivery_date}
+				<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
+					Delivery confirmed by {shipmentInfo?.confirmed_delivery_user?.username} @ {datetimeFormat(
+						shipmentInfo?.confirmed_delivery_date
+					)}
+				</Tooltip>
 			{/if}
 		</div>
 		<div>

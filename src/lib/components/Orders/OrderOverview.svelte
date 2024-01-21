@@ -112,6 +112,16 @@ subscription order($orderId: bigint!) {
 					tracking_id
 					carrier_id
 					expected_delivery_date
+					confirmed_delivery_date
+					confirmed_delivery_user_id
+					confirmed_delivery_user {
+						id
+						username
+						initials
+						first_name
+						last_name
+						color
+					}
 					created_at
 					updated_at
 					orders_items_shipments {
@@ -413,7 +423,7 @@ subscription order($orderId: bigint!) {
 		<OrderAddLine {order} />
 	</Modal>
 	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md" outsideclose>
-		<OrderEditLine line={editLine} {shipments} />
+		<OrderEditLine bind:line={editLine} {shipments} />
 	</Modal>
 	<Modal bind:open={editTrackingModal} size="lg" outsideclose>
 		<div class="pt-8">
@@ -585,8 +595,8 @@ subscription order($orderId: bigint!) {
 						<div class="flex rounded bg-orange-500 p-4 gap-x-2">
 							<img
 								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-								width="24"
-								height="24"
+								width="20"
+								height="20"
 								src="https://img.icons8.com/ios/50/cardboard-box.png"
 								alt="box-other"
 							/>
@@ -620,7 +630,7 @@ subscription order($orderId: bigint!) {
 			</div>
 		</div>
 	{/if}
-	<div on:keydown={(e) => tableKeypress(e)}>
+	<div>
 		<Table>
 			<TableHead>
 				<TableHeadCell padding="px-3 py-1">#</TableHeadCell>

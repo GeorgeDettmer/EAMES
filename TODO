@@ -1,16 +1,36 @@
 ERP:
+  ☐ Export order to clipboard to allow paste into existing PO Log for extended test period so fallback is available in Google sheets
   Shipments:
     ☐ Set estimated ship date
+      ✔ On order create @done(24-01-21 00:50)
+      ☐ On order edit
     ☐ Add shipments after order placed
     ☐ Allocate lines to shipments
     ☐ Adjust quantities assigned to shipments
+  Allocations:
+    ☐ Set allocations
+      ☐ On order create
+      ☐ On order edit
+    ☐ Update kitting to use allocations
+  Batches:
+    ☐ Create batches table (jobs table defines top level job, batches table defines individual batch jobs)
+  Kitting:
+    ☐ Allow switching between batches/no batch
+    ☐ Use allocations to determine kittable quantities
+  Jobs/Batches:
+    ☐ Job/batch creation
+    ☐ Job(s)
+      ☐ Table of all jobs
+      ☐ Status summary for orders/purchasing/kit check
+  BOM:
+    ☐ BOM import
 
 
 CAD Viewer:
   Parser:
     ☐ Add ODB++ parser (Just x/y/rotation and footprint information)
     ☐ Refactor GENCAD parser to use improved parsing method (as per ODB++ parser)
-    ☐ Generate generic 'middle man' JSON format CAD for renderer to consume (allows or one format output regardless of input CAD type)
+    ☐ Generate generic 'middle man' JSON format CAD for renderer to consume (allows for one format output regardless of input CAD type)
 
   Renderer:
     ☐ Center and scale to fit viewport

@@ -114,7 +114,7 @@ subscription order($orderId: bigint!) {
 					expected_delivery_date
 					confirmed_delivery_date
 					confirmed_delivery_user_id
-					confirmed_delivery_user {
+					userByConfirmedDeliveryUserId {
 						id
 						username
 						initials
@@ -413,7 +413,7 @@ subscription order($orderId: bigint!) {
 	$: shipmentIds = order?.orders_items
 		?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((s) => s.shipment.id))
 		?.filter((v, i, s) => s.indexOf(v) === i);
-	$: console.log('shipments', shipmentIds, shipments, selectedShipmentId);
+	$: console.log('shipments', shipmentIds, shipments, selectedShipmentId, $shipmentsStore);
 
 	let selectedShipmentId: number | undefined = undefined;
 </script>

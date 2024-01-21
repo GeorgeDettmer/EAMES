@@ -44,7 +44,7 @@
 						expected_delivery_date
 						confirmed_delivery_date
 						confirmed_delivery_user_id
-						confirmed_delivery_user {
+						userByConfirmedDeliveryUserId {
 							id
 							username
 							initials
@@ -319,22 +319,20 @@
 				</div>
 			{/if}
 			<div class="flex max-w-sm ml-auto my-auto pr-8 gap-x-2" class:invisible={!shipmentInfo?.confirmed_delivery_date}>
-				<UserIcon size="xs" user={shipmentInfo?.confirmed_delivery_user} buttonClass="!p-0 !pr-2 text-white" />
-				<img
-					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
-					width="20"
-					height="20"
-					src="https://img.icons8.com/windows/32/delivered-box.png"
-					alt="delivered-box"
-				/>
+				<UserIcon size="sm" user={shipmentInfo?.userByConfirmedDeliveryUserId} buttonClass="!p-0 !pr-2 text-white">
+					<img width="24" height="24" src="https://img.icons8.com/windows/32/delivered-box.png" alt="delivered-box" />
+				</UserIcon>
 			</div>
 			{#if shipmentInfo?.confirmed_delivery_date}
 				<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
-					Delivery confirmed by {shipmentInfo?.confirmed_delivery_user?.username} @ {datetimeFormat(
+					Delivery confirmed by {shipmentInfo?.userByConfirmedDeliveryUserId?.username} @ {datetimeFormat(
 						shipmentInfo?.confirmed_delivery_date
 					)}
 				</Tooltip>
 			{/if}
+		</div>
+		<div class="text-lg font-bold my-0 p-0">
+			<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 		</div>
 		<div>
 			{#if allowEdit}

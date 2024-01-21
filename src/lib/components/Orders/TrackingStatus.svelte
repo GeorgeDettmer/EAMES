@@ -34,7 +34,7 @@
 		const response = await fetch(`/api/shipengine/track?tracking_number=${tracking}&carrier_code=${carrier}`);
 		const result = await response.json();
 		if (result?.statusCode) {
-			console.log('tracking request success', tracking, carrier, result);
+			//console.log('tracking request success', tracking, carrier, result);
 			trackCache.set(cacheId, await result);
 			//console.log('local cached', cacheId, trackCache.get(cacheId));
 			return result;

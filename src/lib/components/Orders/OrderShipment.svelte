@@ -127,7 +127,7 @@
 		});
 	}
 	$: carriers = $carriersStore?.data?.erp_carriers;
-	$: console.log('shipmentInfo', shipmentInfo);
+	//$: console.log('shipmentInfo', shipmentInfo);
 	let showTrackingStatus = false;
 	function getTrackingUrl(carrier: string, tracking: string): string {
 		if (!carrier || !tracking) return '';

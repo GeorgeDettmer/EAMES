@@ -410,12 +410,9 @@ subscription order($orderId: bigint!) {
 	let kbItems;
 
 	export let editable = false;
-	$: shipmentIds = order?.orders_items
-		?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((s) => s.shipment.id))
-		?.filter((v, i, s) => s.indexOf(v) === i);
-	$: console.log('shipments', shipmentIds, shipments, selectedShipmentId, $shipmentsStore);
+	$: console.log('shipments', shipments, $shipmentsStore);
 
-	let selectedShipmentId: number | undefined = undefined;
+	let selectedShipmentIdx: number | undefined = undefined;
 </script>
 
 {#if editable}
@@ -580,11 +577,10 @@ subscription order($orderId: bigint!) {
 			<div class="my-auto ml-auto flex">
 				<div class="flex gap-x-1 pr-2">
 					{#each shipments as shipment, idx}
-						{@const shipmentId = shipment?.id}
 						<div
-							class="flex rounded {selectedShipmentId === idx ? 'bg-green-500' : 'bg-slate-500'}"
-							on:mouseenter={() => (selectedShipmentId = idx)}
-							on:mouseleave={() => (selectedShipmentId = undefined)}
+							class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
+							on:mouseenter={() => (selectedShipmentIdx = idx)}
+							on:mouseleave={() => (selectedShipmentIdx = undefined)}
 						>
 							{#if shipments?.length > 1}
 								<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
@@ -592,7 +588,7 @@ subscription order($orderId: bigint!) {
 							<OrderShipments {shipment} showItems popover={false} />
 						</div>
 					{:else}
-						<div class="flex rounded bg-orange-500 p-4 gap-x-2">
+						<div class="flex rounded bg-orange-500 p-2 gap-x-2">
 							<img
 								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
 								width="20"
@@ -739,14 +735,15 @@ subscription order($orderId: bigint!) {
 							<div class=" gap-x-1">
 								{#each item?.orders_items_shipments as oi, idx}
 									{@const shipment = oi?.shipment}
+									{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
 									<div
-										class="flex w-fit rounded {selectedShipmentId === idx ? 'bg-green-500' : 'bg-slate-500'}"
-										on:mouseenter={() => (selectedShipmentId = idx)}
-										on:mouseleave={() => (selectedShipmentId = undefined)}
+										class="flex w-fit rounded {selectedShipmentIdx === shipmentIdx ? 'bg-green-500' : 'bg-slate-500'}"
+										on:mouseenter={() => (selectedShipmentIdx = shipmentIdx)}
+										on:mouseleave={() => (selectedShipmentIdx = undefined)}
 									>
 										{#if shipments?.length > 1}
 											<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
-												{idx + 1}
+												{shipmentIdx + 1}
 											</p>
 										{/if}
 										<Badge color="blue">
@@ -820,7 +817,7 @@ subscription order($orderId: bigint!) {
 											editLine = item;
 										}}
 									>
-										<EditOutline />
+										<EditOutline class="text-slate-600" />
 									</Button>
 								</div>
 							{/if}
@@ -849,7 +846,8 @@ subscription order($orderId: bigint!) {
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
 				<TableBodyCell padding="px-3 py-1">
-					<TrackingStatus isDelivered={trackings.filter((t) => t?.statusCode === 'DE').length === orderItems.length} />
+					<!-- 					<TrackingStatus isDelivered={trackings.filter((t) => t?.statusCode === 'DE').length === orderItems.length} />
+ -->
 				</TableBodyCell>
 				<TableBodyCell padding="px-3 py-1">
 					<ReceivingStatus isReceived={totalRecieved === totalOrdered} />

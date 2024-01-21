@@ -212,7 +212,9 @@
 	$: console.log('unallocatedToShipments', unallocatedToShipments);
 	$: console.log('selectedOis', selectedOis);
 
-	let selectedOis = itemShipments?.[0];
+	let selectedOis = itemShipments?.[0] || {
+		quantity: undefined
+	};
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -306,9 +308,9 @@
 		<div class="">
 			<div class="space-y-1">
 				<form class="inline-flex gap-x-2" method="POST" action="/order?/updateShipmentAllocation" use:enhance>
-					<input type="hidden" name="id" value={selectedOis.id} />
-					<input type="hidden" name="order_item_id" value={line.id} />
-					<input type="hidden" name="shipment_id" value={selectedOis.shipment.id} />
+					<input type="hidden" name="id" value={selectedOis?.id} />
+					<input type="hidden" name="order_item_id" value={line?.id} />
+					<input type="hidden" name="shipment_id" value={selectedOis?.shipment?.id} />
 					<select
 						name="ois"
 						bind:value={selectedOis}
@@ -328,7 +330,7 @@
 						placeholder={selectedOis?.quantity ? String(unallocatedToShipmentQuantity) : line?.quantity}
 						bind:value={selectedOis.quantity}
 					/>
-					<OrderShipment shipment={selectedOis.shipment} showDetailsModal={false} popover={false} />
+					<OrderShipment shipment={selectedOis?.shipment} showDetailsModal={false} popover={false} />
 
 					{#if selectedOis?.id}
 						<button

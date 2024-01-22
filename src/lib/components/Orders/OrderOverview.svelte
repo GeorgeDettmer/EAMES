@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { datetimeFormat } from '$lib/utils';
+	import { datetimeFormat, padString } from '$lib/utils';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import {
 		Table,
@@ -26,18 +26,69 @@
 	import { page } from '$app/stores';
 	import PartInfo from '../PartInfo.svelte';
 	import { goto } from '$app/navigation';
-	import { EditOutline, InfoCircleSolid } from 'flowbite-svelte-icons';
+	import {
+		CheckOutline,
+		EditOutline,
+		InfoCircleSolid,
+		PlusOutline,
+		TicketOutline,
+		XCircleOutline
+	} from 'flowbite-svelte-icons';
 	import List from '../KnowledgeBase/List.svelte';
 	import OrderAddLine from '$lib/components/Orders/OrderAddLine.svelte';
 	import OrderEditLine from '$lib/components/Orders/OrderEditLine.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import OrderSetTrackingBulk from './OrderSetTrackingBulk.svelte';
 	import OrderShipments from './OrderShipment.svelte';
+	import ShipmentAllocationsEdit from '../Shipment/ShipmentAllocationsEdit.svelte';
+	import OrderShipment from './OrderShipment.svelte';
+	import { enhance } from '$app/forms';
+	import type { Shipment } from '$lib/types';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
 	export let showHeader: boolean = true;
 
+	let allShipmentsStore;
+	$: if (addShipmentVisible) {
+		allShipmentsStore = queryStore({
+			client: getContextClient(),
+			query: gql`
+				query allShipments($_nin: [bigint!] = []) {
+					erp_shipments(limit: 500, order_by: { id: desc }, where: { id: { _nin: $_nin } }) {
+						id
+						tracking_id
+						carrier_id
+						expected_delivery_date
+						confirmed_delivery_date
+						confirmed_delivery_user_id
+						created_at
+						updated_at
+						tracking {
+							id
+							carrier_code
+							tracking_number
+							tracking_url
+							status
+							estimated_delivery_date
+							delivery_date
+							created_at
+							ship_date
+							updated_at
+							events
+						}
+						carrier {
+							id
+							name
+							image_url
+						}
+					}
+				}
+			`,
+			variables: { _nin: ($shipmentsStore?.data?.erp_shipments || [])?.map((s) => s.id) }
+		});
+	}
+	$: allShipments = $allShipmentsStore?.data?.erp_shipments || [];
 	/*
 subscription order($orderId: bigint!) {
 				erp_orders_by_pk(id: $orderId) {
@@ -173,8 +224,8 @@ subscription order($orderId: bigint!) {
 		variables: { orderId }
 	});
 	let availableShipments = [];
-	let shipments = [];
-	$: shipments = [...availableShipments, ...($shipmentsStore?.data?.erp_shipments || [])];
+	//$: shipments = [...($shipmentsStore?.data?.erp_shipments || []), ...availableShipments];
+	$: shipments = $shipmentsStore?.data?.erp_shipments || [];
 
 	$: orderStore = subscriptionStore({
 		client: getContextClient(),
@@ -402,6 +453,7 @@ subscription order($orderId: bigint!) {
 	let addLineModal = false;
 	let editLineModal = false;
 	let editTrackingModal = false;
+	let editShipmentAllocationsModal = false;
 	let editLine = null;
 	let orderDeleteModal = false;
 	let orderLineDeleteModal = false;
@@ -413,6 +465,9 @@ subscription order($orderId: bigint!) {
 	$: console.log('shipments', shipments, $shipmentsStore);
 
 	let selectedShipmentIdx: number | undefined = undefined;
+
+	let addShipmentVisible = false;
+	let addShipmentSelected = allShipments?.[0];
 </script>
 
 {#if editable}
@@ -420,7 +475,25 @@ subscription order($orderId: bigint!) {
 		<OrderAddLine {order} />
 	</Modal>
 	<Modal bind:open={editLineModal} on:close={() => (editLine = null)} size="md" outsideclose>
-		<OrderEditLine bind:line={editLine} {shipments} />
+		<OrderEditLine bind:line={editLine} bind:shipments />
+	</Modal>
+	<Modal bind:open={editShipmentAllocationsModal} on:close={() => (editLine = null)} size="md" outsideclose>
+		<!-- <div class="flex space-x-1">
+			{#each shipments as shipment}
+				<OrderShipments {shipment} showItems popover={false} allowEdit />
+			{:else}
+				<p>No shipments allocated</p>
+			{/each}
+
+			<button
+				on:click={() => {
+					availableShipments = [...availableShipments, {}];
+				}}
+			>
+				<PlusOutline />
+			</button>
+		</div> -->
+		<ShipmentAllocationsEdit bind:orderItem={editLine} bind:allocations={editLine.orders_items_shipments} bind:shipments />
 	</Modal>
 	<Modal bind:open={editTrackingModal} size="lg" outsideclose>
 		<div class="pt-8">
@@ -575,17 +648,19 @@ subscription order($orderId: bigint!) {
 				</div>
 			</div>
 			<div class="my-auto ml-auto flex">
-				<div class="flex gap-x-1 pr-2">
+				<div class="flex flex-wrap">
 					{#each shipments as shipment, idx}
-						<div
-							class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
-							on:mouseenter={() => (selectedShipmentIdx = idx)}
-							on:mouseleave={() => (selectedShipmentIdx = undefined)}
-						>
-							{#if shipments?.length > 1}
-								<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
-							{/if}
-							<OrderShipments {shipment} showItems popover={false} />
+						<div class="p-0.5">
+							<div
+								class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
+								on:mouseenter={() => (selectedShipmentIdx = idx)}
+								on:mouseleave={() => (selectedShipmentIdx = undefined)}
+							>
+								{#if shipments?.length > 1}
+									<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
+								{/if}
+								<OrderShipments {shipment} showItems popover={false} />
+							</div>
 						</div>
 					{:else}
 						<div class="flex rounded bg-orange-500 p-2 gap-x-2">
@@ -672,6 +747,7 @@ subscription order($orderId: bigint!) {
 			<TableBody>
 				{#each orderItems as item, idx}
 					{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
+					{@const shipmentsQty = item?.orders_items_shipments?.reduce((a, v) => a + v.quantity, 0)}
 					<TableBodyRow
 						class="p-0 object-right"
 						color={false
@@ -732,41 +808,59 @@ subscription order($orderId: bigint!) {
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-							<div class=" gap-x-1">
-								{#each item?.orders_items_shipments as oi, idx}
-									{@const shipment = oi?.shipment}
-									{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
-									<div
-										class="flex w-fit rounded {selectedShipmentIdx === shipmentIdx ? 'bg-green-500' : 'bg-slate-500'}"
-										on:mouseenter={() => (selectedShipmentIdx = shipmentIdx)}
-										on:mouseleave={() => (selectedShipmentIdx = undefined)}
+							<div class="flex">
+								<div class="space-y-1 my-auto">
+									{#each item?.orders_items_shipments as oi, idx}
+										{@const shipment = oi?.shipment}
+										{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
+										<div
+											class="flex w-fit rounded {selectedShipmentIdx === shipmentIdx ? 'bg-green-500' : 'bg-slate-500'}"
+											on:mouseenter={() => (selectedShipmentIdx = shipmentIdx)}
+											on:mouseleave={() => (selectedShipmentIdx = undefined)}
+										>
+											{#if shipments?.length > 1}
+												<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
+													{shipmentIdx + 1}
+												</p>
+											{/if}
+											<Badge color="blue">
+												<TrackingStatus tracking={shipment?.tracking} />
+											</Badge>
+											{#if oi?.quantity}
+												<p
+													class="text-xs text-white my-auto text-center w-4 h-fit rounded cursor-default mx-1 {shipmentsQty <
+													item.quantity
+														? 'bg-red-600 font-bold'
+														: ' font-semibold'}"
+												>
+													{oi?.quantity}
+												</p>
+											{/if}
+										</div>
+									{:else}
+										<div class="flex">
+											<img
+												style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+												width="24"
+												height="24"
+												src="https://img.icons8.com/ios/50/cardboard-box.png"
+												alt="box-other"
+											/>
+											<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+										</div>
+									{/each}
+								</div>
+								{#if editable}
+									<button
+										class="p-1"
+										on:click={() => {
+											editLine = item;
+											editShipmentAllocationsModal = true;
+										}}
 									>
-										{#if shipments?.length > 1}
-											<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
-												{shipmentIdx + 1}
-											</p>
-										{/if}
-										<Badge color="blue">
-											<TrackingStatus tracking={shipment?.tracking} />
-										</Badge>
-										{#if shipments?.length > 1 && oi?.quantity}
-											<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default mx-1">
-												{oi?.quantity}
-											</p>
-										{/if}
-									</div>
-								{:else}
-									<div class="flex">
-										<img
-											style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-											width="24"
-											height="24"
-											src="https://img.icons8.com/ios/50/cardboard-box.png"
-											alt="box-other"
-										/>
-										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
-									</div>
-								{/each}
+										<EditOutline class="text-slate-600" />
+									</button>
+								{/if}
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">

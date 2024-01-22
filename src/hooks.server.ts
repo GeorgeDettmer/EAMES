@@ -67,7 +67,7 @@ export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, re
 						last_name: user.last_name,
 						permissions: user.permissions
 					};
-					console.log('hooks', event.locals.user, event.getClientAddress());
+					console.log('hooks', event.locals.user.username, event.locals.user.id, event.getClientAddress());
 				} catch (error) {
 					console.error('hooks', error);
 				}

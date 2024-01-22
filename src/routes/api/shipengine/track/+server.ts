@@ -11,16 +11,16 @@ export const GET: RequestHandler = async ({ url }) => {
 	const carrierCode = url.searchParams.get('carrier_code');
 
 	if (!trackingNumber || !carrierCode) throw error(400, "No 'tracking_number' or 'carrier' query parameter provided");
-	console.log('Tracking request: ', carrierCode, trackingNumber);
+	//console.log('Tracking request: ', carrierCode, trackingNumber);
 	let cacheId = `${carrierCode}_${trackingNumber}`;
 	let cached = trackingCache.get(cacheId);
 	if (cached) {
 		let cacheTimestamp = cached?._cachedTimestamp;
 		//TODO: configurable cache expiry
 		if (cacheTimestamp && (Date.now() - cacheTimestamp) / 1000 < trackingCacheTimeout) {
-			console.log('Tracking status:');
-			console.log('CACHED', (Date.now() - cacheTimestamp) / 1000);
-			console.log(cached?.statusCode, cached?.statusDescription);
+			/* console.log('Tracking status:'); */
+			/* console.log('CACHED', (Date.now() - cacheTimestamp) / 1000); */
+			/* console.log(cached?.statusCode, cached?.statusDescription); */
 			return json(cached);
 		}
 	}
@@ -28,12 +28,12 @@ export const GET: RequestHandler = async ({ url }) => {
 	try {
 		const result = await shipengine.trackUsingCarrierCodeAndTrackingNumber({ carrierCode, trackingNumber });
 
-		console.log('Tracking status:');
-		console.log(result?.statusCode, result?.statusDescription);
+		//console.log('Tracking status:');
+		//console.log(result?.statusCode, result?.statusDescription);
 
 		result._cachedTimestamp = Date.now();
 		trackingCache.set(cacheId, result);
-		console.log('Cached at:', result._cachedTimestamp);
+		//console.log('Cached at:', result._cachedTimestamp);
 		return json(result);
 	} catch (e) {
 		console.log('Error tracking shipment: ', e?.message);

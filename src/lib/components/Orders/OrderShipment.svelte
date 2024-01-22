@@ -135,6 +135,12 @@
 		if (!url) return '';
 		return url;
 	}
+
+	$: _classes = `cursor-pointer h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center ${
+		shipmentInfo?.confirmed_delivery_date
+			? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 '
+			: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
+	}`;
 </script>
 
 {#if $shipmentInfoStore?.fetching}
@@ -151,18 +157,15 @@
 	<h1 class="text-red-600">Shipment query error</h1>
 	<p class="text-red-600">{$shipmentInfoStore.error.message}</p>
 {:else if shipmentInfo}
-	<div
-		on:click={() => (modalOpen = true)}
-		class="cursor-pointer h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center {shipmentInfo?.confirmed_delivery_date
-			? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 '
-			: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '}"
-	>
+	<div on:click={() => (modalOpen = true)} class={$$props?.class ? $$props?.class : _classes}>
 		<div class="flex gap-x-4 overflow-hidden">
 			<div class="flex-col">
-				<p class="font-bold">{shipmentInfo?.carrier?.name}</p>
+				<p class="font-bold">{shipmentInfo?.carrier?.name ? shipmentInfo?.carrier?.name : 'N/A'}</p>
 				<div class="flex">
 					<!-- TODO: Use different icons, tracking should be 'van', box with tick should be our confirmation of delivery -->
-					<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} width={20} height={20} />
+					{#if shipmentInfo?.tracking}
+						<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={false} width={20} height={20} />
+					{/if}
 					<img
 						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
 						width="20"
@@ -177,16 +180,18 @@
 				<div class="justify-end text-right">
 					<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 				</div>
-				<p class="float-right text-sm">
-					{new Date(shipmentInfo?.confirmed_delivery_date || shipmentInfo?.expected_delivery_date).toLocaleDateString(
-						'en-GB',
-						{
-							day: '2-digit',
-							month: '2-digit',
-							year: '2-digit'
-						}
-					)}
-				</p>
+				{#if shipmentInfo?.confirmed_delivery_date || shipmentInfo?.expected_delivery_date}
+					<p class="float-right text-sm">
+						{new Date(shipmentInfo?.confirmed_delivery_date || shipmentInfo?.expected_delivery_date).toLocaleDateString(
+							'en-GB',
+							{
+								day: '2-digit',
+								month: '2-digit',
+								year: '2-digit'
+							}
+						)}
+					</p>
+				{/if}
 			</div>
 		</div>
 		<slot />
@@ -318,18 +323,26 @@
 					<!-- {/each} -->
 				</div>
 			{/if}
-			<div class="flex max-w-sm ml-auto my-auto pr-8 gap-x-2" class:invisible={!shipmentInfo?.confirmed_delivery_date}>
-				<UserIcon size="sm" user={shipmentInfo?.userByConfirmedDeliveryUserId} buttonClass="!p-0 !pr-2 text-white">
-					<img width="24" height="24" src="https://img.icons8.com/windows/32/delivered-box.png" alt="delivered-box" />
-				</UserIcon>
+
+			<div class="flex max-w-sm ml-auto my-auto pr-8 gap-x-2">
+				{#if shipmentInfo?.tracking?.tracking_number && shipmentInfo?.tracking?.carrier_code}
+					<div class="my-auto">
+						<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={true} width={24} height={24} />
+					</div>
+				{/if}
+				<div class:invisible={!shipmentInfo?.confirmed_delivery_date}>
+					<UserIcon size="sm" user={shipmentInfo?.userByConfirmedDeliveryUserId} buttonClass="!p-0 !pr-2 text-white">
+						<img width="24" height="24" src="https://img.icons8.com/windows/32/delivered-box.png" alt="delivered-box" />
+					</UserIcon>
+				</div>
+				{#if shipmentInfo?.confirmed_delivery_date}
+					<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
+						Delivery confirmed by {shipmentInfo?.userByConfirmedDeliveryUserId?.username} @ {datetimeFormat(
+							shipmentInfo?.confirmed_delivery_date
+						)}
+					</Tooltip>
+				{/if}
 			</div>
-			{#if shipmentInfo?.confirmed_delivery_date}
-				<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
-					Delivery confirmed by {shipmentInfo?.userByConfirmedDeliveryUserId?.username} @ {datetimeFormat(
-						shipmentInfo?.confirmed_delivery_date
-					)}
-				</Tooltip>
-			{/if}
 		</div>
 		<div class="text-lg font-bold my-0 p-0">
 			<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>

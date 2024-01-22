@@ -324,6 +324,8 @@
 			  }
 			: {}
 	);
+
+	$: console.log('form', $page.form);
 </script>
 
 {#if $suppliersStore?.error}

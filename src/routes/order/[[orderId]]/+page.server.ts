@@ -109,7 +109,7 @@ export const actions = {
 			{ id, quantity, user_id: locals.user.id }
 		);
 		let data = result.data?.update_erp_orders_items_shipments_by_pk;
-		console.log('updateShipmentAllocation', data?.error?.message);
+		console.log('updateShipmentAllocation', data.id, result?.error?.message);
 		if (result?.error) {
 			return {
 				success: false,

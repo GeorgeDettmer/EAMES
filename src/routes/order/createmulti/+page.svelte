@@ -156,13 +156,13 @@
 						quantity: quantity,
 						created_at: new Date(),
 						/* user_id: $page?.data?.user?.id, */
-						tracking: [
+						/* tracking: [
 							{
 								tracking_number: '',
 								tracking_url: '',
 								carrier_code: ''
 							}
-						],
+						], */
 						category: 'Component'
 					}
 				];
@@ -290,7 +290,7 @@
 			{
 				orders_items: [],
 				/* supplier_id: 'FARNELL', */
-				tracking: [],
+				/* tracking: [], */
 				supplier: supplier,
 				user_id: $page?.data?.user?.id,
 				user
@@ -348,13 +348,16 @@
 		let shipmentIds: number[][] = [];
 		for (const orderShipments of shipments) {
 			let shipmentMutationObject = orderShipments.map((shipment) => {
-				return {
+				let r = {
 					carrier_id: shipment?.carrier?.id,
-					expected_delivery_date: shipment?.expected_delivery_date,
-					tracking: {
-						data: shipment?.tracking
-					}
+					expected_delivery_date: shipment?.expected_delivery_date
 				};
+				if (shipment?.tracking?.tracking_url) {
+					r.tracking = {
+						data: shipment?.tracking
+					};
+				}
+				return r;
 			});
 			mutationResult = await urqlClient.mutation(
 				gql`

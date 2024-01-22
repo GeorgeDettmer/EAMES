@@ -478,21 +478,6 @@ subscription order($orderId: bigint!) {
 		<OrderEditLine bind:line={editLine} bind:shipments />
 	</Modal>
 	<Modal bind:open={editShipmentAllocationsModal} on:close={() => (editLine = null)} size="md" outsideclose>
-		<!-- <div class="flex space-x-1">
-			{#each shipments as shipment}
-				<OrderShipments {shipment} showItems popover={false} allowEdit />
-			{:else}
-				<p>No shipments allocated</p>
-			{/each}
-
-			<button
-				on:click={() => {
-					availableShipments = [...availableShipments, {}];
-				}}
-			>
-				<PlusOutline />
-			</button>
-		</div> -->
 		<ShipmentAllocationsEdit bind:orderItem={editLine} bind:allocations={editLine.orders_items_shipments} bind:shipments />
 	</Modal>
 	<Modal bind:open={editTrackingModal} size="lg" outsideclose>
@@ -714,7 +699,7 @@ subscription order($orderId: bigint!) {
 				<TableHeadCell padding="px-3 py-1">
 					<div class="flex">
 						<p class="my-auto">Shipments</p>
-						{#if editable}
+						<!-- {#if editable}
 							<Button
 								on:click={() => {
 									editTrackingModal = true;
@@ -722,7 +707,7 @@ subscription order($orderId: bigint!) {
 							>
 								<EditOutline />
 							</Button>
-						{/if}
+						{/if} -->
 					</div>
 				</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1" />
@@ -762,7 +747,7 @@ subscription order($orderId: bigint!) {
 							<p>{idx + 1}</p>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-							<UserIcon size="xs" user={item?.user}>
+							<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white">
 								{#if item?.user}
 									{item?.user?.first_name}
 									{item?.user?.last_name}
@@ -819,22 +804,24 @@ subscription order($orderId: bigint!) {
 											on:mouseleave={() => (selectedShipmentIdx = undefined)}
 										>
 											{#if shipments?.length > 1}
-												<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
+												<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default">
 													{shipmentIdx + 1}
 												</p>
 											{/if}
+											<!-- TODO: Replace badge so that layout is cleaner -->
 											<Badge color="blue">
-												<TrackingStatus tracking={shipment?.tracking} />
+												<TrackingStatus tracking={shipment?.tracking} width={20} height={20} />
 											</Badge>
 											{#if oi?.quantity}
-												<p
-													class="text-xs text-white my-auto text-center w-4 h-fit rounded cursor-default mx-1 {shipmentsQty <
-													item.quantity
+												<div
+													class="rounded p-1 my-auto h-fit {shipmentsQty < item.quantity
 														? 'bg-red-600 font-bold'
 														: ' font-semibold'}"
 												>
-													{oi?.quantity}
-												</p>
+													<p class="text-xs text-white text-center cursor-default">
+														{oi?.quantity}
+													</p>
+												</div>
 											{/if}
 										</div>
 									{:else}
@@ -852,13 +839,13 @@ subscription order($orderId: bigint!) {
 								</div>
 								{#if editable}
 									<button
-										class="p-1"
+										class="p-1 text-slate-600 hover:text-slate-400"
 										on:click={() => {
 											editLine = item;
 											editShipmentAllocationsModal = true;
 										}}
 									>
-										<EditOutline class="text-slate-600" />
+										<EditOutline />
 									</button>
 								{/if}
 							</div>

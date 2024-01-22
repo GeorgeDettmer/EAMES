@@ -64,7 +64,7 @@
 			quantity: Number(newQuantity),
 			/* user_id: user?.id, */
 			created_at: new Date().toISOString(),
-			tracking: newTracking,
+			/* tracking: newTracking, */
 			category: newCategory,
 			__shipmentIdx: newShipmentIdx
 		};
@@ -298,29 +298,6 @@
 				<TableHeadCell>Unit Cost</TableHeadCell>
 				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell>
-					<!-- <ButtonGroup size="sm">
-						<Select
-							items={[
-								{ value: null, name: 'Other' },
-								...carrier_codes.map((code, idx) => {
-									return { value: code, name: carrier_names?.[idx] };
-								})
-							]}
-							bind:value={orderTracking.carrier_code}
-							placeholder="Carrier"
-							size="sm"
-						/>
-						<Input
-							defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-							type="text"
-							placeholder="Tracking number"
-							size="sm"
-							bind:value={orderTracking.tracking_number}
-						/>
-						<Button color="primary" class="!p-2.5" on:click={() => updateOrderLinesTracking()}>
-							<ChevronDoubleDownOutline class="text-gray-400" />
-						</Button>
-					</ButtonGroup> -->
 					<div class="flex">
 						<select
 							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
@@ -415,28 +392,6 @@
 							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
-							<!-- <div>
-								<ButtonGroup size="sm">
-									<Select
-										items={[
-											{ value: null, name: 'Other' },
-											...carrier_codes.map((code, idx) => {
-												return { value: code, name: carrier_names?.[idx] };
-											})
-										]}
-										bind:value={item.tracking[0].carrier_code}
-										placeholder="Carrier"
-										size="sm"
-									/>
-									<Input
-										defaultClass="block w-48 disabled:cursor-not-allowed disabled:opacity-50"
-										type="text"
-										placeholder="Tracking number"
-										size="sm"
-										bind:value={item.tracking[0].tracking_number}
-									/>
-								</ButtonGroup>
-							</div> -->
 							<div>
 								<select
 									class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"

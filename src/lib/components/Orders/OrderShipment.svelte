@@ -22,7 +22,7 @@
 	import TrackingTimeline from '../Tracking/TrackingTimeline.svelte';
 	import { SearchOutline } from 'flowbite-svelte-icons';
 
-	export let shipmentId: string = '';
+	export let shipmentId: number = -1;
 	export let shipment: Shipment | undefined = undefined;
 	export let showItems: boolean = false;
 	export let tooltipPlacement: Placement = 'left';

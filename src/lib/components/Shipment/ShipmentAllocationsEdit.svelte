@@ -175,7 +175,6 @@
 
 					<button
 						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
-						formnovalidate
 						on:click={(e) => {
 							//e.target?.reset();
 							showAdd = false;

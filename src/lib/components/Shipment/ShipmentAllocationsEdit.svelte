@@ -73,6 +73,9 @@
 	{#if unallocatedQuantity > 0}
 		<p class="text-red-600 font-bold">{unallocatedQuantity} not allocated to any shipment!</p>
 	{/if}
+	{#if unallocatedQuantity < 0}
+		<p class="text-red-600 font-bold">{Math.abs(unallocatedQuantity)} more allocated than ordered!</p>
+	{/if}
 	<div class="p-1">
 		<!-- Form to submit shipment allocation edits -->
 		{#if allocations.length > 0}
@@ -91,7 +94,7 @@
 					bind:value={selectedAllocation}
 					class="block w-48 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 				>
-					{#each allocations as allocation, idx}
+					{#each allocations as allocation, idx (allocation.id)}
 						<option value={allocation}>
 							SHP{padString(String(allocation?.shipment?.id || ''), 4)} ({allocation?.id})
 						</option>
@@ -150,6 +153,7 @@
 					on:submit|preventDefault={(e) => {
 						console.warn('createShipmentAllocation', e);
 						showAdd = false;
+						allocations = [...allocations, { shipment: { ...selectedShipmentAdd }, quantity: addQuantity }];
 					}}
 				>
 					<input type="hidden" name="order_item_id" value={orderItem.id} />
@@ -165,7 +169,7 @@
 						}}
 						class="block h-12 w-48 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 					>
-						{#each unallocatedShipments as shipment}
+						{#each unallocatedShipments as shipment (shipment.id)}
 							<option value={shipment}>
 								SHP{padString(String(shipment.id || ''), 4)} ({shipment?.carrier?.id})*
 							</option>
@@ -174,7 +178,7 @@
 							<option> -------------------- </option>
 						{/if}
 
-						{#each allShipments as shipment}
+						{#each allShipments as shipment (shipment.id)}
 							<option value={shipment}>
 								SHP{padString(String(shipment.id || ''), 4)} ({shipment?.carrier?.id})
 							</option>
@@ -202,6 +206,7 @@
 					</button>
 					<button
 						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
+						disabled={!addQuantity || addQuantity > unallocatedQuantity || addQuantity < 1}
 						on:click={() => {
 							//allocations = [...allocations, { shipment: { ...selectedShipmentAdd }, quantity: addQuantity }];
 						}}

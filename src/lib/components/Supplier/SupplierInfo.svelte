@@ -1,4 +1,6 @@
 <script lang="ts">
+	import SupplierTags from './SupplierTags.svelte';
+
 	import type { Supplier } from '$lib/types';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import { Badge, Skeleton, Spinner } from 'flowbite-svelte';
@@ -86,15 +88,7 @@
 	</div>
 	{#if supplierInfo?.tags?.length}
 		<div class="flex flex-wrap gap-1 ml-auto w-48 mt-2">
-			{#each supplierInfo.tags as tag}
-				{#if typeof tag === 'object'}
-					{#if tag}
-						<Badge color={tag?.color}>{tag?.tag?.toUpperCase()}</Badge>
-					{/if}
-				{:else}
-					<Badge color="dark">{String(tag)?.toUpperCase()}</Badge>
-				{/if}
-			{/each}
+			<SupplierTags tags={supplier?.tags} />
 		</div>
 	{/if}
 {:else}

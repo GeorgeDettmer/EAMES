@@ -81,8 +81,8 @@
 					spn,
 					quantity,
 					price,
-					category,
-					tracking: tracking.length ? tracking : undefined
+					category
+					/* tracking: tracking.length ? tracking : undefined */
 				}
 			}
 		);
@@ -158,7 +158,7 @@
 		</select>
 	</div>
 	<div />
-	<div class="col-span-4">
+	<!-- <div class="col-span-4">
 		<Label for="small-input"
 			>Tracking
 			<button
@@ -171,7 +171,7 @@
 		<div class="">
 			<OrderSetTracking bind:tracking />
 		</div>
-	</div>
+	</div> -->
 </div>
 
 <div class="flex pt-6">

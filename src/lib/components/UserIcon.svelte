@@ -5,7 +5,7 @@
 	export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
 	export let avatar: boolean = true;
 	export let avatarClass: string = ` font-bold text-${['xs', 'sm'].includes(size) ? size : 'xl'} `;
-	export let buttonClass: string = ` !p-1 !pr-2 text-white `;
+	export let buttonClass: string = ` !p-0 !pr-2 text-white `;
 </script>
 
 {#if $$slots.default}

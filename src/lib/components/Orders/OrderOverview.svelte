@@ -622,66 +622,70 @@ subscription order($orderId: bigint!) {
 
 {#if order}
 	{#if showHeader}
-		<div class="grid grid-cols-2">
-			<div class="flex">
-				<div><OrdersListItem {order} interactive={false} /></div>
-				<div class="pt-2 pl-2">
-					<UserIcon size="sm" user={order?.user}>
-						{order?.user?.first_name}
-						{order?.user?.last_name}
-					</UserIcon>
+		<div class="flex">
+			<div class=" flex-col">
+				<div class="flex">
+					<div><OrdersListItem {order} interactive={false} /></div>
+					<div class="pt-2 pl-2">
+						<UserIcon size="sm" user={order?.user}>
+							{order?.user?.first_name}
+							{order?.user?.last_name}
+						</UserIcon>
+					</div>
 				</div>
 			</div>
-			<div class="my-auto ml-auto flex">
-				<div class="flex flex-wrap">
-					{#each shipments as shipment, idx}
-						<div class="p-0.5">
-							<div
-								class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
-								on:mouseenter={() => (selectedShipmentIdx = idx)}
-								on:mouseleave={() => (selectedShipmentIdx = undefined)}
+			<div class="flex-col my-auto ml-auto">
+				<div class=" flex">
+					<div class="flex flex-wrap">
+						{#each shipments as shipment, idx}
+							<div class="p-0.5">
+								<div
+									class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
+									on:mouseenter={() => (selectedShipmentIdx = idx)}
+									on:mouseleave={() => (selectedShipmentIdx = undefined)}
+								>
+									{#if shipments?.length > 1}
+										<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
+									{/if}
+									<OrderShipments {shipment} showItems popover={false} />
+								</div>
+							</div>
+						{:else}
+							<div class="flex rounded bg-orange-500 p-2 gap-x-2">
+								<img
+									style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+									width="20"
+									height="20"
+									src="https://img.icons8.com/ios/50/cardboard-box.png"
+									alt="box-other"
+								/>
+								<p class="my-auto text-center text-white font-semibold uppercase">No shipments</p>
+							</div>
+						{/each}
+					</div>
+					<div>
+						{#each order?.jobs_orders as { job }}
+							<a
+								class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+								href={window.origin + '/receiving/' + (job?.id || '')}
 							>
-								{#if shipments?.length > 1}
-									<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
-								{/if}
-								<OrderShipments {shipment} showItems popover={false} />
-							</div>
-						</div>
-					{:else}
-						<div class="flex rounded bg-orange-500 p-2 gap-x-2">
-							<img
-								style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-								width="20"
-								height="20"
-								src="https://img.icons8.com/ios/50/cardboard-box.png"
-								alt="box-other"
-							/>
-							<p class="my-auto text-center text-white font-semibold uppercase">No shipments</p>
-						</div>
-					{/each}
-				</div>
-				<div>
-					{#each order?.jobs_orders as { job }}
-						<a
-							class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-							href={window.origin + '/receiving/' + (job?.id || '')}
-						>
-							<div class="overflow-hidden grid grid-cols-2 gap-x-2">
-								<div>
-									<p class="font-bold">{job?.id}</p>
+								<div class="overflow-hidden grid grid-cols-2 gap-x-2">
+									<div>
+										<p class="font-bold">{job?.id}</p>
+									</div>
+									<div>
+										<p class="float-right" />
+									</div>
+									<div>
+										<p />
+									</div>
+									<div>
+										<p class="float-right">{order?.jobs_orders?.length}</p>
+									</div>
 								</div>
-								<div>
-									<p class="float-right" />
-								</div>
-								<div>
-									<p />
-								</div>
-								<div>
-									<p class="float-right">{order?.jobs_orders?.length}</p>
-								</div>
-							</div>
-						</a>
-					{/each}
+							</a>
+						{/each}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -814,7 +818,7 @@ subscription order($orderId: bigint!) {
 											</Badge>
 											{#if oi?.quantity}
 												<div
-													class="rounded p-1 my-auto h-fit {shipmentsQty < item.quantity
+													class="rounded p-1 my-auto h-fit {shipmentsQty !== item.quantity
 														? 'bg-red-600 font-bold'
 														: ' font-semibold'}"
 												>

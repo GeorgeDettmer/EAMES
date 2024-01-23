@@ -11,6 +11,7 @@
 	import TableBodyCellEditable from '$lib/components/Misc/Table/TableBodyCellEditable.svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
 	import EditToggle from '$lib/components/Misc/EditToggle.svelte';
+	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
 
 	onMount(() => {
 		$windowTitleStore = 'Suppliers';
@@ -236,18 +237,21 @@
 						</TableBodyCell>
 						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">
-								{#each supplier?.tags || [] as tag}
+								<!-- {#each supplier?.tags || [] as tag}
 									<div>
 										<Badge color="blue">{tag}</Badge>
 									</div>
-								{/each}
+								{/each} -->
+								<SupplierTags tags={supplier?.tags} />
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
 							{datetimeFormat(supplier.created_at)}
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
-							<UserIcon size="xs" user={supplier?.user}>{supplier?.user?.username || 'Unknown'}</UserIcon>
+							<UserIcon size="xs" user={supplier?.user}
+								>{supplier?.user?.first_name || 'Unknown'} {supplier?.user?.last_name || 'Unknown'}</UserIcon
+							>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">

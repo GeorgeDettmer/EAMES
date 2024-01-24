@@ -25,6 +25,9 @@
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result
@@ -325,7 +328,7 @@
 			: {}
 	);
 
-	$: console.log('form', $page.form);
+	$: console.log('form', $page.form, $page.data, data);
 </script>
 
 {#if $suppliersStore?.error}

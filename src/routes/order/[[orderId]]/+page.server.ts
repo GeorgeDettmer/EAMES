@@ -125,6 +125,171 @@ export const actions = {
 	}
 } satisfies Actions;
 
-export const load = (async () => {
-	return {};
-}) satisfies PageServerLoad;
+export const load: PageServerLoad = async ({ params }) => {
+	let order;
+	let orderItemsQuery;
+	if (params?.orderId) {
+		console.log('params.orderId', params.orderId);
+		let orderQuery = await client.query(
+			gql`
+				query order($orderId: bigint!) {
+					erp_orders_by_pk(id: $orderId) {
+						id
+						kb
+						reference
+						jobs_orders {
+							job {
+								id
+								batch
+							}
+						}
+						orders_items(order_by: { created_at: asc_nulls_last }) {
+							id
+							created_at
+							order_id
+							part
+							part_id
+							spn
+							category
+							partByPartId {
+								description
+								name
+							}
+							price
+							quantity
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+							orders_items_receiveds {
+								id
+								quantity
+								created_at
+								updated_at
+								user {
+									id
+									username
+									first_name
+									last_name
+									initials
+									color
+								}
+							}
+							orders_items_shipments {
+								id
+								quantity
+								shipment {
+									id
+									expected_delivery_date
+									carrier {
+										id
+										name
+										image_url
+									}
+									tracking {
+										id
+										carrier_code
+										tracking_number
+										tracking_url
+										status
+									}
+								}
+							}
+						}
+						supplier {
+							id
+							name
+						}
+						user {
+							id
+							username
+							first_name
+							last_name
+							initials
+							color
+						}
+					}
+				}
+			`,
+			{ orderId: Number(params.orderId) }
+		);
+		order = orderQuery?.data?.erp_orders_by_pk;
+
+		orderItemsQuery = client.query(
+			gql`
+				query orderItems($orderId: bigint!) {
+					erp_orders_items(where: { _eq: { id: $orderId } }) {
+						id
+						created_at
+						order_id
+						part
+						part_id
+						spn
+						category
+						partByPartId {
+							description
+							name
+						}
+						price
+						quantity
+						user {
+							id
+							username
+							first_name
+							last_name
+							initials
+							color
+						}
+						orders_items_receiveds {
+							id
+							quantity
+							created_at
+							updated_at
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+						}
+						orders_items_shipments {
+							id
+							quantity
+							shipment {
+								id
+								expected_delivery_date
+								carrier {
+									id
+									name
+									image_url
+								}
+								tracking {
+									id
+									carrier_code
+									tracking_number
+									tracking_url
+									status
+								}
+							}
+						}
+					}
+				}
+			`,
+			{ orderId: Number(params.orderId) }
+		);
+		console.log('order', order.user.id);
+	}
+	console.log('orders load:', order, orderItemsQuery);
+	return {
+		data: {
+			order,
+			orderItems: orderItemsQuery ? await orderItemsQuery : null
+		}
+	};
+};

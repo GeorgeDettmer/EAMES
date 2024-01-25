@@ -639,6 +639,7 @@ subscription order($orderId: bigint!) {
 					<div class="flex flex-wrap">
 						{#each shipments as shipment, idx}
 							<div class="p-0.5">
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
 								<div
 									class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
 									on:mouseenter={() => (selectedShipmentIdx = idx)}
@@ -647,7 +648,7 @@ subscription order($orderId: bigint!) {
 									{#if shipments?.length > 1}
 										<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
 									{/if}
-									<OrderShipments {shipment} showItems popover={false} />
+									<OrderShipments {shipment} showItems popover={false} allowEdit />
 								</div>
 							</div>
 						{:else}

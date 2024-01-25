@@ -327,8 +327,8 @@
 			  }
 			: {}
 	);
-
-	$: console.log('form', $page.form, $page.data, data);
+	$: ({ orderData } = data);
+	$: console.log('data', orderData, data);
 </script>
 
 {#if $suppliersStore?.error}

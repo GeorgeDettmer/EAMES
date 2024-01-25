@@ -52,54 +52,23 @@
 	}
 </script>
 
-{#if isDelivered !== undefined}
-	{#if isDelivered}
-		<div class="flex">
-			<img
-				style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-				{width}
-				{height}
-				src="https://img.icons8.com/windows/32/delivered-box.png"
-				alt="delivered-box"
-			/>
-			{#if showText}
-				<p class="font-semibold pt-1 pl-2 uppercase text-xs">Delivered</p>
-			{/if}
-		</div>
-	{:else}
-		<div class="flex">
-			<img
-				style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
-				{width}
-				{height}
-				src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
-				alt="delivery--v1"
-			/>
-			{#if showText}
-				<p class="font-semibold pt-1 pl-2 uppercase text-xs">In Transit</p>
-			{/if}
-		</div>
-	{/if}
-{:else if trackingResult?.statusCode}
-	<a target="_blank" href={tracking?.tracking_url}>
-		<div class="flex">
-			{#if trackingResult?.statusCode === 'DE'}
+<div>
+	{#if isDelivered !== undefined}
+		{#if isDelivered}
+			<div class="flex">
 				<img
-					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
 					{width}
 					{height}
-					src="https://img.icons8.com/ios-glyphs/30/shipped--v1.png"
+					src="https://img.icons8.com/windows/32/delivered-box.png"
 					alt="delivered-box"
 				/>
-			{:else if trackingResult?.statusCode === 'EX'}
-				<img
-					style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-					{width}
-					{height}
-					src="https://img.icons8.com/windows/32/package--v2.png"
-					alt="package--v2"
-				/>
-			{:else if trackingResult?.statusCode === 'IT'}
+				{#if showText}
+					<p class="font-semibold pt-1 pl-2 uppercase text-xs">Delivered</p>
+				{/if}
+			</div>
+		{:else}
+			<div class="flex">
 				<img
 					style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
 					{width}
@@ -107,52 +76,85 @@
 					src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
 					alt="delivery--v1"
 				/>
-			{:else}
-				<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-			{/if}
-			{#if showText}
-				<p class="font-semibold pt-1 pl-2 uppercase text-xs">{trackingResult?.statusDescription || ''}</p>
-			{:else if showPopover}
-				<Tooltip placement={popoverPlacement}>{trackingResult?.statusDescription || ''}</Tooltip>
-			{/if}
-		</div>
-		{#if showPopover}
-			<Popover placement={popoverPlacement} defaultClass="py-1 px-2">
-				<div class="text-xs">
-					{#if trackingResult?.events?.[0]}
-						<p>
-							{trackingResult?.statusDescription || ''}
-							<em>({datetimeFormat(trackingResult?.events?.[0]?.occurredAt)})</em>
-						</p>
-						<p>
-							{trackingResult?.events?.[0]?.description || ''}
-						</p>
-						<!-- 					<p>{trackingResult?.events?.[0]?.cityLocality || ''} {trackingResult?.events?.[0]?.countryCode || ''}</p>
+				{#if showText}
+					<p class="font-semibold pt-1 pl-2 uppercase text-xs">In Transit</p>
+				{/if}
+			</div>
+		{/if}
+	{:else if trackingResult?.statusCode}
+		<a target="_blank" href={tracking?.tracking_url}>
+			<div class="flex">
+				{#if trackingResult?.statusCode === 'DE'}
+					<img
+						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+						{width}
+						{height}
+						src="https://img.icons8.com/ios-glyphs/30/shipped--v1.png"
+						alt="delivered-box"
+					/>
+				{:else if trackingResult?.statusCode === 'EX'}
+					<img
+						style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+						{width}
+						{height}
+						src="https://img.icons8.com/windows/32/package--v2.png"
+						alt="package--v2"
+					/>
+				{:else if trackingResult?.statusCode === 'IT'}
+					<img
+						style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(800%) hue-rotate(150deg)"
+						{width}
+						{height}
+						src="https://img.icons8.com/ios-glyphs/30/delivery--v1.png"
+						alt="delivery--v1"
+					/>
+				{:else}
+					<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
+				{/if}
+				{#if showText}
+					<p class="font-semibold pt-1 pl-2 uppercase text-xs">{trackingResult?.statusDescription || ''}</p>
+				{:else if showPopover}
+					<Tooltip placement={popoverPlacement}>{trackingResult?.statusDescription || ''}</Tooltip>
+				{/if}
+			</div>
+			{#if showPopover}
+				<Popover placement={popoverPlacement} defaultClass="py-1 px-2">
+					<div class="text-xs">
+						{#if trackingResult?.events?.[0]}
+							<p>
+								{trackingResult?.statusDescription || ''}
+								<em>({datetimeFormat(trackingResult?.events?.[0]?.occurredAt)})</em>
+							</p>
+							<p>
+								{trackingResult?.events?.[0]?.description || ''}
+							</p>
+							<!-- 					<p>{trackingResult?.events?.[0]?.cityLocality || ''} {trackingResult?.events?.[0]?.countryCode || ''}</p>
  -->
-						{#if trackingResult?.events?.[0]?.signer}
-							<p>Signed: {trackingResult?.events?.[0]?.signer}</p>
+							{#if trackingResult?.events?.[0]?.signer}
+								<p>Signed: {trackingResult?.events?.[0]?.signer}</p>
+							{/if}
+						{:else}
+							<p>No tracking events</p>
 						{/if}
-					{:else}
-						<p>No tracking events</p>
-					{/if}
-				</div>
-			</Popover>
-		{/if}
-	</a>
-{:else if tracking?.tracking_url}
-	<a target="_blank" href={tracking.tracking_url}>
+					</div>
+				</Popover>
+			{/if}
+		</a>
+	{:else if tracking?.tracking_url}
+		<a target="_blank" href={tracking.tracking_url}>
+			<div class="flex">
+				<!-- <img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" /> -->
+				<div class="my-auto"><Spinner size="4" color={trackingResult?.error?.status !== 200 ? 'red' : 'blue'} /></div>
+			</div>
+		</a>
+	{:else}
 		<div class="flex">
-			<!-- <img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" /> -->
-			<div class="my-auto"><Spinner size="4" color={trackingResult?.error?.status !== 200 ? 'red' : 'blue'} /></div>
+			<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
+			{#if showText}
+				<p class="font-semibold pt-1 pl-2 uppercase text-xs">No tracking</p>
+			{:else if showPopover}
+				<Tooltip placement={popoverPlacement}>No tracking</Tooltip>
+			{/if}
 		</div>
-	</a>
-{:else}
-	<div class="flex">
-		<img {width} {height} src="https://img.icons8.com/windows/32/box-other.png" alt="box-other" />
-		{#if showText}
-			<p class="font-semibold pt-1 pl-2 uppercase text-xs">No tracking</p>
-		{:else if showPopover}
-			<Tooltip placement={popoverPlacement}>No tracking</Tooltip>
-		{/if}
-	</div>
-{/if}
+	{/if}
+</div>

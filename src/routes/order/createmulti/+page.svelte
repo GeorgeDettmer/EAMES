@@ -34,7 +34,7 @@
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
-	import OrderShipment from '$lib/components/Orders/OrderShipment.svelte';
+	import OrderShipment from '$lib/components/Orders/OrderShipment - Copy.svelte';
 	import type { Shipment } from '$lib/types';
 
 	$windowTitleStore = 'New order';

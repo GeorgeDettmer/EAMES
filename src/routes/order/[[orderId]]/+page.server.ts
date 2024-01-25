@@ -2,6 +2,7 @@ import { client } from '$lib/graphql';
 import { gql } from '@urql/svelte';
 import type { Actions, PageServerLoad } from './$types';
 import { error, fail } from '@sveltejs/kit';
+import { isValidUrl } from '$lib/utils';
 
 export const actions = {
 	// Creates as new shipment allocation/order item shipment
@@ -122,6 +123,201 @@ export const actions = {
 		return {
 			success: true
 		};
+	},
+	updateShipment: async ({ cookies, request, locals }) => {
+		const formData = await request.formData();
+
+		//Shipment
+		let shipment_id = formData.get('shipment_id');
+		const carrier_id = formData.get('carrier_id');
+		const expected_delivery_date = formData.get('expected_delivery_date');
+		const confirmed_delivery_date = formData.get('confirmed_delivery_date');
+		const confirmed_delivery_user_id = formData.get('confirmed_delivery_date');
+
+		//Tracking:
+		let tracking_id = formData.get('tracking_id');
+		const carrier_code = String(formData.get('carrier_code'));
+		const tracking_number = String(formData.get('tracking_number'));
+		const tracking_url = String(formData.get('tracking_url'));
+
+		let trackingResult;
+		//If tracking ID supplied, update existing tracking entry with supplied details
+		if (tracking_id) {
+			trackingResult = await client.mutation(
+				gql`
+					mutation updateTrackingById(
+						$id: Int!
+						$tracking_number: String
+						$carrier_code: String
+						$tracking_url: String
+						$user_id: uuid
+					) {
+						update_erp_trackings_by_pk(
+							pk_columns: { id: $id }
+							_set: {
+								carrier_code: $carrier_code
+								tracking_number: $tracking_number
+								tracking_url: $tracking_url
+								user_id: $user_id
+							}
+						) {
+							id
+							carrier_code
+							tracking_number
+							tracking_url
+							user_id
+						}
+					}
+				`,
+				{ id: tracking_id, carrier_code, tracking_number, tracking_url, user_id: locals.user.id }
+			);
+			if (trackingResult?.error) fail(400, { error: trackingResult?.error?.message });
+			trackingResult = trackingResult.data?.update_erp_trackings_by_pk;
+		} else {
+			//If no tracking ID supplied, create new tracking with supplied details
+			if (isValidUrl(tracking_url)) {
+				trackingResult = await client.mutation(
+					gql`
+						mutation insertTracking(
+							$carrier_code: String
+							$tracking_number: String
+							$tracking_url: String!
+							$user_id: uuid
+						) {
+							insert_erp_trackings_one(
+								object: {
+									carrier_code: $carrier_code
+									tracking_number: $tracking_number
+									tracking_url: $tracking_url
+									user_id: $user_id
+								}
+							) {
+								id
+								carrier_code
+								tracking_number
+								tracking_url
+							}
+						}
+					`,
+					{ id: tracking_id, carrier_code, tracking_number, tracking_url, user_id: locals.user.id }
+				);
+				if (trackingResult?.error) fail(400, { error: trackingResult?.error?.message });
+				trackingResult = trackingResult.data?.insert_erp_trackings_one;
+			}
+		}
+		tracking_id = trackingResult?.id;
+		if (!tracking_id)
+			fail(500, { error: 'No tracking id was returned from tracking insert/update queries...', trackingResult });
+
+		let shipmentResult;
+		//If shipment ID supplied, update existing shipment and set tracking_id
+		if (shipment_id) {
+			shipmentResult = await client.mutation(
+				gql`
+					mutation updateShipmentById(
+						$id: bigint!
+						$carrier_id: String
+						$tracking_id: bigint
+						$expected_delivery_date: timestamptz
+						$confirmed_delivery_date: timestamptz
+						$confirmed_delivery_user_id: uuid
+					) {
+						update_erp_shipments_by_pk(
+							pk_columns: { id: $id }
+							_set: {
+								carrier_id: $carrier_id
+								tracking_id: $tracking_id
+								expected_delivery_date: $expected_delivery_date
+								confirmed_delivery_date: $confirmed_delivery_date
+								confirmed_delivery_user_id: $confirmed_delivery_user_id
+							}
+						) {
+							id
+							carrier_id
+							tracking_id
+							expected_delivery_date
+							confirmed_delivery_date
+							confirmed_delivery_user_id
+						}
+					}
+				`,
+				{
+					id: shipment_id,
+					carrier_id,
+					tracking_id,
+					expected_delivery_date,
+					confirmed_delivery_date,
+					confirmed_delivery_user_id
+				}
+			);
+			if (shipmentResult?.error) fail(400, { error: shipmentResult?.error?.message });
+			shipmentResult = shipmentResult.data?.update_erp_shipments_by_pk;
+		} else {
+			//If no shipment ID supplied, create new shipment with tracking_id set
+			shipmentResult = await client.mutation(
+				gql`
+					mutation insertShipment(
+						$id: bigint!
+						$carrier_id: String
+						$tracking_id: bigint
+						$expected_delivery_date: timestamptz
+						$confirmed_delivery_date: timestamptz
+						$confirmed_delivery_user_id: uuid
+					) {
+						insert_erp_shipments_one(
+							pk_columns: { id: $id }
+							_set: {
+								carrier_id: $carrier_id
+								tracking_id: $tracking_id
+								expected_delivery_date: $expected_delivery_date
+								confirmed_delivery_date: $confirmed_delivery_date
+								confirmed_delivery_user_id: $confirmed_delivery_user_id
+							}
+						) {
+							id
+							carrier_id
+							tracking_id
+							expected_delivery_date
+							confirmed_delivery_date
+							confirmed_delivery_user_id
+						}
+					}
+				`,
+				{
+					id: shipment_id,
+					carrier_id,
+					tracking_id,
+					expected_delivery_date,
+					confirmed_delivery_date,
+					confirmed_delivery_user_id
+				}
+			);
+			if (shipmentResult?.error) fail(400, { error: shipmentResult?.error?.message });
+			shipmentResult = shipmentResult.data?.insert_erp_shipments_one;
+		}
+		shipment_id = shipmentResult?.id;
+		if (!shipment_id)
+			fail(500, { error: 'No shipment id was returned from shipment insert/update queries...', shipmentResult });
+
+		console.log('updateShipment', { shipmentResultId: shipmentResult?.id, trackingResultId: trackingResult?.id });
+		if (trackingResult?.error || shipmentResult?.error) {
+			return {
+				success: false,
+				error: [
+					{
+						type: 'database',
+						message: trackingResult?.error?.message
+					},
+					{
+						type: 'database',
+						message: shipmentResult?.error?.message
+					}
+				]
+			};
+		}
+		return {
+			success: true
+		};
 	}
 } satisfies Actions;
 
@@ -219,7 +415,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 		order = orderQuery?.data?.erp_orders_by_pk;
 
-		orderItemsQuery = client.query(
+		/* orderItemsQuery = client.query(
 			gql`
 				query orderItems($orderId: bigint!) {
 					erp_orders_items(where: { _eq: { id: $orderId } }) {
@@ -282,14 +478,13 @@ export const load: PageServerLoad = async ({ params }) => {
 				}
 			`,
 			{ orderId: Number(params.orderId) }
-		);
-		console.log('order', order.user.id);
+		); */
 	}
-	console.log('orders load:', order, orderItemsQuery);
+	console.log('orders load:', order?.id, order?.user?.id);
 	return {
 		data: {
-			order,
-			orderItems: orderItemsQuery ? await orderItemsQuery : null
+			orderData: order
+			/* orderItems: orderItemsQuery ? (await orderItemsQuery)?.data : null */
 		}
 	};
 };

@@ -324,3 +324,12 @@ export function deepEqual(x, y): boolean {
 		? ok(x).length === ok(y).length && ok(x).every((key) => deepEqual(x[key], y[key]))
 		: x === y;
 }
+
+export function isValidUrl(url_string: string) {
+	try {
+		new URL(String(url_string));
+		return true;
+	} catch (err) {
+		return false;
+	}
+}

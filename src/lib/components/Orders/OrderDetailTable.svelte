@@ -9,7 +9,8 @@
 		TableBodyRow,
 		TableBodyCell,
 		Tooltip,
-		Spinner
+		Spinner,
+		Badge
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import TrackingStatus from './TrackingStatus.svelte';
@@ -95,6 +96,27 @@
 									last_name
 									initials
 									color
+								}
+							}
+							orders_items_shipments {
+								id
+								quantity
+								shipment {
+									id
+									expected_delivery_date
+									confirmed_delivery_date
+									carrier {
+										id
+										name
+										image_url
+									}
+									tracking {
+										id
+										carrier_code
+										tracking_number
+										tracking_url
+										status
+									}
 								}
 							}
 						}
@@ -223,8 +245,39 @@
 
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs">
 						<div class="">
-							{#each item?.tracking || [] as tracking}
+							<!-- {#each item?.tracking || [] as tracking}
 								<TrackingStatus {tracking} showText={true} width={24} height={24} />
+							{/each} -->
+							{#each item?.orders_items_shipments as oi, idx}
+								{@const shipment = oi?.shipment}
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<div class="flex w-fit rounded bg-slate-500 space-y-0.5">
+									<!-- {#if shipments?.length > 1}
+										<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
+											{shipmentIdx + 1}
+										</p>
+									{/if} -->
+									<!-- TODO: Replace badge so that layout is cleaner -->
+									<Badge color={shipment?.confirmed_delivery_date ? 'green' : 'blue'}>
+										<TrackingStatus tracking={shipment?.tracking} width={20} height={20} />
+									</Badge>
+									<!-- {#if oi?.quantity} -->
+									<p class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white">
+										{oi?.quantity || item.quantity}
+									</p>
+									<!-- {/if} -->
+								</div>
+							{:else}
+								<div class="flex">
+									<img
+										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/ios/50/cardboard-box.png"
+										alt="box-other"
+									/>
+									<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+								</div>
 							{/each}
 						</div>
 					</TableBodyCell>

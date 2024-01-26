@@ -130,16 +130,27 @@ export const actions = {
 
 		//Shipment
 		let shipment_id = formData.get('shipment_id');
-		const carrier_id = formData.get('carrier_id');
+		let carrier_id = formData.get('carrier_id');
 		const expected_delivery_date = formData.get('expected_delivery_date');
 		const confirmed_delivery_date = formData.get('confirmed_delivery_date');
 		const confirmed_delivery_user_id = formData.get('confirmed_delivery_date');
-
+		carrier_id = carrier_id || null;
 		//Tracking:
 		let tracking_id = formData.get('tracking_id');
 		const carrier_code = String(formData.get('carrier_code') || '');
 		const tracking_number = String(formData.get('tracking_number') || '');
 		const tracking_url = String(formData.get('tracking_url') || '');
+
+		console.log('?updateShipment', {
+			shipment_id,
+			carrier_id,
+			expected_delivery_date,
+			confirmed_delivery_date,
+			confirmed_delivery_user_id,
+			tracking_id,
+			tracking_number,
+			tracking_url
+		});
 
 		let trackingResult;
 		//If tracking ID supplied, update existing tracking entry with supplied details
@@ -176,43 +187,49 @@ export const actions = {
 			trackingResult = trackingResult.data?.update_erp_trackings_by_pk;
 		} else {
 			//If no tracking ID supplied, create new tracking with supplied details
-			if (isValidUrl(tracking_url)) {
-				trackingResult = await client.mutation(
-					gql`
-						mutation insertTracking(
-							$carrier_code: String
-							$tracking_number: String
-							$tracking_url: String!
-							$user_id: uuid
-						) {
-							insert_erp_trackings_one(
-								object: {
-									carrier_code: $carrier_code
-									tracking_number: $tracking_number
-									tracking_url: $tracking_url
-									user_id: $user_id
-								}
-							) {
-								id
-								carrier_code
-								tracking_number
-								tracking_url
+			trackingResult = await client.mutation(
+				gql`
+					mutation insertTracking($carrier_code: String, $tracking_number: String, $tracking_url: String!, $user_id: uuid) {
+						insert_erp_trackings_one(
+							object: {
+								carrier_code: $carrier_code
+								tracking_number: $tracking_number
+								tracking_url: $tracking_url
+								user_id: $user_id
 							}
+						) {
+							id
+							carrier_code
+							tracking_number
+							tracking_url
 						}
-					`,
-					{ id: tracking_id, carrier_code, tracking_number, tracking_url, user_id: locals.user.id }
-				);
-				if (trackingResult?.error) fail(400, { error: trackingResult?.error?.message });
-				trackingResult = trackingResult.data?.insert_erp_trackings_one;
-			}
+					}
+				`,
+				{
+					carrier_code,
+					tracking_number,
+					tracking_url: isValidUrl(tracking_url) ? tracking_url : '',
+					user_id: locals.user.id
+				}
+			);
+			if (trackingResult?.error) console.error(400, { error: trackingResult?.error?.message });
+			trackingResult = trackingResult.data?.insert_erp_trackings_one;
 		}
 		tracking_id = trackingResult?.id;
-		if (!tracking_id)
-			fail(500, { error: 'No tracking id was returned from tracking insert/update queries...', trackingResult });
+		/* 		if (!tracking_id)
+			console.error(500, { error: 'No tracking id was returned from tracking insert/update queries...', trackingResult });*/
 
 		let shipmentResult;
 		//If shipment ID supplied, update existing shipment and set tracking_id
 		if (shipment_id) {
+			console.log('updateShipmentById', {
+				id: shipment_id,
+				carrier_id,
+				tracking_id,
+				expected_delivery_date,
+				confirmed_delivery_date,
+				confirmed_delivery_user_id
+			});
 			shipmentResult = await client.mutation(
 				gql`
 					mutation updateShipmentById(
@@ -251,7 +268,7 @@ export const actions = {
 					confirmed_delivery_user_id
 				}
 			);
-			if (shipmentResult?.error) fail(400, { error: shipmentResult?.error?.message });
+			if (shipmentResult?.error) console.error(400, { error: shipmentResult?.error?.message });
 			shipmentResult = shipmentResult.data?.update_erp_shipments_by_pk;
 		} else {
 			//If no shipment ID supplied, create new shipment with tracking_id set

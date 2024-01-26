@@ -142,6 +142,8 @@
 	let selectedShipment = {
 		id: undefined
 	};
+
+	$: shipmentsQty = line?.orders_items_shipments?.reduce((a, v) => a + v.quantity, 0);
 </script>
 
 <div class="grid grid-cols-4 gap-2">
@@ -197,148 +199,6 @@
 			{/each}
 		</select>
 	</div>
-
-	<div class="col-span-2 mx-auto">
-		<Button
-			color="green"
-			on:click={() => update()}
-			disabled={quantity <= 0 ||
-				price < 0 ||
-				!part ||
-				updating ||
-				(originalPart === part &&
-					originalSPN === spn &&
-					originalQuantity === quantity &&
-					originalPrice === price &&
-					originalCategory === category &&
-					!shipmentsChange)}
-		>
-			Update <EditOutline size="md" />
-		</Button>
-	</div>
-</div>
-<!-- <ShipmentAllocationsEdit bind:orderItem={line} bind:shipments bind:allocations={line.orders_items_shipments} />
- -->
-<div class="col-span-4">
-	<!-- <Label for="small-input">
-		Shipment(s)
-		<button
-			class=" hover:text-green-600 disabled:bg-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-75"
-			disabled={unallocatedToShipmentQuantity < 1 || shipments.length < 2 || itemShipments.some((is) => !is?.id)}
-			on:click={() => {
-				itemShipments = [
-					...itemShipments,
-					{
-						quantity: unallocatedToShipmentQuantity > 0 ? unallocatedToShipmentQuantity : undefined,
-						shipment: selectedShipment
-					}
-				];
-				selectedOis = itemShipments?.[itemShipments.length - 1];
-			}}
-		>
-			<PlusOutline size="xs" class="mx-auto" />
-		</button>
-		<Tooltip defaultClass="py-1 px-1 text-xs break-words" placement="bottom">
-			{#if unallocatedToShipmentQuantity < 1}
-				<p class="text-red-600">No unallocated quantity to allocate to shipment</p>
-			{:else if shipments.length < 2}
-				<p class="text-red-600">There must be at least two shipments to allocate to</p>
-			{:else if itemShipments.some((is) => !is?.id)}
-				<p class="text-red-600">Add (NEW) allocatons before creating more</p>
-			{:else}
-				Add new shipment allocation
-			{/if}
-		</Tooltip>
-		{#if unallocatedToShipmentQuantity > 0}
-			<span class="text-red-600">{unallocatedToShipmentQuantity} unallocated to shipment</span>
-		{/if}
-	</Label> -->
-	<!-- <div class="">
-		<div class="space-y-1">
-			<form class="inline-flex gap-x-2" method="POST" action="/order?/updateShipmentAllocation" use:enhance>
-				<input type="hidden" name="id" value={selectedOis?.id} />
-				<input type="hidden" name="order_item_id" value={line?.id} />
-
-				<select
-					name="ois"
-					bind:value={selectedOis}
-					class="block w-48 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-				>
-					{#each itemShipments as ois, idx}
-						<option value={ois}>
-							SHP{padString(String(ois?.shipment?.id || ''), 4)} ({ois?.id || 'NEW'})
-						</option>
-					{/each}
-				</select>
-				<input
-					name="quantity"
-					class="block w-24 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-					type="number"
-					min="1"
-					placeholder={selectedOis?.quantity ? String(unallocatedToShipmentQuantity) : line?.quantity}
-					bind:value={selectedOis.quantity}
-				/>
-
-				{#if selectedOis?.id}
-					<input type="hidden" name="shipment_id" value={selectedOis?.shipment?.id} />
-					<OrderShipment shipment={selectedOis?.shipment} showDetailsModal={false} popover={false} />
-					<button
-						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
-						disabled={itemShipments.length < 2}
-						formaction="/order?/deleteShipmentAllocation"
-						on:click={() => {
-							itemShipments = itemShipments.filter((v, i) => i !== idx);
-							selectedShipment = {};
-						}}
-					>
-						<XMark size="30" />
-					</button>
-					<button
-						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
-						on:click={() => {
-							itemShipments = itemShipments.filter((v, i) => i?.shipment?.id !== selectedOis?.shipment?.id);
-						}}
-					>
-						<img
-							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-							width="24"
-							height="24"
-							src="https://img.icons8.com/ios/50/save--v1.png"
-							alt="save"
-						/>
-					</button>
-				{:else}
-					<select
-						name="shipment_id"
-						bind:value={selectedShipment.id}
-						class="block w-48 text-md disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-					>
-						{#each shipments as shipment, idx}
-							<option value={shipment.id}>
-								SHP{padString(String(shipment?.id || ''), 4)} ({shipment.carrier.name})
-							</option>
-						{/each}
-					</select>
-					<button
-						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
-						disabled={itemShipments.length < 2}
-						on:click={() => {
-							itemShipments = itemShipments.filter((v, i) => !!v?.id);
-							selectedOis = itemShipments?.[itemShipments.length - 1];
-						}}
-					>
-						<XMark size="30" />
-					</button>
-					<button
-						class="ml-auto my-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
-						formaction="/order?/createShipmentAllocation"
-					>
-						<PlusOutline />
-					</button>
-				{/if}
-			</form>
-		</div>
-	</div> -->
 </div>
 <div class="flex pt-6">
 	<div class="mx-auto">
@@ -377,38 +237,48 @@
 							currency: 'GBP'
 						}).format(Math.round((price * quantity + Number.EPSILON) * 100) / 100 || 0)}
 					</TableBodyCell>
-					<div class=" gap-x-1">
-						{#each itemShipments as oi, idx}
-							{@const shipment = oi?.shipment}
-							{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
-							<div class="flex w-fit rounded {selectedOis?.id === shipment?.id ? 'bg-green-500' : 'bg-slate-500'}">
-								{#if shipments?.length > 1}
-									<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default">
-										{shipmentIdx + 1}
-									</p>
-								{/if}
-								<Badge color="blue">
-									<TrackingStatus tracking={shipment?.tracking} />
-								</Badge>
-								{#if shipments?.length > 1 && oi?.quantity}
-									<p class="text-xs text-white my-auto text-center font-semibold w-4 cursor-default mx-1">
-										{oi?.quantity}
-									</p>
-								{/if}
-							</div>
-						{:else}
-							<div class="flex">
-								<img
-									style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/ios/50/cardboard-box.png"
-									alt="box-other"
-								/>
-								<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
-							</div>
-						{/each}
-					</div>
+					<TableBodyCell>
+						<div class="space-y-1">
+							{#each line?.orders_items_shipments as oi, idx}
+								{@const shipment = oi?.shipment}
+								{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
+								<div class="flex w-fit rounded bg-slate-500">
+									{#if shipments?.length > 1}
+										<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default">
+											{shipmentIdx + 1}
+										</p>
+									{/if}
+									<!-- TODO: Replace badge so that layout is cleaner -->
+									<Badge color={shipment?.confirmed_delivery_date ? 'green' : 'blue'}>
+										<!-- <TrackingStatus tracking={shipment?.tracking} width={20} height={20} /> -->
+										SHP{padString(String(shipment?.id || ''), 4)}
+									</Badge>
+									<!-- {#if oi?.quantity} -->
+									<div
+										class="rounded p-1 my-auto h-fit {oi?.quantity && shipmentsQty !== quantity
+											? 'bg-red-600 font-bold'
+											: ' font-semibold'}"
+									>
+										<p class="text-xs text-white text-center cursor-default">
+											{oi?.quantity || quantity}
+										</p>
+									</div>
+									<!-- {/if} -->
+								</div>
+							{:else}
+								<div class="flex">
+									<img
+										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/ios/50/cardboard-box.png"
+										alt="box-other"
+									/>
+									<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+								</div>
+							{/each}
+						</div>
+					</TableBodyCell>
 				</TableBodyRow>
 			</TableBody>
 		</Table>

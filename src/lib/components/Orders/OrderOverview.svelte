@@ -158,7 +158,10 @@ subscription order($orderId: bigint!) {
 		client: getContextClient(),
 		query: gql`
 			subscription shipments($orderId: bigint!) {
-				erp_shipments(where: { orders_items_shipments: { orders_item: { order_id: { _eq: $orderId } } } }) {
+				erp_shipments(
+					where: { orders_items_shipments: { orders_item: { order_id: { _eq: $orderId } } } }
+					order_by: { id: asc }
+				) {
 					id
 					tracking_id
 					carrier_id

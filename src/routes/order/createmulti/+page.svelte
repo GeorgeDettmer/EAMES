@@ -284,7 +284,7 @@
 
 	function addOrder(force: boolean = true) {
 		let supplier = Object.assign({}, suppliers?.[0] || {});
-		shipments = [...shipments, [{ ...structuredClone(shipmentTemplate) }]];
+
 		orders = [
 			...orders,
 			{
@@ -296,6 +296,7 @@
 				user
 			}
 		];
+		shipments = [...shipments, [{ ...structuredClone(shipmentTemplate) }]];
 	}
 
 	function removeOrder(idx: number) {
@@ -549,14 +550,18 @@
 	});
 	$: carriers = $carriersStore?.data?.erp_carriers;
 	$: shipmentTemplate = {
-		carrier: carriers?.[0],
+		carrier: carriers?.[0] || {
+			id: null
+			/* name: 'Farnell',
+			image_url: 'https://www.farnell.com/images/farnell/logo.svg' */
+		},
 		expected_delivery_date: new Date().toISOString(),
 		tracking: {
 			tracking_number: ''
 		}
 	};
-	let shipments: Shipment[][] = [];
-	$: shipments = [[{ ...structuredClone(shipmentTemplate) }]];
+	let shipments: Shipment[][] = [[{ ...structuredClone(shipmentTemplate) }]];
+	//$: shipments = [[{ ...structuredClone(shipmentTemplate) }]];
 	$: console.log('shipments', shipments);
 	$: console.log('tabState', tabState, openOrderIdx);
 
@@ -608,7 +613,7 @@
 				{#each shipments?.[openOrderIdx] || [] as shipment, idx}
 					<div class="flex text-white bg-slate-500 rounded">
 						<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-						<OrderShipment {shipment} showItems={false} showDetailsModal={true} allowEdit tooltipPlacement={'bottom-end'} />
+						<OrderShipment {shipment} showItems={false} showDetailsModal={true} allowEdit />
 					</div>
 				{/each}
 			</div>
@@ -643,7 +648,12 @@
 					<span slot="title">
 						<OrderCreateHeader bind:order />
 					</span>
-					<OrderCreateMulti shipments={shipments[idx]} bind:order showHeader={false} on:delete={() => removeOrder(idx)} />
+					<OrderCreateMulti
+						bind:shipments={shipments[idx]}
+						bind:order
+						showHeader={false}
+						on:delete={() => removeOrder(idx)}
+					/>
 				</TabItem>
 			{/each}
 		</Tabs>

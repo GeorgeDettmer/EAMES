@@ -146,8 +146,6 @@
 	}`;
 
 	let showEditForm = false;
-
-	$: console.log('shipmentInfo', shipmentInfo);
 </script>
 
 {#if $shipmentInfoStore?.fetching}
@@ -267,7 +265,15 @@
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Shipment info unavailable...</div>
 {/if}
 {#if showDetailsModal}
-	<Modal outsideclose bind:open={modalOpen} size="lg">
+	<Modal
+		outsideclose
+		title={`SHP${padString(String(shipmentInfo?.id || ''), 4)}`}
+		bind:open={modalOpen}
+		size="lg"
+		on:close={() => {
+			showEditForm = false;
+		}}
+	>
 		<div class="flex gap-x-2">
 			{#if showEditForm}
 				<form
@@ -275,11 +281,15 @@
 					method="POST"
 					action="/order?/updateShipment"
 					use:enhance
-					on:submit|preventDefault={(e) => console.warn(e)}
+					on:submit|preventDefault={(e) => {
+						console.dir('form submit', shipmentInfo);
+						showEditForm = false;
+					}}
 				>
 					<input type="hidden" name="shipment_id" bind:value={shipmentInfo.id} />
 					<input type="hidden" name="carrier_id" bind:value={shipmentInfo.carrier.id} />
 					<input type="hidden" name="tracking_id" bind:value={shipmentInfo.tracking.id} />
+					<input type="hidden" name="carrier_code" bind:value={shipmentInfo.tracking.carrier_code} />
 					<div>
 						<label class="text-xs" for="carrier">Carrier</label>
 						<select
@@ -338,7 +348,8 @@
 							<label class="text-xs" for="carrier">Tracking URL</label>
 							<input
 								class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
-								type="text"
+								name="tracking_url"
+								type="url"
 								value={shipmentInfo.tracking.tracking_url}
 								on:dblclick={() => {
 									if (!shipmentInfo.tracking.tracking_url) return;
@@ -352,16 +363,32 @@
 									tracking={{
 										tracking_number: shipmentInfo.tracking.tracking_number,
 										tracking_url: shipmentInfo.tracking.tracking_number,
-										carrier_code: shipmentInfo.carrier.id?.toLowerCase()
+										carrier_code: shipmentInfo.tracking.carrier_code
 									}}
 								/>
 							{:else}
-								<button on:click={() => (showTrackingStatus = true)}>
+								{@const disabled =
+									!shipmentInfo?.carrier ||
+									!shipmentInfo?.tracking?.tracking_number ||
+									!shipmentInfo?.tracking?.carrier_code}
+								<button
+									class="disabled:cursor-not-allowed disabled:opacity-50"
+									{disabled}
+									on:click={() => (showTrackingStatus = true)}
+								>
 									<SearchOutline />
+									{#if disabled}
+										<Tooltip placement="bottom" defaultClass="p-0.5 text-xs">
+											Carrier & tracking number must be set to track
+										</Tooltip>
+									{/if}
 								</button>
 							{/if}
 						</div>
 					</div>
+					<!-- TODO: Show save only if data changed (not working yet as need to check why modal isnt mounted on opening...) -->
+					<!-- {#if changed} -->
+
 					<button
 						class="mt-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
 						on:click={() => {
@@ -376,6 +403,11 @@
 							alt="save"
 						/>
 					</button>
+					<!-- {:else} -->
+					<button on:click={() => (showEditForm = false)}>
+						<XMark />
+					</button>
+					<!-- {/if} -->
 				</form>
 			{:else}
 				<div class="my-auto rounded-lg">
@@ -418,56 +450,89 @@
 						{/if}
 					</div>
 				</div>
-				<button on:click={() => (showEditForm = !showEditForm)}>
+				<button on:click={() => (showEditForm = true)}>
 					<EditOutline />
 				</button>
 			{/if}
 
-			{#if showEditForm}
-				<!-- <div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
-					<input
-						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
-						type="date"
-						min={new Date().toISOString().split('T')[0]}
-						bind:value={shipmentInfo.expected_delivery_date}
-					/>
-				</div> -->
-			{:else if shipmentInfo?.tracking?.events?.[0]}
-				<!-- <TrackingTimeline trackingEvents={shipmentInfo?.tracking?.events} /> -->
-				{@const event = shipmentInfo?.tracking?.events[0]}
-				<div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
-					<!-- 	{#each shipmentInfo?.tracking?.events as event, i} -->
-					<div class="text-xs">
-						<p class="break-words">{event?.description}</p>
-						<p class="italic text-xs">{datetimeFormat(event?.occurredAt)} {event?.signer ? `(${event?.signer})` : ''}</p>
-					</div>
-					<!-- {/each} -->
-				</div>
-			{/if}
 			{#if !showEditForm}
-				<div class="flex max-w-sm ml-auto my-auto pr-8 gap-x-2">
+				<div class="flex max-w-sm ml-auto my-auto gap-x-2">
+					<form
+						class="inline-flex gap-x-2"
+						method="POST"
+						action="/order?/setShipmentConfirmedDelivered"
+						use:enhance
+						on:submit|preventDefault={(e) => {
+							console.dir('form submit setShipmentConfirmedDelivered');
+							//showEditForm = false;
+						}}
+					>
+						<input type="hidden" name="shipment_id" bind:value={shipmentInfo.id} />
+						{#if !shipmentInfo?.confirmed_delivery_date}
+							<input type="hidden" name="confirmed_delivery_date" value={new Date().toISOString()} />
+						{/if}
+
+						<button
+							class="mt-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
+							on:click={() => {
+								/* itemShipments = itemShipments.filter((v, i) => i?.shipment?.id !== selectedOis?.shipment?.id); */
+							}}
+						>
+							{#if shipmentInfo?.confirmed_delivery_date}
+								<button
+									class="mt-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
+									on:click={() => {
+										/* itemShipments = itemShipments.filter((v, i) => i?.shipment?.id !== selectedOis?.shipment?.id); */
+									}}
+								>
+									<div>
+										<UserIcon
+											size="sm"
+											user={shipmentInfo?.userByConfirmedDeliveryUserId}
+											buttonClass="!p-0 !pr-2 text-white"
+										>
+											<img
+												style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+												width="24"
+												height="24"
+												src="https://img.icons8.com/windows/32/delivered-box.png"
+												alt="delivered-box"
+											/>
+										</UserIcon>
+									</div>
+									<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
+										Delivery confirmed by {shipmentInfo?.userByConfirmedDeliveryUserId?.username} @ {datetimeFormat(
+											shipmentInfo?.confirmed_delivery_date
+										)}
+									</Tooltip>
+								</button>
+							{:else}
+								<button
+									class="mt-auto hover:text-red-600 disabled:text-inherit disabled:cursor-not-allowed disabled:opacity-50"
+									on:click={() => {
+										/* itemShipments = itemShipments.filter((v, i) => i?.shipment?.id !== selectedOis?.shipment?.id); */
+									}}
+								>
+									<img
+										class="opacity-20 hover:opacity-75"
+										style="filter: invert(100%)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/delivered-box.png"
+										alt="delivered-box"
+									/>
+								</button>
+							{/if}
+						</button>
+					</form>
+
 					{#if shipmentInfo?.tracking?.tracking_number && shipmentInfo?.tracking?.carrier_code}
 						<div class="my-auto">
-							<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={true} width={24} height={24} />
+							<TrackingStatus tracking={shipmentInfo?.tracking} showText={true} showPopover={true} width={24} height={24} />
 						</div>
-					{/if}
-					<div class:invisible={!shipmentInfo?.confirmed_delivery_date}>
-						<UserIcon size="sm" user={shipmentInfo?.userByConfirmedDeliveryUserId} buttonClass="!p-0 !pr-2 text-white">
-							<img width="24" height="24" src="https://img.icons8.com/windows/32/delivered-box.png" alt="delivered-box" />
-						</UserIcon>
-					</div>
-					{#if shipmentInfo?.confirmed_delivery_date}
-						<Tooltip defaultClass="px-1 py-2 text-xs w-32" placement="left">
-							Delivery confirmed by {shipmentInfo?.userByConfirmedDeliveryUserId?.username} @ {datetimeFormat(
-								shipmentInfo?.confirmed_delivery_date
-							)}
-						</Tooltip>
 					{/if}
 				</div>
 			{/if}
-		</div>
-		<div class="text-lg font-bold my-0 p-0">
-			<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 		</div>
 		<div>
 			{#if showItems}

@@ -377,8 +377,9 @@
 						<input
 							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 							type="text"
-							bind:value={shipmentInfo.tracking.tracking_number}
-							on:input={() => {
+							value={shipmentInfo?.tracking?.tracking_number}
+							on:input={({ target }) => {
+								shipmentInfo.tracking.tracking_number = target?.value;
 								shipmentInfo.tracking.tracking_url = getTrackingUrl(
 									shipmentInfo.carrier.id?.toLowerCase(),
 									shipmentInfo.tracking.tracking_number
@@ -393,9 +394,9 @@
 							<input
 								class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-1"
 								type="text"
-								value={shipmentInfo.tracking.tracking_url}
+								value={shipmentInfo?.tracking?.tracking_url}
 								on:dblclick={() => {
-									if (!shipmentInfo.tracking.tracking_url) return;
+									if (!shipmentInfo?.tracking?.tracking_url) return;
 									window.open(shipmentInfo.tracking.tracking_url, '_blank');
 								}}
 							/>
@@ -403,8 +404,8 @@
 							{#if showTrackingStatus}
 								<TrackingStatus
 									tracking={{
-										tracking_number: shipmentInfo.tracking.tracking_number,
-										tracking_url: shipmentInfo.tracking.tracking_number,
+										tracking_number: shipmentInfo?.tracking?.tracking_number,
+										tracking_url: shipmentInfo?.tracking?.tracking_number,
 										carrier_code: shipmentInfo.carrier.id?.toLowerCase()
 									}}
 								/>

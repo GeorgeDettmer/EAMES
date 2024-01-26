@@ -4,6 +4,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, fail } from '@sveltejs/kit';
 import { isValidUrl } from '$lib/utils';
 
+//TODO: Break out into separate functions
 export const actions = {
 	// Creates as new shipment allocation/order item shipment
 	createShipmentAllocation: async ({ cookies, request, locals }) => {
@@ -136,9 +137,9 @@ export const actions = {
 
 		//Tracking:
 		let tracking_id = formData.get('tracking_id');
-		const carrier_code = String(formData.get('carrier_code'));
-		const tracking_number = String(formData.get('tracking_number'));
-		const tracking_url = String(formData.get('tracking_url'));
+		const carrier_code = String(formData.get('carrier_code') || '');
+		const tracking_number = String(formData.get('tracking_number') || '');
+		const tracking_url = String(formData.get('tracking_url') || '');
 
 		let trackingResult;
 		//If tracking ID supplied, update existing tracking entry with supplied details
@@ -313,6 +314,60 @@ export const actions = {
 						message: shipmentResult?.error?.message
 					}
 				]
+			};
+		}
+		return {
+			success: true
+		};
+	},
+	setShipmentConfirmedDelivered: async ({ cookies, request, locals }) => {
+		const formData = await request.formData();
+
+		const shipment_id = formData.get('shipment_id');
+		let confirmed_delivery_date = formData.get('confirmed_delivery_date');
+		let confirmed_delivery_user_id = formData.get('confirmed_delivery_user_idh');
+
+		console.log('setShipmentConfirmedDelivered', shipment_id, confirmed_delivery_date, confirmed_delivery_user_id);
+
+		if (!shipment_id) {
+			console.error('setShipmentConfirmedDelivered', 'Missing required fields');
+			return fail(401, { message: 'Missing required fields' });
+		}
+
+		if (!confirmed_delivery_user_id) confirmed_delivery_user_id = locals?.user?.id || null;
+		if (!confirmed_delivery_date) confirmed_delivery_user_id = null;
+
+		const result = await client.mutation(
+			gql`
+				mutation setShipmentConfirmedDelivered(
+					$shipment_id: bigint!
+					$confirmed_delivery_date: timestamptz
+					$confirmed_delivery_user_id: uuid
+				) {
+					update_erp_shipments_by_pk(
+						pk_columns: { id: $shipment_id }
+						_set: {
+							confirmed_delivery_date: $confirmed_delivery_date
+							confirmed_delivery_user_id: $confirmed_delivery_user_id
+						}
+					) {
+						id
+						confirmed_delivery_date
+						confirmed_delivery_user_id
+					}
+				}
+			`,
+			{ shipment_id, confirmed_delivery_date, confirmed_delivery_user_id }
+		);
+
+		if (result?.error) {
+			console.error('setShipmentConfirmedDelivered', result?.error?.message);
+			return {
+				success: false,
+				error: {
+					type: 'database',
+					message: result?.error?.message
+				}
 			};
 		}
 		return {

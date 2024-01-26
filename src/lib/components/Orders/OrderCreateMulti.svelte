@@ -207,7 +207,7 @@
 					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 					bind:value={newShipmentIdx}
 				>
-					{#each shipments as shipment, idx}
+					{#each shipments || [] as shipment, idx}
 						<option value={idx}>
 							{idx + 1}) {shipment?.carrier?.name}
 						</option>
@@ -303,7 +303,7 @@
 							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 							bind:value={selectedGroupShipmentIdx}
 						>
-							{#each shipments as shipment, idx}
+							{#each shipments || [] as shipment, idx}
 								<option value={idx}>
 									{idx + 1}) {shipment?.carrier?.name}
 								</option>

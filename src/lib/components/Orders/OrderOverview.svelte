@@ -286,6 +286,7 @@ subscription order($orderId: bigint!) {
 							shipment {
 								id
 								expected_delivery_date
+								confirmed_delivery_date
 								carrier {
 									id
 									name
@@ -629,7 +630,7 @@ subscription order($orderId: bigint!) {
 			<div class=" flex-col">
 				<div class="flex">
 					<div><OrdersListItem {order} interactive={false} /></div>
-					<div class="pt-2 pl-2">
+					<div class="pl-2 my-auto">
 						<UserIcon size="sm" user={order?.user}>
 							{order?.user?.first_name}
 							{order?.user?.last_name}
@@ -755,17 +756,22 @@ subscription order($orderId: bigint!) {
 							<p>{idx + 1}</p>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-							<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white">
-								{#if item?.user}
-									{item?.user?.first_name}
-									{item?.user?.last_name}
-								{:else}
-									Unknown
-								{/if}
-							</UserIcon>
-							<Popover>
-								<p class="text-xs italic">{datetimeFormat(item.created_at)}</p>
-							</Popover>
+							<div class="cursor-default mx-auto">
+								<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white" />
+								<Tooltip defaultClass="p-1">
+									<div class="text-xs italic text-center">
+										<p>
+											{#if item?.user}
+												{item?.user?.first_name}
+												{item?.user?.last_name}
+											{:else}
+												Unknown
+											{/if}
+										</p>
+										<p>{datetimeFormat(item.created_at)}</p>
+									</div>
+								</Tooltip>
+							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<p>{item?.category || 'Unknown'}</p>
@@ -806,31 +812,38 @@ subscription order($orderId: bigint!) {
 									{#each item?.orders_items_shipments as oi, idx}
 										{@const shipment = oi?.shipment}
 										{@const shipmentIdx = shipments?.findIndex((s) => s?.id === shipment?.id)}
+										<!-- svelte-ignore a11y-no-static-element-interactions -->
 										<div
-											class="flex w-fit rounded {selectedShipmentIdx === shipmentIdx ? 'bg-green-500' : 'bg-slate-500'}"
+											class="flex w-fill rounded {selectedShipmentIdx === shipmentIdx
+												? 'bg-green-500'
+												: oi?.quantity && shipmentsQty !== item.quantity
+												? 'bg-red-600'
+												: 'bg-slate-500'}"
 											on:mouseenter={() => (selectedShipmentIdx = shipmentIdx)}
 											on:mouseleave={() => (selectedShipmentIdx = undefined)}
 										>
 											{#if shipments?.length > 1}
-												<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default">
+												<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
 													{shipmentIdx + 1}
 												</p>
 											{/if}
 											<!-- TODO: Replace badge so that layout is cleaner -->
-											<Badge color="blue">
-												<TrackingStatus tracking={shipment?.tracking} width={20} height={20} />
+											<Badge color={shipment?.confirmed_delivery_date ? 'green' : 'blue'}>
+												<!-- <TrackingStatus tracking={shipment?.tracking} width={20} height={20} /> -->
+												SHP{padString(String(shipment?.id || ''), 4)}
 											</Badge>
-											{#if oi?.quantity}
-												<div
-													class="rounded p-1 my-auto h-fit {shipmentsQty !== item.quantity
-														? 'bg-red-600 font-bold'
-														: ' font-semibold'}"
-												>
-													<p class="text-xs text-white text-center cursor-default">
-														{oi?.quantity}
-													</p>
-												</div>
-											{/if}
+											<!-- {#if oi?.quantity} -->
+											<p
+												class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 {selectedShipmentIdx ===
+													shipmentIdx &&
+												oi?.quantity &&
+												shipmentsQty !== item.quantity
+													? 'outline outline-red-600'
+													: 'text-white'}"
+											>
+												{oi?.quantity || item.quantity}
+											</p>
+											<!-- {/if} -->
 										</div>
 									{:else}
 										<div class="flex">
@@ -906,7 +919,7 @@ subscription order($orderId: bigint!) {
 											editLine = item;
 										}}
 									>
-										<EditOutline class="text-slate-600" />
+										<EditOutline class="text-slate-600 hover:text-slate-400" />
 									</Button>
 								</div>
 							{/if}

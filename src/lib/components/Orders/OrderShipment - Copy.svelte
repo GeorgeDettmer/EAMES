@@ -21,6 +21,8 @@
 	import TrackingStatus from './TrackingStatus.svelte';
 	import TrackingTimeline from '../Tracking/TrackingTimeline.svelte';
 	import { SearchOutline } from 'flowbite-svelte-icons';
+	import { XMark } from 'svelte-heros-v2';
+	import ShipmentItemsTable from '../Shipment/ShipmentItemsTable.svelte';
 
 	export let shipmentId: number = 0;
 	export let shipment: Shipment | undefined = undefined;
@@ -213,7 +215,7 @@
 							/>
 						{:else}
 							<p class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200">
-								{shipmentInfo?.carrier?.name
+								{(shipmentInfo?.carrier?.name || 'Unknown')
 									?.split(' ')
 									?.map((s) => s?.[0]?.toUpperCase())
 									.join('')}
@@ -223,7 +225,9 @@
 				</div>
 				<div class="my-auto">
 					<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
-						<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
+						<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline"
+							>{shipmentInfo?.carrier?.name || 'Unknown'}</a
+						>
 					</p>
 					<div class="flex gap-x-1">
 						{#if shipmentInfo?.tracking?.tracking_number}
@@ -260,7 +264,7 @@
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Shipment info unavailable...</div>
 {/if}
 {#if showDetailsModal}
-	<Modal outsideclose bind:open={modalOpen} size="lg">
+	<Modal title="New Shipment" outsideclose bind:open={modalOpen} size="lg">
 		<div class="flex gap-x-2">
 			<div class="my-auto rounded-lg">
 				<a href={shipmentInfo?.url} target="_blank">
@@ -273,7 +277,7 @@
 						/>
 					{:else}
 						<p class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200">
-							{shipmentInfo?.carrier?.name
+							{(shipmentInfo?.carrier?.name || 'Unknown')
 								?.split(' ')
 								?.map((s) => s?.[0]?.toUpperCase())
 								.join('')}
@@ -283,7 +287,9 @@
 			</div>
 			<div class="my-auto">
 				<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
-					<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline">{shipmentInfo?.carrier?.name}</a>
+					<a href="/supplier/{shipmentInfo?.carrier?.id}" class="hover:underline"
+						>{shipmentInfo?.carrier?.name || 'Unknown'}</a
+					>
 				</p>
 				<div class="flex gap-x-1">
 					{#if shipmentInfo?.tracking?.tracking_number}
@@ -308,7 +314,10 @@
 						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="date"
 						min={new Date().toISOString().split('T')[0]}
-						bind:value={shipmentInfo.expected_delivery_date}
+						value={new Date(shipmentInfo?.expected_delivery_date).toLocaleDateString('fr-CA')}
+						on:change={({ target }) => {
+							shipmentInfo.expected_delivery_date = new Date(target?.value)?.toISOString();
+						}}
 					/>
 				</div>
 			{:else if shipmentInfo?.tracking?.events?.[0]}
@@ -343,9 +352,6 @@
 					</Tooltip>
 				{/if}
 			</div>
-		</div>
-		<div class="text-lg font-bold my-0 p-0">
-			<p>SHP{padString(String(shipmentInfo?.id || ''), 4)}</p>
 		</div>
 		<div>
 			{#if allowEdit}
@@ -406,7 +412,7 @@
 									tracking={{
 										tracking_number: shipmentInfo?.tracking?.tracking_number,
 										tracking_url: shipmentInfo?.tracking?.tracking_number,
-										carrier_code: shipmentInfo.carrier.id?.toLowerCase()
+										carrier_code: shipmentInfo?.carrier?.id
 									}}
 								/>
 							{:else}
@@ -419,64 +425,7 @@
 		</div>
 		<div>
 			{#if showItems}
-				<Table>
-					<TableHead theadClass="text-xs uppercase text-center">
-						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Category</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">PN</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">SPN</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Order Qty</TableHeadCell>
-						<TableHeadCell padding="px-1 py-1">Shipment Qty</TableHeadCell>
-					</TableHead>
-					<TableBody>
-						{#each shipmentInfo?.orders_items_shipments as ois, idx}
-							{@const item = ois.orders_item}
-							<TableBodyRow>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									<p class={'uppercase'}>
-										{idx + 1}
-									</p>
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									<a href={`${window.origin}/order/${item?.order_id}`} target="_blank" class={classes.link}>
-										{item?.order_id}
-									</a>
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white" />
-									<Tooltip placement="right">
-										<p>
-											{#if item?.user?.first_name}
-												{item?.user?.first_name}
-												{item?.user?.last_name}
-											{:else}
-												Unknown user...
-											{/if}
-										</p>
-										<p>{datetimeFormat(item.updated_at)}</p>
-									</Tooltip>
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									{item?.category || 'Unknown'}
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									{item.part}
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									{item.spn}
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									{item?.quantity}
-								</TableBodyCell>
-								<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-									{ois.quantity || item?.quantity}
-								</TableBodyCell>
-							</TableBodyRow>
-						{/each}
-					</TableBody>
-				</Table>
+				<ShipmentItemsTable shipmentAllocations={shipmentInfo?.orders_items_shipments} />
 			{/if}
 		</div>
 	</Modal>

@@ -333,3 +333,11 @@ export function isValidUrl(url_string: string) {
 		return false;
 	}
 }
+
+function getNextBusinessDay(date: Date | number) {
+	date = new Date(+date);
+	do {
+		date.setDate(date.getDate() + 1);
+	} while (!(date.getDay() % 6));
+	return date;
+}

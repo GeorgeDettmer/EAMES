@@ -305,7 +305,7 @@
 						>
 							{#each shipments || [] as shipment, idx}
 								<option value={idx}>
-									{idx + 1}) {shipment?.carrier?.name}
+									{idx + 1}) {shipment?.carrier?.name || 'Unknown'}
 								</option>
 							{/each}
 						</select>
@@ -399,7 +399,7 @@
 								>
 									{#each shipments as shipment, idx}
 										<option value={idx}>
-											{idx + 1}) {shipment?.carrier?.name}
+											{idx + 1}) {shipment?.carrier?.name || 'Unknown'}
 										</option>
 									{/each}
 								</select>

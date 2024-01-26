@@ -36,6 +36,7 @@
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
 	import OrderShipment from '$lib/components/Orders/OrderShipment - Copy.svelte';
 	import type { Shipment } from '$lib/types';
+	import { XMark } from 'svelte-heros-v2';
 
 	$windowTitleStore = 'New order';
 	onDestroy(() => {
@@ -171,7 +172,7 @@
 		console.log('importOrders', importOrders, Object.values(importOrders));
 		orders = Object.values(importOrders);
 		importShipments = orders.map((o) => {
-			return [{ ...structuredClone(shipmentTemplate) }];
+			return [shipmentTemplate()];
 		});
 		shipments = importShipments;
 	}
@@ -296,7 +297,20 @@
 				user
 			}
 		];
-		shipments = [...shipments, [{ ...structuredClone(shipmentTemplate) }]];
+		shipments = [
+			...shipments,
+			[
+				{
+					carrier: { ...carriers?.[0] } || {
+						id: null
+					},
+					expected_delivery_date: new Date().toISOString(),
+					tracking: {
+						tracking_number: ''
+					}
+				}
+			]
+		];
 	}
 
 	function removeOrder(idx: number) {
@@ -540,7 +554,7 @@
 		client: getContextClient(),
 		query: gql`
 			query carriers {
-				erp_carriers(order_by: { shipments_aggregate: { count: desc_nulls_last } }) {
+				erp_carriers(order_by: { name: desc_nulls_last }) {
 					id
 					name
 					image_url
@@ -549,21 +563,31 @@
 		`
 	});
 	$: carriers = $carriersStore?.data?.erp_carriers;
-	$: shipmentTemplate = {
+	/* $: shipmentTemplate = {
 		carrier: carriers?.[0] || {
 			id: null
-			/* name: 'Farnell',
-			image_url: 'https://www.farnell.com/images/farnell/logo.svg' */
 		},
 		expected_delivery_date: new Date().toISOString(),
 		tracking: {
 			tracking_number: ''
 		}
-	};
-	let shipments: Shipment[][] = [[{ ...structuredClone(shipmentTemplate) }]];
+	}; */
+	function shipmentTemplate(): Shipment {
+		return {
+			carrier: {
+				id: null
+			},
+			expected_delivery_date: new Date().toISOString(),
+			tracking: {
+				tracking_number: ''
+			}
+		};
+	}
+	let shipments: Shipment[][] = [[shipmentTemplate()]];
 	//$: shipments = [[{ ...structuredClone(shipmentTemplate) }]];
 	$: console.log('shipments', shipments);
 	$: console.log('tabState', tabState, openOrderIdx);
+	$: console.log('carriers', carriers);
 
 	let tabState = [true];
 	$: openOrderIdx = tabState.findIndex((v) => v);
@@ -603,7 +627,7 @@
 			<button
 				class="pr-2"
 				on:click={(e) => {
-					shipments[openOrderIdx] = [...shipments[openOrderIdx], { ...structuredClone(shipmentTemplate) }];
+					shipments[openOrderIdx] = [...shipments[openOrderIdx], shipmentTemplate()];
 				}}
 			>
 				<PlusOutline class="text-gray-400 hover:text-green-600" />
@@ -613,7 +637,15 @@
 				{#each shipments?.[openOrderIdx] || [] as shipment, idx}
 					<div class="flex text-white bg-slate-500 rounded">
 						<p class="my-auto text-center font-semibold w-4">{idx + 1}</p>
-						<OrderShipment {shipment} showItems={false} showDetailsModal={true} allowEdit />
+						<OrderShipment {shipment} showItems={false} showDetailsModal={true} allowEdit tooltipPlacement="bottom" />
+						<button
+							class="hover:text-red-600"
+							on:click={() => {
+								shipments[openOrderIdx] = shipments?.[openOrderIdx].filter((s, i) => i === idx);
+							}}
+						>
+							<XMark size="18" />
+						</button>
 					</div>
 				{/each}
 			</div>

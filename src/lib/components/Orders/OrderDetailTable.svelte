@@ -170,9 +170,9 @@
 		<TableHeadCell padding="px-1 py-1" />
 	</TableHead>
 	<TableBody>
-		{#each orders as order}
+		{#each orders as order (order.id)}
 			{@const ordersItems = order.orders_items}
-			{#each ordersItems as item, idx}
+			{#each ordersItems as item, idx (item.id)}
 				{@const receivedTotal = item?.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity}
 				<TableBodyRow>
 					{#if orders.length > 1}

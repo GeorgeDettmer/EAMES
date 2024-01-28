@@ -537,8 +537,8 @@
 									}}
 								>
 									<img
-										class="opacity-20 hover:opacity-75"
-										style="filter: invert(100%)"
+										class="opacity-40 hover:opacity-75"
+										style="filter: invert(50%)"
 										width="24"
 										height="24"
 										src="https://img.icons8.com/windows/32/delivered-box.png"
@@ -551,7 +551,7 @@
 
 					{#if shipmentInfo?.tracking?.tracking_number && shipmentInfo?.tracking?.carrier_code}
 						<div class="my-auto">
-							<TrackingStatus tracking={shipmentInfo?.tracking} showText={true} showPopover={true} width={24} height={24} />
+							<TrackingStatus tracking={shipmentInfo?.tracking} showText={false} showPopover={true} width={24} height={24} />
 						</div>
 					{/if}
 				</div>

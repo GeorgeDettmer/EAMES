@@ -779,13 +779,16 @@
 					{/each}
 				</div>
 				{#if missingImportData2.flat(2).includes(true)}
+					{@const missingDataImported = missingImportData2
+						.map((d, i) => d.flat(2).includes(true) && imported[i]?._import)
+						.includes(true)}
 					<div class="p-2">
-						<Alert class="!items-start" color="red">
+						<Alert class="!items-start" color={missingDataImported ? 'red' : 'green'}>
 							<span slot="icon">
 								<InfoCircleSolid slot="icon" class="w-4 h-4" />
 								<span class="sr-only">Info</span>
 							</span>
-							<p class="font-medium">
+							<p class="font-medium" class:invisible={!missingDataImported}>
 								The below lines have required information missing, fix or remove them from the import:
 							</p>
 							<ol class="mt-1.5 ml-4 list-decimal list-inside">
@@ -814,7 +817,7 @@
 					</div>
 				{/if}
 			</div>
-			<div class="max-h-96 overflow-y-auto">
+			<div class="max-h-max overflow-y-auto">
 				<Table>
 					<TableHead>
 						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>

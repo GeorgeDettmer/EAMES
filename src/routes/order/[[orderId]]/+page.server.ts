@@ -554,9 +554,8 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	console.log('orders load:', order?.id, order?.user?.id);
 	return {
-		data: {
-			orderData: order
-			/* orderItems: orderItemsQuery ? (await orderItemsQuery)?.data : null */
-		}
+		orderData: order,
+		testThank: true
+		/* orderItems: orderItemsQuery ? (await orderItemsQuery)?.data : null */
 	};
 };

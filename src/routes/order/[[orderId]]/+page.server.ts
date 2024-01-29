@@ -394,7 +394,7 @@ export const actions = {
 } satisfies Actions;
 
 export const load: PageServerLoad = async ({ params }) => {
-	let order;
+	/* let order;
 	let orderItemsQuery;
 	if (params?.orderId) {
 		console.log('params.orderId', params.orderId);
@@ -487,7 +487,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 		order = orderQuery?.data?.erp_orders_by_pk;
 
-		/* orderItemsQuery = client.query(
+		 orderItemsQuery = client.query(
 			gql`
 				query orderItems($orderId: bigint!) {
 					erp_orders_items(where: { _eq: { id: $orderId } }) {
@@ -550,12 +550,12 @@ export const load: PageServerLoad = async ({ params }) => {
 				}
 			`,
 			{ orderId: Number(params.orderId) }
-		); */
+		);
 	}
 	console.log('orders load:', order?.id, order?.user?.id);
 	return {
 		orderData: order,
 		testThank: true
-		/* orderItems: orderItemsQuery ? (await orderItemsQuery)?.data : null */
-	};
+		orderItems: orderItemsQuery ? (await orderItemsQuery)?.data : null
+	}; */
 };

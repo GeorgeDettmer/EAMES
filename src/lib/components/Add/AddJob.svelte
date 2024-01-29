@@ -200,12 +200,12 @@
 				mutationResult = await urqlClient.mutation(
 					gql`
 						mutation createJobKit($job_id: bigint!, $batch: int = 0, $kit_id: uuid!) {
-							insert_material_jobs_kits_one(object: { job_id: $job_id, batch_id: $batch, kit_id: $kit_id }) {
+							insert_material_jobs_kits_one(object: { job_id: $job_id, job_batch: $batch, kit_id: $kit_id }) {
 								id
 							}
 						}
 					`,
-					{ job_id, kit_id, batch_id }
+					{ job_id, kit_id, batch }
 				);
 				if (mutationResult?.error) {
 					console.error('MUTATION ERROR: ', mutationResult);

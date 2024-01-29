@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { datetimeFormat, classes } from '$lib/utils';
+	import { datetimeFormat, classes, numberToLetter } from '$lib/utils';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
 	import {
 		Table,
@@ -62,6 +62,11 @@
 							price
 							currencyCode
 							quantity
+							jobs_allocations {
+								job_id
+								job_batch
+								quantity
+							}
 							order {
 								id
 								supplier {
@@ -160,6 +165,7 @@
 		<TableHeadCell padding="px-1 py-1">PN</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">SPN</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
+		<TableHeadCell padding="px-1 py-1">Allocations</TableHeadCell>
 		{#if !hiddenColumns.includes('supplier')}
 			<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
 		{/if}
@@ -222,6 +228,47 @@
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						{item?.quantity}
+					</TableBodyCell>
+					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+						<div class="">
+							<!-- {#each item?.tracking || [] as tracking}
+								<TrackingStatus {tracking} showText={true} width={24} height={24} />
+							{/each} -->
+							{#each item?.jobs_allocations as allocation, idx}
+								<div class="py-0.5 mx-auto">
+									<div class="flex w-fit rounded bg-slate-500">
+										<!-- {#if shipments?.length > 1}
+										<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
+											{shipmentIdx + 1}
+										</p>
+									{/if} -->
+										<!-- TODO: Replace badge so that layout is cleaner -->
+										<Badge color="blue">
+											{allocation?.job_id}
+											{#if allocation?.job_batch}
+												({numberToLetter(allocation.job_batch - 1)})
+											{/if}
+										</Badge>
+										<!-- {#if oi?.quantity} -->
+										<p class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white">
+											{allocation?.quantity || item.quantity}
+										</p>
+										<!-- {/if} -->
+									</div>
+								</div>
+							{:else}
+								<div class="flex">
+									<img
+										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/ios/50/cardboard-box.png"
+										alt="box-other"
+									/>
+									<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+								</div>
+							{/each}
+						</div>
 					</TableBodyCell>
 					{#if !hiddenColumns.includes('supplier')}
 						<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">

@@ -21,7 +21,7 @@
 	import { ChevronDown, ChevronLeft, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { classes, datetimeFormat, getSelectionText, padString, replaceStateWithQuery } from '$lib/utils';
+	import { classes, datetimeFormat, getSelectionText, numberToLetter, padString, replaceStateWithQuery } from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
@@ -32,7 +32,7 @@
 	$: orderId = $page?.data?.orderId;
 	//TODO: Orders without job not in query result
 	let client = getContextClient();
-	let query = gql`
+	/* let query = gql`
 		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
 			erp_orders(order_by: { id: desc }, limit: $limit, offset: $offset, where: $where) {
 				id
@@ -77,6 +77,57 @@
 				}
 			}
 		}
+	`; */
+
+	let query = gql`
+		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
+			erp_orders(order_by: { id: desc }, limit: $limit, offset: $offset, where: $where) {
+				id
+				reference
+				created_at
+				total
+				jobs_orders {
+					job {
+						id
+						batch
+					}
+				}
+				orders_items_aggregate {
+					aggregate {
+						count
+						sum {
+							quantity
+						}
+					}
+				}
+				orders_items {
+					category
+					orders_items_receiveds_aggregate {
+						aggregate {
+							sum {
+								quantity
+							}
+						}
+					}
+					jobs_allocations {
+						job_id
+						job_batch
+					}
+				}
+				supplier {
+					id
+					name
+				}
+				user {
+					id
+					username
+					first_name
+					last_name
+					initials
+					color
+				}
+			}
+		}
 	`;
 
 	let queryOffset: number = 0;
@@ -102,13 +153,15 @@
 							  }
 							: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
-					jobs_orders: jobSearch
+					orders_items: jobSearch
 						? {
-								job_id: {
-									_in: jobSearch
-										.split(',')
-										.map((v) => v.replace(/\D/g, ''))
-										.filter((v) => !!v)
+								jobs_allocations: {
+									job_id: {
+										_in: jobSearch
+											.split(',')
+											.map((v) => v.replace(/\D/g, ''))
+											.filter((v) => !!v)
+									}
 								}
 						  }
 						: undefined,
@@ -159,13 +212,15 @@
 							  }
 							: {},
 					supplier_id: supplierSearch ? { _eq: supplierSearch } : {},
-					jobs_orders: jobSearch
+					orders_items: jobSearch
 						? {
-								job_id: {
-									_in: jobSearch
-										.split(',')
-										.map((v) => v.replace(/\D/g, ''))
-										.filter((v) => !!v)
+								jobs_allocations: {
+									job_id: {
+										_in: jobSearch
+											.split(',')
+											.map((v) => v.replace(/\D/g, ''))
+											.filter((v) => !!v)
+									}
 								}
 						  }
 						: undefined,
@@ -629,6 +684,9 @@
 				{@const categories = order?.orders_items
 					?.map((oi) => oi?.category || 'Unknown')
 					?.filter((v, i, a) => a.indexOf(v) === i)}
+				{@const allocations = order?.orders_items
+					?.flatMap((oi) => oi?.jobs_allocations || [])
+					?.filter((v, i, a) => a.indexOf(v) === i)}
 				<TableBodyRow color={'default'} class={``}>
 					{@const jobsOrders = order?.jobs_orders || []}
 					<TableBodyCollapsible
@@ -683,6 +741,34 @@
 									}}
 								>
 									<Badge color="blue">{jo?.job?.id}</Badge>
+								</div>
+								<!-- </a> -->
+							{:else}
+								<div class="cursor-default">
+									<Badge color="dark">N/A</Badge>
+								</div>
+							{/each}
+						</div>
+						<div class="w-fit flex flex-wrap text-xs gap-1">
+							{#each allocations || [] as allocation}
+								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<div
+									class="cursor-pointer"
+									on:click={(e) => {
+										jobSearch = jobSearch === String(allocation?.job_id) ? '' : String(allocation?.job_id);
+										replaceStateWithQuery({
+											job: jobSearch
+										});
+									}}
+								>
+									<Badge color="red">
+										{allocation?.job_id}
+										{#if allocation?.job_batch}
+											({numberToLetter(allocation.job_batch - 1)})
+										{/if}
+									</Badge>
 								</div>
 								<!-- </a> -->
 							{:else}

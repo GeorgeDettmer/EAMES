@@ -136,7 +136,6 @@
 	<div
 		class="py-4"
 		on:keydown={(e) => {
-			console.log(e);
 			if (e.key === 'Enter') {
 				add();
 				addLineModal = false;

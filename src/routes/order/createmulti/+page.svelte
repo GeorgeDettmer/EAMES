@@ -17,20 +17,18 @@
 		TableBodyRow,
 		TableHead,
 		TableHeadCell,
-		Textarea,
 		Toggle,
 		Badge,
-		Label,
 		Tooltip
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
-	import { EditOutline, InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
+	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import OrderCreateHeader from '$lib/components/Orders/OrderCreateHeader.svelte';
 	import { goto } from '$app/navigation';
 	import { filedrop, type FileDropOptions, type Files } from 'filedrop-svelte';
 	import XLSX from 'xlsx';
-	import { datetimeFormat, getParameterInsensitiveAny } from '$lib/utils';
+	import { getParameterInsensitiveAny } from '$lib/utils';
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
@@ -198,11 +196,7 @@
 			() => [!i?.[orderItemProperties['price']], 'Price undefined'],
 			() => [isNaN(Number(i?.[orderItemProperties['price']])), 'Price is not a number'],
 			() => [!i?.[orderItemProperties['supplier']], 'Supplier undefined'],
-			() => [
-				//suppliersNames.filter((n) => n.toLowerCase() === i?.[orderItemProperties['supplier']]?.toLowerCase()).length === 0,
-				suppliersNames.every((n) => n !== i?.[orderItemProperties['supplier']]?.toLowerCase()),
-				'Supplier invalid'
-			]
+			() => [suppliersNames.every((n) => n !== i?.[orderItemProperties['supplier']]?.toLowerCase()), 'Supplier invalid']
 		].map((check) => check())
 	);
 
@@ -210,7 +204,7 @@
 		client: getContextClient(),
 		query: gql`
 			subscription order {
-				jobs(order_by: { id: desc }) {
+				jobs(order_by: { id: desc, batch: asc_nulls_first }, limit: 1000) {
 					id
 					batch
 					customer {
@@ -222,7 +216,7 @@
 	});
 	$: jobs =
 		$jobsStore?.data?.jobs?.map((j) => {
-			return { value: j, name: `${j.id} (${j.batch})` };
+			return { value: j, name: `${j.id} ${j?.batch && j.batch > 0 ? `(${String.fromCharCode(64 + j.batch)})` : ''}` };
 		}) || [];
 	let job;
 
@@ -241,42 +235,14 @@
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
 	$: suppliersNames = suppliers?.flatMap((s) => s.names)?.map((n) => n?.toLowerCase());
-	$: console.log('suppliersNames', suppliersNames);
-	/* $: {
-		if (!selectedSupplierId && suppliers) {
-			selectedSupplierId = suppliers?.[0]?.id;
-			order.supplier_id = selectedSupplierId;
-			order.supplier.id = selectedSupplierId;
-			order.supplier.name = suppliers?.[0]?.name;
-			order.supplier.names = suppliers?.[0]?.names;
-		}
-	} */
+	//$: console.log('suppliersNames', suppliersNames);
 	let selectedSupplierId = undefined;
 
-	let orders = [
-		/* {
-			orders_items: [],
-			supplier: {},
-			user_id: user?.id,
-			user
-		},
-		{
-			orders_items: [],
-			supplier: {},
-			user_id: user?.id,
-			user
-		} */
-	];
-
-	/* $: {
-		if (suppliers?.length > 0) {
-			orders[0].supplier = suppliers[0];
-		}
-	} */
+	let orders = [];
 	$: console.log('PAGE ORDERS:', orders);
 
 	$: {
-		if (!$suppliersStore.fetching) {
+		if (!$suppliersStore.fetching && orders.length === 0) {
 			addOrder();
 		}
 	}
@@ -420,7 +386,17 @@
 					spn: i?.spn,
 					quantity: i?.quantity,
 					price: i?.price,
-					created_at: i?.created_at
+					created_at: i?.created_at,
+					jobs_allocations: {
+						data: [
+							{
+								quantity: i?.quantity,
+								job_id: job?.id,
+								job_batch: job?.batch,
+								user_id: $page?.data?.user?.id
+							}
+						]
+					}
 				};
 				if (shipmentIds?.[orderIdx]?.[i.__shipmentIdx]) {
 					item.orders_items_shipments = {
@@ -583,8 +559,7 @@
 			}
 		};
 	}
-	let shipments: Shipment[][] = [[shipmentTemplate()]];
-	//$: shipments = [[{ ...structuredClone(shipmentTemplate) }]];
+	let shipments: Shipment[][] = [];
 	$: console.log('shipments', shipments);
 	$: console.log('tabState', tabState, openOrderIdx);
 	$: console.log('carriers', carriers);
@@ -795,7 +770,14 @@
 								{#each missingImportData2 as missing, idx}
 									{#if missing.flat().includes(true)}
 										<li class:line-through={!imported[idx]?._import} class:text-gray-500={!imported[idx]?._import}>
-											Line {idx + 1} is missing required import data
+											<button
+												class="underline"
+												on:click={() => {
+													document
+														.getElementById('importLine' + idx)
+														.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+												}}>Line {idx + 1}</button
+											> is missing required import data
 										</li>
 										<ul class="ml-4 list-disc list-inside">
 											{#each missing as [isMissing, message]}
@@ -817,7 +799,7 @@
 					</div>
 				{/if}
 			</div>
-			<div class="max-h-max overflow-y-auto">
+			<div class="max-h-96 overflow-y-auto">
 				<Table>
 					<TableHead>
 						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
@@ -853,7 +835,7 @@
 
 								<TableBodyCell tdClass="px-1 py-1 text-xs">
 									<!-- <p>{part ? part : 'undefined'}</p> -->
-									<p>
+									<p id={'importLine' + idx}>
 										<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
 									</p>
 									<p class="text-xs italic">

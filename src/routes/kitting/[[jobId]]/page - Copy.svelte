@@ -21,8 +21,8 @@
 	$: batchId = $page?.data?.batchId || 0;
 
 	let query = gql`
-		subscription jobInfo($jobId: bigint!, $batches: [Int!] = [0]) {
-			jobs(where: { _and: { id: { _eq: $jobId }, batch: { _in: $batches } } }) {
+		subscription jobInfo($jobId: bigint!, $batchId: Int = 0) {
+			jobs_by_pk(id: $jobId, batch: $batchId) {
 				id
 				quantity
 				batch
@@ -73,43 +73,16 @@
 						name
 					}
 				}
-				jobs_allocations {
-					id
-					order_item_id
-					stock_item_id
-					quantity
-					orders_item {
+				jobs_kits {
+					kit {
 						id
 						created_at
-						updated_at
-						tracking
-						order {
+						kits_items {
 							id
-							reference
-							supplier {
-								id
-								name
-							}
-						}
-						part
-						part_id
-						partByPartId {
-							description
-							name
-						}
-						price
-						quantity
-						user {
-							id
-							username
-							first_name
-							last_name
-							initials
-							color
-						}
-						orders_items_receiveds {
-							id
+							kit_id
 							quantity
+							part
+							part_id
 							created_at
 							updated_at
 							user {
@@ -135,6 +108,72 @@
 						}
 					}
 				}
+				jobs_orders {
+					id
+					order {
+						orders_items {
+							id
+							created_at
+							updated_at
+							tracking
+							order {
+								id
+								reference
+								supplier {
+									id
+									name
+								}
+							}
+							part
+							part_id
+							partByPartId {
+								description
+								name
+							}
+							price
+							quantity
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+							orders_items_receiveds {
+								id
+								quantity
+								created_at
+								updated_at
+								user {
+									id
+									username
+									first_name
+									last_name
+									initials
+									color
+								}
+								orders_item {
+									id
+									price
+									quantity
+									order {
+										id
+										reference
+										supplier {
+											name
+										}
+									}
+								}
+							}
+						}
+						id
+						supplier {
+							id
+							name
+						}
+					}
+				}
 			}
 		}
 	`;
@@ -142,9 +181,9 @@
 	$: jobInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query,
-		variables: { jobId, batches: [batchId] }
+		variables: { jobId, batchId }
 	});
-	$: jobInfo = $jobInfoStore?.data?.jobs?.[0];
+	$: jobInfo = $jobInfoStore?.data?.jobs_by_pk;
 	$: orders = jobInfo?.jobs_orders || [];
 	$: kits = jobInfo?.jobs_kits?.map((jk) => jk.kit) || [];
 	$: console.log('kits', kits);

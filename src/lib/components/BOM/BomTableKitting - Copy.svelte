@@ -207,16 +207,6 @@
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 
 	let collapseReferenceRanges = false;
-
-	$: console.log(
-		'testtttttttttttt',
-		job?.jobs_allocations
-			?.filter(
-				(allocation) =>
-					allocation.orders_item?.part_id === 'CL05B104KP5NNNC' || allocation.orders_item?.part === 'CL05B104KP5NNNC'
-			)
-			.flatMap((oi) => oi)
-	);
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -325,10 +315,10 @@
 			{#if job?.quantity && visibleColumns?.includes('build_quantity')}
 				<TableHeadCell padding="px-2 py-3">Build Qty</TableHeadCell>
 			{/if}
-			{#if job?.jobs_allocations && visibleColumns?.includes('order_quantity')}
+			{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
 				<TableHeadCell padding="px-2 py-3">Order Qty</TableHeadCell>
 			{/if}
-			{#if job?.jobs_allocations && visibleColumns?.includes('received_quantity')}
+			{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
 				<TableHeadCell padding="px-2 py-3">Received Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_kits}
@@ -348,13 +338,10 @@
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
 				{@const orderItems = lineKey
-					? job?.jobs_allocations
-							?.filter(
-								(allocation) => allocation.orders_item?.part_id === lineKey || allocation.orders_item?.part === lineKey
-							)
-							.flatMap((oi) => oi)
+					? job?.jobs_orders
+							?.map((jo) => jo.order?.orders_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
+							.flat()
 					: []}
-				{@debug orderItems}
 				{@const lineSuppliers = orderItems?.flatMap((oi) => oi?.order?.supplier?.name)}
 				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
@@ -425,7 +412,7 @@
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{buildQty}</TableBodyCell>
 						{/if}
 
-						{#if job?.jobs_allocations && visibleColumns?.includes('order_quantity')}
+						{#if job?.jobs_orders && visibleColumns?.includes('order_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
 									{#each orderItems as orderItem}
@@ -439,7 +426,7 @@
 							</TableBodyCell>
 						{/if}
 
-						{#if job?.jobs_allocations && visibleColumns?.includes('received_quantity')}
+						{#if job?.jobs_orders && visibleColumns?.includes('received_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
 									{receivedItemQty}

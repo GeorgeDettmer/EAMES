@@ -140,7 +140,7 @@
 		return url;
 	}
 
-	$: _classes = `cursor-pointer h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center ${
+	$: _classes = `cursor-pointer h-12 w-auto px-2 rounded font-medium inline-flex items-center justify-center ${
 		shipmentInfo?.confirmed_delivery_date
 			? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300 '
 			: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '

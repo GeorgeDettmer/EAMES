@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { datetimeFormat, padString } from '$lib/utils';
+	import { datetimeFormat, numberToLetter, padString } from '$lib/utils';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import {
 		Table,
@@ -258,6 +258,13 @@ subscription order($orderId: bigint!) {
 						}
 						price
 						quantity
+						currencyCode
+						jobs_allocations {
+							id
+							job_id
+							job_batch
+							quantity
+						}
 						user {
 							id
 							username
@@ -327,6 +334,7 @@ subscription order($orderId: bigint!) {
 		0
 	);
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
+	$: jobs_allocations = orderItems?.flatMap((oi) => oi?.jobs_allocations || [])?.filter((v, i, a) => a.indexOf(v) === i);
 
 	$: console.log('order:', order);
 
@@ -469,6 +477,7 @@ subscription order($orderId: bigint!) {
 	$: console.log('shipments', shipments, $shipmentsStore);
 
 	let selectedShipmentIdx: number | undefined = undefined;
+	let selectedAllocationIdx: number | undefined = undefined;
 
 	let addShipmentVisible = false;
 	let addShipmentSelected = allShipments?.[0];
@@ -639,44 +648,95 @@ subscription order($orderId: bigint!) {
 				</div>
 			</div>
 			<div class="flex-col my-auto ml-auto">
-				<div class=" flex">
-					<div class="flex flex-wrap">
-						{#each shipments as shipment, idx}
-							<div class="p-0.5">
-								<!-- svelte-ignore a11y-no-static-element-interactions -->
-								<div
-									class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
-									on:mouseenter={() => (selectedShipmentIdx = idx)}
-									on:mouseleave={() => (selectedShipmentIdx = undefined)}
-								>
-									{#if shipments?.length > 1}
-										<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
-									{/if}
-									<OrderShipments {shipment} showItems popover={false} allowEdit />
+				<div class="flex gap-x-2">
+					<div class="p-1 outline outline-1 rounded outline-gray-400 relative">
+						<div class="absolute -top-3 bg-white dark:bg-slate-600 dark:text-white text-black rounded">
+							<p class="text-xs px-0.5">Shipments</p>
+						</div>
+						<div class="flex flex-wrap">
+							{#each shipments as shipment, idx}
+								<div class="px-0.5">
+									<!-- svelte-ignore a11y-no-static-element-interactions -->
+									<div
+										class="flex rounded {selectedShipmentIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
+										on:mouseenter={() => (selectedShipmentIdx = idx)}
+										on:mouseleave={() => (selectedShipmentIdx = undefined)}
+									>
+										{#if shipments?.length > 1}
+											<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
+										{/if}
+										<OrderShipments {shipment} showItems popover={false} allowEdit />
+									</div>
 								</div>
-							</div>
-						{:else}
-							<div class="flex rounded bg-orange-500 p-2 gap-x-2">
-								<img
+							{:else}
+								<div class="flex rounded bg-orange-500 p-2 gap-x-2">
+									<img
+										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+										width="20"
+										height="20"
+										src="https://img.icons8.com/ios/50/cardboard-box.png"
+										alt="box-other"
+									/>
+									<p class="my-auto text-center text-white font-semibold uppercase">No shipments</p>
+								</div>
+							{/each}
+						</div>
+					</div>
+					<div class="p-1 outline outline-1 rounded outline-gray-400 relative">
+						<div class="absolute -top-3 bg-white dark:bg-slate-600 dark:text-white text-black rounded">
+							<p class="text-xs px-0.5">Allocations</p>
+						</div>
+						<div class="flex flex-wrap">
+							{#each jobs_allocations as allocation, idx}
+								<div class="px-0.5">
+									<!-- svelte-ignore a11y-no-static-element-interactions -->
+									<div
+										class="flex rounded {selectedAllocationIdx === idx ? 'bg-green-500' : 'bg-slate-500'}"
+										on:mouseenter={() => (selectedAllocationIdx = idx)}
+										on:mouseleave={() => (selectedAllocationIdx = undefined)}
+									>
+										{#if jobs_allocations?.length > 1}
+											<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
+										{/if}
+										<div
+											class="h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+										>
+											<div class="overflow-hidden">
+												<div>
+													<p class="font-bold">
+														{allocation?.job_id}
+														{#if allocation?.job_batch}
+															({numberToLetter(allocation.job_batch - 1)})
+														{/if}
+													</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							{:else}
+								<div class="flex rounded bg-orange-500 p-2 gap-x-2">
+									<!-- <img
 									style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
 									width="20"
 									height="20"
 									src="https://img.icons8.com/ios/50/cardboard-box.png"
 									alt="box-other"
-								/>
-								<p class="my-auto text-center text-white font-semibold uppercase">No shipments</p>
-							</div>
-						{/each}
+								/> -->
+									<p class="my-auto text-center text-white font-semibold uppercase">No allocations</p>
+								</div>
+							{/each}
+						</div>
 					</div>
-					<div>
-						{#each order?.jobs_orders as { job }}
-							<a
+					<!-- <div>
+						{#each jobs_allocations as { job_id }}
+							<div
 								class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-								href={window.origin + '/receiving/' + (job?.id || '')}
+								href={window.origin + '/receiving/' + (job_id || '')}
 							>
 								<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 									<div>
-										<p class="font-bold">{job?.id}</p>
+										<p class="font-bold">{job_id}</p>
 									</div>
 									<div>
 										<p class="float-right" />
@@ -685,12 +745,11 @@ subscription order($orderId: bigint!) {
 										<p />
 									</div>
 									<div>
-										<p class="float-right">{order?.jobs_orders?.length}</p>
 									</div>
 								</div>
-							</a>
+							</div>
 						{/each}
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>
@@ -703,6 +762,7 @@ subscription order($orderId: bigint!) {
 				<TableHeadCell padding="px-3 py-1">Category</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1">Part</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1">Order Qty</TableHeadCell>
+				<TableHeadCell padding="px-3 py-1">Allocations</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1">Unit Price</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1">Total Price</TableHeadCell>
 				<TableHeadCell padding="px-3 py-1">
@@ -793,6 +853,54 @@ subscription order($orderId: bigint!) {
 							<Badge class="mx-0.5" color={'blue'}>
 								{item?.quantity}
 							</Badge>
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
+							<div class="">
+								<!-- {#each item?.tracking || [] as tracking}
+									<TrackingStatus {tracking} showText={true} width={24} height={24} />
+								{/each} -->
+								{#each item?.jobs_allocations as allocation, idx}
+									{@const allocationIdx = jobs_allocations?.findIndex((a) => a?.id === allocation?.id)}
+									<div class="py-0.5 mx-auto">
+										<div
+											class="flex w-fit rounded bg-slate-500"
+											on:mouseenter={() => (selectedAllocationIdx = allocationIdx)}
+											on:mouseleave={() => (selectedAllocationIdx = undefined)}
+										>
+											<!-- {#if shipments?.length > 1}
+											<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
+												{shipmentIdx + 1}
+											</p>
+										{/if} -->
+											<!-- TODO: Replace badge so that layout is cleaner -->
+											<Badge color="blue">
+												<p class="text-left min-w-14">
+													{allocation?.job_id}
+													{#if allocation?.job_batch}
+														({numberToLetter(allocation.job_batch - 1)})
+													{/if}
+												</p>
+											</Badge>
+											<!-- {#if oi?.quantity} -->
+											<p class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white">
+												{allocation?.quantity || item.quantity}
+											</p>
+											<!-- {/if} -->
+										</div>
+									</div>
+								{:else}
+									<div class="flex">
+										<img
+											style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
+											width="24"
+											height="24"
+											src="https://img.icons8.com/ios/50/cardboard-box.png"
+											alt="box-other"
+										/>
+										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+									</div>
+								{/each}
+							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							{new Intl.NumberFormat('en-GB', {
@@ -933,35 +1041,36 @@ subscription order($orderId: bigint!) {
 				{/each}
 			</TableBody>
 			<TableHead>
-				<TableBodyCell padding="px-3 py-1" />
-				<TableBodyCell padding="px-3 py-1" />
-				<TableBodyCell padding="px-3 py-1" />
-				<TableBodyCell padding="px-3 py-1" />
-				<TableBodyCell padding="px-3 py-1">
-					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1">
+					<Badge color="blue">{totalOrdered}</Badge>
 				</TableBodyCell>
-				<TableBodyCell padding="px-3 py-1" />
-				<TableBodyCell padding="px-3 py-1">
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1" />
+				<TableBodyCell padding="px-2 py-1">
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
-				<TableBodyCell padding="px-3 py-1">
+				<TableBodyCell padding="px-2 py-1">
 					<!-- 					<TrackingStatus isDelivered={trackings.filter((t) => t?.statusCode === 'DE').length === orderItems.length} />
  -->
 				</TableBodyCell>
-				<TableBodyCell padding="px-3 py-1">
+				<TableBodyCell padding="px-2 py-1">
 					<ReceivingStatus isReceived={totalRecieved === totalOrdered} />
 				</TableBodyCell>
 				{#if showRecieved}
-					<TableBodyCell padding="px-3 py-1">
+					<TableBodyCell padding="px-2 py-1">
 						<Badge class="mx-0.5" color={!totalRecieved ? 'red' : totalOrdered === totalRecieved ? 'green' : 'yellow'}>
 							{totalRecieved}
 						</Badge>
 					</TableBodyCell>
 				{/if}
-				<TableBodyCell padding="px-3 py-1">
+				<TableBodyCell padding="px-2 py-1">
 					{#if editable}
 						<Button
 							size="sm"

@@ -244,10 +244,12 @@
 									{/if} -->
 										<!-- TODO: Replace badge so that layout is cleaner -->
 										<Badge color="blue">
-											{allocation?.job_id}
-											{#if allocation?.job_batch}
-												({numberToLetter(allocation.job_batch - 1)})
-											{/if}
+											<p class="text-left min-w-14">
+												{allocation?.job_id}
+												{#if allocation?.job_batch}
+													({numberToLetter(allocation.job_batch - 1)})
+												{/if}
+											</p>
 										</Badge>
 										<!-- {#if oi?.quantity} -->
 										<p class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white">

@@ -354,7 +354,6 @@
 							)
 							.flatMap((oi) => oi)
 					: []}
-				{@debug orderItems}
 				{@const lineSuppliers = orderItems?.flatMap((oi) => oi?.order?.supplier?.name)}
 				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}

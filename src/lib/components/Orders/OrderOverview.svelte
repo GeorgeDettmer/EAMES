@@ -690,7 +690,7 @@ subscription order($orderId: bigint!) {
 							<p class="text-xs px-0.5">Allocations</p>
 						</div>
 						<div class="flex flex-wrap">
-							{#each jobs_allocations as allocation, idx}
+							{#each unique_jobs_allocations as allocation, idx}
 								<div class="px-0.5">
 									<!-- svelte-ignore a11y-no-static-element-interactions -->
 									<div
@@ -698,7 +698,7 @@ subscription order($orderId: bigint!) {
 										on:mouseenter={() => (selectedAllocationIdx = idx)}
 										on:mouseleave={() => (selectedAllocationIdx = undefined)}
 									>
-										{#if jobs_allocations?.length > 1}
+										{#if unique_jobs_allocations?.length > 1}
 											<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
 										{/if}
 										<div
@@ -863,7 +863,9 @@ subscription order($orderId: bigint!) {
 									<TrackingStatus {tracking} showText={true} width={24} height={24} />
 								{/each} -->
 								{#each item?.jobs_allocations as allocation, idx}
-									{@const allocationIdx = jobs_allocations?.findIndex((a) => a?.id === allocation?.id)}
+									{@const allocationIdx = jobs_allocations?.findIndex(
+										(a) => a?.job_id === allocation?.job_id && a?.batch_id === allocation?.batch_id
+									)}
 									<div class="py-0.5 mx-auto">
 										<div
 											class="flex w-fit rounded bg-slate-500"

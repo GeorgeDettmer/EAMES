@@ -5,6 +5,8 @@
 	export let data: PageData;
 
 	const { jobId } = data;
+
+	$: console.log('data',data)
 </script>
 
 <div class="p-2 bg-slate-500">

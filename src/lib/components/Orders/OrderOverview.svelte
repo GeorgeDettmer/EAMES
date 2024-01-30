@@ -699,7 +699,7 @@ subscription order($orderId: bigint!) {
 											<p class="my-auto text-center text-white font-semibold w-4">{idx + 1}</p>
 										{/if}
 										<div
-											class="h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+											class="h-12 w-auto p-2 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
 										>
 											<div class="overflow-hidden">
 												<div>
@@ -890,14 +890,7 @@ subscription order($orderId: bigint!) {
 									</div>
 								{:else}
 									<div class="flex">
-										<img
-											style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-											width="24"
-											height="24"
-											src="https://img.icons8.com/ios/50/cardboard-box.png"
-											alt="box-other"
-										/>
-										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No allocation</p>
 									</div>
 								{/each}
 							</div>

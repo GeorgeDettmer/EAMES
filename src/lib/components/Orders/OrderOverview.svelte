@@ -334,9 +334,12 @@ subscription order($orderId: bigint!) {
 		0
 	);
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
-	$: jobs_allocations = orderItems?.flatMap((oi) => oi?.jobs_allocations || [])?.filter((v, i, a) => a.indexOf(v) === i);
+	$: jobs_allocations = orderItems?.flatMap((oi) => oi?.jobs_allocations || []);
 
-	$: console.log('order:', order);
+	$: unique_jobs_allocations = jobs_allocations?.filter(
+		(v, i, s) => i === s.findIndex((p) => p.job_id === v.job_id && p.batch_id === v.batch_id)
+	);
+	$: console.log('allocations:', jobs_allocations, unique_jobs_allocations);
 
 	export let recieveModal = false;
 	export let orderItemSelected = {};

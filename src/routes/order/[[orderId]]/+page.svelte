@@ -26,6 +26,7 @@
 	import { windowTitleStore } from '$lib/stores';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
 	import type { PageData } from './$types';
+	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
 
 	export let data: PageData;
 
@@ -117,6 +118,7 @@
 				supplier {
 					id
 					name
+					tags
 				}
 				user {
 					id
@@ -686,7 +688,7 @@
 					?.filter((v, i, a) => a.indexOf(v) === i)}
 				{@const allocations = order?.orders_items
 					?.flatMap((oi) => oi?.jobs_allocations || [])
-					?.filter((v, i, a) => a.indexOf(v) === i)}
+					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.batch_id === v.batch_id))}
 				<TableBodyRow color={'default'} class={``}>
 					{@const jobsOrders = order?.jobs_orders || []}
 					<TableBodyCollapsible
@@ -726,30 +728,7 @@
 						columnId="job"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div class="w-fit flex flex-wrap text-xs gap-1">
-							{#each jobsOrders || [] as jo}
-								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<!-- svelte-ignore a11y-no-static-element-interactions -->
-								<div
-									class="cursor-pointer"
-									on:click={(e) => {
-										jobSearch = jobSearch === String(jo?.job?.id) ? '' : String(jo?.job?.id);
-										replaceStateWithQuery({
-											job: jobSearch
-										});
-									}}
-								>
-									<Badge color="blue">{jo?.job?.id}</Badge>
-								</div>
-								<!-- </a> -->
-							{:else}
-								<div class="cursor-default">
-									<Badge color="dark">N/A</Badge>
-								</div>
-							{/each}
-						</div>
-						<div class="w-fit flex flex-wrap text-xs gap-1">
+						<div class="w-fit flex flex-wrap text-xs gap-0.5">
 							{#each allocations || [] as allocation}
 								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -763,7 +742,7 @@
 										});
 									}}
 								>
-									<Badge color="red">
+									<Badge color="blue">
 										{allocation?.job_id}
 										{#if allocation?.job_batch}
 											({numberToLetter(allocation.job_batch - 1)})
@@ -835,6 +814,7 @@
 						>
 							{order?.supplier?.name}
 						</p>
+
 						<Popover placement="left">
 							<SupplierInfo supplierId={order?.supplier?.id} />
 						</Popover>
@@ -903,6 +883,13 @@
 					</TableBodyCollapsible>
 				</TableBodyRow>
 				{#if openRows?.includes(idx)}
+					<TableBodyRow class="h-24 ">
+						<TableBodyCell colspan="4" tdClass="p-0" />
+						<TableBodyCell tdClass="p-0">
+							<SupplierInfo supplierId={order.supplier.id} />
+						</TableBodyCell>
+						<TableBodyCell colspan="4" tdClass="p-0" />
+					</TableBodyRow>
 					<TableBodyRow class="h-24 ">
 						<TableBodyCell colspan="9" tdClass="p-0">
 							<div class="">

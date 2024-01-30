@@ -88,7 +88,7 @@
 	</div>
 	{#if supplierInfo?.tags?.length}
 		<div class="flex flex-wrap gap-1 ml-auto w-48 mt-2">
-			<SupplierTags tags={supplier?.tags} />
+			<SupplierTags tags={supplierInfo?.tags} />
 		</div>
 	{/if}
 {:else}

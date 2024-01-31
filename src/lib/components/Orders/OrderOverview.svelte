@@ -337,7 +337,7 @@ subscription order($orderId: bigint!) {
 	$: jobs_allocations = orderItems?.flatMap((oi) => oi?.jobs_allocations || []);
 
 	$: unique_jobs_allocations = jobs_allocations?.filter(
-		(v, i, s) => i === s.findIndex((p) => p.job_id === v.job_id && p.batch_id === v.batch_id)
+		(v, i, s) => i === s.findIndex((p) => p?.job_id === v?.job_id && p?.job_batch === v?.job_batch)
 	);
 	$: console.log('allocations:', jobs_allocations, unique_jobs_allocations);
 
@@ -731,28 +731,6 @@ subscription order($orderId: bigint!) {
 							{/each}
 						</div>
 					</div>
-					<!-- <div>
-						{#each jobs_allocations as { job_id }}
-							<div
-								class="m-1 h-12 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-								href={window.origin + '/receiving/' + (job_id || '')}
-							>
-								<div class="overflow-hidden grid grid-cols-2 gap-x-2">
-									<div>
-										<p class="font-bold">{job_id}</p>
-									</div>
-									<div>
-										<p class="float-right" />
-									</div>
-									<div>
-										<p />
-									</div>
-									<div>
-									</div>
-								</div>
-							</div>
-						{/each}
-					</div> -->
 				</div>
 			</div>
 		</div>
@@ -805,6 +783,7 @@ subscription order($orderId: bigint!) {
 				{#each orderItems as item, idx}
 					{@const recievedQty = item?.orders_items_receiveds?.reduce((a, v) => a + v.quantity, 0)}
 					{@const shipmentsQty = item?.orders_items_shipments?.reduce((a, v) => a + v.quantity, 0)}
+					{@const allocationsQty = item?.jobs_allocations?.reduce((a, v) => a + v.quantity, 0)}
 					<TableBodyRow
 						class="p-0 object-right"
 						color={false
@@ -863,12 +842,16 @@ subscription order($orderId: bigint!) {
 									<TrackingStatus {tracking} showText={true} width={24} height={24} />
 								{/each} -->
 								{#each item?.jobs_allocations as allocation, idx}
-									{@const allocationIdx = jobs_allocations?.findIndex(
-										(a) => a?.job_id === allocation?.job_id && a?.batch_id === allocation?.batch_id
+									{@const allocationIdx = unique_jobs_allocations?.findIndex(
+										(a) => a?.job_id === allocation?.job_id && a?.job_batch === allocation?.job_batch
 									)}
 									<div class="py-0.5 mx-auto">
 										<div
-											class="flex w-fit rounded bg-slate-500"
+											class="flex w-fit rounded {selectedAllocationIdx === allocationIdx
+												? 'bg-green-500'
+												: allocation?.quantity && allocationsQty !== item.quantity
+												? 'bg-red-600'
+												: 'bg-slate-500'}"
 											on:mouseenter={() => (selectedAllocationIdx = allocationIdx)}
 											on:mouseleave={() => (selectedAllocationIdx = undefined)}
 										>

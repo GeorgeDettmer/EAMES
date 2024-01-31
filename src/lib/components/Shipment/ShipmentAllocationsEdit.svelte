@@ -86,9 +86,13 @@
 				use:enhance
 				on:submit|preventDefault={(e) => console.warn(e)}
 			>
-				<input type="hidden" name="id" bind:value={selectedAllocation.id} />
+				{#if selectedAllocation?.id}
+					<input type="hidden" name="id" bind:value={selectedAllocation.id} />
+				{/if}
 				<input type="hidden" name="order_item_id" bind:value={orderItem.id} />
-				<input type="hidden" name="shipment_id" bind:value={selectedAllocation.shipment.id} />
+				{#if selectedAllocation?.shipment?.id}
+					<input type="hidden" name="shipment_id" bind:value={selectedAllocation.shipment.id} />
+				{/if}
 				<select
 					name="allocation"
 					bind:value={selectedAllocation}

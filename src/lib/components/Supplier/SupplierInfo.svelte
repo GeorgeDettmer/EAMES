@@ -3,7 +3,7 @@
 
 	import type { Supplier } from '$lib/types';
 	import { getContextClient, gql, queryStore } from '@urql/svelte';
-	import { Badge, Skeleton, Spinner } from 'flowbite-svelte';
+	import { Badge, Skeleton, Spinner, Tooltip } from 'flowbite-svelte';
 
 	export let supplierId: string = '';
 	export let supplier: Supplier | undefined = undefined;
@@ -88,7 +88,7 @@
 						border
 						color={supplierInfo?.risk_level === 'HIGH' ? 'red' : supplierInfo?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}
 					>
-						<p class="text-xs">{supplierInfo?.risk_level}</p>
+						<p class="text-xs font-bold">{supplierInfo?.risk_level?.[0]}</p>
 					</Badge>
 				</div>
 			</div>

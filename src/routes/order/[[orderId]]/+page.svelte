@@ -114,6 +114,13 @@
 						job_id
 						job_batch
 					}
+					orders_items_shipments {
+						id
+						shipment {
+							id
+							confirmed_delivery_date
+						}
+					}
 				}
 				supplier {
 					id
@@ -402,6 +409,7 @@
 {:else}
 	<Table shadow hoverable>
 		<TableHead>
+			<TableHeadCell padding="px-0" />
 			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
 				<input
 					class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
@@ -666,6 +674,7 @@
 			</TableHeadCell>
 		</TableHead>
 		<TableHead>
+			<TableHeadCell padding="px-0" />
 			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>PO#</TableHeadCollapsible>
 			<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Jobs</TableHeadCollapsible>
 			<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns}>Buyer</TableHeadCollapsible>
@@ -684,6 +693,11 @@
 					(a, v) => a + v.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity,
 					0
 				)}
+				{@const shipments = order?.orders_items?.flatMap((oi) =>
+					oi?.orders_items_shipments
+						?.flatMap((ois) => ois?.shipment)
+						?.filter((v, i, s) => i === s.findIndex((a) => a.id === v.id))
+				)}
 				{@const categories = order?.orders_items
 					?.map((oi) => oi?.category || 'Unknown')
 					?.filter((v, i, a) => a.indexOf(v) === i)}
@@ -692,24 +706,26 @@
 					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.batch_id === v.batch_id))}
 				<TableBodyRow color={'default'} class={``}>
 					{@const jobsOrders = order?.jobs_orders || []}
+					<TableBodyCell tdClass="px-1 whitespace-nowrap font-medium">
+						<button
+							class="my-auto cursor-pointer"
+							on:click|preventDefault={(e) => {
+								handleRowClick(idx, e);
+							}}
+						>
+							{#if openRows?.includes(idx)}
+								<ChevronDown size="22" />
+							{:else}
+								<ChevronRight size="22" />
+							{/if}
+						</button>
+					</TableBodyCell>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"
 						columnId="id"
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<div class="flex">
-							<button
-								class="my-auto -ml-6 mr-1 p-0 cursor-pointer"
-								on:click|preventDefault={(e) => {
-									handleRowClick(idx, e);
-								}}
-							>
-								{#if openRows?.includes(idx)}
-									<ChevronDown size="20" />
-								{:else}
-									<ChevronRight size="20" />
-								{/if}
-							</button>
 							<a href={`${window.origin}/order/${order?.id}`}>
 								<div>
 									<p class={classes.link}>
@@ -801,15 +817,7 @@
 						columnId="supplier"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<!-- svelte-ignore a11y-no-static-element-interactions -->
-						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-						<Badge
-							color={order?.supplier?.risk_level === 'HIGH'
-								? 'red'
-								: order?.supplier?.risk_level === 'MEDIUM'
-								? 'yellow'
-								: 'blue'}
+						<button
 							on:click={(e) => {
 								supplierSearch = order?.supplier?.id;
 								replaceStateWithQuery({
@@ -817,11 +825,18 @@
 								});
 							}}
 						>
-							<p class={classes.popover}>
-								{order?.supplier?.name}
-							</p>
-						</Badge>
-
+							<Badge
+								color={order?.supplier?.risk_level === 'HIGH'
+									? 'red'
+									: order?.supplier?.risk_level === 'MEDIUM'
+									? 'yellow'
+									: 'blue'}
+							>
+								<p class={classes.popover}>
+									{order?.supplier?.name}
+								</p>
+							</Badge>
+						</button>
 						<Popover placement="left">
 							<SupplierInfo supplierId={order?.supplier?.id} />
 						</Popover>
@@ -857,48 +872,59 @@
 						columnId="status"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
-							{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
+						<div class="flex">
+							<!-- {#if true}
 								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
 									width="24"
 									height="24"
-									src="https://img.icons8.com/windows/32/unpacking.png"
-									alt="unpacking"
+									src="https://img.icons8.com/windows/32/delivered-box.png"
+									alt="delivered-box"
 								/>
-								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
-							{:else if ordersTotalReceivedQty === 0}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/unpacking.png"
-									alt="unpacking"
-								/>
-								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
-							{:else if ordersTotalReceivedQty < ordersTotalQty}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/unpacking.png"
-									alt="unpacking"
-								/>
-								<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
-							{/if}
-						</a>
+							{/if} -->
+							<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
+								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/unpacking.png"
+										alt="unpacking"
+									/>
+									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
+								{:else if ordersTotalReceivedQty === 0}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/unpacking.png"
+										alt="unpacking"
+									/>
+									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
+								{:else if ordersTotalReceivedQty < ordersTotalQty}
+									<img
+										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+										width="24"
+										height="24"
+										src="https://img.icons8.com/windows/32/unpacking.png"
+										alt="unpacking"
+									/>
+									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
+								{/if}
+							</a>
+						</div>
 					</TableBodyCollapsible>
 				</TableBodyRow>
 				{#if openRows?.includes(idx)}
-					<TableBodyRow class="h-24 ">
-						<TableBodyCell colspan="4" tdClass="p-0" />
-						<TableBodyCell tdClass="p-0">
+					<TableBodyRow>
+						<TableBodyCell colspan="5" tdClass="p-0" />
+						<TableBodyCell tdClass="py-1">
 							<SupplierInfo supplierId={order.supplier.id} />
 						</TableBodyCell>
 						<TableBodyCell colspan="4" tdClass="p-0" />
 					</TableBodyRow>
-					<TableBodyRow class="h-24 ">
-						<TableBodyCell colspan="9" tdClass="p-0">
+					<TableBodyRow class="h-24">
+						<TableBodyCell colspan="10" tdClass="p-0">
 							<div class="">
 								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
 							</div>
@@ -916,6 +942,7 @@
 		<TableHead>
 			{#if !filtered}
 				<TableHeadCell
+					colspan="2"
 					on:click={() => {
 						/* if (!queryOffset) {
 					queryOffset = orders?.[0]?.id;
@@ -927,9 +954,8 @@
 					<div class={'flex cursor-point' + classes.link}><ChevronLeft size="16" />Prev {$queryLimit}</div>
 				</TableHeadCell>
 			{:else}
-				<TableHeadCell />
+				<TableHeadCell colspan="2" />
 			{/if}
-
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell />

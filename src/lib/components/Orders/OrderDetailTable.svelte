@@ -160,7 +160,7 @@
 			<TableHeadCell padding="px-1 py-1">Order</TableHeadCell>
 		{/if}
 		<TableHeadCell padding="px-1 py-1">Order Item</TableHeadCell>
-		<TableHeadCell padding="px-1 py-1">User</TableHeadCell>
+		<TableHeadCell padding="px-1 py-1">Buyer</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">Category</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">PN</TableHeadCell>
 		<TableHeadCell padding="px-1 py-1">SPN</TableHeadCell>
@@ -232,8 +232,8 @@
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 						<div class="">
 							{#each item?.jobs_allocations as allocation, idx}
-								<div class="py-0.5 mx-auto">
-									<div class="flex w-fit rounded bg-slate-500">
+								<div class="py-0.5">
+									<div class="flex mx-auto w-fit rounded bg-slate-500">
 										<!-- TODO: Replace badge so that layout is cleaner -->
 										<Badge color="blue">
 											<p class="text-left min-w-14">
@@ -250,7 +250,9 @@
 								</div>
 							{:else}
 								<div class="flex">
-									<p class="font-semibold pt-1 pl-1 uppercase text-xs">No allocation</p>
+									<Badge color="dark">
+										<p class="font-semibold uppercase text-xs">No allocation</p>
+									</Badge>
 								</div>
 							{/each}
 						</div>
@@ -276,14 +278,14 @@
 					</TableBodyCell>
 
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs">
-						<div class="">
+						<div>
 							<!-- {#each item?.tracking || [] as tracking}
 								<TrackingStatus {tracking} showText={true} width={24} height={24} />
 							{/each} -->
 							{#each item?.orders_items_shipments as oi, idx}
 								{@const shipment = oi?.shipment}
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
-								<div class="flex w-fit rounded bg-slate-500 space-y-0.5">
+								<div class="flex mx-auto w-fit rounded bg-slate-500 space-y-0.5">
 									<!-- {#if shipments?.length > 1}
 										<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
 											{shipmentIdx + 1}
@@ -300,15 +302,10 @@
 									<!-- {/if} -->
 								</div>
 							{:else}
-								<div class="flex">
-									<img
-										style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/ios/50/cardboard-box.png"
-										alt="box-other"
-									/>
-									<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+								<div class="flex mx-auto">
+									<Badge color="dark">
+										<p class="font-semibold uppercase text-xs">No shipment</p>
+									</Badge>
 								</div>
 							{/each}
 						</div>

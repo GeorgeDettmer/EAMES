@@ -484,6 +484,8 @@ subscription order($orderId: bigint!) {
 
 	let addShipmentVisible = false;
 	let addShipmentSelected = allShipments?.[0];
+
+	$: console.log('order', order);
 </script>
 
 {#if editable}

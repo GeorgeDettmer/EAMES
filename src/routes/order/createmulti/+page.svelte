@@ -566,6 +566,11 @@
 	$: console.log('tabState', tabState, openOrderIdx);
 	$: console.log('carriers', carriers);
 
+	let allocated = [];
+	$: allocatable =
+		$jobsStore?.data?.jobs?.filter((v) => allocated.findIndex((a) => a?.id === v?.id && a?.batch === v?.batch) === -1) || [];
+	$: console.log('allocatable', allocatable);
+	let allocatableSelectValue;
 	let tabState = [true];
 	$: openOrderIdx = tabState.findIndex((v) => v);
 </script>
@@ -596,6 +601,36 @@
 			{/if}
 			<div class="w-full">
 				<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
+				<div>
+					<select
+						class="w-fit block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
+						bind:value={allocatableSelectValue}
+						placeholder={'Select job'}
+					>
+						<option value={null}> N/A </option>
+						{#each allocatable || [] as j}
+							<option value={j}>
+								{j.id}
+								{#if j.batch > 0}
+									({String.fromCharCode(64 + j.batch)})
+								{/if}
+							</option>
+						{/each}
+					</select>
+					<button class="my-auto" on:click={() => (allocated = [allocatableSelectValue, ...allocated])}>
+						<PlusOutline />
+					</button>
+				</div>
+				<div class="flex flex-wrap max-w-32 gap-1">
+					{#each allocated as j}
+						<Badge color="dark"
+							>{j.id}
+							{#if j.batch > 0}
+								({String.fromCharCode(64 + j.batch)})
+							{/if}</Badge
+						>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -658,6 +693,7 @@
 						<OrderCreateHeader bind:order />
 					</span>
 					<OrderCreateMulti
+						bind:jobs={allocated}
 						bind:shipments={shipments[idx]}
 						bind:order
 						showHeader={false}

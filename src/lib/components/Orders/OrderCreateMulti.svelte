@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { carrier_names, carrier_urls, carrier_codes, datetimeFormat } from '$lib/utils';
+	import { carrier_names, carrier_urls, carrier_codes, datetimeFormat, numberToLetter } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -21,13 +21,14 @@
 	import OrderOverview from './OrderOverview.svelte';
 	import { Plus } from 'svelte-heros-v2';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
+	import { ChevronDoubleDownOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 	import EditableText from '../Misc/EditableText.svelte';
 	import type { Shipment } from '$lib/types';
 
 	export let order;
 	export let shipments: Shipment[] = [];
+	export let jobs: any[] = [];
 	export let user = order?.user || $page?.data?.user;
 	export let allowAddLine: boolean = true;
 	export let showHeader: boolean = true;
@@ -66,6 +67,7 @@
 			created_at: new Date().toISOString(),
 			/* tracking: newTracking, */
 			category: newCategory,
+			jobs_allocations: newAllocations,
 			__shipmentIdx: newShipmentIdx
 		};
 		/* if (matchingLine) {
@@ -80,7 +82,7 @@
 		newPrice = 0;
 		newQuantity = 0;
 		newShipmentIdx = undefined;
-		newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
+		newAllocations = [];
 	}
 
 	export let selectedSupplierId: undefined | string = order?.id;
@@ -92,7 +94,8 @@
 	let newPart: string = '';
 	let newSPN: string = '';
 	let newPrice: number = 0;
-	let newTracking = [{ tracking_number: null, carrier_code: 'ups' }];
+	let newAllocations = [];
+	let newAllocation = { job_id: jobs?.[0]?.id, job_batch: jobs?.[0]?.batch, quantity: null };
 	let newShipmentIdx: number | undefined = undefined;
 
 	let orderTracking = { tracking_number: null, carrier_code: 'ups' };
@@ -130,9 +133,12 @@
 	onDestroy(() => {
 		console.log('OrderCreateMulti', 'destroy');
 	});
+
+	$: console.log('newAllocations', newAllocations, newAllocation);
 </script>
 
 <Modal bind:open={addLineModal} size="md">
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="py-4"
 		on:keydown={(e) => {
@@ -213,6 +219,71 @@
 					{/each}
 				</select>
 				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
+			</div>
+			<div class="col-span-2">
+				<Label for="small-input">Allocations</Label>
+				{#each newAllocations?.toReversed() as allocation, idx}
+					<div class="py-0.5 mx-auto">
+						<div
+							class="flex w-fit rounded {newAllocations?.reduce((a, v) => a + v.quantity, 0) !== newQuantity
+								? 'bg-red-600'
+								: 'bg-green-500'}"
+						>
+							<Badge
+								dismissable
+								color="blue"
+								on:dismiss={() => {
+									newAllocations = newAllocations.filter((v, i) => i !== idx);
+								}}
+							>
+								<p class="text-left min-w-14">
+									{allocation?.job_id}
+									{#if allocation?.job_batch}
+										({numberToLetter(allocation.job_batch - 1)})
+									{/if}
+								</p>
+							</Badge>
+							<p class="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white">
+								{allocation?.quantity || newQuantity}
+							</p>
+						</div>
+					</div>
+				{/each}
+				<div class="flex">
+					<select
+						class="w-fit text-xs disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-0.5"
+						on:change={({ target }) => {
+							console.log('change', target.selectedIdx, jobs?.[target.selectedIndex]);
+							newAllocation.job_id = jobs?.[target.selectedIndex]?.id;
+							newAllocation.job_batch = jobs?.[target.selectedIndex]?.batch;
+						}}
+					>
+						{#each jobs || [] as job, idx}
+							<option value={job}>
+								{idx + 1}) {job.id}
+								{#if job?.batch > 0}
+									({String.fromCharCode(64 + job.batch)})
+								{/if}
+							</option>
+						{/each}
+					</select>
+					<input
+						class="min-w-8 text-xs disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-0.5"
+						bind:value={newAllocation.quantity}
+						min="1"
+						type="number"
+					/>
+					<button
+						disabled={newAllocation.quantity < 1}
+						class="disabled:text-red-600"
+						on:click={() => {
+							newAllocations = [{ ...newAllocation }, ...newAllocations];
+							newAllocation = { job_id: null, job_batch: null, quantity: null };
+						}}
+					>
+						<PlusOutline />
+					</button>
+				</div>
 			</div>
 		</div>
 
@@ -340,10 +411,6 @@
 								<p>{datetimeFormat(item.created_at)}</p>
 							</Tooltip>
 						</TableBodyCell>
-						<!-- <TableBodyCell>
-							<p>{datetimeFormat(item.created_at)}</p>
-						</TableBodyCell> -->
-
 						<TableBodyCellEditable
 							tdClass="px-6 py-1 cursor-pointer"
 							bind:value={item.category}
@@ -352,27 +419,14 @@
 						>
 							{item?.category || 'Unknown'}
 						</TableBodyCellEditable>
-						<!-- <TableBodyCell>
-							<p>{item?.category || 'Unknown'}</p>
-						</TableBodyCell> -->
-						<!-- 					<TableBodyCell>
-						{item?.order?.supplier?.reference || ''}
-					</TableBodyCell> -->
 						<TableBodyCell tdClass="px-6 py-1">
 							<div>
 								<EditableText bind:innerText={item.part} />
-								<!-- <p>{item?.part}</p> -->
 								{#if item?.spn}
 									<EditableText classes="text-xs italic" bind:innerText={item.spn} />
-									<!-- <p class="text-xs italic">{item?.spn}</p> -->
 								{/if}
 							</div>
 						</TableBodyCell>
-						<!-- <TableBodyCell tdClass="px-6 py-1">
-							<Badge class="mx-0.5" color={'blue'}>
-								{item?.quantity}
-							</Badge>
-						</TableBodyCell> -->
 						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.quantity} inputType="number">
 							<Badge class="mx-0.5" color={'blue'}>
 								{item?.quantity}

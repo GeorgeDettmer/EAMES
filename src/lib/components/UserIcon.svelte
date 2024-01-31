@@ -42,7 +42,7 @@
 				{/if}
 			</Avatar>
 		{/if}
-		<div class="ml-1">
+		<div class="ml-1 text-black dark:text-white font-semibold">
 			<slot />
 		</div>
 	</Button>

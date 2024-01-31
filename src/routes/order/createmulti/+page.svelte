@@ -386,8 +386,10 @@
 					spn: i?.spn,
 					quantity: i?.quantity,
 					price: i?.price,
-					created_at: i?.created_at,
-					jobs_allocations: {
+					created_at: i?.created_at
+				};
+				if (job?.id) {
+					item.jobs_allocations = {
 						data: [
 							{
 								quantity: i?.quantity,
@@ -396,8 +398,8 @@
 								user_id: $page?.data?.user?.id
 							}
 						]
-					}
-				};
+					};
+				}
 				if (shipmentIds?.[orderIdx]?.[i.__shipmentIdx]) {
 					item.orders_items_shipments = {
 						data: [

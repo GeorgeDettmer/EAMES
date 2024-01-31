@@ -8,10 +8,14 @@
 	{#each tags as tag}
 		{#if typeof tag === 'object'}
 			{#if tag}
-				<Badge color={tag?.color}>{tag?.tag?.toUpperCase()}</Badge>
+				<div>
+					<Badge color={tag?.color}>{tag?.tag?.toUpperCase()}</Badge>
+				</div>
 			{/if}
 		{:else}
-			<Badge color="dark">{String(tag)?.toUpperCase()}</Badge>
+			<div>
+				<Badge color="dark">{String(tag)?.toUpperCase()}</Badge>
+			</div>
 		{/if}
 	{/each}
 {/if}

@@ -119,6 +119,7 @@
 					id
 					name
 					tags
+					risk_level
 				}
 				user {
 					id
@@ -803,17 +804,23 @@
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-						<p
+						<Badge
+							color={order?.supplier?.risk_level === 'HIGH'
+								? 'red'
+								: order?.supplier?.risk_level === 'MEDIUM'
+								? 'yellow'
+								: 'blue'}
 							on:click={(e) => {
 								supplierSearch = order?.supplier?.id;
 								replaceStateWithQuery({
 									supplier: supplierSearch
 								});
 							}}
-							class={classes.popover}
 						>
-							{order?.supplier?.name}
-						</p>
+							<p class={classes.popover}>
+								{order?.supplier?.name}
+							</p>
+						</Badge>
 
 						<Popover placement="left">
 							<SupplierInfo supplierId={order?.supplier?.id} />

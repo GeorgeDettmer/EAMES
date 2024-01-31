@@ -29,6 +29,7 @@
 					name
 					names
 					created_at
+					risk_level
 					tags
 					user {
 						username
@@ -151,6 +152,7 @@
 					update_erp_suppliers_by_pk(pk_columns: { id: $id: }, _set: $_set) {
 						name
 						names
+						
 						updated_at
 					}
 				}
@@ -176,6 +178,7 @@
 				<TableHeadCell>ID</TableHeadCell>
 				<TableHeadCell>Name</TableHeadCell>
 				<TableHeadCell>Identifiers</TableHeadCell>
+				<TableHeadCell>Risk Level</TableHeadCell>
 				<TableHeadCell>Tags</TableHeadCell>
 				<TableHeadCell>Created at</TableHeadCell>
 				<TableHeadCell>Created by</TableHeadCell>
@@ -234,6 +237,11 @@
 									</div>
 								{/each}
 							</div>
+						</TableBodyCell>
+						<TableBodyCell>
+							<Badge color={supplier?.risk_level === 'HIGH' ? 'red' : supplier?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}>
+								{supplier?.risk_level || 'Undefined'}
+							</Badge>
 						</TableBodyCell>
 						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">

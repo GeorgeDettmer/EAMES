@@ -264,7 +264,7 @@
 	<div class={'text-base font-semibold leading-none text-gray-900 dark:text-white'}>Shipment info unavailable...</div>
 {/if}
 {#if showDetailsModal}
-	<Modal title="New Shipment" outsideclose bind:open={modalOpen} size="lg">
+	<Modal title="New Shipment" outsideclose bind:open={modalOpen}>
 		<div class="flex gap-x-2">
 			<div class="my-auto rounded-lg">
 				<a href={shipmentInfo?.url} target="_blank">
@@ -310,7 +310,9 @@
 			</div>
 			{#if allowEdit}
 				<div class="flex-wrap max-w-sm ml-auto my-auto pr-8">
+					<label for="expected_date" class="text-xs">Expected date:</label>
 					<input
+						name="expected_date"
 						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="date"
 						min={new Date().toISOString().split('T')[0]}

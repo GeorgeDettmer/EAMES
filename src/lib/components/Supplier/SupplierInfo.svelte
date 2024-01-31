@@ -25,6 +25,7 @@
 						image_url
 						categories
 						url
+						risk_level
 					}
 				}
 			`,
@@ -76,9 +77,22 @@
 			</a>
 		</div>
 		<div class="my-auto">
-			<p class="text-lg font-semibold leading-none text-gray-900 dark:text-white">
-				<a href="/supplier/{supplierInfo.id}" class="hover:underline">{supplierInfo?.name}</a>
-			</p>
+			<div class="flex gap-x-2">
+				<a
+					href="/supplier/{supplierInfo.id}"
+					class="text-lg font-semibold leading-none text-gray-900 dark:text-white hover:underline">{supplierInfo?.name}</a
+				>
+				<div class="ml-auto">
+					<Badge
+						rounded
+						border
+						color={supplierInfo?.risk_level === 'HIGH' ? 'red' : supplierInfo?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}
+					>
+						<p class="text-xs">{supplierInfo?.risk_level}</p>
+					</Badge>
+				</div>
+			</div>
+
 			{#if supplierInfo?.categories?.length}
 				<p class="text-xs font-normal whitespace-break-spaces">
 					{supplierInfo?.categories?.map((c) => c?.[0]?.toUpperCase() + c?.substr(1))?.join(', ')}

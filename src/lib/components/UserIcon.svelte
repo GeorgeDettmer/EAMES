@@ -14,12 +14,16 @@
 		pill
 		color="light"
 		class={buttonClass}
-		style={user?.color ? `background-color:${user.color}` : 'background-color:#64748b'}
+		style={user?.color ? `background-color:${user.color}80;` : 'background-color:#64748b80'}
 	>
 		{#if avatar}
-			<Avatar {size} class={avatarClass + ' ring-white ring-1'}>
+			<Avatar
+				style={user?.color ? `background-color:${user.color}` : 'background-color:#64748b'}
+				{size}
+				class={avatarClass + ' ring-white ring-1'}
+			>
 				{#if user?.initials}
-					<p class="dark:text-gray-200 text-center align-middle">{user.initials}</p>
+					<p class="text-white text-center align-middle">{user.initials}</p>
 				{:else}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

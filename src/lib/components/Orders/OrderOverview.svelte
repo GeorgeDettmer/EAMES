@@ -878,7 +878,9 @@ subscription order($orderId: bigint!) {
 									</div>
 								{:else}
 									<div class="flex">
-										<p class="font-semibold pt-1 pl-1 uppercase text-xs">No allocation</p>
+										<Badge color="dark">
+											<p class="font-semibold uppercase text-xs">No allocation</p>
+										</Badge>
 									</div>
 								{/each}
 							</div>
@@ -936,18 +938,13 @@ subscription order($orderId: bigint!) {
 										</div>
 									{:else}
 										<div class="flex">
-											<img
-												style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-												width="24"
-												height="24"
-												src="https://img.icons8.com/ios/50/cardboard-box.png"
-												alt="box-other"
-											/>
-											<p class="font-semibold pt-1 pl-1 uppercase text-xs">No shipment</p>
+											<Badge color="dark">
+												<p class="font-semibold uppercase text-xs">No shipment</p>
+											</Badge>
 										</div>
 									{/each}
 								</div>
-								{#if editable}
+								{#if editable && $page?.data?.user?.permissions?.['tester']}
 									<button
 										class="p-1 text-slate-600 hover:text-slate-400"
 										on:click={() => {
@@ -1059,7 +1056,7 @@ subscription order($orderId: bigint!) {
 								addLineModal = true;
 							}}
 						>
-							<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+							<Plus size="24" class="hover:text-green-600 text-gray-500 cursor-pointer" />
 						</Button>
 					{/if}
 				</TableBodyCell>

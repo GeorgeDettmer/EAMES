@@ -954,7 +954,13 @@
 									<div class="flex my-auto pl-4">
 										<button
 											on:click={(e) => {
-												copyToClipboard(`PO${order?.id}`);
+												copyToClipboard(
+													`EAS${allocations?.[0] ? `${allocations[0]?.job_id}` : order?.reference || ''}\t${
+														order?.user?.first_name
+													} ${order?.user?.last_name}\t${categories?.[0] || ''}\t${order.supplier.id}\t\t${
+														datetimeFormat(order.created_at).split(' ')[0]
+													}\t${order.total}\t0${datetimeFormat(order.created_at).split(' ')[0]}`
+												);
 											}}
 										>
 											<img

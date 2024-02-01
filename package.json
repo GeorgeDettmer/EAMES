@@ -61,6 +61,7 @@
 		"serpapi": "^2.0.0",
 		"shipengine": "^1.0.5",
 		"simplify-js": "^1.2.4",
+		"svelecte": "^3.17.2",
 		"svelte-heros-v2": "^0.7.1",
 		"svelte-konva": "^0.3.0",
 		"svelte-legos": "^0.2.2",

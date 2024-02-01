@@ -24,7 +24,11 @@
 		on:keydown
 		on:blur
 		on:focus
-	/>
+	>
+		{#if $$slots?.default}
+			<slot />
+		{/if}
+	</p>
 {:else}
 	{innerText}
 {/if}

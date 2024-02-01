@@ -278,14 +278,14 @@
 					</TableBodyCell>
 
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs">
-						<div>
+						<div class="space-y-1">
 							<!-- {#each item?.tracking || [] as tracking}
 								<TrackingStatus {tracking} showText={true} width={24} height={24} />
 							{/each} -->
 							{#each item?.orders_items_shipments as oi, idx}
 								{@const shipment = oi?.shipment}
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
-								<div class="flex mx-auto w-fit rounded bg-slate-500 space-y-0.5">
+								<div class="flex mx-auto w-fit rounded bg-slate-500">
 									<!-- {#if shipments?.length > 1}
 										<p class="text-xs text-white my-auto text-center font-semibold p-1 cursor-default min-w-4">
 											{shipmentIdx + 1}

@@ -102,7 +102,7 @@ export const stringToColorClass = (string: string) => {
 
 export const classes = {
 	link: ' cursor-pointer decoration-1 underline hover:decoration-2 hover:decoration-solid ',
-	popover: ' cursor-pointer decoration-1 decoration-dotted underline hover:decoration-2 '
+	popover: ' cursor-pointer decoration-1 decoration-dotted underline '
 };
 
 import { messagesStore } from 'svelte-legos';

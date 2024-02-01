@@ -21,7 +21,15 @@
 	import { ChevronDown, ChevronLeft, ChevronRight, XMark } from 'svelte-heros-v2';
 	import TableBodyCollapsible from '$lib/components/Misc/Table/TableBodyCollapsible.svelte';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import { classes, datetimeFormat, getSelectionText, numberToLetter, padString, replaceStateWithQuery } from '$lib/utils';
+	import {
+		classes,
+		copyToClipboard,
+		datetimeFormat,
+		getSelectionText,
+		numberToLetter,
+		padString,
+		replaceStateWithQuery
+	} from '$lib/utils';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
@@ -693,19 +701,13 @@
 					(a, v) => a + v.orders_items_receiveds_aggregate?.aggregate?.sum?.quantity,
 					0
 				)}
-				{@const shipments = order?.orders_items?.flatMap((oi) =>
-					oi?.orders_items_shipments
-						?.flatMap((ois) => ois?.shipment)
-						?.filter((v, i, s) => i === s.findIndex((a) => a.id === v.id))
-				)}
 				{@const categories = order?.orders_items
 					?.map((oi) => oi?.category || 'Unknown')
 					?.filter((v, i, a) => a.indexOf(v) === i)}
 				{@const allocations = order?.orders_items
 					?.flatMap((oi) => oi?.jobs_allocations || [])
-					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.batch_id === v.batch_id))}
+					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.job_batch === v.job_batch))}
 				<TableBodyRow color={'default'} class={``}>
-					{@const jobsOrders = order?.jobs_orders || []}
 					<TableBodyCell tdClass="px-1 whitespace-nowrap font-medium">
 						<button
 							class="my-auto cursor-pointer"
@@ -747,7 +749,6 @@
 					>
 						<div class="w-fit flex flex-wrap text-xs gap-0.5">
 							{#each allocations || [] as allocation}
-								<!-- <a href={`${window.origin}/receiving/${jo?.job?.id}`} target="_blank"> -->
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
 								<div
@@ -766,7 +767,6 @@
 										{/if}
 									</Badge>
 								</div>
-								<!-- </a> -->
 							{:else}
 								<div class="cursor-default">
 									<Badge color="dark">N/A</Badge>
@@ -783,7 +783,7 @@
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div
 							on:click={(e) => {
-								buyerSearch = order?.user?.id;
+								buyerSearch = buyerSearch ? '' : order?.user?.id;
 								replaceStateWithQuery({
 									buyer: buyerSearch
 								});
@@ -819,7 +819,7 @@
 					>
 						<button
 							on:click={(e) => {
-								supplierSearch = order?.supplier?.id;
+								supplierSearch = supplierSearch ? '' : order?.supplier?.id;
 								replaceStateWithQuery({
 									supplier: supplierSearch
 								});
@@ -917,7 +917,60 @@
 				</TableBodyRow>
 				{#if openRows?.includes(idx)}
 					<TableBodyRow>
-						<TableBodyCell colspan="5" tdClass="p-0" />
+						<TableBodyCell />
+						<TableBodyCell colspan="3" tdClass="p-0">
+							<div class="flex mx-auto">
+								<div
+									class="m-1 h-14 w-auto p-4 rounded font-medium inline-flex items-center justify-center bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+								>
+									<div class="overflow-hidden grid grid-cols-2 gap-x-2">
+										<div>
+											<p class="font-bold">{order?.supplier?.name}</p>
+										</div>
+										<div class="justify-end text-right">
+											<div>
+												<p class={order?.reference && 'text-xs'}>PO{padString(String(order?.id || ''), 6)}</p>
+											</div>
+											<div>
+												{#if order?.reference}
+													<p class="text-xs">#{order.reference}</p>
+												{/if}
+											</div>
+										</div>
+										<div>
+											<p>
+												{new Intl.NumberFormat('en-GB', {
+													style: 'currency',
+													currency: 'GBP'
+												}).format(order.total)}
+											</p>
+										</div>
+										<div>
+											<p class="float-right">
+												{order.orders_items.length}
+											</p>
+										</div>
+									</div>
+									<div class="flex my-auto pl-4">
+										<button
+											on:click={(e) => {
+												copyToClipboard(`PO${order?.id}`);
+											}}
+										>
+											<img
+												style="filter: brightness(0) saturate(100%) invert(90%)"
+												width="24"
+												height="24"
+												src="https://img.icons8.com/metro/26/copy.png"
+												alt="copy"
+												class="opacity-75 hover:opacity-100"
+											/>
+										</button>
+									</div>
+								</div>
+							</div>
+						</TableBodyCell>
+						<TableBodyCell colspan="1" tdClass="p-0" />
 						<TableBodyCell tdClass="py-1">
 							<SupplierInfo supplierId={order.supplier.id} />
 						</TableBodyCell>

@@ -135,7 +135,7 @@
 					return;
 				}
 				if (!price) {
-					messagesStore(`Line ${idx + 1} has 0 price`);
+					//messagesStore(`Line ${idx + 1} has 0 price`);
 				}
 				let importSuppierName = line?.[orderItemProperties['supplier']];
 				if (!importOrders?.[importSuppierName]) {
@@ -146,6 +146,7 @@
 					)?.[0];
 					importOrders[importSuppierName].orders_items = [];
 				}
+				let defaultAllocationJob = allocated?.[0];
 				importOrders[importSuppierName].orders_items = [
 					...importOrders[importSuppierName].orders_items,
 					{
@@ -155,14 +156,15 @@
 						quantity: quantity,
 						created_at: new Date(),
 						/* user_id: $page?.data?.user?.id, */
-						/* tracking: [
+						category: 'Component',
+						jobs_allocations: [
 							{
-								tracking_number: '',
-								tracking_url: '',
-								carrier_code: ''
+								quantity: null,
+								job_id: defaultAllocationJob?.id,
+								job_batch: defaultAllocationJob?.batch,
+								user_id: $page?.data?.user?.id
 							}
-						], */
-						category: 'Component'
+						]
 					}
 				];
 			}
@@ -305,10 +307,10 @@
 			);
 			return;
 		}
-		if (job === '') {
+		/* if (job === '') {
 			messagesStore('Choose a job to assign orders to or choose "N/A"', 'error');
 			return;
-		}
+		} */
 		if (orders.length === 0) {
 			messagesStore('No orders to create', 'error');
 			return;
@@ -388,7 +390,7 @@
 					price: i?.price,
 					created_at: i?.created_at
 				};
-				if (job?.id) {
+				/* if (job?.id) { 
 					item.jobs_allocations = {
 						data: [
 							{
@@ -398,6 +400,11 @@
 								user_id: $page?.data?.user?.id
 							}
 						]
+					};
+				}*/
+				if (i?.jobs_allocations && i?.jobs_allocations.length > 0) {
+					item.jobs_allocations = {
+						data: i.jobs_allocations
 					};
 				}
 				if (shipmentIds?.[orderIdx]?.[i.__shipmentIdx]) {
@@ -416,7 +423,7 @@
 				data: items
 			};
 
-			if (job?.id) {
+			/* if (job?.id) {
 				obj.jobs_orders = {
 					data: [
 						{
@@ -424,7 +431,7 @@
 						}
 					]
 				};
-			}
+			} */
 
 			return obj;
 		});
@@ -569,7 +576,7 @@
 	let allocated = [];
 	$: allocatable =
 		$jobsStore?.data?.jobs?.filter((v) => allocated.findIndex((a) => a?.id === v?.id && a?.batch === v?.batch) === -1) || [];
-	$: console.log('allocatable', allocatable);
+	//$: console.log('allocatable', allocatable);
 	let allocatableSelectValue;
 	let tabState = [true];
 	$: openOrderIdx = tabState.findIndex((v) => v);
@@ -600,10 +607,10 @@
 				</Button>
 			{/if}
 			<div class="w-full">
-				<Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />
-				<div>
+				<!-- <Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />-->
+				<div class="flex gap-x-1">
 					<select
-						class="w-fit block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
+						class="w-full block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
 						bind:value={allocatableSelectValue}
 						placeholder={'Select job'}
 					>
@@ -617,18 +624,32 @@
 							</option>
 						{/each}
 					</select>
-					<button class="my-auto" on:click={() => (allocated = [allocatableSelectValue, ...allocated])}>
+					<button
+						class="my-auto dark:text-gray-400"
+						disabled={!allocatableSelectValue}
+						on:click={() => {
+							if (!allocatableSelectValue) return;
+							allocated = [...allocated, allocatableSelectValue];
+							allocatableSelectValue = null;
+						}}
+					>
 						<PlusOutline />
 					</button>
 				</div>
-				<div class="flex flex-wrap max-w-32 gap-1">
-					{#each allocated as j}
-						<Badge color="dark"
-							>{j.id}
-							{#if j.batch > 0}
-								({String.fromCharCode(64 + j.batch)})
-							{/if}</Badge
+				<div class="flex flex-wrap max-w-44 gap-1">
+					{#each allocated as j, idx}
+						<div
+							on:click={() => {
+								allocated = allocated.filter((a, i) => i !== idx);
+							}}
 						>
+							<Badge color="dark" dismissable>
+								{j.id}
+								{#if j.batch > 0}
+									({String.fromCharCode(64 + j.batch)})
+								{/if}
+							</Badge>
+						</div>
 					{/each}
 				</div>
 			</div>
@@ -664,14 +685,6 @@
 		</div>
 	</div>
 	<div class="pt-6">
-		<!-- <Tabs
-				style="pill"
-				divider
-				defaultClass="flex flex-wrap space-x-1"
-				contentClass="p-4 rounded-lg mt-0"
-				activeClasses="p-0 text-primary-600 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-				inactiveClasses="p-0 text-gray-500 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-			> -->
 		<div class="-mb-12 -ml-6">
 			<button
 				on:click={(e) => {
@@ -841,7 +854,6 @@
 				<Table>
 					<TableHead>
 						<TableHeadCell padding="px-1 py-1">#</TableHeadCell>
-
 						<TableHeadCell padding="px-1 py-1">Part</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">Qty</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>

@@ -19,7 +19,7 @@
 	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
 	import OrderOverview from './OrderOverview.svelte';
-	import { Plus } from 'svelte-heros-v2';
+	import { Plus, PlusCircle, XMark } from 'svelte-heros-v2';
 	import { createEventDispatcher, onDestroy } from 'svelte';
 	import { ChevronDoubleDownOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
@@ -365,6 +365,7 @@
 				<TableHeadCell>Category</TableHeadCell>
 				<TableHeadCell>Part</TableHeadCell>
 				<TableHeadCell>Order Qty</TableHeadCell>
+				<TableHeadCell>Allocations</TableHeadCell>
 				<TableHeadCell>Unit Cost</TableHeadCell>
 				<TableHeadCell>Total Cost</TableHeadCell>
 				<TableHeadCell>
@@ -398,6 +399,9 @@
 			</TableHead>
 			<TableBody>
 				{#each orderItems as item, idx}
+					{@const unallocatedTo = jobs?.filter(
+						(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
+					)}
 					<TableBodyRow class="p-0 object-right">
 						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}
@@ -432,6 +436,67 @@
 								{item?.quantity}
 							</Badge>
 						</TableBodyCellEditable>
+						<TableBodyCell tdClass="px-6 py-1 cursor-pointer">
+							<div class="flex">
+								<div>
+									{#each item?.jobs_allocations as allocation, idx}
+										<div class="py-0.5 mx-auto">
+											<div class="flex w-fit rounded bg-slate-500">
+												<Badge color="blue">
+													<p class="text-left">
+														{allocation?.job_id}
+														{#if allocation?.job_batch}
+															({numberToLetter(allocation.job_batch - 1)})
+														{/if}
+													</p>
+													<XMark
+														size="16"
+														on:click={() => {
+															console.log('dismiss', idx, item.jobs_allocations);
+															item.jobs_allocations = item.jobs_allocations.filter((v, i) => i !== idx);
+														}}
+													/>
+												</Badge>
+
+												<EditableText
+													classes="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white"
+													bind:innerText={allocation.quantity}>{item.quantity}</EditableText
+												>
+											</div>
+										</div>
+									{:else}
+										<div class="flex">
+											<Badge color="dark">
+												<p class="font-semibold uppercase text-xs">No allocation</p>
+											</Badge>
+										</div>
+									{/each}
+								</div>
+								<div class="px-0.5 mt-auto">
+									<button
+										class="hover:text-green-600 text-2xl disabled:cursor-not-allowed disabled:text-gray-500"
+										disabled={!unallocatedTo.length}
+										on:click={() => {
+											let unallocatedTo = jobs?.filter(
+												(j) =>
+													item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
+											);
+											console.log('unallocatedTo', unallocatedTo, jobs, item.jobs_allocations);
+											if (!unallocatedTo.length) {
+												console.error('No jobs to allocate to');
+												return;
+											}
+											item.jobs_allocations = [
+												...item.jobs_allocations,
+												{ job_id: unallocatedTo?.[0]?.id, job_batch: unallocatedTo?.[0]?.batch, quantity: item.quantity }
+											];
+										}}
+									>
+										+
+									</button>
+								</div>
+							</div>
+						</TableBodyCell>
 						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.price} inputType="number">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
@@ -491,7 +556,7 @@
 						currency: 'GBP'
 					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
 				</TableBodyCell>
-
+				<TableBodyCell />
 				<TableBodyCell />
 				<TableBodyCell>
 					<span

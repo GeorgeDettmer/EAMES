@@ -45,6 +45,7 @@
 	import { enhance } from '$app/forms';
 	import type { Shipment } from '$lib/types';
 	import SupplierInfo from '../Supplier/SupplierInfo.svelte';
+	import History from '../Misc/History/History.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -802,10 +803,10 @@ subscription order($orderId: bigint!) {
 							<p>{idx + 1}</p>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-							<div class="cursor-default mx-auto">
+							<div class="flex cursor-default mx-auto">
 								<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white" />
-								<Tooltip defaultClass="p-1" placement="right">
-									<div class="text-xs italic text-center">
+								<Popover defaultClass="p-1" placement="right">
+									<div class="text-xs italic text-center" class:hidden={item?.__hasHistory}>
 										<p>
 											{#if item?.user}
 												{item?.user?.first_name}
@@ -816,7 +817,10 @@ subscription order($orderId: bigint!) {
 										</p>
 										<p>{datetimeFormat(item.created_at)}</p>
 									</div>
-								</Tooltip>
+									<div class="p-2">
+										<History schema="erp" table="orders_items" id={item.id} bind:hasHistory={item.__hasHistory} />
+									</div>
+								</Popover>
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">

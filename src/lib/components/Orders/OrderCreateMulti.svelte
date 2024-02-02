@@ -449,13 +449,15 @@
 															({numberToLetter(allocation.job_batch - 1)})
 														{/if}
 													</p>
-													<XMark
-														size="16"
+													<button
+														class="focus:outline-none pl-1"
 														on:click={() => {
 															console.log('dismiss', idx, item.jobs_allocations);
 															item.jobs_allocations = item.jobs_allocations.filter((v, i) => i !== idx);
 														}}
-													/>
+													>
+														<XMark size="16" class="outline-none" />
+													</button>
 												</Badge>
 
 												<EditableText

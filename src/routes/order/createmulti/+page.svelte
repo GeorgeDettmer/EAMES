@@ -595,6 +595,64 @@
 <div class="">
 	<div class="flex pb-2">
 		<div class="ml-auto flex space-x-1">
+			<div class="p-1 outline outline-1 rounded outline-gray-400 relative">
+				<!-- <Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />-->
+				<div class="flex max-w-48 overflow-x-auto">
+					<div class="absolute -top-3 bg-white dark:bg-slate-600 dark:text-white text-black rounded">
+						<p class="text-xs px-0.5">Allocations</p>
+					</div>
+					<div class="flex gap-x-1">
+						<button
+							class="my-auto dark:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+							disabled={!allocatableSelectValue}
+							on:click={() => {
+								if (!allocatableSelectValue) return;
+								allocated = [...allocated, allocatableSelectValue];
+								allocatableSelectValue = null;
+							}}
+						>
+							<PlusOutline class="outline-none text-gray-600" />
+						</button>
+						<select
+							class="w-fit block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
+							bind:value={allocatableSelectValue}
+							placeholder={'Select job'}
+						>
+							<option value={null}> N/A </option>
+							{#each allocatable || [] as j}
+								<option value={j}>
+									{j.id}
+									{#if j.batch > 0}
+										({String.fromCharCode(64 + j.batch)})
+									{/if}
+								</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+				<div class="inline-flex gap-1">
+					{#each allocated as j, idx}
+						<div>
+							<Badge color="dark">
+								<p class="text-left">
+									{j.id}
+									{#if j.batch > 0}
+										({String.fromCharCode(64 + j.batch)})
+									{/if}
+								</p>
+								<button
+									class="focus:outline-none pl-1"
+									on:click={() => {
+										allocated = allocated.filter((a, i) => i !== idx);
+									}}
+								>
+									<XMark size="16" class="outline-none" />
+								</button>
+							</Badge>
+						</div>
+					{/each}
+				</div>
+			</div>
 			{#if orders.length > 0}
 				<Button
 					color="blue"
@@ -606,53 +664,6 @@
 					Create {orders.length} orders with {ordersItems.length} lines
 				</Button>
 			{/if}
-			<div class="w-full">
-				<!-- <Select items={[{ value: null, name: 'N/A' }, ...jobs]} bind:value={job} placeholder="Select job" size="sm" />-->
-				<div class="flex gap-x-1">
-					<select
-						class="w-full block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
-						bind:value={allocatableSelectValue}
-						placeholder={'Select job'}
-					>
-						<option value={null}> N/A </option>
-						{#each allocatable || [] as j}
-							<option value={j}>
-								{j.id}
-								{#if j.batch > 0}
-									({String.fromCharCode(64 + j.batch)})
-								{/if}
-							</option>
-						{/each}
-					</select>
-					<button
-						class="my-auto dark:text-gray-400"
-						disabled={!allocatableSelectValue}
-						on:click={() => {
-							if (!allocatableSelectValue) return;
-							allocated = [...allocated, allocatableSelectValue];
-							allocatableSelectValue = null;
-						}}
-					>
-						<PlusOutline />
-					</button>
-				</div>
-				<div class="flex flex-wrap max-w-44 gap-1">
-					{#each allocated as j, idx}
-						<div
-							on:click={() => {
-								allocated = allocated.filter((a, i) => i !== idx);
-							}}
-						>
-							<Badge color="dark" dismissable>
-								{j.id}
-								{#if j.batch > 0}
-									({String.fromCharCode(64 + j.batch)})
-								{/if}
-							</Badge>
-						</div>
-					{/each}
-				</div>
-			</div>
 		</div>
 	</div>
 	<div class="flex">

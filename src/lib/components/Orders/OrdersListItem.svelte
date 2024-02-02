@@ -32,7 +32,13 @@
 	>
 		<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 			<div>
-				<p class="font-bold">{order?.supplier?.name}</p>
+				<p
+					class="font-bold
+					{order?.supplier?.risk_level === 'MEDIUM' && 'text-yellow-500'}
+					{order?.supplier?.risk_level === 'HIGH' && 'text-red-600'}"
+				>
+					{order?.supplier?.name}
+				</p>
 			</div>
 			<div class="justify-end text-right">
 				<div>

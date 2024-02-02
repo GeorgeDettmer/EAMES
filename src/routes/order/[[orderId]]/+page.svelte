@@ -964,12 +964,12 @@
 											}}
 										>
 											<img
-												style="filter: brightness(0) saturate(100%) invert(90%)"
+												style=""
 												width="24"
 												height="24"
 												src="https://img.icons8.com/metro/26/copy.png"
 												alt="copy"
-												class="opacity-75 hover:opacity-100"
+												class="opacity-50 hover:opacity-75"
 											/>
 										</button>
 									</div>

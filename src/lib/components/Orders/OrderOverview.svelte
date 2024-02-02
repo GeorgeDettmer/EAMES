@@ -44,6 +44,7 @@
 	import OrderShipment from './OrderShipment.svelte';
 	import { enhance } from '$app/forms';
 	import type { Shipment } from '$lib/types';
+	import SupplierInfo from '../Supplier/SupplierInfo.svelte';
 
 	export let orderId: number;
 	export let showRecieved: boolean = false;
@@ -312,6 +313,7 @@ subscription order($orderId: bigint!) {
 					supplier {
 						id
 						name
+						risk_level
 					}
 					user {
 						id
@@ -643,7 +645,7 @@ subscription order($orderId: bigint!) {
 		<div class="flex">
 			<div class=" flex-col">
 				<div class="flex">
-					<div><OrdersListItem {order} interactive={false} /></div>
+					<OrdersListItem {order} interactive={false} />
 					<div class="pl-2 my-auto">
 						<UserIcon size="sm" user={order?.user}>
 							{order?.user?.first_name}
@@ -802,7 +804,7 @@ subscription order($orderId: bigint!) {
 						<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 							<div class="cursor-default mx-auto">
 								<UserIcon size="xs" user={item?.user} buttonClass="!p-0 !pr-2 text-white" />
-								<Tooltip defaultClass="p-1">
+								<Tooltip defaultClass="p-1" placement="right">
 									<div class="text-xs italic text-center">
 										<p>
 											{#if item?.user}

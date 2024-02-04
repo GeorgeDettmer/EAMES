@@ -258,6 +258,7 @@
 							newAllocation.job_batch = jobs?.[target.selectedIndex]?.batch;
 						}}
 					>
+						<option value={{ job_id: null, job_batch: null, quantity: null }}> N/A</option>
 						{#each jobs || [] as job, idx}
 							<option value={job}>
 								{idx + 1}) {job.id}
@@ -467,7 +468,7 @@
 											</div>
 										</div>
 									{:else}
-										<div class="flex">
+										<div class="flex my-auto">
 											<Badge color="dark">
 												<p class="font-semibold uppercase text-xs">No allocation</p>
 											</Badge>

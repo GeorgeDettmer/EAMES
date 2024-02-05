@@ -935,7 +935,7 @@
 								<TableBodyCell tdClass="px-1 py-1 text-xs">
 									<!-- <p>{part ? part : 'undefined'}</p> -->
 									<p id={'importLine' + idx}>
-										<EditableText bind:innerText={line[orderItemProperties['part']]}>Test</EditableText>
+										<EditableText bind:innerText={line[orderItemProperties['part']]}>Undefined</EditableText>
 									</p>
 									<p class="text-xs italic">
 										<EditableText bind:innerText={line[orderItemProperties['spn']]}>Undefined</EditableText>

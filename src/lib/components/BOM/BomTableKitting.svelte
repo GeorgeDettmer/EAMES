@@ -210,10 +210,10 @@
 
 	$: console.log(
 		'testtttttttttttt',
+		job,
 		job?.jobs_allocations
 			?.filter(
-				(allocation) =>
-					allocation.orders_item?.part_id === 'CL05B104KP5NNNC' || allocation.orders_item?.part === 'CL05B104KP5NNNC'
+				(allocation) => allocation.orders_item?.part_id === 'LFXTAL055663' || allocation.orders_item?.part === 'LFXTAL055663'
 			)
 			.flatMap((oi) => oi)
 	);
@@ -347,17 +347,24 @@
 				{@const kitItems = job?.jobs_kits
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
-				{@const orderItems = lineKey
-					? job?.jobs_allocations
-							?.filter(
-								(allocation) => allocation.orders_item?.part_id === lineKey || allocation.orders_item?.part === lineKey
-							)
-							.flatMap((oi) => oi)
+				{@const allocations = lineKey
+					? job?.jobs_allocations?.filter((allocation) => {
+							return (
+								(allocation.orders_item?.part_id === lineKey || allocation.orders_item?.part === lineKey) &&
+								allocation.job_id === job.id &&
+								allocation.job_batch === job.batch
+							);
+					  })
 					: []}
+				{@const orderItems = lineKey ? allocations.flatMap((oi) => oi?.orders_item) : []}
 				{@const lineSuppliers = orderItems?.flatMap((oi) => oi?.order?.supplier?.name)}
-				{@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)}
+				{@const orderItemQty = allocations?.reduce(
+					(a, allocation) => a + (allocation?.quantity || allocation.order_item?.quantity),
+					0
+				)}
+				<!-- {@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)} -->
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
-				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v.quantity, 0)}
+				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v?.quantity, 0)}
 				{@const buildQty = lineKey ? lineQty * job?.quantity : 0}
 				{@const description = line?.[0]?.partByPart?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
@@ -427,9 +434,10 @@
 						{#if job?.jobs_allocations && visibleColumns?.includes('order_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
-									{#each orderItems as orderItem}
+									{#each allocations as allocation}
 										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
-											{orderItem?.quantity} | {orderItem?.order?.supplier?.name}
+											{allocation?.quantity || allocation?.orders_item?.quantity} | {allocation?.orders_item?.order?.supplier
+												?.name}
 										</Badge>
 									{:else}
 										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>0</Badge>

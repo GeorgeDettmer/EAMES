@@ -356,56 +356,56 @@
 </Modal>
 
 {#if order}
-	{#if order?.id}
+	<!-- {#if order?.id}
 		<OrderOverview orderId={order.id} />
-	{:else}
-		<Table>
-			<TableHead>
-				<TableHeadCell>#</TableHeadCell>
-				<TableHeadCell>User</TableHeadCell>
-				<!-- <TableHeadCell>Time/Date</TableHeadCell> -->
-				<TableHeadCell>Category</TableHeadCell>
-				<TableHeadCell>Part</TableHeadCell>
-				<TableHeadCell>Order Qty</TableHeadCell>
-				<TableHeadCell>Allocations</TableHeadCell>
-				<TableHeadCell>Unit Cost</TableHeadCell>
-				<TableHeadCell>Total Cost</TableHeadCell>
-				<TableHeadCell>
-					<div class="flex">
-						<select
-							class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-							bind:value={selectedGroupShipmentIdx}
-						>
-							{#each shipments || [] as shipment, idx}
-								<option value={idx}>
-									{idx + 1}) {shipment?.carrier?.name || 'Unknown'}
-								</option>
-							{/each}
-						</select>
-						<Button color="primary" class="!p-2.5" on:click={(e) => updateOrderLinesShipments(selectedGroupShipmentIdx)}>
-							<ChevronDoubleDownOutline class="text-gray-400" />
-						</Button>
-					</div>
-				</TableHeadCell>
-				<TableHeadCell>
-					<span
-						class="cursor-pointer"
-						on:click={() => {
-							dispatch('delete');
-						}}
+	{:else} -->
+	<Table>
+		<TableHead>
+			<TableHeadCell>#</TableHeadCell>
+			<TableHeadCell>User</TableHeadCell>
+			<!-- <TableHeadCell>Time/Date</TableHeadCell> -->
+			<TableHeadCell>Category</TableHeadCell>
+			<TableHeadCell>Part</TableHeadCell>
+			<TableHeadCell>Order Qty</TableHeadCell>
+			<TableHeadCell>Allocations</TableHeadCell>
+			<TableHeadCell>Unit Cost</TableHeadCell>
+			<TableHeadCell>Total Cost</TableHeadCell>
+			<TableHeadCell>
+				<div class="flex">
+					<select
+						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
+						bind:value={selectedGroupShipmentIdx}
 					>
-						❌
-					</span>
-				</TableHeadCell>
-				<slot name="head" />
-			</TableHead>
-			<TableBody>
-				{#each orderItems as item, idx}
-					{@const unallocatedTo = jobs?.filter(
-						(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
-					)}
-					<OrderCreateTableRow {idx} {item} allocatabledShipments={shipments} allocatableJobs={jobs} />
-					<!-- <TableBodyRow class="p-0 object-right">
+						{#each shipments || [] as shipment, idx}
+							<option value={idx}>
+								{idx + 1}) {shipment?.carrier?.name || 'Unknown'}
+							</option>
+						{/each}
+					</select>
+					<Button color="primary" class="!p-2.5" on:click={(e) => updateOrderLinesShipments(selectedGroupShipmentIdx)}>
+						<ChevronDoubleDownOutline class="text-gray-400" />
+					</Button>
+				</div>
+			</TableHeadCell>
+			<TableHeadCell>
+				<span
+					class="cursor-pointer"
+					on:click={() => {
+						dispatch('delete');
+					}}
+				>
+					❌
+				</span>
+			</TableHeadCell>
+			<slot name="head" />
+		</TableHead>
+		<TableBody>
+			{#each orderItems as item, idx}
+				{@const unallocatedTo = jobs?.filter(
+					(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
+				)}
+				<OrderCreateTableRow {idx} {item} allocatabledShipments={shipments} allocatableJobs={jobs} />
+				<!-- <TableBodyRow class="p-0 object-right">
 						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}
 						</TableBodyCell>
@@ -540,40 +540,40 @@
 						</TableBodyCell>
 						<slot name="body" />
 					</TableBodyRow> -->
-				{:else}
-					<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
-				{/each}
-			</TableBody>
-			<TableHead>
-				<TableBodyCell>
-					{orderItems.length + 1}
-				</TableBodyCell>
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell>
-					<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
-				</TableBodyCell>
-				<TableBodyCell />
-				<TableBodyCell>
-					{new Intl.NumberFormat('en-GB', {
-						style: 'currency',
-						currency: 'GBP'
-					}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
-				</TableBodyCell>
-				<TableBodyCell />
-				<TableBodyCell />
-				<TableBodyCell>
-					<span
-						on:click={() => {
-							addLineModal = true;
-						}}
-					>
-						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
-					</span>
-				</TableBodyCell>
-				<slot name="foot" />
-			</TableHead>
-		</Table>
-	{/if}
+			{:else}
+				<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
+			{/each}
+		</TableBody>
+		<TableHead>
+			<TableBodyCell>
+				{orderItems.length + 1}
+			</TableBodyCell>
+			<TableBodyCell />
+			<TableBodyCell />
+			<TableBodyCell />
+			<TableBodyCell>
+				<Badge class="mx-0.5" color="blue">{totalOrdered}</Badge>
+			</TableBodyCell>
+			<TableBodyCell />
+			<TableBodyCell>
+				{new Intl.NumberFormat('en-GB', {
+					style: 'currency',
+					currency: 'GBP'
+				}).format(orderItems?.reduce((a, v) => a + v.price * v.quantity, 0))}
+			</TableBodyCell>
+			<TableBodyCell />
+			<TableBodyCell />
+			<TableBodyCell>
+				<span
+					on:click={() => {
+						addLineModal = true;
+					}}
+				>
+					<Plus size="24" class="hover:text-green-600 cursor-pointer" />
+				</span>
+			</TableBodyCell>
+			<slot name="foot" />
+		</TableHead>
+	</Table>
+	<!-- {/if} -->
 {/if}

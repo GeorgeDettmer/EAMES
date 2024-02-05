@@ -326,6 +326,26 @@
 			return;
 		}
 
+		let orderIds = orders.map((o) => o?.id).filter((id) => id);
+		let existingOrderIdsQuery = await urqlClient.query(
+			gql`
+				query ordersExisiting($_in: [bigint!] = []) {
+					erp_orders(where: { id: { _in: $_in } }) {
+						id
+					}
+				}
+			`,
+			{
+				_in: orderIds
+			}
+		);
+		let exisingOrderIds = existingOrderIdsQuery?.data?.erp_orders?.map((o) => o.id);
+		if (exisingOrderIds.length !== 0) {
+			console.error('exisingOrderIds', exisingOrderIds, orderIds, existingOrderIdsQuery);
+			messagesStore(`Order id(s) ${exisingOrderIds} already assigned to another order`, 'error');
+			return;
+		}
+
 		ordersAdding = true;
 		let mutationResult;
 
@@ -382,6 +402,9 @@
 				user_id: $page?.data?.user?.id,
 				reference: o.reference
 			};
+			if (o?.id) {
+				obj.id = o.id;
+			}
 
 			let items = o.orders_items.map((i) => {
 				let item = {

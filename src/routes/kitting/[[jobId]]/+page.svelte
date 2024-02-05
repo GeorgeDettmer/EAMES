@@ -22,7 +22,7 @@
 
 	let query = gql`
 		subscription jobInfo($jobId: bigint!, $batches: [Int!] = [0]) {
-			jobs(where: { _and: { id: { _eq: $jobId }, batch: { _in: $batches } } }) {
+			jobs(where: { _and: { id: { _eq: $jobId }, batch: { _in: $batches } } }, order_by: { batch: desc }) {
 				id
 				quantity
 				batch
@@ -73,8 +73,45 @@
 						name
 					}
 				}
+				jobs_kits {
+					kit {
+						id
+						created_at
+						kits_items {
+							id
+							kit_id
+							quantity
+							part
+							part_id
+							created_at
+							updated_at
+							user {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
+							orders_item {
+								id
+								price
+								quantity
+								order {
+									id
+									reference
+									supplier {
+										name
+									}
+								}
+							}
+						}
+					}
+				}
 				jobs_allocations {
 					id
+					job_id
+					job_batch
 					order_item_id
 					stock_item_id
 					quantity

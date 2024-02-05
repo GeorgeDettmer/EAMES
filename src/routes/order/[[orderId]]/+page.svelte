@@ -90,11 +90,12 @@
 
 	let query = gql`
 		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
-			erp_orders(order_by: { id: desc }, limit: $limit, offset: $offset, where: $where) {
+			erp_orders(order_by: { created_at: desc }, limit: $limit, offset: $offset, where: $where) {
 				id
 				reference
 				created_at
 				total
+				items
 				jobs_orders {
 					job {
 						id
@@ -135,6 +136,7 @@
 					name
 					tags
 					risk_level
+					critical
 				}
 				user {
 					id
@@ -826,6 +828,7 @@
 							}}
 						>
 							<Badge
+								border={!order?.supplier?.critical}
 								color={order?.supplier?.risk_level === 'HIGH'
 									? 'red'
 									: order?.supplier?.risk_level === 'MEDIUM'
@@ -853,7 +856,7 @@
 						columnId="items"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<p>{order?.orders_items_aggregate?.aggregate?.count}</p>
+						<p>{order?.items}</p>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-6 py-1 whitespace-nowrap font-medium"
@@ -947,7 +950,7 @@
 										</div>
 										<div>
 											<p class="float-right">
-												{order.orders_items.length}
+												{order.items}
 											</p>
 										</div>
 									</div>

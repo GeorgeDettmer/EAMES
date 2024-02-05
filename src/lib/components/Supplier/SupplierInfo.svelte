@@ -26,6 +26,7 @@
 						categories
 						url
 						risk_level
+						critical
 					}
 				}
 			`,
@@ -82,7 +83,19 @@
 					href="/supplier/{supplierInfo.id}"
 					class="text-lg font-semibold leading-none text-gray-900 dark:text-white hover:underline">{supplierInfo?.name}</a
 				>
-				<div class="ml-auto">
+				<div class="flex gap-x-1 ml-auto">
+					{#if supplierInfo?.critical}
+						<!-- <Badge rounded border color={'yellow'}>
+							<p class="text-xs font-bold">!</p>
+						</Badge> -->
+						<img
+							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(360deg)"
+							width="20"
+							height="20"
+							src="https://img.icons8.com/material-outlined/24/high-importance.png"
+							alt="delivered-box"
+						/>
+					{/if}
 					<Badge
 						rounded
 						border

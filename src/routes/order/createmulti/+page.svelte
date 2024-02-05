@@ -36,7 +36,7 @@
 	import type { Shipment } from '$lib/types';
 	import { XMark } from 'svelte-heros-v2';
 
-	$windowTitleStore = 'New order';
+	$windowTitleStore = `Order | New`;
 	onDestroy(() => {
 		$windowTitleStore = '';
 	});

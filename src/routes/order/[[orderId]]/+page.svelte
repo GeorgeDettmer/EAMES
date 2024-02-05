@@ -381,12 +381,12 @@
 				});
 			}
 		}
-		$windowTitleStore = $page?.data?.orderId ? `Order | ${$page?.data?.orderId}` : 'Orders';
+
 		return () => {
 			$windowTitleStore = '';
 		};
 	});
-
+	$: $windowTitleStore = $page?.data?.orderId ? `Order | ${$page?.data?.orderId}` : 'Orders';
 	$: console.log(
 		'QUERY:',
 		$ordersStore,
@@ -411,11 +411,7 @@
 {/if}
 
 {#if orderId}
-	<!-- {#if $page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase'] && $page?.data?.user?.permissions?.['tester']}
-		<OrderEditable {orderId} />
-	{:else} -->
 	<OrderOverview {orderId} editable={$page?.data?.user?.processes && $page?.data?.user?.processes?.['purchase']} />
-	<!-- {/if} -->
 {:else}
 	<Table shadow hoverable>
 		<TableHead>

@@ -401,154 +401,16 @@
 		</TableHead>
 		<TableBody>
 			{#each orderItems as item, idx}
-				{@const unallocatedTo = jobs?.filter(
-					(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
-				)}
 				<OrderCreateTableRow
 					{idx}
 					{item}
 					allocatabledShipments={shipments}
 					allocatableJobs={jobs}
 					on:remove={(e) => {
-						console.log('delete', e);
+						console.log('remove line', e);
 						remove(idx);
 					}}
 				/>
-				<!-- <TableBodyRow class="p-0 object-right">
-						<TableBodyCell tdClass="px-6 py-1">
-							{idx + 1}
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-1">
-							<UserIcon size="xs" user={item?.user || order?.user}>
-								{item?.user?.first_name || order?.user?.first_name}
-								{item?.user?.last_name || order?.user?.last_name}
-							</UserIcon>
-							<Tooltip placement="right">
-								<p>{datetimeFormat(item.created_at)}</p>
-							</Tooltip>
-						</TableBodyCell>
-						<TableBodyCellEditable
-							tdClass="px-6 py-1 cursor-pointer"
-							bind:value={item.category}
-							inputType="dropdown"
-							options={categories}
-						>
-							{item?.category || 'Unknown'}
-						</TableBodyCellEditable>
-						<TableBodyCell tdClass="px-6 py-1">
-							<div>
-								<EditableText bind:innerText={item.part} />
-								{#if item?.spn}
-									<EditableText classes="text-xs italic" bind:innerText={item.spn} />
-								{/if}
-							</div>
-						</TableBodyCell>
-						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.quantity} inputType="number">
-							<Badge class="mx-0.5" color={'blue'}>
-								{item?.quantity}
-							</Badge>
-						</TableBodyCellEditable>
-						<TableBodyCell tdClass="px-6 py-1 cursor-pointer">
-							<div class="flex">
-								<div>
-									{#each item?.jobs_allocations as allocation, idx}
-										<div class="py-0.5 mx-auto">
-											<div class="flex w-fit rounded bg-slate-500">
-												<Badge color="blue">
-													<p class="text-left">
-														{allocation?.job_id}
-														{#if allocation?.job_batch}
-															({numberToLetter(allocation.job_batch - 1)})
-														{/if}
-													</p>
-													<button
-														class="focus:outline-none pl-1"
-														on:click={() => {
-															console.log('dismiss', idx, item.jobs_allocations);
-															item.jobs_allocations = item.jobs_allocations.filter((v, i) => i !== idx);
-														}}
-													>
-														<XMark size="16" class="outline-none" />
-													</button>
-												</Badge>
-
-												<EditableText
-													classes="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white"
-													bind:innerText={allocation.quantity}>{item.quantity}</EditableText
-												>
-											</div>
-										</div>
-									{:else}
-										<div class="flex my-auto">
-											<Badge color="dark">
-												<p class="font-semibold uppercase text-xs">No allocation</p>
-											</Badge>
-										</div>
-									{/each}
-								</div>
-								<div class="px-0.5 mt-auto">
-									<button
-										class="hover:text-green-600 text-2xl disabled:cursor-not-allowed disabled:text-gray-500"
-										disabled={!unallocatedTo.length}
-										on:click={() => {
-											let unallocatedTo = jobs?.filter(
-												(j) =>
-													item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
-											);
-											console.log('unallocatedTo', unallocatedTo, jobs, item.jobs_allocations);
-											if (!unallocatedTo.length) {
-												console.error('No jobs to allocate to');
-												return;
-											}
-											item.jobs_allocations = [
-												...item.jobs_allocations,
-												{ job_id: unallocatedTo?.[0]?.id, job_batch: unallocatedTo?.[0]?.batch, quantity: item.quantity }
-											];
-										}}
-									>
-										+
-									</button>
-								</div>
-							</div>
-						</TableBodyCell>
-						<TableBodyCellEditable tdClass="px-6 py-1 cursor-pointer" bind:value={item.price} inputType="number">
-							{new Intl.NumberFormat('en-GB', {
-								style: 'currency',
-								currency: 'GBP'
-							}).format(item?.price || 0)}
-						</TableBodyCellEditable>
-						<TableBodyCell tdClass="px-6 py-1">
-							{new Intl.NumberFormat('en-GB', {
-								style: 'currency',
-								currency: 'GBP'
-							}).format(Math.round((item?.price * item?.quantity + Number.EPSILON) * 100) / 100 || 0)}
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-1">
-							<div>
-								<select
-									class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
-									bind:value={item.__shipmentIdx}
-								>
-									{#each shipments as shipment, idx}
-										<option value={idx}>
-											{idx + 1}) {shipment?.carrier?.name || 'Unknown'}
-										</option>
-									{/each}
-								</select>
-							</div>
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-6 py-1">
-							<span
-								class="cursor-pointer"
-								on:click={() => {
-									remove(idx);
-								}}
-							>
-								❌
-							</span>
-						</TableBodyCell>
-						<slot name="body" />
-					</TableBodyRow> -->
 			{:else}
 				<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
 			{/each}

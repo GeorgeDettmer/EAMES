@@ -16,7 +16,7 @@
 		DropboxSolid
 	} from 'flowbite-svelte-icons';
 	import { getPrinters, printerDetails, printerOnline } from '$lib/utils/bpac/bpac';
-	import { openMenuGroupsStore, selectedPrinter } from '$lib/stores';
+	import { openMenuGroupsStore, selectedPrinter, windowTitleStore } from '$lib/stores';
 
 	import logo from '$lib/assets/easl-logo.png';
 
@@ -92,8 +92,6 @@
 				icon: FileEditSolid,
 				items: [
 					{ name: 'All Orders', href: '/order' },
-					{ name: 'All My Orders', href: '/order?buyer=me' },
-					/* { name: 'Create Order', href: '/order/create' }, */
 					{ name: 'Create Order', href: '/order/createmulti' }
 				]
 			},
@@ -102,7 +100,7 @@
 				icon: ShoppingCartSolid,
 				items: [
 					{ name: 'All Suppliers', href: '/suppliers' },
-					{ name: 'Create new supplier', href: '/add/supplier' }
+					{ name: 'Create Supplier', href: '/add/supplier' }
 				]
 			}
 		],
@@ -116,8 +114,8 @@
 				name: 'Kitting',
 				icon: DropboxSolid,
 				items: [
-					{ name: 'All kits', href: '/kitting/kits' },
-					{ name: 'Kit items', href: '/kitting' }
+					/* { name: 'All kits', href: '/kitting/kits' }, */
+					{ name: 'Kit Items', href: '/kitting' }
 				]
 			}
 		],
@@ -254,31 +252,9 @@
 			</div>
 		{/if}
 	</div>
-	<!-- <MegaMenu full items={menu} let:item class="bg-slate-200">
-			<a href={item.href} class="hover:underline hover:text-primary-600 dark:hover:text-primary-500">{item.name}</a>
-
-			<a slot="extra" href="/" class="block mt-4 p-4 text-left bg-local rounded-lg">
-				{#if user?.lastActivity}
-					<div class="border-2 p-5 rounded-lg">
-						<p class="mb-5 max-w-xl text-sm p-0 font-bold dark:text-white">
-							Continue {user?.lastActivity?.process || 'THT'} on {user?.lastActivity?.job?.batch || 'EAS12345'}
-						</p>
-						<div class="flex">
-							<Button color="blue" class="pr-10">Continue...</Button>
-							<div
-								class="mx-auto block mt-4 p-8 text-left bg-local bg-center overflow-visible bg-no-repeat bg-blend-multiply hover:bg-blend-soft-light dark:hover:bg-blend-darken"
-								style="background-image: url(https://img.icons8.com/?size=64&id=BjUebvyTp8xO&format=png)"
-							/>
-						</div>
-					</div>
-				{/if}
-				<div class="pt-10 flex">
-					<p class="float-right font-italic">
-						built by <span class="font-semibold italic">George Dettmer</span>
-					</p>
-				</div>
-			</a>
-		</MegaMenu> -->
+	<div>
+		<p class="text-xl font-semibold">{$windowTitleStore}</p>
+	</div>
 
 	<div class="ml-1 sm:ml-10 flex-auto outline-gray-500" class:hidden={!$page.url.pathname.startsWith('/board')}>
 		<div class="flex">

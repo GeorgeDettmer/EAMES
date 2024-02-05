@@ -39,14 +39,14 @@ export const actions: Actions = {
 			path: '/',
 			secure: false,
 			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 // 1 day
+			maxAge: 60 * 60 * 7 // 1 day
 		});
 
-		//throw redirect(302, '/');
+		throw redirect(302, '/order');
 	},
 	logout: async (event) => {
 		console.log('USER LOGOUT: ', event.locals.user);
-		event.cookies.delete('AuthorizationToken');
+		event.cookies.delete('AuthorizationToken', { path: '/' });
 		event.locals.user = undefined;
 		throw redirect(302, '/login');
 		return {};

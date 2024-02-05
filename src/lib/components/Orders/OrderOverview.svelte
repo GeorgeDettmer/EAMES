@@ -14,7 +14,8 @@
 		Button,
 		Modal,
 		Alert,
-		Label
+		Label,
+		Spinner
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
@@ -1081,5 +1082,8 @@ subscription order($orderId: bigint!) {
 		</div>
 	{/if}
 {:else}
-	<p>No order info</p>
+	<div class="flex gap-x-1">
+		<Spinner color="blue" />
+		<p class="animate-pulse">Loading...</p>
+	</div>
 {/if}

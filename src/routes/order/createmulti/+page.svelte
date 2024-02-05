@@ -207,8 +207,8 @@
 	$: jobsStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription order {
-				jobs(order_by: { id: desc, batch: asc_nulls_first }, limit: 1000) {
+			subscription jobs {
+				jobs(order_by: { id: desc, batch: asc_nulls_first }, limit: 500) {
 					id
 					batch
 					customer {
@@ -636,7 +636,7 @@
 					{#each allocated as j, idx}
 						<div>
 							<Badge color="dark">
-								<p class="text-left">
+								<p class="text-left" class:underline={idx === 0}>
 									{j.id}
 									{#if j.batch > 0}
 										({String.fromCharCode(64 + j.batch)})

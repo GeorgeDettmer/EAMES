@@ -199,7 +199,7 @@
 				messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one.id, 'success');
 				mutationResult = await urqlClient.mutation(
 					gql`
-						mutation createJobKit($job_id: bigint!, $batch: int = 0, $kit_id: uuid!) {
+						mutation createJobKit($job_id: bigint!, $batch: Int = 0, $kit_id: uuid!) {
 							insert_material_jobs_kits_one(object: { job_id: $job_id, job_batch: $batch, kit_id: $kit_id }) {
 								id
 							}

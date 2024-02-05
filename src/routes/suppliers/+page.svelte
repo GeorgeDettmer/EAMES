@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import { Table, TableHeadCell, TableHead, TableBodyCell, TableBody, TableBodyRow, Badge } from 'flowbite-svelte';
+	import { Table, TableHeadCell, TableHead, TableBodyCell, TableBody, TableBodyRow, Badge, Modal } from 'flowbite-svelte';
 	import { datetimeFormat } from '$lib/utils';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import { onMount } from 'svelte';
@@ -12,6 +12,8 @@
 	import { EditOutline } from 'flowbite-svelte-icons';
 	import EditToggle from '$lib/components/Misc/EditToggle.svelte';
 	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
+	import { enhance } from '$app/forms';
+	import EditModal from './EditModal.svelte';
 
 	onMount(() => {
 		$windowTitleStore = 'Suppliers';
@@ -168,11 +170,14 @@
 		}
 		updating = false;
 	}
+
+	let editModal = false;
+	let editSupplier: Supplier | undefined;
 </script>
 
 <div class="pt-4 max-h-500px mx-auto">
 	{#if suppliers}
-		<Table>
+		<!-- <Table>
 			<TableHead>
 				<TableHeadCell>#</TableHeadCell>
 				<TableHeadCell>ID</TableHeadCell>
@@ -239,17 +244,20 @@
 							</div>
 						</TableBodyCell>
 						<TableBodyCell>
-							<Badge color={supplier?.risk_level === 'HIGH' ? 'red' : supplier?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}>
+							<Badge
+								color={!supplier?.risk_level
+									? 'dark'
+									: supplier?.risk_level === 'HIGH'
+									? 'red'
+									: supplier?.risk_level === 'MEDIUM'
+									? 'yellow'
+									: 'blue'}
+							>
 								{supplier?.risk_level || 'Undefined'}
 							</Badge>
 						</TableBodyCell>
 						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
 							<div class="flex gap-x-0.5">
-								<!-- {#each supplier?.tags || [] as tag}
-									<div>
-										<Badge color="blue">{tag}</Badge>
-									</div>
-								{/each} -->
 								<SupplierTags tags={supplier?.tags} />
 							</div>
 						</TableBodyCell>
@@ -295,26 +303,104 @@
 				<TableHeadCell />
 				<TableHeadCell>{suppliers?.reduce((a, v) => a + v?.orders_aggregate?.aggregate?.count || 0, 0)}</TableHeadCell>
 				<TableHeadCell>
-					<!-- <span
-						on:click={() => {
-							newSuppliers = [
-								...newSuppliers,
-								{
-									id: '',
-									name: '',
-									names: [],
-									created_at: new Date(),
-									user_id: $page?.data?.user?.id,
-									user: $page?.data?.user,
-									__edit: true
-								}
-							];
-						}}
-					>
-						<Plus size="24" class="hover:text-green-600 cursor-pointer" />
-					</span> -->
+
 				</TableHeadCell>
+			</TableHead>
+		</Table> -->
+		<Table>
+			<TableHead>
+				<TableHeadCell>#</TableHeadCell>
+				<TableHeadCell>ID</TableHeadCell>
+				<TableHeadCell>Name</TableHeadCell>
+				<TableHeadCell>Identifiers</TableHeadCell>
+				<TableHeadCell>Risk Level</TableHeadCell>
+				<TableHeadCell>Tags</TableHeadCell>
+				<TableHeadCell>Created at</TableHeadCell>
+				<TableHeadCell>Created by</TableHeadCell>
+				<TableHeadCell>Orders</TableHeadCell>
+				<TableHeadCell />
+			</TableHead>
+			<TableBody>
+				{#each [...suppliers, ...newSuppliers] as supplier, idx}
+					<TableBodyRow>
+						<TableBodyCell tdClass="px-6 py-1">
+							<p class="cursor-default">{idx + 1}</p>
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							{supplier.id}
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							{supplier.name}
+						</TableBodyCell>
+						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
+							<div class="flex gap-x-0.5">
+								{#each supplier?.names || [] as identifier}
+									<div>
+										<Badge color="blue">{identifier}</Badge>
+									</div>
+								{/each}
+							</div>
+						</TableBodyCell>
+						<TableBodyCell>
+							<Badge
+								color={!supplier?.risk_level
+									? 'dark'
+									: supplier?.risk_level === 'HIGH'
+									? 'red'
+									: supplier?.risk_level === 'MEDIUM'
+									? 'yellow'
+									: 'blue'}
+							>
+								{supplier?.risk_level || 'Undefined'}
+							</Badge>
+						</TableBodyCell>
+						<TableBodyCell clickToEdit={false} bind:editing={supplier.__edit} tdClass="px-6 py-1">
+							<div class="flex gap-x-0.5">
+								<SupplierTags tags={supplier?.tags} />
+							</div>
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							{datetimeFormat(supplier.created_at)}
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							<UserIcon size="xs" user={supplier?.user}
+								>{supplier?.user?.first_name || 'Unknown'} {supplier?.user?.last_name || 'Unknown'}</UserIcon
+							>
+						</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
+						<TableBodyCell tdClass="px-6 py-1">
+							<EditOutline
+								size="sm"
+								on:click={() => {
+									editSupplier = supplier;
+									editModal = true;
+								}}
+							/>
+						</TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			</TableBody>
+			<TableHead>
+				<TableHeadCell>{suppliers?.length + newSuppliers?.length}</TableHeadCell>
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell />
+				<TableHeadCell>{suppliers?.reduce((a, v) => a + v?.orders_aggregate?.aggregate?.count || 0, 0)}</TableHeadCell>
+				<TableHeadCell />
 			</TableHead>
 		</Table>
 	{/if}
 </div>
+
+<Modal
+	bind:open={editModal}
+	on:on:close={() => {
+		console.log('close');
+		editSupplier = undefined;
+	}}
+>
+	<EditModal {editSupplier} />
+</Modal>

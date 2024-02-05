@@ -206,7 +206,7 @@
 		<span
 			class="cursor-pointer"
 			on:click={() => {
-				dispatch('remove', { item });
+				dispatch('remove', { item, idx });
 			}}
 		>
 			❌

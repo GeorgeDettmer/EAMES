@@ -404,7 +404,16 @@
 				{@const unallocatedTo = jobs?.filter(
 					(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
 				)}
-				<OrderCreateTableRow {idx} {item} allocatabledShipments={shipments} allocatableJobs={jobs} />
+				<OrderCreateTableRow
+					{idx}
+					{item}
+					allocatabledShipments={shipments}
+					allocatableJobs={jobs}
+					on:remove={(e) => {
+						console.log('delete', e);
+						remove(idx);
+					}}
+				/>
 				<!-- <TableBodyRow class="p-0 object-right">
 						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}

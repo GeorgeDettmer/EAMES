@@ -25,6 +25,7 @@
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 	import EditableText from '../Misc/EditableText.svelte';
 	import type { Shipment } from '$lib/types';
+	import OrderCreateTableRow from './Create/OrderCreateTableRow.svelte';
 
 	export let order;
 	export let shipments: Shipment[] = [];
@@ -222,7 +223,7 @@
 			</div>
 			<div class="col-span-2">
 				<Label for="small-input">Allocations</Label>
-				{#each newAllocations?.toReversed() as allocation, idx}
+				{#each newAllocations as allocation, idx}
 					<div class="py-0.5 mx-auto">
 						<div
 							class="flex w-fit rounded {newAllocations?.reduce((a, v) => a + v.quantity, 0) !== newQuantity
@@ -403,7 +404,8 @@
 					{@const unallocatedTo = jobs?.filter(
 						(j) => item.jobs_allocations.findIndex((a) => a?.job_id === j?.id && a?.job_batch === j?.batch) === -1
 					)}
-					<TableBodyRow class="p-0 object-right">
+					<OrderCreateTableRow {idx} {item} allocatabledShipments={shipments} allocatableJobs={jobs} />
+					<!-- <TableBodyRow class="p-0 object-right">
 						<TableBodyCell tdClass="px-6 py-1">
 							{idx + 1}
 						</TableBodyCell>
@@ -537,7 +539,7 @@
 							</span>
 						</TableBodyCell>
 						<slot name="body" />
-					</TableBodyRow>
+					</TableBodyRow> -->
 				{:else}
 					<TableBodyCell colspan="5">No items allocated to this order</TableBodyCell>
 				{/each}

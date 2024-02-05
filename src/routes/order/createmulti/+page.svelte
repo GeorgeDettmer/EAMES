@@ -157,14 +157,16 @@
 						created_at: new Date(),
 						/* user_id: $page?.data?.user?.id, */
 						category: 'Component',
-						jobs_allocations: [
-							{
-								quantity: null,
-								job_id: defaultAllocationJob?.id,
-								job_batch: defaultAllocationJob?.batch,
-								user_id: $page?.data?.user?.id
-							}
-						]
+						jobs_allocations: defaultAllocationJob?.id
+							? [
+									{
+										quantity: null,
+										job_id: defaultAllocationJob?.id,
+										job_batch: defaultAllocationJob?.batch || 0,
+										user_id: $page?.data?.user?.id || null
+									}
+							  ]
+							: []
 					}
 				];
 			}

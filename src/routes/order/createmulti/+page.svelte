@@ -146,7 +146,7 @@
 					)?.[0];
 					importOrders[importSuppierName].orders_items = [];
 				}
-				let defaultAllocationJob = allocated?.[0];
+				let defaultAllocationJob = importAllocation;
 				importOrders[importSuppierName].orders_items = [
 					...importOrders[importSuppierName].orders_items,
 					{
@@ -582,6 +582,8 @@
 	let allocatableSelectValue;
 	let tabState = [true];
 	$: openOrderIdx = tabState.findIndex((v) => v);
+
+	let importAllocation;
 </script>
 
 <div
@@ -636,7 +638,7 @@
 					{#each allocated as j, idx}
 						<div>
 							<Badge color="dark">
-								<p class="text-left" class:underline={idx === 0}>
+								<p class="text-left">
 									{j.id}
 									{#if j.batch > 0}
 										({String.fromCharCode(64 + j.batch)})
@@ -768,6 +770,17 @@
 		</div>
 		<div class="ml-auto flex">
 			{#if showImport}
+				<select bind:value={importAllocation}>
+					<option value={null}> N/A </option>
+					{#each allocated as j}
+						<option value={j}>
+							{j.id}
+							{#if j.batch > 0}
+								({String.fromCharCode(64 + j.batch)})
+							{/if}
+						</option>
+					{/each}
+				</select>
 				<Button
 					color="green"
 					size="xs"

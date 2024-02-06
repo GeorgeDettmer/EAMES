@@ -221,7 +221,7 @@
 				</select>
 				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
-			<div class="col-span-2">
+			<!-- <div class="col-span-2">
 				<Label for="small-input">Allocations</Label>
 				{#each newAllocations as allocation, idx}
 					<div class="py-0.5 mx-auto">
@@ -286,7 +286,7 @@
 						<PlusOutline />
 					</button>
 				</div>
-			</div>
+			</div> -->
 		</div>
 
 		<div class="flex pt-6">

@@ -35,6 +35,7 @@
 	import OrderShipment from '$lib/components/Orders/OrderShipment - Copy.svelte';
 	import type { Shipment } from '$lib/types';
 	import { XMark } from 'svelte-heros-v2';
+	import { PUBLIC_FORCE_SET_ORDER_NUMBER } from '$env/static/public';
 
 	$windowTitleStore = `Order | New`;
 	onDestroy(() => {
@@ -323,6 +324,10 @@
 		}
 		if (!orders.every((o) => o.orders_items.length > 0)) {
 			messagesStore('An order contains no order items, remove the order or add items to it', 'error');
+			return;
+		}
+		if (PUBLIC_FORCE_SET_ORDER_NUMBER && orders.some((o) => !o.id)) {
+			messagesStore('An order has no PO number set', 'error');
 			return;
 		}
 

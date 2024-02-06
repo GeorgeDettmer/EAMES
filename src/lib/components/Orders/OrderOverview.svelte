@@ -29,6 +29,8 @@
 	import { goto } from '$app/navigation';
 	import {
 		CheckOutline,
+		DotsHorizontalOutline,
+		DotsVerticalOutline,
 		EditOutline,
 		InfoCircleSolid,
 		PlusOutline,
@@ -490,6 +492,9 @@ subscription order($orderId: bigint!) {
 	let addShipmentSelected = allShipments?.[0];
 
 	$: console.log('order', order);
+
+	let showOrderEdit = false;
+	let showOrderEditSave = false;
 </script>
 
 {#if editable}
@@ -645,9 +650,61 @@ subscription order($orderId: bigint!) {
 {#if order}
 	{#if showHeader}
 		<div class="flex">
-			<div class=" flex-col">
+			<div class="flex-col">
 				<div class="flex">
-					<OrdersListItem {order} interactive={false} />
+					<OrdersListItem {order} interactive={false}>
+						<div class="-mt-6 pl-2" on:click={() => (showOrderEdit = !showOrderEdit)}>
+							{#if showOrderEdit}
+								<DotsVerticalOutline size="xs" />
+							{:else}
+								<DotsHorizontalOutline size="xs" />
+							{/if}
+						</div>
+						{#if showOrderEdit}
+							<div class="flex" on:click|stopPropagation={() => {}}>
+								<div class="w-24 my-auto ml-2">
+									<label class="text-xs">Reference:</label>
+									<input
+										type="text"
+										class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-0.5"
+										placeholder="Reference"
+										bind:value={order.reference}
+										on:input={() => {
+											showOrderEditSave = true;
+										}}
+									/>
+								</div>
+								{#if showOrderEditSave}
+									<div class="pl-1 my-auto">
+										<form
+											class="inline-flex gap-x-2"
+											method="POST"
+											action="/order?/updateOrder"
+											use:enhance
+											on:submit|preventDefault={(e) => {
+												console.warn(e);
+												showOrderEditSave = false;
+												showOrderEdit = false;
+											}}
+										>
+											<input type="hidden" name="order_id" bind:value={order.id} />
+											<input type="hidden" name="reference" bind:value={order.reference} />
+											<button>
+												<img
+													style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+													width="20"
+													height="20"
+													src="https://img.icons8.com/ios/50/save--v1.png"
+													alt="save"
+													class="opacity-50 hover:opacity-100"
+												/>
+											</button>
+										</form>
+									</div>
+								{/if}
+							</div>
+						{/if}
+					</OrdersListItem>
 					<div class="pl-2 my-auto">
 						<UserIcon size="sm" user={order?.user}>
 							{order?.user?.first_name}

@@ -390,6 +390,42 @@ export const actions = {
 		return {
 			success: true
 		};
+	},
+	updateOrder: async ({ cookies, request, locals }) => {
+		const formData = await request.formData();
+		const order_id = formData.get('order_id');
+		const reference = formData.get('reference');
+		console.log('updateOrder', order_id, reference);
+		if (!order_id) {
+			console.error('updateOrder', 'Missing required fields');
+			return fail(401, { message: 'Missing required fields' });
+		}
+		if (reference === null) {
+			console.error('updateOrder', 'Missing update fields');
+			return fail(401, { message: 'Missing update fields' });
+		}
+		let _set = {
+			reference
+		};
+		const result = await client.mutation(
+			gql`
+				mutation updateOrder($_set: erp_orders_set_input!, $order_id: bigint!) {
+					update_erp_orders_by_pk(pk_columns: { id: $order_id }, _set: $_set) {
+						id
+					}
+				}
+			`,
+			{ order_id, _set }
+		);
+		let data = result.data?.update_erp_orders_by_pk;
+		console.log('updateOrder', data?.error?.message);
+		if (result?.error) {
+			return fail(401, { message: 'Database Error: ' + result?.error?.message });
+		}
+		return {
+			success: !result.data?.update_erp_orders_by_pk,
+			data: result?.data
+		};
 	}
 } satisfies Actions;
 

@@ -786,15 +786,10 @@ subscription order($orderId: bigint!) {
 									</div>
 								</div>
 							{:else}
-								<div class="flex rounded bg-orange-500 p-2 gap-x-2">
-									<!-- <img
-									style="filter: brightness(0) saturate(100%) invert(90%) sepia(97%) saturate(925%) hue-rotate(360deg)"
-									width="20"
-									height="20"
-									src="https://img.icons8.com/ios/50/cardboard-box.png"
-									alt="box-other"
-								/> -->
-									<p class="my-auto text-center text-white font-semibold uppercase">No allocations</p>
+								<div class="flex rounded bg-orange-500 p-1 h-full w-28">
+									<p class="my-auto text-center text-sm text-white font-semibold uppercase whitespace-break-spaces">
+										No allocations
+									</p>
 								</div>
 							{/each}
 						</div>

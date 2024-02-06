@@ -6,6 +6,10 @@ export const numberToLetter = (int: number) => {
 	return String.fromCharCode('A'.charCodeAt(0) + int);
 };
 
+export const letterToNumber = (letter: string, offset: number = 65) => {
+	return letter.toUpperCase().charCodeAt(0) - offset;
+};
+
 export const invertColor = (hex: string, bw: boolean) => {
 	if (hex.indexOf('#') === 0) {
 		hex = hex.slice(1);

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import OrderOverview from '$lib/components/Orders/OrderOverview.svelte';
-	import OrderEditable from '$lib/components/Orders/OrderEditable.svelte';
 	import { getContextClient, gql, queryStore, type OperationResultStore } from '@urql/svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import {
@@ -872,6 +871,15 @@
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<div class="flex">
+							{#if order?.shipments?.length > 0 && order?.shipments?.[0]?.delivered_at && !order?.received_at && !order?.cancelled_at}
+								<img
+									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
+									width="24"
+									height="24"
+									src="https://img.icons8.com/windows/32/delivered-box.png"
+									alt="delivered-box"
+								/>
+							{/if}
 							<!-- {#if true}
 								<img
 									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"

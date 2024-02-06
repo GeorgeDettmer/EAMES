@@ -28,7 +28,7 @@
 	import { goto } from '$app/navigation';
 	import { filedrop, type FileDropOptions, type Files } from 'filedrop-svelte';
 	import XLSX from 'xlsx';
-	import { getParameterInsensitiveAny } from '$lib/utils';
+	import { getParameterInsensitiveAny, letterToNumber, numberToLetter } from '$lib/utils';
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
@@ -558,6 +558,17 @@
 
 			importText = sheetText;
 			imported = excelToObjects(importText);
+			importAllocations = imported.map((i, idx) => {
+				let keys = objectKeysStartsWith(i, 'allocate');
+				return keys.map((k) => {
+					let jobString = k.split(' ')?.[1];
+					let quantity = Number(i?.[k]) ? Number(i?.[k]) : 0;
+					let [jobId, batch] = jobString.split('-');
+					if (!jobId) return { job: null, quantity };
+					let job = { id: Number(jobId), batch: batch ? letterToNumber(batch) : 0 };
+					return { job, quantity };
+				});
+			});
 			console.log(imported);
 		} catch (error) {
 			messagesStore('Excel Import Error: ' + error, 'error');
@@ -612,6 +623,13 @@
 	$: openOrderIdx = tabState.findIndex((v) => v);
 
 	let importAllocation;
+
+	let objectKeysStartsWith = (obj, startString: string): string[] =>
+		Object.keys(obj).filter((k) => k.toLowerCase().startsWith(startString));
+	let importAllocations = [];
+	$: hasImportAllocations = importAllocations?.filter((i) => i.length)?.length > 0;
+
+	$: console.log('importAllocations', hasImportAllocations, importAllocations);
 </script>
 
 <div
@@ -798,17 +816,20 @@
 		</div>
 		<div class="ml-auto flex">
 			{#if showImport}
-				<select bind:value={importAllocation}>
-					<option value={null}> N/A </option>
-					{#each allocated as j}
-						<option value={j}>
-							{j.id}
-							{#if j.batch > 0}
-								({String.fromCharCode(64 + j.batch)})
-							{/if}
-						</option>
-					{/each}
-				</select>
+				{#if !hasImportAllocations}
+					<select bind:value={importAllocation}>
+						<option value={null}> N/A </option>
+						{#each allocated as j}
+							<option value={j}>
+								{j.id}
+								{#if j.batch > 0}
+									({String.fromCharCode(64 + j.batch)})
+								{/if}
+							</option>
+						{/each}
+					</select>
+				{/if}
+
 				<Button
 					color="green"
 					size="xs"
@@ -913,6 +934,9 @@
 						<TableHeadCell padding="px-1 py-1">Unit Price</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">Total Price</TableHeadCell>
 						<TableHeadCell padding="px-1 py-1">Supplier</TableHeadCell>
+						{#if hasImportAllocations}
+							<TableHeadCell padding="px-1 py-1">Allocations</TableHeadCell>
+						{/if}
 						<TableHeadCell>
 							<Checkbox
 								checked={true}
@@ -932,6 +956,7 @@
 							{@const spn = line[orderItemProperties['spn']]}
 							{@const price = line[orderItemProperties['price']]}
 							{@const supplier = line[orderItemProperties['supplier']]}
+							{@const allocations = importAllocations?.[idx] || []}
 							<TableBodyRow
 								color={!line._import ? 'yellow' : missingImportData2[idx].flat().includes(true) ? 'red' : 'green'}
 							>
@@ -962,6 +987,32 @@
 									<EditableText bind:innerText={line[orderItemProperties['supplier']]} />
 									<!-- {supplier ? supplier : 'undefined'} -->
 								</TableBodyCell>
+								{#if hasImportAllocations}
+									<TableBodyCell tdClass="px-1 py-1 text-xs">
+										<div>
+											{#each allocations as allocation}
+												<div class="py-0.5 mx-auto">
+													<div class="flex w-fit rounded bg-slate-500">
+														<Badge color="blue">
+															<p class="text-left">
+																{allocation?.job?.id}
+																{#if allocation?.job?.batch}
+																	({numberToLetter(allocation.job.batch - 1)})
+																{/if}
+															</p>
+														</Badge>
+
+														<EditableText
+															classes="text-xs my-auto text-center font-semibold p-1 cursor-default min-w-8 text-white"
+															bind:innerText={allocation.quantity}
+														/>
+													</div>
+												</div>
+											{/each}
+										</div>
+									</TableBodyCell>
+								{/if}
+
 								<TableBodyCell>
 									<Checkbox bind:checked={line._import} />
 								</TableBodyCell>

@@ -653,13 +653,18 @@ subscription order($orderId: bigint!) {
 			<div class="flex-col">
 				<div class="flex">
 					<OrdersListItem {order} interactive={false}>
-						<div class="-mt-6 pl-2" on:click={() => (showOrderEdit = !showOrderEdit)}>
+						<button
+							class="-mt-6 pl-2"
+							on:click={() => {
+								showOrderEdit = !showOrderEdit;
+							}}
+						>
 							{#if showOrderEdit}
 								<DotsVerticalOutline size="xs" />
 							{:else}
 								<DotsHorizontalOutline size="xs" />
 							{/if}
-						</div>
+						</button>
 						{#if showOrderEdit}
 							<div class="flex" on:click|stopPropagation={() => {}}>
 								<div class="w-24 my-auto ml-2">

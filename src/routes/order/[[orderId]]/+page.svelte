@@ -29,6 +29,7 @@
 		padString,
 		replaceStateWithQuery
 	} from '$lib/utils';
+	import OrderStatus from '$lib/components/Orders/OrderStatus.svelte';
 	import OrderDetailTable from '$lib/components/Orders/OrderDetailTable.svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
@@ -414,8 +415,13 @@
 {:else}
 	<Table shadow hoverable>
 		<TableHead>
-			<TableHeadCell padding="px-0" />
-			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCell padding="px-1 py-3" />
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="id"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<input
 					class="block w-24 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					type="text"
@@ -455,7 +461,12 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="job"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<input
 					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					type="text"
@@ -481,7 +492,12 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="buyer"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<select
 					class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					bind:value={buyerSearch}
@@ -514,7 +530,12 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="category"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<!-- <input
 					class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 					type="text"
@@ -529,7 +550,12 @@
 				</div>
 				 -->
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="supplier"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<!-- <input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 						type="text"
@@ -566,7 +592,12 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns} showCollapseButton={false}>
+			<TableHeadCollapsible
+				padding="px-1 py-3"
+				columnId="orderdate"
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
 				<div class="block h-2">
 					<input
 						class="block w-28 text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
@@ -610,7 +641,7 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCell colspan="3">
+			<TableHeadCell padding="px-1 py-3" colspan="3">
 				<div class="flex">
 					<!-- <div class="ml-auto">
 						{#if $ordersStore?.error}
@@ -679,16 +710,34 @@
 			</TableHeadCell>
 		</TableHead>
 		<TableHead>
-			<TableHeadCell padding="px-0" />
-			<TableHeadCollapsible columnId="id" bind:collapsedColumns={$collapsedColumns}>PO#</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="job" bind:collapsedColumns={$collapsedColumns}>Jobs</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="buyer" bind:collapsedColumns={$collapsedColumns}>Buyer</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="category" bind:collapsedColumns={$collapsedColumns}>Categories</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="supplier" bind:collapsedColumns={$collapsedColumns}>Supplier</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>Created</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="items" bind:collapsedColumns={$collapsedColumns}>Items</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="total" bind:collapsedColumns={$collapsedColumns}>Total</TableHeadCollapsible>
-			<TableHeadCollapsible columnId="status" bind:collapsedColumns={$collapsedColumns}>Status</TableHeadCollapsible>
+			<TableHeadCell padding="px-1 py-3" />
+			<TableHeadCollapsible padding="px-1 py-3" columnId="id" bind:collapsedColumns={$collapsedColumns}
+				>PO#</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="job" bind:collapsedColumns={$collapsedColumns}
+				>Jobs</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="buyer" bind:collapsedColumns={$collapsedColumns}
+				>Buyer</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="category" bind:collapsedColumns={$collapsedColumns}
+				>Categories</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="supplier" bind:collapsedColumns={$collapsedColumns}
+				>Supplier</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="orderdate" bind:collapsedColumns={$collapsedColumns}
+				>Created</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="items" bind:collapsedColumns={$collapsedColumns}
+				>Items</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="total" bind:collapsedColumns={$collapsedColumns}
+				>Total</TableHeadCollapsible
+			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="status" bind:collapsedColumns={$collapsedColumns}
+				>Status</TableHeadCollapsible
+			>
 		</TableHead>
 
 		<TableBody>
@@ -704,6 +753,9 @@
 				{@const allocations = order?.orders_items
 					?.flatMap((oi) => oi?.jobs_allocations || [])
 					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.job_batch === v.job_batch))}
+				{@const shipments = order?.orders_items
+					?.flatMap((oi) => oi?.orders_items_shipments || [])
+					?.filter((v, i, s) => i === s.findIndex((a) => a.id === v.id))}
 				<TableBodyRow color={'default'} class={``}>
 					<TableBodyCell tdClass="px-1 whitespace-nowrap font-medium">
 						<button
@@ -720,7 +772,7 @@
 						</button>
 					</TableBodyCell>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="id"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -740,7 +792,7 @@
 						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="job"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -772,7 +824,7 @@
 						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="buyer"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -793,7 +845,7 @@
 						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 max-w-48 whitespace-nowrap font-medium"
 						columnId="category"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -810,7 +862,7 @@
 						</div>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="supplier"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -840,21 +892,21 @@
 						</Popover>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="orderdate"
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<p>{datetimeFormat(order?.created_at)}</p>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="items"
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<p>{order?.items}</p>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="total"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -866,12 +918,13 @@
 						</p>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
-						tdClass="px-6 py-1 whitespace-nowrap font-medium"
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="status"
 						bind:collapsedColumns={$collapsedColumns}
 					>
 						<div class="flex">
-							{#if order?.shipments?.length > 0 && order?.shipments?.[0]?.delivered_at && !order?.received_at && !order?.cancelled_at}
+							<OrderStatus {shipments} />
+							<!-- {#if order?.shipments?.length > 0 && order?.shipments?.[0]?.delivered_at && !order?.received_at && !order?.cancelled_at}
 								<img
 									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
 									width="24"
@@ -879,7 +932,7 @@
 									src="https://img.icons8.com/windows/32/delivered-box.png"
 									alt="delivered-box"
 								/>
-							{/if}
+							{/if} -->
 							<!-- {#if true}
 								<img
 									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"

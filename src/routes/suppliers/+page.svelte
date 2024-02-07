@@ -14,6 +14,7 @@
 	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
 	import { enhance } from '$app/forms';
 	import EditModal from './EditModal.svelte';
+	import moment from 'moment';
 
 	onMount(() => {
 		$windowTitleStore = 'Suppliers';
@@ -44,6 +45,12 @@
 					orders_aggregate {
 						aggregate {
 							count
+							max {
+								created_at
+							}
+							min {
+								created_at
+							}
 						}
 					}
 				}
@@ -317,6 +324,7 @@
 				<TableHeadCell>Tags</TableHeadCell>
 				<TableHeadCell>Created at</TableHeadCell>
 				<TableHeadCell>Created by</TableHeadCell>
+				<TableHeadCell>Last Used</TableHeadCell>
 				<TableHeadCell>Orders</TableHeadCell>
 				<TableHeadCell />
 			</TableHead>
@@ -367,6 +375,23 @@
 								>{supplier?.user?.first_name || 'Unknown'} {supplier?.user?.last_name || 'Unknown'}</UserIcon
 							>
 						</TableBodyCell>
+						{@const lastUsed = supplier?.orders_aggregate?.aggregate?.max?.created_at}
+						{@const daysSinceLastUsed =
+							(Date.now() - new Date(lastUsed || supplier?.created_at).getTime()) / 1000 / 60 / 60 / 24}
+						<TableBodyCell tdClass="px-6 py-1">
+							<Badge color={daysSinceLastUsed > 180 ? 'red' : daysSinceLastUsed > 90 ? 'yellow' : 'blue'}>
+								<div class="text-xs -space-y-1">
+									{#if lastUsed}
+										<p>{datetimeFormat(lastUsed)}</p>
+										<p class="italic text-right">
+											{moment(lastUsed).fromNow().startsWith('in') ? 'moments ago' : moment(lastUsed).fromNow()}
+										</p>
+									{:else}
+										Never
+									{/if}
+								</div>
+							</Badge>
+						</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell>
 						<TableBodyCell tdClass="px-6 py-1">
 							<EditOutline
@@ -382,6 +407,8 @@
 			</TableBody>
 			<TableHead>
 				<TableHeadCell>{suppliers?.length + newSuppliers?.length}</TableHeadCell>
+				<TableHeadCell />
+				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />
 				<TableHeadCell />

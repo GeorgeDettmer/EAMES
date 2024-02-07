@@ -42,7 +42,7 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 7 // 1 day
 		});
 
-		throw redirect(302, '/order');
+		//throw redirect(302, '/order');
 	},
 	logout: async (event) => {
 		console.log('USER LOGOUT: ', event.locals.user);

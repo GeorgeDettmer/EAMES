@@ -229,10 +229,20 @@
 		client: getContextClient(),
 		query: gql`
 			query suppliers {
-				erp_suppliers(order_by: { orders_aggregate: { count: desc } }) {
+				erp_suppliers(where: { hidden: { _eq: false } }, order_by: { name: asc }) {
 					id
+					created_at
+					updated_at
 					name
 					names
+					user_id
+					tags
+					image_url
+					categories
+					url
+					risk_level
+					critical
+					approved
 				}
 			}
 		`,
@@ -764,7 +774,7 @@
 					inactiveClasses="border hover:border-b-4 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
 				>
 					<span slot="title">
-						<OrderCreateHeader bind:order />
+						<OrderCreateHeader bind:order {suppliers} />
 					</span>
 					<OrderCreateMulti
 						bind:jobs={allocated}

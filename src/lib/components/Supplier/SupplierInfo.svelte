@@ -64,7 +64,7 @@
 					/>
 				{:else}
 					<p
-						class="text-xl font-bold text-center w-8 p-0.5 rounded-lg bg-gray-200
+						class="text-xl font-bold text-center w-8 p-0.5 rounded-lg text-gray-500 bg-gray-200
 						{supplierInfo?.id === 'STOCK' && 'bg-green-500 text-white'}
 						{supplierInfo?.id === 'FI' && 'bg-yellow-300 text-white'}
 						"
@@ -96,13 +96,15 @@
 							alt="delivered-box"
 						/>
 					{/if}
-					<Badge
-						rounded
-						border
-						color={supplierInfo?.risk_level === 'HIGH' ? 'red' : supplierInfo?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}
-					>
-						<p class="text-xs font-bold">{supplierInfo?.risk_level?.[0]}</p>
-					</Badge>
+					{#if supplierInfo?.risk_level}
+						<Badge
+							rounded
+							border
+							color={supplierInfo?.risk_level === 'HIGH' ? 'red' : supplierInfo?.risk_level === 'MEDIUM' ? 'yellow' : 'blue'}
+						>
+							<p class="text-xs font-bold text-center">{supplierInfo?.risk_level?.[0]}</p>
+						</Badge>
+					{/if}
 				</div>
 			</div>
 

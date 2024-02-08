@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { supplier_export } from '$lib/utils';
-	import { Select, Button, Toggle, Input } from 'flowbite-svelte';
+	import { Select, Button, Toggle, Input, Badge } from 'flowbite-svelte';
 	import { BarsArrowDown } from 'svelte-heros-v2';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
 	import { queryStore, getContextClient, gql } from '@urql/svelte';
 	import { DotsHorizontalOutline, DotsVerticalOutline } from 'flowbite-svelte-icons';
+	import type { Supplier } from '$lib/types';
 
 	export let order;
 	export let showSupplierSelect: boolean = false;
-
-	$: suppliersStore = queryStore({
+	export let suppliers: Supplier[] = [];
+	/* $: suppliersStore = queryStore({
 		client: getContextClient(),
 		query: gql`
 			query suppliers {
@@ -23,9 +24,10 @@
 		`,
 		variables: {}
 	});
-	$: suppliers = $suppliersStore?.data?.erp_suppliers;
+	$: suppliers = $suppliersStore?.data?.erp_suppliers; */
 
 	export let selectedSupplierId: undefined | string = order?.supplier?.id;
+	let supplier = order?.supplier;
 	//$: supplier = suppliers?.filter((s) => s?.id === selectedSupplierId)?.[0];
 	$: console.log('OrderCreateHeader', order);
 </script>
@@ -43,8 +45,9 @@
 				</div>
 				{#if showSupplierSelect}
 					<div class=" w-fit flex" on:click|stopPropagation={() => {}}>
-						<div class="pl-2 my-auto">
+						<div class="pl-2 my-auto space-y-0.5">
 							<Select
+								defaultClass="py-0 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
 								size="sm"
 								placeholder=""
 								items={suppliers?.map((s) => {
@@ -52,15 +55,75 @@
 								})}
 								bind:value={selectedSupplierId}
 								on:change={() => {
-									showSupplierSelect = false;
-									let supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
+									//showSupplierSelect = false;
+									supplier = suppliers?.filter((s) => s.id === selectedSupplierId)?.[0];
 									//console.log(supplier);
+									order.supplier = supplier;
 									order.supplier.name = supplier.name;
 									order.supplier.names = supplier.names;
 									order.supplier.id = supplier.id;
 									order.supplier_id = supplier?.id;
 								}}
 							/>
+							{#if supplier}
+								<div class="flex gap-x-2">
+									<div class="my-auto rounded-lg">
+										<a href={supplier?.url} target="_blank">
+											{#if supplier?.image_url}
+												<img
+													class="h-6 p-0.5 rounded-lg bg-gray-200"
+													class:hidden={!supplier?.image_url}
+													src={supplier?.image_url}
+													alt={supplier?.name}
+												/>
+											{:else}
+												<p
+													class="font-bold text-center w-6 p-0.5 rounded-lg text-gray-500 bg-gray-200
+												{supplier?.id === 'STOCK' && 'bg-green-500 text-white'}
+												{supplier?.id === 'FI' && 'bg-yellow-300 text-white'}
+												"
+												>
+													{supplier?.name
+														?.split(' ')
+														?.map((s) => s?.[0]?.toUpperCase())
+														.join('')}
+												</p>
+											{/if}
+										</a>
+									</div>
+									<div class="my-auto">
+										<div class="flex gap-x-2">
+											<div class="flex gap-x-1 ml-auto">
+												{#if supplier?.critical}
+													<!-- <Badge rounded border color={'yellow'}>
+													<p class="text-xs font-bold">!</p>
+												</Badge> -->
+													Critical
+												{/if}
+												{#if supplier?.risk_level}
+													<Badge
+														rounded
+														border
+														color={supplier?.risk_level === 'HIGH'
+															? 'red'
+															: supplier?.risk_level === 'MEDIUM'
+															? 'yellow'
+															: 'blue'}
+													>
+														<p class="text-xs font-bold text-center">{supplier?.risk_level?.[0]}</p>
+													</Badge>
+												{/if}
+											</div>
+										</div>
+
+										<!-- {#if supplier?.categories?.length}
+											<p class="text-xs font-normal whitespace-break-spaces">
+												{supplier?.categories?.map((c) => c?.[0]?.toUpperCase() + c?.substr(1))?.join(', ')}
+											</p>
+										{/if} -->
+									</div>
+								</div>
+							{/if}
 						</div>
 						{#if Object.keys(supplier_export).includes(selectedSupplierId)}
 							<div class="grid grid-rows-2 gap-y-1 my-auto">

@@ -9,6 +9,8 @@ export interface Supplier {
 	image_url: string | null;
 	categories: string[] | null;
 	url: string | null;
+	risk_level: string | null;
+	approved: boolean | null;
 }
 
 export interface Tracking {

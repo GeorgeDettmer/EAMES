@@ -9,7 +9,7 @@
 
 	$: orderItemCount = order?.orders_items?.length;
 	$: color = color === '' ? (orderItemCount > 0 ? 'blue' : 'yellow') : color;
-	let classes = '  m-1 h-14 w-auto p-4 rounded font-medium inline-flex items-center justify-center ';
+	let classes = '  m-1 h-16 w-auto p-2 rounded font-medium inline-flex items-center justify-center ';
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -28,14 +28,15 @@
 				? 'bg-slate-300 text-slate-800 dark:bg-slate-800 dark:text-slate-300 '
 				: orderItemCount > 0
 				? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 '
-				: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 ')}
+				: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 ') +
+			(!order?.supplier?.approved ? 'border-red-700 border-4' : '')}
 	>
 		<div class="overflow-hidden grid grid-cols-2 gap-x-2">
 			<div>
 				<p
 					class="font-bold
-					{order?.supplier?.risk_level === 'MEDIUM' && 'text-yellow-500'}
-					{order?.supplier?.risk_level === 'HIGH' && 'text-red-600'}"
+					{order?.supplier?.risk_level === 'MEDIUM' && 'text-yellow-400'}
+					{order?.supplier?.risk_level === 'HIGH' && 'text-red-500'}"
 				>
 					{order?.supplier?.name}
 				</p>

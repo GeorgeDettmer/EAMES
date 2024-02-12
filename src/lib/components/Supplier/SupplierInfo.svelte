@@ -36,6 +36,8 @@
 	}
 
 	$: supplierInfo = supplierId ? $supplierInfoStore?.data?.erp_suppliers_by_pk : supplier;
+
+	let imageLoadError = false;
 </script>
 
 {#if $supplierInfoStore?.fetching}
@@ -55,12 +57,15 @@
 	<div class="flex gap-x-2">
 		<div class="my-auto rounded-lg">
 			<a href={supplierInfo?.url} target="_blank">
-				{#if supplierInfo?.image_url}
+				{#if supplierInfo?.image_url && !imageLoadError}
 					<img
 						class="h-8 p-0.5 rounded-lg bg-gray-200"
 						class:hidden={!supplierInfo?.image_url}
 						src={supplierInfo?.image_url}
 						alt={supplierInfo?.name}
+						on:error={(e) => {
+							imageLoadError = e?.type === 'error';
+						}}
 					/>
 				{:else}
 					<p

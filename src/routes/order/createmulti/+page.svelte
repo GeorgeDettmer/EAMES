@@ -669,6 +669,9 @@
 								if (!allocatableSelectValue) return;
 								allocated = [...allocated, allocatableSelectValue];
 								allocatableSelectValue = null;
+								if (!importAllocation) {
+									importAllocation = allocated?.[0];
+								}
 							}}
 						>
 							<PlusOutline class="outline-none text-gray-600 dark:text-gray-200" />
@@ -704,6 +707,9 @@
 									class="focus:outline-none pl-1"
 									on:click={() => {
 										allocated = allocated.filter((a, i) => i !== idx);
+										if (!importAllocation) {
+											importAllocation = allocated?.[0] || null;
+										}
 									}}
 								>
 									<XMark size="16" class="outline-none" />
@@ -829,7 +835,7 @@
 				{#if !hasImportAllocations}
 					<select bind:value={importAllocation}>
 						<option value={null}> N/A </option>
-						{#each allocated as j}
+						{#each allocated || [] as j}
 							<option value={j}>
 								{j.id}
 								{#if j.batch > 0}

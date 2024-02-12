@@ -126,6 +126,8 @@
 				let spn = line?.[orderItemProperties['spn']];
 				let price = Number(line?.[orderItemProperties['price']]?.replace(/[^0-9\.-]+/g, '')) || 0;
 				let quantity = Number(line?.[orderItemProperties['quantity']]);
+				let importSuppierName = line?.[orderItemProperties['supplier']];
+				if (!importStock && importSuppierName?.toLowerCase() === 'stock') return;
 				//console.log({ part, spn, price, quantity });
 				if (!part) {
 					messagesStore(`Import failed for line ${idx + 1}. Missing part number or price`, 'error');
@@ -138,7 +140,7 @@
 				if (!price) {
 					//messagesStore(`Line ${idx + 1} has 0 price`);
 				}
-				let importSuppierName = line?.[orderItemProperties['supplier']];
+
 				if (!importOrders?.[importSuppierName]) {
 					importOrders[importSuppierName] = [];
 					importOrders[importSuppierName].user = $page?.data?.user;
@@ -640,6 +642,8 @@
 	$: hasImportAllocations = importAllocations?.filter((i) => i.length)?.length > 0;
 
 	$: console.log('importAllocations', hasImportAllocations, importAllocations);
+
+	let importStock = false;
 </script>
 
 <div
@@ -830,32 +834,37 @@
 				{/if}
 			</div>
 		</div>
-		<div class="ml-auto flex">
+		<div class="flex">
 			{#if showImport}
-				{#if !hasImportAllocations}
-					<select bind:value={importAllocation}>
-						<option value={null}> N/A </option>
-						{#each allocated || [] as j}
-							<option value={j}>
-								{j.id}
-								{#if j.batch > 0}
-									({String.fromCharCode(64 + j.batch)})
-								{/if}
-							</option>
-						{/each}
-					</select>
-				{/if}
+				<div class="my-auto">
+					<Checkbox bind:value={importStock}>Include stock</Checkbox>
+				</div>
+				<div class="ml-auto">
+					{#if !hasImportAllocations}
+						<select bind:value={importAllocation}>
+							<option value={null}> N/A </option>
+							{#each allocated || [] as j}
+								<option value={j}>
+									{j.id}
+									{#if j.batch > 0}
+										({String.fromCharCode(64 + j.batch)})
+									{/if}
+								</option>
+							{/each}
+						</select>
+					{/if}
 
-				<Button
-					color="green"
-					size="xs"
-					disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
-					on:click={() => {
-						fillOrderFromImport();
-					}}
-				>
-					Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
-				</Button>
+					<Button
+						color="green"
+						size="xs"
+						disabled={missingImportData.filter((m, idx) => m && imported[idx]?._import)?.length > 0}
+						on:click={() => {
+							fillOrderFromImport();
+						}}
+					>
+						Import {imported?.filter((i) => i._import)?.length} of {imported?.length} items...
+					</Button>
+				</div>
 			{/if}
 		</div>
 	</div>
@@ -919,7 +928,8 @@
 														.getElementById('importLine' + idx)
 														.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
 												}}>Line {idx + 1}</button
-											> is missing required import data
+											>
+											is missing required import data <Checkbox bind:checked={imported[idx]._import} />
 										</li>
 										<ul class="ml-4 list-disc list-inside">
 											{#each missing as [isMissing, message]}

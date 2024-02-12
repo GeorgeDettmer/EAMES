@@ -88,6 +88,8 @@
 							supplier {
 								id
 								name
+								approved
+								risk_level
 							}
 						}
 					}

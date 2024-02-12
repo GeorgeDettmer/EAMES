@@ -317,7 +317,15 @@ subscription order($orderId: bigint!) {
 					supplier {
 						id
 						name
+						names
+						user_id
+						tags
+						image_url
+						categories
+						url
 						risk_level
+						critical
+						approved
 					}
 					user {
 						id

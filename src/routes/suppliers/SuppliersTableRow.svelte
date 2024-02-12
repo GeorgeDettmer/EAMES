@@ -62,7 +62,7 @@
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 		<UserIcon size="xs" user={supplier?.user}>
 			{supplier?.user?.first_name || 'Unknown'}
-			{supplier?.user?.last_name || 'Unknown'}
+			{supplier?.user?.last_name || ''}
 		</UserIcon>
 	</TableBodyCell>
 	{@const lastUsed = supplier?.orders_aggregate?.aggregate?.max?.created_at}
@@ -71,7 +71,7 @@
 		<Badge color={daysSinceLastUsed > 180 ? 'red' : daysSinceLastUsed > 90 ? 'yellow' : 'blue'}>
 			<div class="text-xs -space-y-1">
 				{#if lastUsed}
-					<p>{datetimeFormat(lastUsed)}</p>
+					<p>{datetimeFormat(lastUsed, false)}</p>
 					<p class="italic text-right">
 						{moment(lastUsed).fromNow().startsWith('in') ? 'moments ago' : moment(lastUsed).fromNow()}
 					</p>

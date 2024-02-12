@@ -151,7 +151,7 @@ export let getParameterInsensitiveAny = (object: { [x: string]: any }, keys: str
 	];
 };
 
-export let datetimeFormat = (datetime: string): string => {
+export let datetimeFormat = (datetime: string, inlcudeTime: boolean = true): string => {
 	const d = new Date(datetime);
 	let time = d.toLocaleTimeString('en-GB', {
 		hour: '2-digit',
@@ -162,7 +162,7 @@ export let datetimeFormat = (datetime: string): string => {
 		month: '2-digit',
 		year: '2-digit'
 	});
-	return time + ' ' + date;
+	return (inlcudeTime ? time + ' ' : '') + date;
 };
 
 export let getParameterInsensitive = (object: { [x: string]: any }, key: string): any => {

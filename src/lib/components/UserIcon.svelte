@@ -14,7 +14,7 @@
 		pill
 		color="light"
 		class={buttonClass}
-		style={user?.color ? `background-color:${user.color}80;` : 'background-color:#64748b80'}
+		style={user?.color ? `background-color:${user.color}85;` : 'background-color:#64748b95'}
 	>
 		{#if avatar}
 			<Avatar

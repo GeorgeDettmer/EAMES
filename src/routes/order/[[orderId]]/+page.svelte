@@ -90,7 +90,7 @@
 
 	let query = gql`
 		query orders($where: erp_orders_bool_exp, $limit: Int = 100, $offset: Int = 0) {
-			erp_orders(order_by: { created_at: desc }, limit: $limit, offset: $offset, where: $where) {
+			erp_orders(order_by: { created_at: desc, id: desc }, limit: $limit, offset: $offset, where: $where) {
 				id
 				reference
 				created_at

@@ -942,7 +942,7 @@
 									alt="delivered-box"
 								/>
 							{/if} -->
-							<a href={`${window.origin}/receiving/PO${order?.id}`} target="_blank" class="flex">
+							<a href={`${window.origin}/receiving/PO${order?.id}`} class="flex">
 								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
 									<img
 										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"

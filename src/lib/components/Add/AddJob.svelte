@@ -196,7 +196,7 @@
 			} else {
 				let kit_id = mutationResult.data.insert_erp_kits_one.id;
 				console.log('MUTATION RESULT: ', mutationResult);
-				messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one.id, 'success');
+				messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one?.id, 'success');
 				mutationResult = await urqlClient.mutation(
 					gql`
 						mutation createJobKit($job_id: bigint!, $batch: Int = 0, $kit_id: uuid!) {
@@ -212,7 +212,7 @@
 					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 				} else {
 					console.log('MUTATION RESULT: ', mutationResult);
-					messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one.id, 'success');
+					messagesStore('Created job-kit: ' + mutationResult.data.insert_material_jobs_kits_one?.id, 'success');
 				}
 			}
 		}

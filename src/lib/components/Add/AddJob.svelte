@@ -236,6 +236,7 @@
 		dueDate: string;
 	}
 	let batches: Batch[] = [];
+	$: batchesTotalQuantity = batches.reduce((a, v) => a + Number(v.quantity), 0);
 </script>
 
 <div class="w-2/3 mx-auto">
@@ -419,6 +420,7 @@
 					<button
 						on:click={() => {
 							//if (!id) return;
+							if (quantity - batchesTotalQuantity < 1) return;
 							batches = [
 								...batches,
 								{

@@ -3,11 +3,13 @@
 	import {
 		Label,
 		Input,
+		Helper,
 		Select,
 		Badge,
 		Modal,
 		Button,
 		Toggle,
+		Checkbox,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -15,13 +17,14 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
+	import AssemblyInfoOverview from '../Assembly/AssemblyInfoOverview.svelte';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
 	import AddAssembly from './AddAssembly.svelte';
 	import { Plus, PlusCircle } from 'svelte-heros-v2';
 	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
+	import AddComponent from './AddComponent.svelte';
 	import AddCustomer from './AddCustomer.svelte';
-	import { datetimeFormat, numberToLetter } from '$lib/utils';
 	const urqlClient = getContextClient();
 	$: lastJobIdStore = subscriptionStore({
 		client: getContextClient(),
@@ -227,15 +230,6 @@
 	$: totalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost) * Number(v.quantity), 0);
 
 	$: fullyPaid = totalPaid === totalQuoted;
-
-	interface Batch {
-		id: number;
-		batch: number;
-		quantity: number;
-		reference: string;
-		dueDate: string;
-	}
-	let batches: Batch[] = [];
 </script>
 
 <div class="w-2/3 mx-auto">
@@ -344,101 +338,7 @@
 		</div>
 	</div>
 
-	<div class="mt-2">
-		<Table hoverable>
-			<TableHead>
-				<TableHeadCell padding="px-1 pt-2" colspan="6">BATCHES</TableHeadCell>
-			</TableHead>
-			<TableHead>
-				<TableHeadCell padding="px-4 py-2">#</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2">Batch</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2">Reference</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2">Quantity</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2">Due Date</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2" />
-			</TableHead>
-			<TableBody>
-				<TableBodyRow>
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-						{0}
-					</TableBodyCell>
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-						{'-'}
-					</TableBodyCell>
-					<TableBodyCell tdClass="px-4 py-2 min-w-36 whitespace-nowrap font-medium">
-						{'-'}
-					</TableBodyCell>
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-						{quantity}
-					</TableBodyCell>
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium" />
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium" />
-				</TableBodyRow>
-				{#each batches as batch, idx}
-					<TableBodyRow color={batch?.quantity < 1 ? 'red' : 'default'} class={`cursor-pointer`}>
-						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							{idx + 1}
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							<div class="flex gap-x-1">
-								{#if batch?.batch}
-									<p>{numberToLetter(batch.batch, 64)}</p>
-								{/if}
-								<p>({batch?.batch || '-'})</p>
-							</div>
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-4 py-2 min-w-48 whitespace-nowrap font-medium">
-							<Input size="sm" bind:value={batch.reference} placeholder="Reference" />
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							<Input size="sm" type="number" bind:value={batch.quantity} />
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							<Input size="sm" type="date" bind:value={batch.dueDate} />
-						</TableBodyCell>
-						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							<button
-								class="cursor-pointer"
-								on:click={() => {
-									batches = batches.filter((_, i) => i !== idx);
-								}}
-							>
-								❌
-							</button>
-						</TableBodyCell>
-					</TableBodyRow>
-				{/each}
-			</TableBody>
-			<TableHead>
-				<TableHeadCell padding="px-4 py-2">{batches.length}</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2" />
-				<TableHeadCell padding="px-4 py-2" />
-				<TableHeadCell padding="px-4 py-2">{batches.reduce((a, v) => a + Number(v.quantity), 0)}</TableHeadCell>
-				<TableHeadCell padding="px-4 py-2" />
-				<TableHeadCell padding="px-4 py-2">
-					<button
-						on:click={() => {
-							//if (!id) return;
-							batches = [
-								...batches,
-								{
-									id: id,
-									batch: batches.length + 1,
-									quantity: 0,
-									reference: '',
-									dueDate: new Date()?.toISOString()?.split('T')?.[0]
-								}
-							];
-						}}
-					>
-						<Plus size="22" class="hover:text-green-600 cursor-pointer" />
-					</button>
-				</TableHeadCell>
-			</TableHead>
-		</Table>
-	</div>
-
-	<!-- <div class="mt-8">
+	<div class="mt-8">
 		<Table hoverable>
 			<TableHead>
 				<TableHeadCell padding="px-1 pt-2" colspan="7">Quoted</TableHeadCell>
@@ -463,7 +363,9 @@
 						<TableBodyCell>
 							{idx + 1}
 						</TableBodyCell>
-						
+						<!-- <TableBodyCell>
+							{item.description}
+						</TableBodyCell> -->
 
 						<TableBodyCellEditable bind:value={item.description}>
 							{item.description || '--------------'}
@@ -572,7 +474,9 @@
 						<TableBodyCell>
 							{idx + 1}
 						</TableBodyCell>
-
+						<!-- <TableBodyCell>
+							{item.description}
+						</TableBodyCell> -->
 
 						<TableBodyCellEditable bind:value={item.description}>
 							{item.description || '--------------'}
@@ -654,7 +558,7 @@
 				</TableHeadCell>
 			</TableHead>
 		</Table>
-	</div> -->
+	</div>
 
 	<div class="pt-4 mx-auto">
 		<Toggle size="small" color="blue" bind:checked={createKit}>Create kit</Toggle>

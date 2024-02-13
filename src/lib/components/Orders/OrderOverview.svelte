@@ -15,11 +15,12 @@
 		Modal,
 		Alert,
 		Label,
-		Spinner
+		Spinner,
+		Checkbox
 	} from 'flowbite-svelte';
 	import UserIcon from '../UserIcon.svelte';
 	import OrdersListItem from './OrdersListItem.svelte';
-
+	import OrderStatus from './OrderStatus.svelte';
 	import TrackingStatus from './TrackingStatus.svelte';
 	import ReceivingStatus from './ReceivingStatus.svelte';
 	import ReceiveQuantity from './ReceiveQuantity.svelte';
@@ -295,10 +296,13 @@ subscription order($orderId: bigint!) {
 						orders_items_shipments {
 							id
 							quantity
+							updated_at
+							created_at
 							shipment {
 								id
 								expected_delivery_date
 								confirmed_delivery_date
+								updated_at
 								carrier {
 									id
 									name
@@ -524,6 +528,7 @@ subscription order($orderId: bigint!) {
 
 <Modal autoclose bind:open={recieveModal}>
 	{@const recievedQty = orderItemSelected?.orders_items_receiveds?.reduce((a, v) => a + (v?.quantity || 0), 0)}
+	{@const shipmentAllocations = orderItemSelected?.orders_items_shipments || []}
 	<div>
 		<div class="grid grid-cols-2">
 			<div>
@@ -541,6 +546,106 @@ subscription order($orderId: bigint!) {
 		</div>
 
 		<PartInfo partId={orderItemSelected?.part} />
+
+		<!-- <div class="mt-6">
+			<Table>
+				<TableHead theadClass="uppercase text-center">
+					<TableHeadCell>Shipment</TableHeadCell>
+					<TableHeadCell>Time/Date</TableHeadCell>
+					<TableHeadCell>Job</TableHeadCell>
+					<TableHeadCell>Allocation Qty</TableHeadCell>
+				</TableHead>
+
+				{#each shipmentAllocations as allocation, idx}
+					{@const shipment = allocation?.shipment}
+					<TableBodyRow>
+						<TableBodyCell tdClass="font-sm text-center">
+							<div class="flex">
+								<p>SHP{shipment?.id}</p>
+								<OrderStatus shipments={[shipment]} />
+							</div>
+							 <UserIcon size="xs" user={shipment?.user}>
+									{#if mediaQuery('(min-width: 1024px)')}
+										{orderItem?.user?.username || 'Unknown'}
+									{/if}
+								</UserIcon>
+								<Tooltip placement="right">
+									{#if orderItem?.user?.first_name}
+										{orderItem?.user?.first_name}
+										{orderItem?.user?.last_name}
+									{:else}
+										Unknown user...
+									{/if}
+								</Tooltip>
+						</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							{datetimeFormat(allocation?.updated_at)}
+						</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							 <a href={`${window.origin}/order/${orderItem.order.id}`} target="_blank" class={classes.link}>
+								{orderItem.order.id}
+							</a>
+						</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							{allocation?.quantity || orderItemSelected?.quantity}
+						</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">{receivedQty}</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">{kittedQty}</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							<div
+								class="w-1/2 mx-auto"
+								on:mousewheel={(e) => {
+									orderItem.__quantity = clamp(
+										orderItem.__quantity + (e.deltaY > 0 ? -1 : +1),
+										1,
+										orderItem.quantity - kittedQty
+									);
+								}}
+							>
+								<Input
+									size="sm"
+									type="number"
+									value={orderItem.__quantity}
+									disabled={!orderItem?.__selected}
+									on:input={(e) => {
+										orderItem.__selected = true;
+										orderItem.__quantity = clamp(Number(e.target.value), 1, orderItem.quantity - kittedQty);
+									}}
+								/>
+							</div>
+						</TableBodyCell>
+						<TableBodyCell tdClass="font-sm text-center">
+							{#if orderItem?.__kitted}
+								<Checkbox checked={orderItem.__kitted} disabled={orderItem.__kitted} color="green" />
+							{:else}
+								<Checkbox bind:checked={orderItem.__selected} disabled={orderItem.__kitted} />
+							{/if}
+						</TableBodyCell>
+					</TableBodyRow>
+				{:else}
+					<TableBodyCell colspan="3">No linked orders for this line</TableBodyCell>
+				{/each}
+				<TableHead>
+					<TableBodyCell />
+					<TableBodyCell />
+					<TableBodyCell />
+					<TableBodyCell tdClass="font-sm text-center font-bold">
+						{orderTotal}
+					</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold">{receivedTotal}</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold">
+						{kitItems?.reduce((a, v) => (a = a + v.quantity), 0)}
+					</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold">
+						{kittingTotal}
+					</TableBodyCell>
+					<TableBodyCell tdClass="font-sm text-center font-bold">
+						{orderItems?.filter((i) => i?.__selected).length}
+					</TableBodyCell>
+				</TableHead>
+			</Table>
+		</div> -->
+
 		{#if orderItemSelected?.orders_items_receiveds}
 			<div class="mt-6">
 				<Table>

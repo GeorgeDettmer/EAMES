@@ -2,8 +2,8 @@ export const generateRandomString = (length: number = 8) => {
 	return crypto.randomUUID().split('-').join('').slice(0, length);
 };
 
-export const numberToLetter = (int: number) => {
-	return String.fromCharCode('A'.charCodeAt(0) + int);
+export const numberToLetter = (int: number, offset: number = 65) => {
+	return String.fromCharCode(offset + int);
 };
 
 export const letterToNumber = (letter: string, offset: number = 65) => {

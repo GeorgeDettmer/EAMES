@@ -924,24 +924,6 @@
 					>
 						<div class="flex">
 							<OrderStatus {shipments} />
-							<!-- {#if order?.shipments?.length > 0 && order?.shipments?.[0]?.delivered_at && !order?.received_at && !order?.cancelled_at}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/delivered-box.png"
-									alt="delivered-box"
-								/>
-							{/if} -->
-							<!-- {#if true}
-								<img
-									style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(70deg)"
-									width="24"
-									height="24"
-									src="https://img.icons8.com/windows/32/delivered-box.png"
-									alt="delivered-box"
-								/>
-							{/if} -->
 							<a href={`${window.origin}/receiving/PO${order?.id}`} class="flex">
 								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
 									<img
@@ -1011,7 +993,7 @@
 											</p>
 										</div>
 									</div>
-									<div class="flex my-auto pl-4">
+									<!-- <div class="flex my-auto pl-4">
 										<button
 											on:click={(e) => {
 												copyToClipboard(
@@ -1032,7 +1014,7 @@
 												class="opacity-50 hover:opacity-75"
 											/>
 										</button>
-									</div>
+									</div> -->
 								</div>
 							</div>
 						</TableBodyCell>

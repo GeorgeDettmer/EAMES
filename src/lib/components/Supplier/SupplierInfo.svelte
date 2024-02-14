@@ -90,16 +90,17 @@
 				>
 				<div class="flex gap-x-1 ml-auto">
 					{#if supplierInfo?.critical}
-						<!-- <Badge rounded border color={'yellow'}>
-							<p class="text-xs font-bold">!</p>
-						</Badge> -->
-						<img
-							style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(900%) hue-rotate(360deg)"
-							width="20"
-							height="20"
-							src="https://img.icons8.com/material-outlined/24/high-importance.png"
-							alt="delivered-box"
-						/>
+						<Badge rounded border color={'yellow'}>
+							<p class="text-xs font-bold uppercase">!</p>
+							<!-- <img
+								class="pl-0.5"
+								style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(950%) hue-rotate(350deg)"
+								width="20"
+								height="20"
+								src="https://img.icons8.com/material-outlined/24/high-importance.png"
+								alt="delivered-box"
+							/> -->
+						</Badge>
 					{/if}
 					{#if supplierInfo?.risk_level}
 						<Badge

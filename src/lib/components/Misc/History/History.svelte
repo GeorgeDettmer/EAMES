@@ -2,10 +2,9 @@
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import { classes, datetimeFormat } from '$lib/utils';
 	import { queryStore, getContextClient, gql } from '@urql/svelte';
-	import { Timeline, TimelineItem } from 'flowbite-svelte';
 	import { EditOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import moment from 'moment';
-	import { XCircle, CheckCircle, ChevronDoubleDown, PlusCircle, XMark } from 'svelte-heros-v2';
+	import { ChevronDoubleDown, XMark } from 'svelte-heros-v2';
 
 	export let id: string | number;
 	export let table: string;
@@ -50,12 +49,12 @@
 				}
 			}
 		`,
-		variables: { userIds },
+		variables: { userIds: userIds?.filter((id) => id) },
 		requestPolicy: 'cache-and-network'
 	});
 
 	let slice = limit;
-	$: histories = $historyStore?.data?.history.slice(0, slice) /* ?.toReversed() */;
+	$: histories = $historyStore?.data?.history.slice(0, slice);
 	$: more = Math.max($historyStore?.data?.history?.length - slice, 0);
 	$: userIds = histories?.map((h) => h?.new_val?.user_id);
 	$: users = $usersStore?.data?.users;

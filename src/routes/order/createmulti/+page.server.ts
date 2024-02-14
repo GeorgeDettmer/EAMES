@@ -6,7 +6,7 @@ export const load = (async ({ locals }) => {
 	let configQuery = client.query(
 		gql`
 			query config($name: String!, $_or: [system_config_bool_exp!]) {
-				system_config(where: { name: { _eq: $name }, _or: $_or }) {
+				system_config(where: { name: { _eq: $name }, _or: $_or }, order_by: { user_id: asc_nulls_first }) {
 					name
 					type
 					user_id

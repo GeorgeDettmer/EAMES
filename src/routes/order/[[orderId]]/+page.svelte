@@ -711,9 +711,7 @@
 		</TableHead>
 		<TableHead>
 			<TableHeadCell padding="px-1 py-3" />
-			<TableHeadCollapsible padding="px-1 py-3" columnId="id" bind:collapsedColumns={$collapsedColumns}
-				>PO#</TableHeadCollapsible
-			>
+			<TableHeadCell padding="px-1 py-3">PO#</TableHeadCell>
 			<TableHeadCollapsible padding="px-1 py-3" columnId="job" bind:collapsedColumns={$collapsedColumns}
 				>Jobs</TableHeadCollapsible
 			>
@@ -771,13 +769,9 @@
 							{/if}
 						</button>
 					</TableBodyCell>
-					<TableBodyCollapsible
-						tdClass="px-1 py-1 whitespace-nowrap font-medium"
-						columnId="id"
-						bind:collapsedColumns={$collapsedColumns}
-					>
+					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 						<div class="flex">
-							<a href={`${window.origin}/order/${order?.id}`}>
+							<a href={`order/${order?.id}`}>
 								<div>
 									<p class={classes.link}>
 										{padString(String(order?.id))}
@@ -790,7 +784,7 @@
 								</div>
 							</a>
 						</div>
-					</TableBodyCollapsible>
+					</TableBodyCell>
 					<TableBodyCollapsible
 						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="job"

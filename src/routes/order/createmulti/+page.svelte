@@ -128,6 +128,7 @@
 				let quantity = Number(line?.[orderItemProperties['quantity']]);
 				let importSuppierName = line?.[orderItemProperties['supplier']];
 				if (!importStock && importSuppierName?.toLowerCase() === 'stock') return;
+				if (!importFreeissue && importSuppierName?.toLowerCase() === 'fi') return;
 				//console.log({ part, spn, price, quantity });
 				if (!part) {
 					messagesStore(`Import failed for line ${idx + 1}. Missing part number or price`, 'error');
@@ -643,7 +644,8 @@
 
 	$: console.log('importAllocations', hasImportAllocations, importAllocations);
 
-	let importStock = false;
+	let importStock = $page?.data?.config?.purchasing_order_import_stock;
+	let importFreeissue = $page?.data?.config?.purchasing_order_import_freeissue;
 </script>
 
 <div
@@ -836,8 +838,9 @@
 		</div>
 		<div class="flex">
 			{#if showImport}
-				<div class="my-auto">
-					<Checkbox bind:value={importStock}>Include stock</Checkbox>
+				<div class="my-auto flex gap-x-4">
+					<Checkbox bind:checked={importStock}>Include stock</Checkbox>
+					<Checkbox bind:checked={importFreeissue}>Include freeissue</Checkbox>
 				</div>
 				<div class="ml-auto">
 					{#if !hasImportAllocations}

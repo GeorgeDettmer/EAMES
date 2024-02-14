@@ -71,7 +71,7 @@
 
 	let addLineModal = false;
 
-	let newCategory = categories?.map((c) => c?.name?.toLowerCase())?.includes('component') ? 'Component' : null;
+	let newCategory = categories?.findIndex((c) => c?.name?.toLowerCase() === 'component') !== -1 ? 'Component' : null;
 	let newQuantity: number = 0;
 	let newPart: string = '';
 	let newSPN: string = '';
@@ -189,9 +189,8 @@
 					{/each}
 				</select>
 				<p class="text-xs">
-					{categories?.find((c) => c.name === newCategory)?.description || 'Uncategorised item'}
+					{categories?.find((c) => c.name === newCategory)?.description || '-'}
 				</p>
-				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
 			<div class="col-span-2">
 				<Label for="small-input">Shipment</Label>

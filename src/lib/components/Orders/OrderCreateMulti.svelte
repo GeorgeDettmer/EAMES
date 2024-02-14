@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { carrier_names, carrier_urls, carrier_codes, datetimeFormat, numberToLetter } from '$lib/utils';
+	import { carrier_urls } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -8,22 +8,14 @@
 		TableBodyRow,
 		TableBodyCell,
 		Badge,
-		Input,
 		Button,
-		ButtonGroup,
 		Modal,
-		Label,
-		Select,
-		Tooltip
+		Label
 	} from 'flowbite-svelte';
-	import UserIcon from '../UserIcon.svelte';
 	import { page } from '$app/stores';
-	import OrderOverview from './OrderOverview.svelte';
-	import { Plus, PlusCircle, XMark } from 'svelte-heros-v2';
+	import { Plus } from 'svelte-heros-v2';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { ChevronDoubleDownOutline, PlusOutline } from 'flowbite-svelte-icons';
-	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
-	import EditableText from '../Misc/EditableText.svelte';
+	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 	import type { Shipment } from '$lib/types';
 	import OrderCreateTableRow from './Create/OrderCreateTableRow.svelte';
 
@@ -36,18 +28,7 @@
 
 	export let active = true;
 
-	interface Category {
-		id: string | null;
-		text?: string;
-	}
-	export let categories: Array<Category> = [
-		{ id: null, text: 'Unknown' },
-		{ id: 'Component' },
-		{ id: 'Tooling' },
-		{ id: 'PCB' },
-		{ id: 'Consumables' },
-		{ id: 'Other' }
-	];
+	$: categories = $page?.data?.config?.purchasing_order_item_categories || [];
 
 	$: orderItems = order?.orders_items || [];
 	$: totalOrdered = orderItems?.reduce((a, v) => a + v.quantity, 0);
@@ -90,7 +71,7 @@
 
 	let addLineModal = false;
 
-	let newCategory: string = 'Component';
+	let newCategory = categories?.map((c) => c?.name?.toLowerCase())?.includes('component') ? 'Component' : null;
 	let newQuantity: number = 0;
 	let newPart: string = '';
 	let newSPN: string = '';
@@ -136,6 +117,7 @@
 	});
 
 	$: console.log('newAllocations', newAllocations, newAllocation);
+	$: console.log('config', $page?.data?.config, categories);
 </script>
 
 <Modal bind:open={addLineModal} size="md">
@@ -199,12 +181,16 @@
 					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 					bind:value={newCategory}
 				>
-					{#each categories as { id, text }}
-						<option value={id}>
-							{text || id}
+					<option value={null}> Other </option>
+					{#each categories as { name }}
+						<option value={name}>
+							{name}
 						</option>
 					{/each}
 				</select>
+				<p class="text-xs">
+					{categories?.find((c) => c.name === newCategory)?.description || 'Uncategorised item'}
+				</p>
 				<!-- <Input id="small-input" size="sm" placeholder="Price" bind:value={newPrice} /> -->
 			</div>
 			<div class="col-span-2">

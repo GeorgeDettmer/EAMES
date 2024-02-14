@@ -1034,8 +1034,14 @@
 				{/if}
 			{:else}
 				<TableBodyRow class="h-24">
-					<TableBodyCell colspan="9" class="p-0">
-						<p>No orders matching search criteria</p>
+					<TableBodyCell colspan="10" class="p-0">
+						{#if $ordersStore?.fetching}
+							<p class="animate-pulse">Loading...</p>
+						{:else if $ordersStore?.error}
+							<p class="text-red-600">Error: {$ordersStore?.error?.message}</p>
+						{:else}
+							<p>No orders matching search criteria</p>
+						{/if}
 					</TableBodyCell>
 				</TableBodyRow>
 			{/each}
@@ -1045,9 +1051,6 @@
 				<TableHeadCell
 					colspan="2"
 					on:click={() => {
-						/* if (!queryOffset) {
-					queryOffset = orders?.[0]?.id;
-				} */
 						oldOrders = orders;
 						queryOffset = Math.max(queryOffset - $queryLimit, 0);
 					}}

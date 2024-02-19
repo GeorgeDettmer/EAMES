@@ -101,6 +101,7 @@
 								alt="delivered-box"
 							/> -->
 						</Badge>
+						<Tooltip>Critical</Tooltip>
 					{/if}
 					{#if supplierInfo?.risk_level}
 						<Badge
@@ -110,6 +111,7 @@
 						>
 							<p class="text-xs font-bold text-center">{supplierInfo?.risk_level?.[0]}</p>
 						</Badge>
+						<Tooltip>{supplierInfo?.risk_level} risk</Tooltip>
 					{/if}
 				</div>
 			</div>

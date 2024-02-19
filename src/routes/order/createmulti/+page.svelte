@@ -19,7 +19,8 @@
 		TableHeadCell,
 		Toggle,
 		Badge,
-		Tooltip
+		Tooltip,
+		Modal
 	} from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
@@ -646,6 +647,9 @@
 
 	let importStock = $page?.data?.config?.purchasing_order_import_stock;
 	let importFreeissue = $page?.data?.config?.purchasing_order_import_freeissue;
+
+	let unapprovedSupplierConfirmModal = false;
+	$: unapprovedSuppliers = orders?.filter((o) => o?.supplier?.approved === false)?.map((s) => s?.supplier?.name);
 </script>
 
 <div
@@ -730,6 +734,10 @@
 					color="blue"
 					size="sm"
 					on:click={(e) => {
+						if (unapprovedSuppliers?.length > 0) {
+							unapprovedSupplierConfirmModal = true;
+							return;
+						}
 						addOrders();
 					}}
 				>
@@ -1079,3 +1087,35 @@
 		</div>
 	{/if}
 </div>
+
+<Modal size="sm" outsideclose bind:open={unapprovedSupplierConfirmModal}>
+	<div class="flex pt-6">
+		<Alert class="!items-start" color="red">
+			<span slot="icon">
+				<InfoCircleSolid slot="icon" class="w-4 h-4" />
+				<span class="sr-only">Warning</span>
+			</span>
+			<p class="font-semibold">
+				There are orders for unapproved suppliers ({unapprovedSuppliers?.join(', ')}), are you sure you want to continue?
+			</p>
+		</Alert>
+		<div class="flex mx-auto">
+			<Button
+				color="green"
+				on:click={() => {
+					unapprovedSupplierConfirmModal = false;
+					addOrders();
+				}}
+			>
+				Continue
+			</Button>
+			<Button
+				on:click={() => {
+					unapprovedSupplierConfirmModal = false;
+				}}
+			>
+				Cancel
+			</Button>
+		</div>
+	</div>
+</Modal>

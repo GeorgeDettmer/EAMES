@@ -137,6 +137,7 @@
 					tags
 					risk_level
 					critical
+					approved
 				}
 				user {
 					id
@@ -884,6 +885,12 @@
 						<Popover placement="left">
 							<SupplierInfo supplierId={order?.supplier?.id} />
 						</Popover>
+						{#if order?.supplier?.approved === false}
+							<Badge color="red" rounded>
+								<p class="text-xs font-bold uppercase">!</p>
+							</Badge>
+							<Tooltip defaultClass="py-1 px-2 text-sm font-medium" placement="right">Unapproved Supplier</Tooltip>
+						{/if}
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-1 py-1 whitespace-nowrap font-medium"

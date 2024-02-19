@@ -650,6 +650,10 @@
 
 	let unapprovedSupplierConfirmModal = false;
 	$: unapprovedSuppliers = orders?.filter((o) => o?.supplier?.approved === false)?.map((s) => s?.supplier?.name);
+
+	let approvalConfirmModal = false;
+	let approvalValue = $page?.data?.config?.purchasing_order_approval_value;
+	$: ordersTotalValues = orders?.map((o) => o?.orders_items?.reduce((acc, i) => acc + i?.price * (i?.quantity || 0), 0));
 </script>
 
 <div
@@ -736,6 +740,10 @@
 					on:click={(e) => {
 						if (unapprovedSuppliers?.length > 0) {
 							unapprovedSupplierConfirmModal = true;
+							return;
+						}
+						if (approvalValue && !ordersTotalValues.every((v) => v < approvalValue)) {
+							approvalConfirmModal = true;
 							return;
 						}
 						addOrders();
@@ -1089,14 +1097,15 @@
 </div>
 
 <Modal size="sm" outsideclose bind:open={unapprovedSupplierConfirmModal}>
-	<div class="flex pt-6">
+	<div class="pt-6">
 		<Alert class="!items-start" color="red">
 			<span slot="icon">
 				<InfoCircleSolid slot="icon" class="w-4 h-4" />
 				<span class="sr-only">Warning</span>
 			</span>
 			<p class="font-semibold">
-				There are orders for unapproved suppliers ({unapprovedSuppliers?.join(', ')}), are you sure you want to continue?
+				The value of an order exceeds the maximum order value ({unapprovedSuppliers?.join(', ')}), are you sure you want to
+				continue?
 			</p>
 		</Alert>
 		<div class="flex mx-auto">
@@ -1110,8 +1119,42 @@
 				Continue
 			</Button>
 			<Button
+				color="red"
 				on:click={() => {
 					unapprovedSupplierConfirmModal = false;
+				}}
+			>
+				Cancel
+			</Button>
+		</div>
+	</div>
+</Modal>
+
+<Modal size="sm" outsideclose bind:open={approvalConfirmModal}>
+	<div class="pt-6">
+		<Alert class="!items-start" color="red">
+			<span slot="icon">
+				<InfoCircleSolid slot="icon" class="w-4 h-4" />
+				<span class="sr-only">Warning</span>
+			</span>
+			<p class="font-semibold">
+				There are orders exceeding {approvalValue}, are you sure you want to continue?
+			</p>
+		</Alert>
+		<div class="flex mx-auto">
+			<Button
+				color="green"
+				on:click={() => {
+					approvalConfirmModal = false;
+					addOrders();
+				}}
+			>
+				Continue
+			</Button>
+			<Button
+				color="red"
+				on:click={() => {
+					approvalConfirmModal = false;
 				}}
 			>
 				Cancel

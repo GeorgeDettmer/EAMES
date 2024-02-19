@@ -19,7 +19,6 @@
 	import { messagesStore } from 'svelte-legos';
 	import AddAssembly from './AddAssembly.svelte';
 	import { Plus, PlusCircle } from 'svelte-heros-v2';
-	import TableBodyCellEditable from '../Misc/Table/TableBodyCellEditable.svelte';
 	import AddCustomer from './AddCustomer.svelte';
 	import { datetimeFormat, numberToLetter } from '$lib/utils';
 	const urqlClient = getContextClient();
@@ -104,7 +103,7 @@
 	let quantity = 1;
 	let assembly;
 	let shipDate;
-	let deliveryDate;
+	let deliveryDate = new Date()?.toISOString()?.split('T')?.[0];
 	let leadTime = 1;
 	let createKit = true;
 	let createAssembly = false;
@@ -139,6 +138,14 @@
 			messagesStore('customer & quantity must be set', 'warning');
 			return;
 		}
+		if (batches.length > 0 && batches.length < 2) {
+			messagesStore('If setting batches there must be more than 1!', 'warning');
+			return;
+		}
+		if (batchesTotalQuantity !== quantity) {
+			messagesStore('Total quantity of batches does not equal the overall job quantity', 'warning');
+			return;
+		}
 		/* if (!$page?.data?.user?.processes['eng']) {
 			alert(
 				`You do not have permission to insert components. You have permission for: ${Object.keys(
@@ -170,7 +177,7 @@
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted job: ' + mutationResult.data.insert_jobs_one.id, 'success');
 			id = undefined;
-			quantity = undefined;
+			quantity = 1;
 			customer = undefined;
 			assembly = undefined;
 		}
@@ -230,13 +237,19 @@
 
 	interface Batch {
 		id: number;
-		batch: number;
+		batch?: number;
 		quantity: number;
 		reference: string;
 		dueDate: string;
 	}
 	let batches: Batch[] = [];
 	$: batchesTotalQuantity = batches.reduce((a, v) => a + Number(v.quantity), 0);
+	$: console.log(
+		'batches',
+		batches,
+		batchesTotalQuantity,
+		new Date(Math.max(...batches.map((b) => new Date(b?.dueDate).getTime() / 1000)))
+	);
 </script>
 
 <div class="w-2/3 mx-auto">
@@ -289,7 +302,7 @@
 			</div>
 		</div>
 		<div class="flex gap-x-2">
-			<div class="w-1/2">
+			<!-- <div class="w-1/2">
 				<Label>Ship date</Label>
 				<Input
 					type="date"
@@ -300,10 +313,19 @@
 					}}
 					bind:value={shipDate}
 				/>
-			</div>
+			</div> -->
 			<div class="w-1/2">
 				<Label>Delivery date</Label>
-				<Input type="date" min={shipDate} on:change={() => {}} bind:value={deliveryDate} />
+				{#if batches.length}
+					<Input
+						type="date"
+						on:change={() => {}}
+						value={new Date(Math.max(...batches.map((b) => new Date(b?.dueDate).getTime() / 1000))).getDate()}
+						disabled
+					/>
+				{:else}
+					<Input type="date" on:change={() => {}} bind:value={deliveryDate} />
+				{/if}
 			</div>
 		</div>
 
@@ -359,7 +381,7 @@
 				<TableHeadCell padding="px-4 py-2" />
 			</TableHead>
 			<TableBody>
-				<TableBodyRow>
+				<TableBodyRow color="blue">
 					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 						{0}
 					</TableBodyCell>
@@ -372,27 +394,31 @@
 					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 						{quantity}
 					</TableBodyCell>
-					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium" />
+					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
+						{datetimeFormat(deliveryDate, false)}
+					</TableBodyCell>
 					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium" />
 				</TableBodyRow>
 				{#each batches as batch, idx}
-					<TableBodyRow color={batch?.quantity < 1 ? 'red' : 'default'} class={`cursor-pointer`}>
+					<TableBodyRow
+						color={batch?.quantity < 1 || batches.length < 2 || batchesTotalQuantity !== Number(quantity)
+							? 'red'
+							: 'default'}
+						class={`cursor-pointer`}
+					>
 						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 							{idx + 1}
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 							<div class="flex gap-x-1">
-								{#if batch?.batch}
-									<p>{numberToLetter(batch.batch, 64)}</p>
-								{/if}
-								<p>({batch?.batch || '-'})</p>
+								<p>{numberToLetter(idx + 1, 64)}</p>
 							</div>
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-4 py-2 min-w-48 whitespace-nowrap font-medium">
 							<Input size="sm" bind:value={batch.reference} placeholder="Reference" />
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-							<Input size="sm" type="number" bind:value={batch.quantity} />
+							<Input size="sm" type="number" min="1" bind:value={batch.quantity} />
 						</TableBodyCell>
 						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 							<Input size="sm" type="date" bind:value={batch.dueDate} />
@@ -418,22 +444,40 @@
 				<TableHeadCell padding="px-4 py-2" />
 				<TableHeadCell padding="px-4 py-2">
 					<button
+						class="disabled:hover:text-gray-50 hover:text-green-600 cursor-pointer"
+						disabled={!id || quantity - batchesTotalQuantity < 1}
 						on:click={() => {
-							//if (!id) return;
+							if (!id) return;
 							if (quantity - batchesTotalQuantity < 1) return;
+							if (batches.length === 0) {
+								batches = [
+									{
+										id: id,
+										quantity: (quantity - batchesTotalQuantity) / 2,
+										reference: '',
+										dueDate: new Date()?.toISOString()?.split('T')?.[0]
+									},
+									{
+										id: id,
+										quantity: (quantity - batchesTotalQuantity) / 2,
+										reference: '',
+										dueDate: new Date()?.toISOString()?.split('T')?.[0]
+									}
+								];
+								return;
+							}
 							batches = [
 								...batches,
 								{
 									id: id,
-									batch: batches.length + 1,
-									quantity: 0,
+									quantity: quantity - batchesTotalQuantity,
 									reference: '',
 									dueDate: new Date()?.toISOString()?.split('T')?.[0]
 								}
 							];
 						}}
 					>
-						<Plus size="22" class="hover:text-green-600 cursor-pointer" />
+						<Plus size="22" />
 					</button>
 				</TableHeadCell>
 			</TableHead>

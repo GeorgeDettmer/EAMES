@@ -1,6 +1,16 @@
 <script lang="ts">
 	import type { Supplier } from '$lib/types';
-	import { TableBodyRow, TableBodyCell, Hr, TableHeadCell, Table, TableHead, TableBody } from 'flowbite-svelte';
+	import {
+		TableBodyRow,
+		TableBodyCell,
+		Hr,
+		TableHeadCell,
+		Table,
+		TableHead,
+		TableBody,
+		Card,
+		Listgroup
+	} from 'flowbite-svelte';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import { classes } from '$lib/utils';
@@ -122,7 +132,88 @@
 			</Table>
 		</div>
 	</TableBodyCell>
-	<TableBodyCell colspan="6" tdClass="p-0" />
+	<TableBodyCell colspan="3" tdClass="p-0">
+		<div class="m-1 p-2 border rounded border-gray-500 h-36">
+			<div class="flex justify-between items-center mb-1">
+				<h5 class="text-lg font-bold leading-none text-gray-900 dark:text-white">Addresses</h5>
+			</div>
+			<ul class="divide-y divide-gray-200 dark:divide-gray-600">
+				{#each supplier?.addresses || [] as address}
+					{@const lines = address?.lines?.split(',')}
+					<li>
+						<div class="flex items-center space-x-4 rtl:space-x-reverse">
+							<div class="flex-1 min-w-0">
+								<p class="text-xs font-medium text-gray-900 truncate dark:text-white">
+									{address?.country}
+								</p>
+								{#each lines as line}
+									<p class="text-xs text-gray-500 truncate dark:text-gray-400">
+										{line}
+									</p>
+								{/each}
+								<!-- {#if address?.email}
+									<a href="mailto:{address.email}" class="text-xs text-gray-500 truncate dark:text-gray-400">
+										{address.email}
+									</a>
+								{/if} -->
+							</div>
+							{#if address?.note}
+								<div class="inline-flex items-centerfont-semibold text-gray-900 dark:text-white">
+									{address.note}
+								</div>
+							{/if}
+						</div>
+					</li>
+				{:else}
+					<li>
+						<div class="flex items-center space-x-4 rtl:space-x-reverse">
+							<div class="flex-1 min-w-0">
+								<p class="text-xs font-medium text-gray-900 truncate dark:text-white">No addresses</p>
+							</div>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</TableBodyCell>
+	<TableBodyCell colspan="3" tdClass="p-0">
+		<div class="m-1 p-2 border rounded border-gray-500 h-36">
+			<div class="flex justify-between items-center mb-1">
+				<h5 class="text-lg font-bold leading-none text-gray-900 dark:text-white">Contacts</h5>
+			</div>
+			<ul class="divide-y divide-gray-200 dark:divide-gray-600">
+				{#each supplier?.contacts || [] as contact}
+					<li>
+						<div class="flex items-center space-x-4 rtl:space-x-reverse">
+							<div class="flex-1 min-w-0">
+								<p class="text-xs font-medium text-gray-900 truncate dark:text-white">
+									{contact?.name}
+								</p>
+								{#if contact?.email}
+									<a href="mailto:{contact.email}" class="text-xs text-gray-500 truncate dark:text-gray-400">
+										{contact.email}
+									</a>
+								{/if}
+							</div>
+							{#if contact?.note}
+								<div class="inline-flex items-centerfont-semibold text-gray-900 dark:text-white">
+									{contact.note}
+								</div>
+							{/if}
+						</div>
+					</li>
+				{:else}
+					<li>
+						<div class="flex items-center space-x-4 rtl:space-x-reverse">
+							<div class="flex-1 min-w-0">
+								<p class="text-xs font-medium text-gray-900 truncate dark:text-white">No contacts</p>
+							</div>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</TableBodyCell>
 	<TableBodyCell colspan="4" tdClass="p-0">
 		<div
 			class="h-36 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700"

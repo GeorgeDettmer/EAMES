@@ -20,7 +20,11 @@
 		requestPolicy: 'cache-and-network'
 	});
 	$: assemblies = $assembliesStore?.data?.assemblies;
-	$: assemblyExists = (assemblies?.filter((a) => a.name.toLowerCase() === name.toLowerCase()) || []).length > 0;
+	$: assemblyExists =
+		(
+			assemblies?.filter((a) => a.name.toLowerCase() === name.toLowerCase() && a.revision_external === revision_external) ||
+			[]
+		).length > 0;
 
 	let name = '';
 	let revision_external = '';

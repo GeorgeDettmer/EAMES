@@ -104,9 +104,9 @@
 	let assembly;
 	let shipDate;
 	let deliveryDate = new Date()?.toISOString()?.split('T')?.[0];
+	let dueDate = new Date()?.toISOString()?.split('T')?.[0];
 	let leadTime = 1;
 	let createKit = true;
-	let createAssembly = false;
 
 	let createAssemblyVisible = false;
 	let createCustomerVisible = false;
@@ -120,13 +120,6 @@
 		};
 	});
 
-	function validate(type: string) {
-		if (type === 'id') {
-			console.log(type, id);
-			return !(id?.length > 0);
-		}
-	}
-
 	let jobAdding = false;
 	async function addJob() {
 		if (jobAdding) return;
@@ -138,26 +131,63 @@
 			messagesStore('customer & quantity must be set', 'warning');
 			return;
 		}
-		if (batches.length > 0 && batches.length < 2) {
-			messagesStore('If setting batches there must be more than 1!', 'warning');
-			return;
+		if (batches.length > 0) {
+			if (batches.length < 2) {
+				messagesStore('If setting batches there must be more than 1!', 'warning');
+				return;
+			}
+			if (batchesTotalQuantity !== Number(quantity)) {
+				messagesStore('Total quantity of batches does not equal the overall job quantity', 'warning');
+				return;
+			}
 		}
-		if (batchesTotalQuantity !== quantity) {
-			messagesStore('Total quantity of batches does not equal the overall job quantity', 'warning');
-			return;
-		}
-		/* if (!$page?.data?.user?.processes['eng']) {
-			alert(
-				`You do not have permission to insert components. You have permission for: ${Object.keys(
-					$page?.data?.user?.processes
-				)}`
-			);
-			return;
-		} */
+
 		jobAdding = true;
 		let mutationResult;
 
+		let jobObject = {
+			id: id || nextId,
+			batch: 0,
+			quantity,
+			customer_id: customer?.id,
+			assembly_id: assembly?.id,
+			due_date: dueDate
+		};
+
+		let insertObjects = [jobObject];
+
+		if (batches.length > 0) {
+			jobObject.due_date = new Date(batches[batches.length - 1].dueDate).toISOString();
+			insertObjects = [
+				jobObject,
+				...batches.map((b, idx) => {
+					return {
+						id: jobObject.id,
+						batch: idx + 1,
+						quantity: b.quantity,
+						customer_id: customer?.id,
+						assembly_id: assembly?.id,
+						reference: b.reference,
+						due_date: b.dueDate
+					};
+				})
+			];
+		}
 		mutationResult = await urqlClient.mutation(
+			gql`
+				mutation insertJob($objects: [jobs_insert_input!] = {}) {
+					insert_jobs(objects: $objects) {
+						affected_rows
+						returning {
+							id
+							batch
+						}
+					}
+				}
+			`,
+			{ objects: insertObjects }
+		);
+		/* mutationResult = await urqlClient.mutation(
 			gql`
 				mutation insertJob($id: bigint!, $customer_id: bigint!, $batch: Int = 0, $quantity: Int, $assembly_id: bigint) {
 					insert_jobs_one(
@@ -169,62 +199,28 @@
 				}
 			`,
 			{ id: id || nextId, batch, quantity, customer_id: customer.id, assembly_id: assembly.id }
-		);
+		); */
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
 			messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
-			messagesStore('Inserted job: ' + mutationResult.data.insert_jobs_one.id, 'success');
+			messagesStore(
+				'Inserted job: ' + mutationResult.data.insert_jobs.returning.map((j) => `${j.id}-${j.batch}`),
+				'success'
+			);
 			id = undefined;
 			quantity = 1;
 			customer = undefined;
 			assembly = undefined;
+			batches = [];
 		}
-		if (createKit) {
-			let job_id = mutationResult.data.insert_jobs_one.id;
-			let batch_id = mutationResult.data.insert_jobs_one.batch;
-			mutationResult = await urqlClient.mutation(
-				gql`
-					mutation createKit {
-						insert_erp_kits_one(object: {}) {
-							id
-						}
-					}
-				`,
-				{}
-			);
-			if (mutationResult?.error) {
-				console.error('MUTATION ERROR: ', mutationResult);
-				messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-			} else {
-				let kit_id = mutationResult.data.insert_erp_kits_one.id;
-				console.log('MUTATION RESULT: ', mutationResult);
-				messagesStore('Created kit: ' + mutationResult.data.insert_erp_kits_one?.id, 'success');
-				mutationResult = await urqlClient.mutation(
-					gql`
-						mutation createJobKit($job_id: bigint!, $batch: Int = 0, $kit_id: uuid!) {
-							insert_material_jobs_kits_one(object: { job_id: $job_id, job_batch: $batch, kit_id: $kit_id }) {
-								id
-							}
-						}
-					`,
-					{ job_id, kit_id, batch }
-				);
-				if (mutationResult?.error) {
-					console.error('MUTATION ERROR: ', mutationResult);
-					messagesStore('DATABASE ERROR: ' + mutationResult?.error, 'error');
-				} else {
-					console.log('MUTATION RESULT: ', mutationResult);
-					messagesStore('Created job-kit: ' + mutationResult.data.insert_material_jobs_kits_one?.id, 'success');
-				}
-			}
-		}
+
 		jobAdding = false;
 	}
 
 	//TODO: Expand....
-	let customerOrderItems = [];
+	/* let customerOrderItems = [];
 	let quotedItems = [];
 	let typeOptions = [{ id: 'LABOUR' }, { id: 'MATERIAL' }, { id: 'OTHER' }];
 	$: unitTotalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost), 0);
@@ -233,7 +229,7 @@
 	$: totalPaid = customerOrderItems.reduce((a, v) => a + Number(v.cost) * Number(v.quantity), 0);
 	$: totalQuoted = quotedItems.reduce((a, v) => a + Number(v.cost) * Number(v.quantity), 0);
 
-	$: fullyPaid = totalPaid === totalQuoted;
+	$: fullyPaid = totalPaid === totalQuoted; */
 
 	interface Batch {
 		id: number;
@@ -243,13 +239,8 @@
 		dueDate: string;
 	}
 	let batches: Batch[] = [];
-	$: batchesTotalQuantity = batches.reduce((a, v) => a + Number(v.quantity), 0);
-	$: console.log(
-		'batches',
-		batches,
-		batchesTotalQuantity,
-		new Date(Math.max(...batches.map((b) => new Date(b?.dueDate).getTime() / 1000)))
-	);
+	$: batchesTotalQuantity = batches.reduce((a, v) => Number(a) + Number(v.quantity), 0);
+	$: console.log('batches', batches, batchesTotalQuantity);
 </script>
 
 <div class="w-2/3 mx-auto">
@@ -302,6 +293,10 @@
 			</div>
 		</div>
 		<div class="flex gap-x-2">
+			<div class="w-1/2">
+				<Label>Due date</Label>
+				<Input type="date" bind:value={shipDate} />
+			</div>
 			<!-- <div class="w-1/2">
 				<Label>Ship date</Label>
 				<Input
@@ -313,8 +308,8 @@
 					}}
 					bind:value={shipDate}
 				/>
-			</div> -->
-			<div class="w-1/2">
+			</div> 
+			 <div class="w-1/2">
 				<Label>Delivery date</Label>
 				{#if batches.length}
 					<Input
@@ -326,7 +321,7 @@
 				{:else}
 					<Input type="date" on:change={() => {}} bind:value={deliveryDate} />
 				{/if}
-			</div>
+			</div> -->
 		</div>
 
 		<div class="my-auto pt-4">
@@ -404,7 +399,6 @@
 						color={batch?.quantity < 1 || batches.length < 2 || batchesTotalQuantity !== Number(quantity)
 							? 'red'
 							: 'default'}
-						class={`cursor-pointer`}
 					>
 						<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
 							{idx + 1}
@@ -444,22 +438,22 @@
 				<TableHeadCell padding="px-4 py-2" />
 				<TableHeadCell padding="px-4 py-2">
 					<button
-						class="disabled:hover:text-gray-50 hover:text-green-600 cursor-pointer"
-						disabled={!id || quantity - batchesTotalQuantity < 1}
+						class="disabled:hover:text-red-500 disabled:cursor-not-allowed hover:text-green-600 cursor-pointer"
+						disabled={quantity < 2 || quantity - batchesTotalQuantity < 1}
 						on:click={() => {
-							if (!id) return;
-							if (quantity - batchesTotalQuantity < 1) return;
+							let q = Number(quantity);
+							if (q - batchesTotalQuantity < 1) return;
 							if (batches.length === 0) {
 								batches = [
 									{
-										id: id,
-										quantity: (quantity - batchesTotalQuantity) / 2,
+										id,
+										quantity: q % 2 === 0 ? q / 2 : (q - 1) / 2,
 										reference: '',
 										dueDate: new Date()?.toISOString()?.split('T')?.[0]
 									},
 									{
-										id: id,
-										quantity: (quantity - batchesTotalQuantity) / 2,
+										id,
+										quantity: q % 2 === 0 ? q / 2 : (q + 1) / 2,
 										reference: '',
 										dueDate: new Date()?.toISOString()?.split('T')?.[0]
 									}
@@ -469,8 +463,8 @@
 							batches = [
 								...batches,
 								{
-									id: id,
-									quantity: quantity - batchesTotalQuantity,
+									id,
+									quantity: q - batchesTotalQuantity,
 									reference: '',
 									dueDate: new Date()?.toISOString()?.split('T')?.[0]
 								}

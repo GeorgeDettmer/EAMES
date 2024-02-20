@@ -13,6 +13,7 @@ export const load = (async ({ params, locals }) => {
 					batch
 					quantity
 					due_date
+					reference
 					customer {
 						id
 						name

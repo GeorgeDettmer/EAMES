@@ -105,11 +105,11 @@
 			}
 		],
 		stores: [
-			{
+			/* {
 				name: 'Receive',
 				icon: ClipboardCheckSolid,
 				items: [{ name: 'All To Receive', href: '/receiving' }]
-			},
+			}, */
 			{
 				name: 'Kitting',
 				icon: DropboxSolid,

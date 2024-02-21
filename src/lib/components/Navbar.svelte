@@ -126,6 +126,18 @@
 				href: '/board/25'
 			}
 		],
+		job: [
+			{
+				name: 'All Jobs',
+				icon: CheckPlusCircleSolid,
+				href: '/job'
+			},
+			{
+				name: 'Add Job',
+				icon: CheckPlusCircleSolid,
+				href: '/add/job'
+			}
+		],
 		'': menu
 	};
 
@@ -185,20 +197,6 @@
 	</form>
 	<div>
 		<p>Printers:</p>
-		<!-- {#each printers as printer, idx}
-			<p>
-				{printer}
-				{#await printerOnline(printer) then online}
-					{online ? '✅' : '❌'}
-				{/await}
-
-				{#await printerDetails(printer) then details}
-					[Media: {details.mediaName}({details.mediaId})]
-				{/await}
-			</p>
-		{:else}
-			<p>No printers...</p>
-		{/each} -->
 		{#if printers?.[0]}
 			<ul>
 				{#each printers as printer, idx}

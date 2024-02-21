@@ -9,7 +9,7 @@
 		shipments?.filter((shipment) => shipment?.tracking?.status && shipment?.tracking?.status !== 'DE').length > 0;
 	$: delivered = confirmed && !inTransit;
 
-	$: console.log({ shipments, confirmed, inTransit, delivered });
+	//$: console.log({ shipments, confirmed, inTransit, delivered });
 </script>
 
 <div class="flex">

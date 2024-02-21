@@ -39,7 +39,7 @@ export const actions: Actions = {
 			path: '/',
 			secure: false,
 			sameSite: 'lax',
-			maxAge: 60 * 60 * 7 // 1 day
+			maxAge: 60 * 60 * 24 * 7
 		});
 
 		//throw redirect(302, '/order');

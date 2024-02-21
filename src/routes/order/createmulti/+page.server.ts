@@ -24,6 +24,5 @@ export const load = (async ({ locals }) => {
 	configData?.forEach((item) => {
 		config[`${item.name}_${item.type}`] = item?.json;
 	});
-	console.log('config', config);
 	return { config };
 }) satisfies PageServerLoad;

@@ -251,8 +251,8 @@
 				<Input placeholder={nextId} type="number" bind:value={id} />
 			</div>
 			<div class="w-1/3">
-				<Label>Batch</Label>
-				<Input placeholder={null} type="number" bind:value={batch} />
+				<!-- <Label>Batch</Label>
+				<Input placeholder={null} type="number" bind:value={batch} /> -->
 			</div>
 		</div>
 		<div class="flex gap-x-2">
@@ -265,15 +265,9 @@
 				<Label>Quantity</Label>
 				<Input placeholder={1} type="number" bind:value={quantity} />
 			</div>
-			<div
-				class="w-1/2"
-				on:mousewheel={(e) => {
-					leadTime = Math.max(Number(leadTime) + (e.deltaY > 0 ? -1 : +1), 1);
-				}}
-				on:change={(e) => {}}
-			>
-				<Label>Lead time</Label>
-				<Input placeholder={1} type="number" bind:value={leadTime} />
+			<div class="w-1/2">
+				<!-- <Label>Lead time</Label>
+				<Input placeholder={1} type="number" bind:value={leadTime} /> -->
 			</div>
 		</div>
 		<div class="">

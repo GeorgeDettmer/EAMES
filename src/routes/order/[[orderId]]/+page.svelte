@@ -96,6 +96,7 @@
 				created_at
 				total
 				items
+				price
 				jobs_orders {
 					job {
 						id
@@ -981,12 +982,22 @@
 											</div>
 										</div>
 										<div>
-											<p>
-												{new Intl.NumberFormat('en-GB', {
-													style: 'currency',
-													currency: 'GBP'
-												}).format(order.total)}
-											</p>
+											<div class:text-xs={order?.price > 0}>
+												{#if order?.price > 0}
+													<p>
+														{new Intl.NumberFormat('en-GB', {
+															style: 'currency',
+															currency: 'GBP'
+														}).format(order?.price)}
+													</p>
+												{/if}
+												<p>
+													{new Intl.NumberFormat('en-GB', {
+														style: 'currency',
+														currency: 'GBP'
+													}).format(order?.total)}
+												</p>
+											</div>
 										</div>
 										<div>
 											<p class="float-right">

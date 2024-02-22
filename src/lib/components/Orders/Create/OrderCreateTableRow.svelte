@@ -74,7 +74,7 @@
 	<TableBodyCell tdClass="px-6 py-1 cursor-pointer">
 		<div class="flex">
 			<div>
-				{#each item?.jobs_allocations as allocation, idx}
+				{#each item?.jobs_allocations || [] as allocation, idx}
 					<div class="py-0.5 mx-auto">
 						<div class="flex w-fit rounded bg-slate-500">
 							<Badge color="blue">

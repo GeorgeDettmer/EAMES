@@ -244,6 +244,7 @@ subscription order($orderId: bigint!) {
 					id
 					kb
 					reference
+					price
 					jobs_orders {
 						job {
 							id

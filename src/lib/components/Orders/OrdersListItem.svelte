@@ -52,7 +52,15 @@
 				</div>
 			</div>
 			<div>
-				<p>
+				{#if order?.price > 0}
+					<p class:text-xs={order?.price > 0}>
+						{new Intl.NumberFormat('en-GB', {
+							style: 'currency',
+							currency: 'GBP'
+						}).format(order?.price)}
+					</p>
+				{/if}
+				<p class:text-xs={order?.price > 0}>
 					{new Intl.NumberFormat('en-GB', {
 						style: 'currency',
 						currency: 'GBP'

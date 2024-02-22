@@ -27,13 +27,16 @@
 	import moment from 'moment';
 	import JobsTableRow from './JobsTableRow.svelte';
 	import JobsTableRowExpanded from './JobsTableRowExpanded.svelte';
+	import { invalidate, invalidateAll } from '$app/navigation';
 
 	export let data: PageData;
 
 	$: jobId = $page?.data?.jobId;
 
 	let lastRefreshedAt: Date;
-	async function refresh() {}
+	async function refresh() {
+		invalidate('/job');
+	}
 
 	const { pause, resume, isActive, changeIntervalTime } = intervalFnStore(() => {
 		refresh();

@@ -289,7 +289,7 @@
 		<div class="flex gap-x-2">
 			<div class="w-1/2">
 				<Label>Due date</Label>
-				<Input type="date" bind:value={shipDate} />
+				<Input type="date" bind:value={dueDate} />
 			</div>
 			<!-- <div class="w-1/2">
 				<Label>Ship date</Label>
@@ -384,7 +384,7 @@
 						{quantity}
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium">
-						{datetimeFormat(deliveryDate, false)}
+						{datetimeFormat(dueDate, false)}
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-4 py-2 whitespace-nowrap font-medium" />
 				</TableBodyRow>

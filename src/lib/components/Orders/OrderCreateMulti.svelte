@@ -18,6 +18,8 @@
 	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
 	import type { Shipment } from '$lib/types';
 	import OrderCreateTableRow from './Create/OrderCreateTableRow.svelte';
+	import { messagesStore, storage } from 'svelte-legos';
+	import { writable } from 'svelte/store';
 
 	export let order;
 	export let shipments: Shipment[] = [];
@@ -39,7 +41,11 @@
 		order.orders_items = orderItems.toSpliced(idx, 1);
 	}
 	function add() {
-		let matchingLine = orderItems.filter((i) => i.part === newPart)?.[0];
+		let matchingLine = orderItems.filter((i) => i.part === newPart).length > 0;
+		if (matchingLine) {
+			messagesStore('This part number already exists on this order!', 'error');
+			return;
+		}
 		let newLine = {
 			part: newPart?.trim(),
 			spn: newSPN?.trim(),
@@ -49,7 +55,9 @@
 			created_at: new Date().toISOString(),
 			/* tracking: newTracking, */
 			category: newCategory,
-			jobs_allocations: newAllocations,
+			jobs_allocations: jobs?.[0]
+				? [{ job_id: jobs?.[0]?.id, job_batch: jobs?.[0]?.batch, quantity: Number(newQuantity) }]
+				: [], //newAllocations,
 			__shipmentIdx: newShipmentIdx
 		};
 		/* if (matchingLine) {
@@ -58,11 +66,11 @@
 		order.orders_items = [...order.orders_items, newLine];
 		addLineModal = false;
 
-		newCategory = 'Component';
+		/* newCategory = 'Component'; */
 		newPart = '';
 		newSPN = '';
 		newPrice = 0;
-		newQuantity = 0;
+		newQuantity = 1;
 		newShipmentIdx = undefined;
 		newAllocations = [];
 	}
@@ -71,8 +79,13 @@
 
 	let addLineModal = false;
 
-	let newCategory = categories?.findIndex((c) => c?.name?.toLowerCase() === 'component') !== -1 ? 'Component' : null;
-	let newQuantity: number = 0;
+	let savedDefaultCategory = storage(writable(''), 'EAMES_orders_defaultCategory');
+	$: console.log('savedDefaultCategory', $savedDefaultCategory);
+	let newCategory =
+		categories?.findIndex((c) => c?.name?.toLowerCase() === $savedDefaultCategory?.toLowerCase()) !== -1
+			? $savedDefaultCategory
+			: null;
+	let newQuantity: number = 1;
 	let newPart: string = '';
 	let newSPN: string = '';
 	let newPrice: number = 0;
@@ -180,6 +193,9 @@
 				<select
 					class="block w-full text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-black dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded p-1"
 					bind:value={newCategory}
+					on:change={(e) => {
+						$savedDefaultCategory = newCategory;
+					}}
 				>
 					<option value={null}> Other </option>
 					{#each categories as { name }}

@@ -275,6 +275,7 @@
 			...orders,
 			{
 				orders_items: [],
+				price: undefined,
 				/* supplier_id: 'FARNELL', */
 				/* tracking: [], */
 				supplier: supplier,
@@ -419,7 +420,8 @@
 			let obj = {
 				supplier_id: o.supplier.id,
 				user_id: $page?.data?.user?.id,
-				reference: o.reference
+				reference: o.reference,
+				price: o.price
 			};
 			if (o?.id) {
 				obj.id = o.id;
@@ -676,7 +678,7 @@
 						<p class="text-xs px-0.5">Allocations</p>
 					</div>
 					<div class="flex gap-x-1">
-						<button
+						<!-- <button
 							class="my-auto dark:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
 							disabled={!allocatableSelectValue}
 							on:click={() => {
@@ -689,11 +691,19 @@
 							}}
 						>
 							<PlusOutline class="outline-none text-gray-600 dark:text-gray-200" />
-						</button>
+						</button> -->
 						<select
 							class="w-fit block text-sm disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
 							bind:value={allocatableSelectValue}
 							placeholder={'Select job'}
+							on:change={() => {
+								if (!allocatableSelectValue) return;
+								allocated = [...allocated, allocatableSelectValue];
+								allocatableSelectValue = null;
+								if (!importAllocation) {
+									importAllocation = allocated?.[0];
+								}
+							}}
 						>
 							<option value={null}> N/A </option>
 							{#each allocatable || [] as j}

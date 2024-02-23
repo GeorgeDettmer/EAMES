@@ -395,17 +395,19 @@ export const actions = {
 		const formData = await request.formData();
 		const order_id = formData.get('order_id');
 		const reference = formData.get('reference');
+		const price = formData.get('price');
 		console.log('updateOrder', order_id, reference);
 		if (!order_id) {
 			console.error('updateOrder', 'Missing required fields');
 			return fail(401, { message: 'Missing required fields' });
 		}
-		if (reference === null) {
+		/* if (reference === null && price === null) {
 			console.error('updateOrder', 'Missing update fields');
 			return fail(401, { message: 'Missing update fields' });
-		}
+		} */
 		let _set = {
-			reference
+			reference: reference === null ? '' : reference,
+			price: price === null ? 0 : Number(price)
 		};
 		const result = await client.mutation(
 			gql`
@@ -417,8 +419,7 @@ export const actions = {
 			`,
 			{ order_id, _set }
 		);
-		let data = result.data?.update_erp_orders_by_pk;
-		console.log('updateOrder', data?.error?.message);
+		console.log('updateOrder', result?.error?.message ? result?.error?.message : 'success');
 		if (result?.error) {
 			return fail(401, { message: 'Database Error: ' + result?.error?.message });
 		}

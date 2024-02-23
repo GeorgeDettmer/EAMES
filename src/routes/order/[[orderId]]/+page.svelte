@@ -94,6 +94,7 @@
 				id
 				reference
 				created_at
+				items_total
 				total
 				items
 				price
@@ -155,7 +156,7 @@
 	let queryOffset: number = 0;
 	let queryLimit = storage(writable(200), 'EAMES_orders_limit');
 	let ordersStore: OperationResultStore;
-	//TODO: Clap upper limit of offset so as not to go past last id...
+	//TODO: Clamp upper limit of offset so as not to go past last id...
 	//TODO: If filter applied adjust offset?
 	$: if (!orderId) {
 		ordersStore = queryStore({
@@ -643,7 +644,7 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCell padding="px-1 py-3" colspan="3">
+			<TableHeadCell padding="px-1 py-3" colspan="4">
 				<div class="flex">
 					<!-- <div class="ml-auto">
 						{#if $ordersStore?.error}
@@ -714,30 +715,33 @@
 		<TableHead>
 			<TableHeadCell padding="px-1 py-3" />
 			<TableHeadCell padding="px-1 py-3">PO#</TableHeadCell>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="job" bind:collapsedColumns={$collapsedColumns}
-				>Jobs</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="buyer" bind:collapsedColumns={$collapsedColumns}
-				>Buyer</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="category" bind:collapsedColumns={$collapsedColumns}
-				>Categories</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="supplier" bind:collapsedColumns={$collapsedColumns}
-				>Supplier</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="orderdate" bind:collapsedColumns={$collapsedColumns}
-				>Created</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="items" bind:collapsedColumns={$collapsedColumns}
-				>Items</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="total" bind:collapsedColumns={$collapsedColumns}
-				>Total</TableHeadCollapsible
-			>
-			<TableHeadCollapsible padding="px-1 py-3" columnId="status" bind:collapsedColumns={$collapsedColumns}
-				>Status</TableHeadCollapsible
-			>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="job" bind:collapsedColumns={$collapsedColumns}>
+				Jobs
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="buyer" bind:collapsedColumns={$collapsedColumns}>
+				Buyer
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="category" bind:collapsedColumns={$collapsedColumns}>
+				Categories
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="supplier" bind:collapsedColumns={$collapsedColumns}>
+				Supplier
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="orderdate" bind:collapsedColumns={$collapsedColumns}>
+				Created
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="items" bind:collapsedColumns={$collapsedColumns}>
+				Items
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="costs-shipping" bind:collapsedColumns={$collapsedColumns}>
+				Costs
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="total" bind:collapsedColumns={$collapsedColumns}>
+				Total
+			</TableHeadCollapsible>
+			<TableHeadCollapsible padding="px-1 py-3" columnId="status" bind:collapsedColumns={$collapsedColumns}>
+				Status
+			</TableHeadCollapsible>
 		</TableHead>
 
 		<TableBody>
@@ -909,6 +913,18 @@
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-1 py-1 whitespace-nowrap font-medium"
+						columnId="costs-shipping"
+						bind:collapsedColumns={$collapsedColumns}
+					>
+						<p>
+							{new Intl.NumberFormat('en-GB', {
+								style: 'currency',
+								currency: 'GBP'
+							}).format(order?.price)}
+						</p>
+					</TableBodyCollapsible>
+					<TableBodyCollapsible
+						tdClass="px-1 py-1 whitespace-nowrap font-medium"
 						columnId="total"
 						bind:collapsedColumns={$collapsedColumns}
 					>
@@ -918,6 +934,29 @@
 								currency: 'GBP'
 							}).format(order?.total)}
 						</p>
+						<Tooltip defaultClass="py-1 px-2 text-xs" placement="left">
+							<p>
+								<span class="italic">Items:</span>
+								{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(order?.items_total)}
+							</p>
+							<p>
+								<span class="italic">Costs/shipping:</span>
+								{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(order?.price)}
+							</p>
+							<p>
+								<span class="italic">Total:</span>
+								{new Intl.NumberFormat('en-GB', {
+									style: 'currency',
+									currency: 'GBP'
+								}).format(order?.total)}
+							</p>
+						</Tooltip>
 					</TableBodyCollapsible>
 					<TableBodyCollapsible
 						tdClass="px-1 py-1 whitespace-nowrap font-medium"
@@ -1034,10 +1073,10 @@
 						<TableBodyCell tdClass="py-1">
 							<SupplierInfo supplierId={order.supplier.id} />
 						</TableBodyCell>
-						<TableBodyCell colspan="4" tdClass="p-0" />
+						<TableBodyCell colspan="5" tdClass="p-0" />
 					</TableBodyRow>
 					<TableBodyRow class="h-24">
-						<TableBodyCell colspan="10" tdClass="p-0">
+						<TableBodyCell colspan="11" tdClass="p-0">
 							<div class="">
 								<OrderDetailTable orderIds={[order.id]} hiddenColumns={['supplier']} />
 							</div>
@@ -1046,7 +1085,7 @@
 				{/if}
 			{:else}
 				<TableBodyRow class="h-24">
-					<TableBodyCell colspan="10" class="p-0">
+					<TableBodyCell colspan="11" class="p-0">
 						{#if $ordersStore?.fetching}
 							<p class="animate-pulse">Loading...</p>
 						{:else if $ordersStore?.error}
@@ -1072,6 +1111,7 @@
 			{:else}
 				<TableHeadCell colspan="2" />
 			{/if}
+			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell />

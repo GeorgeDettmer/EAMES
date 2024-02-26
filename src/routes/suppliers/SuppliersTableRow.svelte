@@ -68,7 +68,7 @@
 	{@const lastUsed = supplier?.orders_aggregate?.aggregate?.max?.created_at}
 	{@const daysSinceLastUsed = (Date.now() - new Date(lastUsed || supplier?.created_at).getTime()) / 1000 / 60 / 60 / 24}
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
-		<Badge color={daysSinceLastUsed > 180 ? 'red' : daysSinceLastUsed > 90 ? 'yellow' : 'blue'}>
+		<Badge color={daysSinceLastUsed > 180 || !lastUsed ? 'red' : daysSinceLastUsed > 90 ? 'yellow' : 'blue'}>
 			<div class="text-xs -space-y-1">
 				{#if lastUsed}
 					<p>{datetimeFormat(lastUsed, false)}</p>
@@ -81,8 +81,8 @@
 			</div>
 		</Badge>
 	</TableBodyCell>
-	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium"
-		>{supplier?.orders_aggregate?.aggregate?.count}</TableBodyCell
-	>
+	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
+		{supplier?.orders_aggregate?.aggregate?.count}
+	</TableBodyCell>
 	<slot name="end" />
 </TableBodyRow>

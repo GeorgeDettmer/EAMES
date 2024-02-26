@@ -1,20 +1,11 @@
 <script lang="ts">
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
-	import { Table, TableHeadCell, TableHead, TableBodyCell, TableBody, TableBodyRow, Badge, Modal } from 'flowbite-svelte';
-	import { datetimeFormat } from '$lib/utils';
-	import UserIcon from '$lib/components/UserIcon.svelte';
+	import { Modal } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { windowTitleStore } from '$lib/stores';
-	import { Check, Plus } from 'svelte-heros-v2';
 	import { page } from '$app/stores';
 	import { messagesStore } from 'svelte-legos';
-	import TableBodyCellEditable from '$lib/components/Misc/Table/TableBodyCellEditable.svelte';
-	import { EditOutline } from 'flowbite-svelte-icons';
-	import EditToggle from '$lib/components/Misc/EditToggle.svelte';
-	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
-	import { enhance } from '$app/forms';
 	import EditModal from '../EditModal.svelte';
-	import moment from 'moment';
 	import SuppliersTable from '../SuppliersTable.svelte';
 	import type { Supplier } from '$lib/types';
 

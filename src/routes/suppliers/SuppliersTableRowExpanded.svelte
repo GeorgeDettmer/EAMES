@@ -47,25 +47,6 @@
 						initials
 						id
 					}
-					orders_aggregate {
-						aggregate {
-							count
-							max {
-								created_at
-							}
-							min {
-								created_at
-							}
-							sum {
-								total
-								items
-							}
-							avg {
-								total
-								items
-							}
-						}
-					}
 					orders(order_by: { created_at: desc }, limit: 25) {
 						id
 						items
@@ -135,7 +116,7 @@
 		['6M', 180],
 		['1Y', 365]
 	];
-	let supplierSummaryPeriodDays: number | undefined = 1;
+	let supplierSummaryPeriodDays: number | undefined = undefined;
 </script>
 
 <TableBodyRow>

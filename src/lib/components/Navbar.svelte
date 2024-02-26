@@ -270,7 +270,7 @@
 						class="px-2 font-semibold col-span-2 rounded-tr-lg border-2 border-l-0 border-b-0 border-slate-500 {'job-' +
 							$currentBoard?.boardInfo.job?.id}"
 					>
-						EAS{$currentBoard?.boardInfo?.job?.batch}
+						EAS{$currentBoard?.boardInfo?.job?.id}
 					</div>
 					<div
 						class="px-2 font-semibold col-span-2 rounded-br-lg border-2 border-l-0 border-slate-500 {'job-' +

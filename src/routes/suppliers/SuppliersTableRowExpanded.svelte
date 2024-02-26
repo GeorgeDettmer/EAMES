@@ -12,15 +12,15 @@
 		Listgroup
 	} from 'flowbite-svelte';
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
-	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
+	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import { classes } from '$lib/utils';
 
 	export let supplier: Supplier;
 
-	$: supplierStore = subscriptionStore({
+	$: supplierStore = queryStore({
 		client: getContextClient(),
 		query: gql`
-			subscription supplier($id: String!) {
+			query supplier($id: String!) {
 				erp_suppliers_by_pk(id: $id) {
 					id
 					name
@@ -85,7 +85,57 @@
 		variables: { id: supplier.id }
 	});
 	$: supplierInfo = $supplierStore?.data?.erp_suppliers_by_pk || supplier;
-	$: console.log(supplierInfo);
+
+	let supplierPeriodAggregationsStore;
+	$: supplierPeriodAggregationsStore = queryStore({
+		client: getContextClient(),
+		query: gql`
+			query supplier($id: String!, $_where: erp_orders_bool_exp = {}) {
+				erp_suppliers_by_pk(id: $id) {
+					orders_aggregate(where: $_where) {
+						aggregate {
+							count
+							max {
+								created_at
+							}
+							min {
+								created_at
+							}
+							sum {
+								total
+								items
+							}
+							avg {
+								total
+								items
+							}
+						}
+					}
+				}
+			}
+		`,
+		variables: {
+			id: supplier.id,
+			_where: supplierSummaryPeriodDays
+				? { created_at: { _gte: new Date(Date.now() - supplierSummaryPeriodDays * 24 * 60 * 60 * 1000).toISOString() } }
+				: {}
+		},
+		requestPolicy: 'cache-and-network'
+	});
+	$: supplierPeriodAggregations = $supplierPeriodAggregationsStore?.data?.erp_suppliers_by_pk;
+	$: console.log(supplierInfo, supplierPeriodAggregations);
+
+	let supplierSummaryPeriodDaysList: [string, number][] = [
+		['1D', 1],
+		['1W', 7],
+		['2W', 14],
+		['1M', 30],
+		['2M', 60],
+		['3M', 90],
+		['6M', 180],
+		['1Y', 365]
+	];
+	let supplierSummaryPeriodDays: number | undefined = 1;
 </script>
 
 <TableBodyRow>
@@ -95,7 +145,17 @@
 			<SupplierInfo supplier={supplierInfo} />
 			<Table>
 				<TableHead>
-					<TableHeadCell padding="px-1 py-0" />
+					<TableHeadCell padding="px-1 py-0">
+						<select
+							class="text-xs border-gray-300 dark:border-gray-600 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0.5"
+							bind:value={supplierSummaryPeriodDays}
+						>
+							<option value={undefined}>~</option>
+							{#each supplierSummaryPeriodDaysList as [period, days]}
+								<option value={days}>{period}</option>
+							{/each}
+						</select>
+					</TableHeadCell>
 					<TableHeadCell padding="px-1 py-0">Total</TableHeadCell>
 					<TableHeadCell padding="px-1 py-0">Avg</TableHeadCell>
 				</TableHead>
@@ -104,28 +164,28 @@
 						<TableBodyCell tdClass="px-1 py-0.5 bg-gray-50 dark:bg-gray-700 uppercase font-bold text-xs text-right"
 							>Value</TableBodyCell
 						>
-						<TableBodyCell tdClass="px-1 py-0.5">
+						<TableBodyCell tdClass="px-1 py-0.5 min-w-20">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
-							}).format(supplierInfo?.orders_aggregate?.aggregate?.sum?.total)}
+							}).format(supplierPeriodAggregations?.orders_aggregate?.aggregate?.sum?.total || 0)}
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-1 py-0.5">
+						<TableBodyCell tdClass="px-1 py-0.5 min-w-20">
 							{new Intl.NumberFormat('en-GB', {
 								style: 'currency',
 								currency: 'GBP'
-							}).format(supplierInfo?.orders_aggregate?.aggregate?.avg?.total)}
+							}).format(supplierPeriodAggregations?.orders_aggregate?.aggregate?.avg?.total || 0)}
 						</TableBodyCell>
 					</TableBodyRow>
 					<TableBodyRow>
 						<TableBodyCell tdClass="px-1 py-0.5 bg-gray-50 dark:bg-gray-700 uppercase font-bold text-xs text-right"
 							>Items</TableBodyCell
 						>
-						<TableBodyCell tdClass="px-1 py-0.5">
-							{supplierInfo?.orders_aggregate?.aggregate?.sum?.items || 0}
+						<TableBodyCell tdClass="px-1 py-0.5 min-w-20">
+							{supplierPeriodAggregations?.orders_aggregate?.aggregate?.sum?.items || 0}
 						</TableBodyCell>
-						<TableBodyCell tdClass="px-1 py-0.5">
-							{Math.round(supplierInfo?.orders_aggregate?.aggregate?.avg?.items)}
+						<TableBodyCell tdClass="px-1 py-0.5 min-w-20">
+							{Math.round(supplierPeriodAggregations?.orders_aggregate?.aggregate?.avg?.items || 0)}
 						</TableBodyCell>
 					</TableBodyRow>
 				</TableBody>
@@ -140,17 +200,20 @@
 			<ul class="divide-y divide-gray-200 dark:divide-gray-600">
 				{#each supplier?.addresses || [] as address}
 					{@const lines = address?.lines?.split(',')}
+					{@const mapsUrl = 'https://maps.google.com/?q=' + encodeURI([...address.lines, ', ', address.country].join(''))}
 					<li>
 						<div class="flex items-center space-x-4 rtl:space-x-reverse">
 							<div class="flex-1 min-w-0">
-								<p class="text-xs font-medium text-gray-900 truncate dark:text-white">
-									{address?.country}
-								</p>
-								{#each lines as line}
-									<p class="text-xs text-gray-500 truncate dark:text-gray-400">
-										{line}
+								<a href={mapsUrl} target="_blank" class="hover:underline">
+									<p class="text-xs font-medium text-gray-900 truncate dark:text-white">
+										{address?.country}
 									</p>
-								{/each}
+									{#each lines as line}
+										<p class="text-xs text-gray-500 truncate dark:text-gray-400">
+											{line}
+										</p>
+									{/each}
+								</a>
 								<!-- {#if address?.email}
 									<a href="mailto:{address.email}" class="text-xs text-gray-500 truncate dark:text-gray-400">
 										{address.email}
@@ -190,7 +253,7 @@
 									{contact?.name}
 								</p>
 								{#if contact?.email}
-									<a href="mailto:{contact.email}" class="text-xs text-gray-500 truncate dark:text-gray-400">
+									<a href="mailto:{contact.email}" class="text-xs text-gray-500 truncate dark:text-gray-400 hover:underline">
 										{contact.email}
 									</a>
 								{/if}

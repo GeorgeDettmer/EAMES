@@ -421,7 +421,7 @@
 				supplier_id: o.supplier.id,
 				user_id: $page?.data?.user?.id,
 				reference: o.reference,
-				price: o.price
+				price: Number(o?.price || 0)
 			};
 			if (o?.id) {
 				obj.id = o.id;
@@ -432,8 +432,8 @@
 					category: i?.category,
 					part: i?.part,
 					spn: i?.spn,
-					quantity: i?.quantity,
-					price: i?.price,
+					quantity: Number(i?.quantity || 0),
+					price: Number(i?.price || 0),
 					created_at: i?.created_at
 				};
 				/* if (job?.id) { 

@@ -50,21 +50,14 @@
 		{job?.quantity || 0}
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium" columnId="assembly">
-		<button
-			on:click={(e) => {
-				/* supplierSearch = supplierSearch ? '' : job?.supplier?.id;
-                replaceStateWithQuery({
-                    supplier: supplierSearch
-                }); */
-			}}
-		>
+		<a href="assembly/{job?.assembly?.id}">
 			<Badge border={!job?.assembly?.name} color={!job?.assembly?.name ? 'red' : 'blue'}>
 				<p>
 					<span class={classes.popover}>{job?.assembly?.name}</span>
 					<span>| {job?.assembly?.revision_external}</span>
 				</p>
 			</Badge>
-		</button>
+		</a>
 		<Popover placement="left">
 			<p>Assembly info...</p>
 		</Popover>

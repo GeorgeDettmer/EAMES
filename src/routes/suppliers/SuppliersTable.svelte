@@ -1,10 +1,16 @@
 <script lang="ts">
 	import type { Supplier } from '$lib/types';
-	import { datetimeFormat, getSelectionText } from '$lib/utils';
-	import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-	import { EditOutline } from 'flowbite-svelte-icons';
-	import moment from 'moment';
-	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
+	import {
+		Checkbox,
+		Popover,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell
+	} from 'flowbite-svelte';
+	import { DotsHorizontalOutline, EditOutline } from 'flowbite-svelte-icons';
 	import SuppliersTableRow from './SuppliersTableRow.svelte';
 	import { ChevronDown, ChevronRight } from 'svelte-heros-v2';
 	import SuppliersTableRowExpanded from './SuppliersTableRowExpanded.svelte';
@@ -13,9 +19,9 @@
 	export let allowEdit: boolean = false;
 	export let openRowsIdx: number[] = [];
 	export let openRowsId: string[] = [];
+	export let showHiddenSuppliers: boolean = false;
 
 	function toggleExpandRow(idx: number, id: string = '', e: MouseEvent) {
-		/* if (getSelectionText()) return; */
 		e.preventDefault();
 		if (openRowsIdx?.includes(idx) || openRowsId?.includes(id)) {
 			openRowsIdx = openRowsIdx.filter((i) => i !== idx);
@@ -31,7 +37,16 @@
 
 <Table>
 	<TableHead>
-		<TableHeadCell padding="px-1 py-3" />
+		<TableHeadCell padding="px-1 py-3">
+			<button>
+				<DotsHorizontalOutline size="sm" />
+			</button>
+			<Popover placement="bottom" trigger="click">
+				<div class="flex">
+					<Checkbox bind:checked={showHiddenSuppliers}>Show hidden suppliers</Checkbox>
+				</div>
+			</Popover>
+		</TableHeadCell>
 		<TableHeadCell padding="px-1 py-3">ID</TableHeadCell>
 		<TableHeadCell padding="px-1 py-3">Name</TableHeadCell>
 		<TableHeadCell padding="px-1 py-3">Type</TableHeadCell>

@@ -315,7 +315,6 @@
 						name="expected_date"
 						class="block w-fit text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
 						type="date"
-						min={new Date().toISOString().split('T')[0]}
 						value={new Date(shipmentInfo?.expected_delivery_date).toLocaleDateString('fr-CA')}
 						on:change={({ target }) => {
 							shipmentInfo.expected_delivery_date = new Date(target?.value)?.toISOString();

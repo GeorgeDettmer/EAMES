@@ -203,20 +203,12 @@
 	let partSearch = '';
 	let descriptionSearch = '';
 	let supplierSearch = '';
-	$: ordersSuppliers = job?.jobs_orders?.flatMap((jo) => jo.order?.supplier?.name)?.filter((v, i, a) => a.indexOf(v) === i);
+	$: ordersSuppliers = job?.jobs_allocations
+		?.flatMap((a) => a?.orders_item?.order?.supplier?.name)
+		?.filter((v, i, a) => a.indexOf(v) === i);
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 
 	let collapseReferenceRanges = false;
-
-	$: console.log(
-		'testtttttttttttt',
-		job,
-		job?.jobs_allocations
-			?.filter(
-				(allocation) => allocation.orders_item?.part_id === 'LFXTAL055663' || allocation.orders_item?.part === 'LFXTAL055663'
-			)
-			.flatMap((oi) => oi)
-	);
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -272,7 +264,7 @@
 			<TableHeadCell />
 			<TableHeadCell />
 			<TableHeadCell>
-				{#if ordersSuppliers?.[0]}
+				{#if ordersSuppliers?.length > 0}
 					<select
 						class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
 						bind:value={supplierSearch}
@@ -435,12 +427,14 @@
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
 									{#each allocations as allocation}
-										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+										<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}>
 											{allocation?.quantity || allocation?.orders_item?.quantity} | {allocation?.orders_item?.order?.supplier
 												?.name}
 										</Badge>
 									{:else}
-										<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(orderItemQty, buildQty)}>0</Badge>
+										<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}
+											>0</Badge
+										>
 									{/each}
 								</div>
 							</TableBodyCell>
@@ -448,7 +442,10 @@
 
 						{#if job?.jobs_allocations && visibleColumns?.includes('received_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}>
+								<Badge
+									class="mx-0.5"
+									color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}
+								>
 									{receivedItemQty}
 								</Badge>
 							</TableBodyCell>

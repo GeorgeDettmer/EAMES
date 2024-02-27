@@ -10,6 +10,7 @@
 	import { Alert, Spinner } from 'flowbite-svelte';
 	import KittingDashboard from '$lib/components/Kitting/KittingDashboard.svelte';
 	import { onMount } from 'svelte';
+	import { numberToLetter } from '$lib/utils';
 
 	onMount(() => {
 		return () => {
@@ -19,6 +20,21 @@
 	$: $windowTitleStore = $page?.data?.jobId ? `Kitting | ${$page?.data?.jobId}` : 'Kitting';
 	$: jobId = $page?.data?.jobId;
 	$: batchId = $page?.data?.batchId || 0;
+	let selectedBatches = [$page?.data?.batchId || 0];
+
+	$: batchesStore = subscriptionStore({
+		client: getContextClient(),
+		query: gql`
+			subscription batches($jobId: bigint!) {
+				jobs(where: { id: { _eq: $jobId } }, order_by: { batch: asc }) {
+					batch
+					quantity
+				}
+			}
+		`,
+		variables: { jobId }
+	});
+	$: batches = $batchesStore?.data?.jobs;
 
 	let query = gql`
 		subscription jobInfo($jobId: bigint!, $batches: [Int!] = [0]) {
@@ -175,11 +191,10 @@
 			}
 		}
 	`;
-
 	$: jobInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query,
-		variables: { jobId, batches: [batchId] }
+		variables: { jobId, batches: selectedBatches }
 	});
 	$: jobInfo = $jobInfoStore?.data?.jobs?.[0];
 	$: orders = jobInfo?.jobs_orders || [];
@@ -212,6 +227,18 @@
 						</div>
 					</JobOverview>
 				</div>
+				<select class="w-1/8 h-10 mt-auto rounded-sm">
+					{#each batches as batch}
+						<option value={batch.batch}>
+							{#if batch?.batch === 0}
+								All
+							{:else}
+								{numberToLetter(batch.batch, 64)}
+							{/if}
+							({batch.quantity}-off)
+						</option>
+					{/each}
+				</select>
 			</div>
 		{/if}
 		{#if jobInfo?.assembly?.bom}

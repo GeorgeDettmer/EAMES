@@ -338,8 +338,8 @@ export function isValidUrl(url_string: string) {
 	}
 }
 
-function getNextBusinessDay(date: Date | number) {
-	date = new Date(+date);
+export function getNextBusinessDay(from?: Date | number) {
+	let date: Date = from ? new Date(from) : new Date();
 	do {
 		date.setDate(date.getDate() + 1);
 	} while (!(date.getDay() % 6));

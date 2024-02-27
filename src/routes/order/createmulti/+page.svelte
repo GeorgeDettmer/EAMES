@@ -29,7 +29,7 @@
 	import { goto } from '$app/navigation';
 	import { filedrop, type FileDropOptions, type Files } from 'filedrop-svelte';
 	import XLSX from 'xlsx';
-	import { getParameterInsensitiveAny, letterToNumber, numberToLetter } from '$lib/utils';
+	import { getParameterInsensitiveAny, letterToNumber, numberToLetter, getNextBusinessDay } from '$lib/utils';
 	import { windowTitleStore } from '$lib/stores';
 	import { onDestroy } from 'svelte';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
@@ -286,15 +286,16 @@
 		shipments = [
 			...shipments,
 			[
-				{
+				/* {
 					carrier: { ...carriers?.[0] } || {
 						id: null
 					},
-					expected_delivery_date: new Date().toISOString(),
+					expected_delivery_date: getNextBusinessDay().toISOString(), //new Date().toISOString(),
 					tracking: {
 						tracking_number: ''
 					}
-				}
+				} */
+				shipmentTemplate()
 			]
 		];
 	}
@@ -615,11 +616,20 @@
 		}
 	}; */
 	function shipmentTemplate(): Shipment {
+		/* {
+					carrier: { ...carriers?.[0] } || {
+						id: null
+					},
+					expected_delivery_date: getNextBusinessDay().toISOString(), //new Date().toISOString(),
+					tracking: {
+						tracking_number: ''
+					}
+				} */
 		return {
-			carrier: {
+			carrier: { ...carriers?.[0] } || {
 				id: null
 			},
-			expected_delivery_date: new Date().toISOString(),
+			expected_delivery_date: getNextBusinessDay().toISOString(),
 			tracking: {
 				tracking_number: ''
 			}
@@ -748,10 +758,10 @@
 					color="blue"
 					size="sm"
 					on:click={(e) => {
-						if (unapprovedSuppliers?.length > 0) {
+						/* if (unapprovedSuppliers?.length > 0) {
 							unapprovedSupplierConfirmModal = true;
 							return;
-						}
+						} */
 						if (approvalValue && !ordersTotalValues.every((v) => v < approvalValue)) {
 							approvalConfirmModal = true;
 							return;
@@ -783,7 +793,7 @@
 						<button
 							class="hover:text-red-600"
 							on:click={() => {
-								shipments[openOrderIdx] = shipments?.[openOrderIdx].filter((s, i) => i === idx);
+								shipments[openOrderIdx] = shipments?.[openOrderIdx].filter((s, i) => i !== idx);
 							}}
 						>
 							<XMark size="18" />
@@ -1114,8 +1124,7 @@
 				<span class="sr-only">Warning</span>
 			</span>
 			<p class="font-semibold">
-				The value of an order exceeds the maximum order value ({unapprovedSuppliers?.join(', ')}), are you sure you want to
-				continue?
+				There are orders for unapproved suppliers ({unapprovedSuppliers?.join(', ')}), are you sure you want to continue?
 			</p>
 		</Alert>
 		<div class="flex mx-auto">

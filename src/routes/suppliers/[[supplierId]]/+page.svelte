@@ -16,11 +16,12 @@
 		};
 	});
 
+	let showHiddenSuppliers: boolean = false;
 	$: suppliersStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription suppliers {
-				erp_suppliers(order_by: { name: asc }) {
+			subscription suppliers($hidden: Boolean_comparison_exp = {}) {
+				erp_suppliers(order_by: { name: asc }, where: { hidden: $hidden }) {
 					id
 					name
 					names
@@ -32,6 +33,7 @@
 					categories
 					contacts
 					addresses
+					hidden
 					user {
 						username
 						color
@@ -53,7 +55,8 @@
 					}
 				}
 			}
-		`
+		`,
+		variables: { hidden: showHiddenSuppliers ? { _eq: true } : {} }
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
 
@@ -177,7 +180,7 @@
 
 <div class="pt-4 max-h-500px mx-auto">
 	{#if suppliers}
-		<SuppliersTable {suppliers} allowEdit={false} />
+		<SuppliersTable {suppliers} allowEdit={false} bind:showHiddenSuppliers />
 	{/if}
 </div>
 

@@ -69,8 +69,8 @@
 		{/if}
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium" columnId="duedate">
-		{@const daysUntilDue = (Date.now() - new Date(job?.due_date).getTime()) / 1000 / 60 / 60 / 24}
-		<Badge color={daysUntilDue < 2 ? 'red' : daysUntilDue < 5 ? 'yellow' : 'blue'}>
+		{@const daysUntilDue = (new Date(job?.due_date).getTime() - Date.now()) / 1000 / 60 / 60 / 24}
+		<Badge color={!job?.due_date ? 'dark' : daysUntilDue < 2 ? 'red' : daysUntilDue < 5 ? 'yellow' : 'blue'}>
 			<div class="text-xs -space-y-1">
 				{#if job?.due_date}
 					<p>{datetimeFormat(job?.due_date, false)}</p>

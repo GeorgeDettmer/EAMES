@@ -638,13 +638,15 @@
 						<div
 							class="w-1/2 mx-auto"
 							on:mousewheel={(e) => {
-								arbitraryQuantity = Math.max(arbitraryQuantity + (e.deltaY > 0 ? -1 : +1), 1);
+								e?.target?.focus();
+								//arbitraryQuantity = Math.max(arbitraryQuantity + (e.deltaY > 0 ? -1 : +1), 1);
 							}}
 						>
 							<Input
 								size="sm"
 								type="number"
 								value={arbitraryQuantity}
+								min="0"
 								on:input={(e) => {
 									arbitraryQuantity = Math.max(Number(e.target.value), 1);
 								}}

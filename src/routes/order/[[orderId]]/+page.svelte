@@ -777,7 +777,7 @@
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 						<div class="flex">
-							<a href={`order/${order?.id}`}>
+							<a href={`/order/${order?.id}`}>
 								<div>
 									<p class={classes.link}>
 										{padString(String(order?.id))}

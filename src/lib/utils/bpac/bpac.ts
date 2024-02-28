@@ -91,6 +91,7 @@ export async function printerOnline(printer: string | undefined = undefined): Pr
 		let printers = await getPrinters();
 		printer = printers?.[0];
 	}
+	console.log('printers', await getPrinters(), printer);
 	if (!printer) {
 		return false;
 	}

@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { numberToLetter } from '$lib/utils';
 
 	export let job;
 	export let expandable = true;
 	export let open = false;
+
+	$: config = $page?.data?.config;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -23,7 +26,7 @@
 				<p class="font-bold">{job?.customer?.name}</p>
 			</div>
 			<div>
-				<p class="float-right">{job?.id}</p>
+				<p class="float-right">{config?.job_prefix || ''}{job?.id}</p>
 			</div>
 			<div>
 				<p>

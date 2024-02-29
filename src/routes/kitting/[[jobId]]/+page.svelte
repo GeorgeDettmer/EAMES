@@ -231,7 +231,7 @@
 					</JobOverview>
 				</div>
 				<select
-					class="w-1/8 h-10 mt-auto rounded-sm"
+					class="w-1/8 h-20 my-auto rounded border-gray-300 dark:border-gray-600 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400"
 					on:change={(e) => {
 						selectedBatches = [Number(e?.target?.value || 0)];
 					}}

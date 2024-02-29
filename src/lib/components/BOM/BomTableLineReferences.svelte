@@ -12,7 +12,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	function conoslidateReferences(input: Array<string>): Array<string> {
+	/* function conoslidateReferences(input: Array<string>): Array<string> {
 		let prefixes: Map<string, Array<string>> = new Map();
 
 		input.map((ref) => {
@@ -31,6 +31,37 @@
 			let refs = normalize(numbers.join(','))
 				.split(',')
 				.map((n) => prefix + n);
+			//console.log('refs', refs);
+			return refs;
+		});
+
+		//console.log(input, prefixes, references);
+
+		return references;
+	} */
+
+	function conoslidateReferences(input: Array<string>): Array<string> {
+		let fixes: Map<string, Array<string>> = new Map();
+
+		input.map((ref) => {
+			let regex = ref.match(/(?<PREFIX>([A-Za-z]+)*)(?<NUMBER>(\d)*)(?<SUFFIX>(.+)*)/);
+			let prefix = regex?.groups?.PREFIX;
+			let suffix = regex?.groups?.SUFFIX;
+			let number = regex?.groups?.NUMBER;
+			let fix = prefix + '|' + suffix;
+			if (!fix || !number) return ref;
+			if (!fixes.has(fix)) {
+				fixes.set(fix, []);
+			}
+			fixes.get(fix)?.push(number);
+		});
+
+		let references: Array<string> = [...fixes.entries()].map(([fix, numbers], idx) => {
+			let p = fix.split('|')?.[0] || '';
+			let s = fix.split('|')?.[1] || '';
+			let refs = normalize(numbers.join(','))
+				.split(',')
+				.map((n) => p + n + s);
 			//console.log('refs', refs);
 			return refs;
 		});

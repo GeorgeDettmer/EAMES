@@ -210,7 +210,7 @@
 		?.filter((v, i, a) => a.indexOf(v) === i);
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 	$: console.log('allocations', allocations);
-	let collapseReferenceRanges = false;
+	let collapseReferences = storage(writable(false), 'EAMES_kitting_collapseReferences');
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
@@ -309,7 +309,12 @@
 				bind:collapsedColumns={$collapsedColumns}
 			>
 				References
-				<span class="my-auto px-2 focus:outline-none" on:click={() => (collapseReferenceRanges = !collapseReferenceRanges)}>
+				<span
+					class="my-auto px-2 focus:outline-none"
+					on:click={() => {
+						$collapseReferences = !$collapseReferences;
+					}}
+				>
 					<DotsHorizontalOutline size="xs" />
 				</span>
 			</TableHeadCollapsible>
@@ -410,7 +415,7 @@
 							visible={visibleColumns?.includes('references')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<BomTableLineReferences pn={lineKey} {references} conoslidate={collapseReferenceRanges} />
+							<BomTableLineReferences pn={lineKey} {references} conoslidate={$collapseReferences} />
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}

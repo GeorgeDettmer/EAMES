@@ -13,7 +13,7 @@
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 		<div class="flex gap-x-1">
 			<p class="italic text-gray-500">{jobPrefix || ''}</p>
-			<a href={`job/${job?.id}`} class={classes.link}>
+			<a href={`/job/${job?.id}`} class={classes.link}>
 				{job?.id}
 			</a>
 		</div>

@@ -3,7 +3,7 @@
 
 	export let data: PageData;
 	import { page } from '$app/stores';
-	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
+	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import JobOverview from '$lib/components/Job/JobOverview.svelte';
 	import { scanStore, windowTitleStore } from '$lib/stores';
 	import BomTableKitting from '$lib/components/BOM/BomTableKitting.svelte';
@@ -22,23 +22,9 @@
 	$: batchId = $page?.data?.batchId || 0;
 	let selectedBatches = [$page?.data?.batchId || 0];
 
-	$: batchesStore = subscriptionStore({
-		client: getContextClient(),
-		query: gql`
-			subscription batches($jobId: bigint!) {
-				jobs(where: { id: { _eq: $jobId } }, order_by: { batch: asc }) {
-					batch
-					quantity
-				}
-			}
-		`,
-		variables: { jobId }
-	});
-	$: batches = $batchesStore?.data?.jobs;
-
 	let query = gql`
-		subscription jobInfo($jobId: bigint!, $batches: [Int!] = [0]) {
-			jobs(where: { _and: { id: { _eq: $jobId }, batch: { _in: $batches } } }, order_by: { batch: desc }) {
+		subscription jobInfo($jobId: bigint!) {
+			jobs(where: { id: { _eq: $jobId } }, order_by: { batch: asc }) {
 				id
 				quantity
 				batch
@@ -194,20 +180,37 @@
 	$: jobInfoStore = subscriptionStore({
 		client: getContextClient(),
 		query,
-		variables: { jobId, batches: selectedBatches }
+		variables: { jobId }
 	});
-	$: jobInfo = $jobInfoStore?.data?.jobs?.[0];
-	$: orders = jobInfo?.jobs_orders || [];
-	$: kits = jobInfo?.jobs_kits?.map((jk) => jk.kit) || [];
-	$: console.log('kits', kits);
+	$: jobInfo = $jobInfoStore?.data?.jobs?.find((j) => j.batch === selectedBatches[0]) || {};
+	$: allocations =
+		$jobInfoStore?.data?.jobs
+			?.filter((a) => a.batch === 0 || selectedBatches.includes(a.batch))
+			?.flatMap((j) => j.jobs_allocations) || [];
+	$: jobs_kits =
+		$jobInfoStore?.data?.jobs
+			?.flatMap((j) => j?.jobs_kits)
+			?.filter((jk) => jk.job_batch === 0 || selectedBatches.includes(jk.job_batch)) || [];
+	$: batches =
+		$jobInfoStore?.data?.jobs?.map((j) => {
+			return {
+				quantity: j.quantity,
+				batch: j.batch,
+				reference: j.reference
+			};
+		}) || [];
+	$: console.log('kits', jobs_kits);
 
 	$: console.log('scanStore', $scanStore);
 
-	$: console.log('orders', orders);
-	$: console.log('kits', kits, jobInfo?.assembly?.bom?.lines);
+	$: console.log('kits', jobs_kits, jobInfo?.assembly?.bom?.lines);
 
-	$: totalKitItemQty = kits?.flatMap((k) => k.kits_items?.reduce((a, v) => a + v.quantity, 0))?.reduce((a, v) => a + v, 0);
+	$: totalKitItemQty = jobs_kits
+		?.flatMap((k) => k.kits_items?.reduce((a, v) => a + v.quantity, 0))
+		?.reduce((a, v) => a + v, 0);
 	$: totalBomItemQty = jobInfo?.assembly?.bom?.lines?.length || 0;
+
+	$: console.log('selectedBatches', selectedBatches);
 </script>
 
 {#if jobId}
@@ -227,7 +230,12 @@
 						</div>
 					</JobOverview>
 				</div>
-				<select class="w-1/8 h-10 mt-auto rounded-sm">
+				<select
+					class="w-1/8 h-10 mt-auto rounded-sm"
+					on:change={(e) => {
+						selectedBatches = [Number(e?.target?.value || 0)];
+					}}
+				>
 					{#each batches as batch}
 						<option value={batch.batch}>
 							{#if batch?.batch === 0}
@@ -242,7 +250,7 @@
 			</div>
 		{/if}
 		{#if jobInfo?.assembly?.bom}
-			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} />
+			<BomTableKitting bom={jobInfo?.assembly?.bom} job={jobInfo} {allocations} {jobs_kits} />
 		{:else}
 			<Alert color="red">No BOM set for this job assembly!</Alert>
 		{/if}

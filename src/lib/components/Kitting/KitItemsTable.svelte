@@ -62,7 +62,7 @@
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{#if item?.orders_item?.order?.id}
-						<a href={`${window.origin}/order/${item?.orders_item?.order?.id}`} target="_blank" class={classes.link}>
+						<a href={`${window.origin}/order/${item?.orders_item?.order?.id}`} class={classes.link}>
 							{item?.orders_item?.order?.id}
 						</a>
 					{:else}

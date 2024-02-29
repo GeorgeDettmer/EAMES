@@ -1,6 +1,8 @@
 <script lang="ts">
 	export let bom;
 	export let job = {};
+	export let allocations = [];
+	export let jobs_kits = [];
 	export let partsInLibrary: string[] = [];
 	export let visibleColumns: string[] = [
 		'part',
@@ -203,11 +205,11 @@
 	let partSearch = '';
 	let descriptionSearch = '';
 	let supplierSearch = '';
-	$: ordersSuppliers = job?.jobs_allocations
+	$: ordersSuppliers = allocations
 		?.flatMap((a) => a?.orders_item?.order?.supplier?.name)
 		?.filter((v, i, a) => a.indexOf(v) === i);
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
-
+	$: console.log('allocations', allocations);
 	let collapseReferenceRanges = false;
 </script>
 
@@ -317,10 +319,10 @@
 			{#if job?.quantity && visibleColumns?.includes('build_quantity')}
 				<TableHeadCell padding="px-2 py-3">Build Qty</TableHeadCell>
 			{/if}
-			{#if job?.jobs_allocations && visibleColumns?.includes('order_quantity')}
+			{#if allocations && visibleColumns?.includes('order_quantity')}
 				<TableHeadCell padding="px-2 py-3">Order Qty</TableHeadCell>
 			{/if}
-			{#if job?.jobs_allocations && visibleColumns?.includes('received_quantity')}
+			{#if allocations && visibleColumns?.includes('received_quantity')}
 				<TableHeadCell padding="px-2 py-3">Received Qty</TableHeadCell>
 			{/if}
 			{#if job?.jobs_kits}
@@ -340,13 +342,9 @@
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
 				{@const allocations = lineKey
-					? job?.jobs_allocations?.filter((allocation) => {
-							return (
-								(allocation.orders_item?.part_id === lineKey || allocation.orders_item?.part === lineKey) &&
-								allocation.job_id === job.id &&
-								allocation.job_batch === job.batch
-							);
-					  })
+					? allocations?.filter(
+							(allocation) => allocation.orders_item?.part_id === lineKey || allocation.orders_item?.part === lineKey
+					  )
 					: []}
 				{@const orderItems = lineKey ? allocations.flatMap((oi) => oi?.orders_item) : []}
 				{@const lineSuppliers = orderItems?.flatMap((oi) => oi?.order?.supplier?.name)}
@@ -423,7 +421,7 @@
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">{buildQty}</TableBodyCell>
 						{/if}
 
-						{#if job?.jobs_allocations && visibleColumns?.includes('order_quantity')}
+						{#if allocations && visibleColumns?.includes('order_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="grid grid-cols-1 gap-y-1">
 									{#each allocations as allocation}
@@ -440,7 +438,7 @@
 							</TableBodyCell>
 						{/if}
 
-						{#if job?.jobs_allocations && visibleColumns?.includes('received_quantity')}
+						{#if allocations && visibleColumns?.includes('received_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<Badge
 									class="mx-0.5"

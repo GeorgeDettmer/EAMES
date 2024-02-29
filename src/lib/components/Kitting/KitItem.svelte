@@ -742,7 +742,7 @@
 							{datetimeFormat(orderItem.updated_at)}
 						</TableBodyCell>
 						<TableBodyCell tdClass="font-sm text-center">
-							<a href={`${window.origin}/order/${orderItem.order.id}`} target="_blank" class={classes.link}>
+							<a href={`/order/${orderItem.order.id}`} class={classes.link}>
 								{orderItem.order.id}
 							</a>
 						</TableBodyCell>

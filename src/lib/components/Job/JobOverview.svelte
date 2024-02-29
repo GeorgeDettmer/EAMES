@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { numberToLetter } from '$lib/utils';
+
 	export let job;
 	export let expandable = true;
 	export let open = false;
@@ -30,7 +32,7 @@
 			</div>
 			<div>
 				{#if job?.batch}
-					<p class="float-right">{job.batch}</p>
+					<p class="float-right">{numberToLetter(job.batch, 64)}</p>
 				{/if}
 			</div>
 		</div>

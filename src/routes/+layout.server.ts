@@ -35,8 +35,12 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	configData?.forEach((item) => {
 		config[`${item.name}_${item.type}`] = item?.json;
 	});
-	console.log('config layout', configData.length);
-
+	console.log(
+		'config: ',
+		configData.length,
+		':',
+		configData.flatMap((item) => `${item?.name}-${item?.type}${item?.user_id ? '*' : ''}`)
+	);
 	return {
 		config,
 		user

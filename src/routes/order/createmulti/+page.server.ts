@@ -3,7 +3,7 @@ import { gql } from '@urql/svelte';
 import type { PageServerLoad } from './$types';
 //TODO: Move to layout load
 export const load = (async ({ locals }) => {
-	let configQuery = client.query(
+	/* let configQuery = client.query(
 		gql`
 			query config($name: String!, $_or: [system_config_bool_exp!]) {
 				system_config(where: { name: { _eq: $name }, _or: $_or }, order_by: { user_id: asc_nulls_first }) {
@@ -24,5 +24,5 @@ export const load = (async ({ locals }) => {
 	configData?.forEach((item) => {
 		config[`${item.name}_${item.type}`] = item?.json;
 	});
-	return { config };
+	return { config }; */
 }) satisfies PageServerLoad;

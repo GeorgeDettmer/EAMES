@@ -360,8 +360,13 @@
 				_in: orderIds
 			}
 		);
+		if (existingOrderIdsQuery?.error) {
+			console.error('QUERY ERROR: ', existingOrderIdsQuery);
+			messagesStore('DATABASE ERROR: ' + existingOrderIdsQuery?.error, 'error');
+			return;
+		}
 		let exisingOrderIds = existingOrderIdsQuery?.data?.erp_orders?.map((o) => o.id);
-		if (exisingOrderIds.length !== 0) {
+		if (exisingOrderIds?.length !== 0) {
 			console.error('exisingOrderIds', exisingOrderIds, orderIds, existingOrderIdsQuery);
 			messagesStore(`Order id(s) ${exisingOrderIds} already assigned to another order`, 'error');
 			return;

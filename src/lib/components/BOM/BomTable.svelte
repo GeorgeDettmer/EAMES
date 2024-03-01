@@ -2,7 +2,7 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
-	export let visibleColumns: string[] = ['part', 'description', 'references', 'quantity'];
+	export let visibleColumns: string[] = ['part', 'description', 'quantity'];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
@@ -146,7 +146,7 @@
 			{/if}
 		</TableHead>
 		<TableBody>
-			{#each lines.keys() as lineKey, idx}
+			{#each lines.keys() as lineKey, idx (lineKey)}
 				{@const line = lines.get(lineKey)}
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const kitItems = job?.jobs_kits

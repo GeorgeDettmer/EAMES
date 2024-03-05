@@ -204,25 +204,6 @@
 
 					{#if visibleColumns?.includes('references')}
 						<TableBodyCell tdClass="px-6 overflow-x-auto overflow-y-auto">
-							<!-- <div
-								class="grid p-1 grid-flow-row auto-cols-max text-xs truncate xl:grid-cols-10 lg:grid-cols-8 md:grid-cols-3 sm:grid-cols-2"
-							>
-								{#each references as reference}
-									{@const colour = lineKey ? 'blue' : 'red'}
-									<span
-										class={`hover:shadow m-0.5 h-4 -top-2 -right-2 rounded font-medium inline-flex items-center justify-center px-1 bg-${colour}-100 text-${colour}-800 dark:bg-${colour}-900 dark:text-${colour}-300`}
-										on:mouseenter={() => {
-											//handleReferenceHover([reference], true);
-										}}
-										on:mouseleave={() => {
-											//handleReferenceHover(references, false);
-										}}
-									>
-										<p class="overflow-hidden text-clip hover:-text-clip">{reference}</p>
-									</span>
-									<Tooltip>{reference}</Tooltip>
-								{/each}
-							</div> -->
 							<BomTableLineReferences pn={lineKey} {references} conoslidate />
 							<BomTableLineReferences pn={lineKey} {references} color="green" />
 						</TableBodyCell>
@@ -257,7 +238,7 @@
 						<TableBodyCell colspan={kitItems ? '3' : '5'} class="p-0">
 							<div class="px-1 py-1">
 								{#if !partsInLibrary?.includes(lineKey)}
-									<NewComponent id={lineKey} {description} />
+									<NewComponent id={lineKey} {description} lockName={true} />
 								{:else}
 									<PartInfo partId={lineKey} galleryVisible showFootprint />
 								{/if}

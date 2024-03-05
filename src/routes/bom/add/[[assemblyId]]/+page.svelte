@@ -7,7 +7,7 @@
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
 	import { Alert, Button, Input, Modal } from 'flowbite-svelte';
-	import { InfoCircleSolid } from 'flowbite-svelte-icons';
+	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -376,9 +376,9 @@
 {#if assemblyId}
 	<p>Assembly: {assemblyId} <em>({assemblyInfo?.name})</em></p>
 	{#if assemblyInfo?.bom}
-		<a class="cursor-pointer" target="_blank" href={window.origin + '/bom/' + assemblyInfo?.bom?.id}
-			>BOM ID: {assemblyInfo?.bom?.id}</a
-		>
+		<a class="cursor-pointer" target="_blank" href={'/bom/' + assemblyInfo?.bom?.id}>
+			BOM ID: {assemblyInfo?.bom?.id}
+		</a>
 	{/if}
 	{#if assemblyInfo?.jobs?.length > 0}
 		<p>
@@ -435,9 +435,20 @@
 	</TableBody>
 </Table> -->
 {#if bom?.lines}
-	<Button outline color={canAdd ? 'green' : 'red'} on:click={insert}>Insert BOM</Button>
-	<Input type="text" bind:value={name} placeholder={'Name'} />
-	<Input type="text" bind:value={revision_external} placeholder={'External revision'} />
+	<div class="flex">
+		<div class="w-1/3">
+			<Input type="text" bind:value={name} placeholder={'Name'} />
+			<Input type="text" bind:value={revision_external} placeholder={'External revision'} />
+			<Button outline color={canAdd ? 'green' : 'red'} on:click={insert}>Insert BOM</Button>
+		</div>
+		<div class="w-1/3" />
+		<div class="w-1/3 ml-auto">
+			{#if partsNotInLibrary.length > 0}
+				<!--<Button outline color="red" on:click={() => (skeletonPartsAddModal = true)}>Insert Skeleton Parts</Button> -->
+				<p>{partsNotInLibrary.length} new parts <PlusOutline size="sm" /></p>
+			{/if}
+		</div>
+	</div>
 
 	<hr />
 	<BomTable {bom} {partsInLibrary} />

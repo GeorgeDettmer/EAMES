@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { getContextClient, gql } from '@urql/svelte';
-	import { Button, Checkbox, Input, Label, Spinner } from 'flowbite-svelte';
+	import { Button, Checkbox, Input, Label, Spinner, Tooltip } from 'flowbite-svelte';
 	import { messagesStore } from 'svelte-legos';
 	import { parse, matchCPL } from 'electro-grammar';
+	import { copyToClipboard } from '$lib/utils';
+	import { Clipboard } from 'svelte-heros-v2';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -145,6 +147,8 @@
 		});
 		descriptionTokens = [...tokens, ...valueTokens];
 	} */
+
+	export let lockName = false;
 </script>
 
 <div class="grid grid-cols-2">
@@ -152,7 +156,20 @@
 		<div class="w-1/2">
 			<div class="mb-2">
 				<Label for="small-input" class="">Name</Label>
-				<Input id="small-input" size="sm" placeholder="Part name/number" bind:value={name} />
+				<Input id="small-input" size="sm" placeholder="Part name/number" disabled={lockName} bind:value={name}>
+					<Button
+						slot="right"
+						size="xs"
+						on:click={(e) => {
+							console.log('copying to clipboard', name);
+							copyToClipboard(name);
+							messagesStore(`Copied ${name} to clipboard`, 'success');
+						}}
+					>
+						<Clipboard size="20" />
+						<Tooltip defaultClass="py-1 px-2 text-xs">Copy to clipboard</Tooltip>
+					</Button>
+				</Input>
 			</div>
 			<div class="mb-2">
 				<Label for="small-input" class="">Description</Label>

@@ -212,7 +212,7 @@
 <Modal outsideclose bind:open={receiveModal} size="lg">
 	<KitItem
 		{job}
-		kits={job?.jobs_kits?.map((jk) => jk.kit)}
+		jobKits={job?.jobs_kits?.map((jk) => jk.kit)}
 		orderItems={activeLine?.orderItems}
 		kitItems={activeLine?.kitItems}
 		pn={activeLine?.line?.[0]?.part}

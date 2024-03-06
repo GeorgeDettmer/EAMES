@@ -259,11 +259,11 @@
 			<div
 				class="w-1/2"
 				on:mousewheel={(e) => {
-					quantity = Math.max(Number(quantity) + (e.deltaY > 0 ? -1 : +1), 1);
+					e?.target?.focus();
 				}}
 			>
 				<Label>Quantity</Label>
-				<Input placeholder={1} type="number" bind:value={quantity} />
+				<Input min="1" placeholder={1} type="number" bind:value={quantity} />
 			</div>
 			<div class="w-1/2">
 				<!-- <Label>Lead time</Label>

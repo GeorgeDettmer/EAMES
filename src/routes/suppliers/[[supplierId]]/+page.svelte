@@ -42,6 +42,14 @@
 						initials
 						id
 					}
+					userByApprovedUserId {
+						username
+						color
+						first_name
+						last_name
+						initials
+						id
+					}
 					orders_aggregate {
 						aggregate {
 							count

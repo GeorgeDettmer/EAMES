@@ -6,6 +6,7 @@
 	import { parse, matchCPL } from 'electro-grammar';
 	import { copyToClipboard } from '$lib/utils';
 	import { Clipboard } from 'svelte-heros-v2';
+	import EditableText from '$lib/components/Misc/EditableText.svelte';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -114,7 +115,7 @@
 	let descriptionTokens = [];
 	$: {
 		descriptionTokens = parse(description);
-		descriptionTokens.component = descriptionTokens.type;
+		descriptionTokens.component = descriptionTokens.type || 'UNKNOWN';
 		descriptionTokens.type = type ? type : undefined;
 		if (!type && descriptionTokens?.size) {
 			type = 'SMT';
@@ -228,7 +229,14 @@
 				<div class="pl-4">
 					<ul class="list-none">
 						{#each Object.keys(descriptionTokens) as token}
-							<li><p>{token}: {descriptionTokens[token]}</p></li>
+							<li class="flex">
+								{token}:
+								<!-- 								<EditableText innerText={descriptionTokens[token]} classes="mx-1 border-gray-300 border" />
+ -->
+								<span>
+									{descriptionTokens[token]}
+								</span>
+							</li>
 						{/each}
 					</ul>
 				</div>

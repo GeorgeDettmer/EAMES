@@ -211,12 +211,14 @@
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 	$: console.log('allocations', allocations);
 	let collapseReferences = storage(writable(false), 'EAMES_kitting_collapseReferences');
+
+	$: console.log('jk table', jobs_kits);
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg">
 	<KitItem
 		{job}
-		kits={job?.jobs_kits?.map((jk) => jk.kit)}
+		jobKits={jobs_kits}
 		orderItems={activeLine?.orderItems}
 		kitItems={activeLine?.kitItems}
 		pn={activeLine?.line?.[0]?.part}

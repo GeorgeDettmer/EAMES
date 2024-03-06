@@ -76,6 +76,8 @@
 					}
 				}
 				jobs_kits {
+					job_id
+					job_batch
 					kit {
 						id
 						created_at
@@ -203,7 +205,7 @@
 
 	$: console.log('scanStore', $scanStore);
 
-	$: console.log('kits', jobs_kits, jobInfo?.assembly?.bom?.lines);
+	$: console.log('lines', jobInfo?.assembly?.bom?.lines);
 
 	$: totalKitItemQty = jobs_kits
 		?.flatMap((k) => k.kits_items?.reduce((a, v) => a + v.quantity, 0))

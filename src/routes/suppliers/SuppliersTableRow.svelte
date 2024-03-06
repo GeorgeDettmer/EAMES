@@ -2,7 +2,8 @@
 	import SupplierTags from '$lib/components/Supplier/SupplierTags.svelte';
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import type { Supplier } from '$lib/types';
-	import { datetimeFormat } from '$lib/utils';
+	import { classes, datetimeFormat } from '$lib/utils';
+	import { Tooltip } from 'flowbite-svelte';
 	import { TableBodyRow, TableBodyCell, Badge } from 'flowbite-svelte';
 	import moment from 'moment';
 
@@ -22,10 +23,20 @@
 		{supplier?.critical ? 'Critical' : 'Non-Critical'}
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
-		{supplier?.approved ? 'Approved' : 'Unapproved'}
+		<div class="flex gap-x-1 align-middle">
+			<p class={supplier?.userByApprovedUserId ? classes.popover : ''}>{supplier?.approved ? 'Approved' : 'Unapproved'}</p>
+			<Tooltip placement="right" defaultClass="py-1 px-2 text-xs">
+				<div class="flex gap-x-1">
+					<UserIcon size="xs" user={supplier?.userByApprovedUserId}>
+						{supplier?.userByApprovedUserId?.first_name || 'Unknown'}
+						{supplier?.userByApprovedUserId?.last_name || ''}
+					</UserIcon>
+				</div>
+			</Tooltip>
+		</div>
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
-		<div class="flex gap-x-0.5">
+		<div class="flex flex-wrap gap-x-0.5">
 			{#each supplier?.names || [] as identifier}
 				<div>
 					<Badge color="blue">{identifier}</Badge>
@@ -60,10 +71,11 @@
 		{datetimeFormat(supplier.created_at)}
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
-		<UserIcon size="xs" user={supplier?.user}>
+		<UserIcon size="xs" user={supplier?.user}>{supplier?.user?.username || 'Unknown'}</UserIcon>
+		<Tooltip placement="left">
 			{supplier?.user?.first_name || 'Unknown'}
 			{supplier?.user?.last_name || ''}
-		</UserIcon>
+		</Tooltip>
 	</TableBodyCell>
 	{@const lastUsed = supplier?.orders_aggregate?.aggregate?.max?.created_at}
 	{@const daysSinceLastUsed = (Date.now() - new Date(lastUsed || supplier?.created_at).getTime()) / 1000 / 60 / 60 / 24}

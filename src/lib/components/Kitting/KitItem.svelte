@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clamp, classes, datetimeFormat } from '$lib/utils';
+	import { clamp, classes, datetimeFormat, numberToLetter } from '$lib/utils';
 	import {
 		Table,
 		TableHead,
@@ -31,8 +31,8 @@
 	export let bomLine = [];
 	export let orderItems = [];
 	export let kitItems = [];
-	export let kits = [];
-	export let kit = kits?.[0];
+	export let jobKits = [];
+	export let kit = jobKits?.[0];
 	export let visible = true;
 	export let createCarrier = part?.properties?.type?.toLowerCase() !== 'tht';
 	export let createLabel = false;
@@ -482,8 +482,8 @@
 		let mutationResult;
 		mutationResult = await urqlClient.mutation(
 			gql`
-				mutation insertKit($job_id: bigint) {
-					insert_material_jobs_kits(objects: { job_id: $job_id, kit: { data: {} } }) {
+				mutation insertKit($job_id: bigint, $job_batch: Int) {
+					insert_material_jobs_kits(objects: { job_id: $job_id, job_batch: $job_batch, kit: { data: {} } }) {
 						returning {
 							id
 							job {
@@ -500,7 +500,7 @@
 					}
 				}
 			`,
-			{ job_id: job.id }
+			{ job_id: job.id, job_batch: job.batch }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -537,6 +537,8 @@
 	let partInfo;
 	let descriptionOkCheckbox = false;
 	$: descriptionOk = bomLine?.[0]?.description === partInfo?.description || descriptionOkCheckbox;
+
+	$: console.log('jk', jobKits);
 </script>
 
 <svelte:window
@@ -595,19 +597,24 @@
 		</div>
 		<div class="w-1/4 px-6 pt-8 h-52 overflow-y-auto">
 			<ul>
-				{#each kits as k, idx}
+				{#each jobKits as jk, idx}
 					<li class="rounded p-0.5 hover:bg-gray-100 dark:hover:bg-gray-600 uppercase">
 						<Label class={'flex items-center'}>
 							<input
 								type="radio"
-								on:change={() => (kit = k)}
-								checked={k.id === kit.id}
-								value={k.id}
+								on:change={() => (kit = jk?.kit)}
+								checked={jk?.kit.id === kit?.kit?.id}
+								value={jk?.kit.id}
 								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
 							/>
-							{idx + 1}
+							{idx + 1} ({jk?.kit?.id?.split('-')?.slice(-1)})
 						</Label>
-						<Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper>
+						<Helper class="pl-6">
+							{jk?.job_id}
+							{#if jk?.job_batch}
+								-{numberToLetter(jk?.job_batch, 64)}
+							{/if}
+						</Helper>
 					</li>
 				{:else}{/each}
 				<div class="ml-6 pt-1">

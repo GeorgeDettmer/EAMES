@@ -2,7 +2,7 @@
 	export let bom;
 	export let job = {};
 	export let partsInLibrary: string[] = [];
-	export let visibleColumns: string[] = ['part', 'description', 'quantity'];
+	export let visibleColumns: string[] = ['part', 'description', 'quantity', 'references'];
 
 	import { Badge, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Tooltip } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';

@@ -215,7 +215,7 @@
 	$: console.log('jk table', jobs_kits);
 </script>
 
-<Modal outsideclose bind:open={receiveModal} size="lg">
+<Modal outsideclose bind:open={receiveModal} size="lg" title={activeLine?.line?.[0]?.part}>
 	<KitItem
 		{job}
 		jobKits={jobs_kits}

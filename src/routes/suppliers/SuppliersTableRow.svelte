@@ -25,14 +25,16 @@
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 		<div class="flex gap-x-1 align-middle">
 			<p class={supplier?.userByApprovedUserId ? classes.popover : ''}>{supplier?.approved ? 'Approved' : 'Unapproved'}</p>
-			<Tooltip placement="right" defaultClass="py-1 px-2 text-xs">
-				<div class="flex gap-x-1">
-					<UserIcon size="xs" user={supplier?.userByApprovedUserId}>
-						{supplier?.userByApprovedUserId?.first_name || 'Unknown'}
-						{supplier?.userByApprovedUserId?.last_name || ''}
-					</UserIcon>
-				</div>
-			</Tooltip>
+			{#if supplier?.approved}
+				<Tooltip placement="right" defaultClass="py-1 px-2 text-xs">
+					<div class="flex gap-x-1">
+						<UserIcon size="xs" user={supplier?.userByApprovedUserId}>
+							{supplier?.userByApprovedUserId?.first_name || 'Unknown'}
+							{supplier?.userByApprovedUserId?.last_name || ''}
+						</UserIcon>
+					</div>
+				</Tooltip>
+			{/if}
 		</div>
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">

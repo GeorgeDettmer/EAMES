@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	export let bom;
 	export let job = {};
 	export let allocations = [];
@@ -6,6 +7,7 @@
 	export let partsInLibrary: string[] = [];
 	export let visibleColumns: string[] = [
 		'part',
+		'type',
 		'description',
 		'references',
 		'quantity',
@@ -25,7 +27,8 @@
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell
+		TableHeadCell,
+		Tooltip
 	} from 'flowbite-svelte';
 	import PartInfo from '../PartInfo.svelte';
 	import NewComponent from './NewComponent.svelte';
@@ -173,12 +176,12 @@
 	}
 
 	function rowColor(
-		pn: string | null,
+		pn: string | null | undefined,
 		buildQty: number = 0,
 		orderQty: number = 0,
 		receivedQty: number = 0,
 		kittedQty: number = 0
-	) {
+	): 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'default' | 'custom' | undefined {
 		if (!pn) return 'default';
 
 		if (kittedQty > 0 && kittedQty < buildQty) {
@@ -205,9 +208,17 @@
 	let partSearch = '';
 	let descriptionSearch = '';
 	let supplierSearch = '';
+	let mountTypeSearch = '';
 	$: ordersSuppliers = allocations
 		?.flatMap((a) => a?.orders_item?.order?.supplier?.name)
-		?.filter((v, i, a) => a.indexOf(v) === i);
+		?.filter((v, i, a) => a.indexOf(v) === i)
+		?.sort();
+	$: mountTypes = bom?.lines
+		?.filter((l) => l?.part)
+		?.flatMap((l) => l?.partByPart?.properties?.type)
+		?.filter((v, i, a) => a.indexOf(v) === i)
+		?.sort();
+	$: console.log('mountTypes', mountTypes);
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 	$: console.log('allocations', allocations);
 	let collapseReferences = storage(writable(false), 'EAMES_kitting_collapseReferences');
@@ -231,9 +242,30 @@
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
-			<TableHeadCell />
-
+			<TableHeadCell padding="px-2 py-3" />
 			<TableHeadCollapsible
+				padding="px-2 py-3"
+				columnId="type"
+				visible={visibleColumns?.includes('type')}
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
+				{#if mountTypes?.length > 0}
+					<select
+						class=" text-xs border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
+						bind:value={mountTypeSearch}
+					>
+						<option value={''} />
+						{#each mountTypes as mountType}
+							<option value={mountType}>
+								{mountType || '???'}
+							</option>
+						{/each}
+					</select>
+				{/if}
+			</TableHeadCollapsible>
+			<TableHeadCollapsible
+				padding="px-2 py-3"
 				columnId="part"
 				visible={visibleColumns?.includes('part')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -242,14 +274,20 @@
 				<input
 					class="m-0 block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
 					type="text"
+					list="part_numbers"
 					bind:value={partSearch}
 				/>
+				<datalist id="part_numbers">
+					{#each lines.keys() as part}
+						<option value={part} />
+					{/each}
+				</datalist>
 				<div class="flex my-auto hover:text-red-600" on:click={() => (partSearch = '')}>
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-
 			<TableHeadCollapsible
+				padding="px-2 py-3"
 				columnId="description"
 				visible={visibleColumns?.includes('description')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -264,10 +302,10 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCell />
-			<TableHeadCell />
-			<TableHeadCell />
-			<TableHeadCell>
+			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCell padding="px-2 py-3">
 				{#if ordersSuppliers?.length > 0}
 					<select
 						class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
@@ -289,7 +327,15 @@
 		<TableHead>
 			<TableHeadCell padding="pl-3 px-2 py-3">#</TableHeadCell>
 			<TableHeadCollapsible
-				padding="px-3 py-3"
+				padding="px-2 py-3"
+				columnId="type"
+				visible={visibleColumns?.includes('type')}
+				bind:collapsedColumns={$collapsedColumns}
+			>
+				Type
+			</TableHeadCollapsible>
+			<TableHeadCollapsible
+				padding="px-2 py-3"
 				columnId="part"
 				visible={visibleColumns?.includes('part')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -336,13 +382,14 @@
 				<TableHeadCell padding="px-2 py-3">Kit Qty</TableHeadCell>
 				<TableHeadCell padding="px-2 py-3">Kit Attrition</TableHeadCell>
 			{/if}
-			{#if visibleColumns?.includes('kit_button')}
+			{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
 				<TableHeadCell />
 			{/if}
 		</TableHead>
 		<TableBody>
 			{#each lines.keys() as lineKey, idx}
 				{@const line = lines.get(lineKey)}
+				{@const part = line?.[0]?.partByPart}
 				{@const references = line?.map((l) => l?.reference) || []}
 				{@const lineQty = line?.reduce((a, l) => a + (l?.quantity || 1), 0)}
 				{@const kitItems = job?.jobs_kits
@@ -363,13 +410,15 @@
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
 				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v?.quantity, 0)}
 				{@const buildQty = lineKey ? lineQty * job?.quantity : 0}
-				{@const description = line?.[0]?.partByPart?.description}
+				{@const description = part?.description}
 				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
-				{#if lineKey?.toLowerCase().includes(partSearch.toLowerCase()) && (descriptionSearch == '' || description
+				{#if (partSearch == '' || (lineKey || 'Not Fitted')
+						?.toLowerCase()
+						.includes(partSearch.toLowerCase())) && (descriptionSearch == '' || description
 							?.toLowerCase()
 							.includes(descriptionSearch.toLowerCase()) || line?.[0]?.description
 							?.toLowerCase()
-							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch))}
+							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch)) && (mountTypeSearch == '' || part?.properties?.type === mountTypeSearch)}
 					<TableBodyRow
 						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
 						class={`cursor-pointer`}
@@ -378,20 +427,66 @@
 						}}
 					>
 						<TableBodyCell tdClass="pl-3 px-2 py-1 whitespace-nowrap font-medium">{idx + 1}</TableBodyCell>
+						<TableBodyCollapsible
+							tdClass="px-2 py-1 whitespace-nowrap font-medium"
+							columnId="type"
+							visible={visibleColumns?.includes('part')}
+							bind:collapsedColumns={$collapsedColumns}
+						>
+							{@const type = part?.properties?.type}
+							<div class="flex">
+								{#if lineKey}
+									<button
+										on:click|stopPropagation={() => {
+											if (mountTypeSearch === type) {
+												mountTypeSearch = '';
+												return;
+											}
+											mountTypeSearch = type;
+										}}
+									>
+										<img
+											width="20"
+											height="20"
+											style={'filter:invert(60%)'}
+											src={type === 'THT'
+												? 'https://img.icons8.com/small/16/capacitor.png'
+												: type === 'SMT'
+												? 'https://img.icons8.com/metro/26/electronics.png'
+												: 'https://img.icons8.com/small/16/help.png'}
+											alt="capacitor"
+										/>
+									</button>
+								{:else}
+									<img
+										width="24"
+										height="24"
+										style={'filter:brightness(0) saturate(10%) invert(30%) sepia(90%) saturate(800%) hue-rotate(340deg)'}
+										src="https://img.icons8.com/windows/32/cancel.png"
+										alt="capacitor"
+									/>
+								{/if}
 
+								<Tooltip placement="right" defaultClass="py-2 px-2 text-xs">
+									{lineKey ? type || 'UNKNOWN' : 'Not Fitted'}
+								</Tooltip>
+							</div>
+						</TableBodyCollapsible>
 						<TableBodyCollapsible
 							tdClass="px-2 py-1 whitespace-nowrap font-medium"
 							columnId="part"
 							visible={visibleColumns?.includes('part')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<p
-								class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
-									activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
-								}`}
-							>
-								{lineKey || 'Not Fitted'}
-							</p>
+							<div class="flex">
+								<p
+									class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
+										activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
+									}`}
+								>
+									{lineKey || 'Not Fitted'}
+								</p>
+							</div>
 						</TableBodyCollapsible>
 
 						<TableBodyCollapsible
@@ -470,7 +565,7 @@
 								</Badge>
 							</TableBodyCell>
 						{/if}
-						{#if visibleColumns?.includes('kit_button')}
+						{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
 							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
 								<div
 									class="cursor-pointer w-fit"
@@ -488,8 +583,8 @@
 					</TableBodyRow>
 					{#if openRows?.includes(idx)}
 						<TableBodyRow class="h-24">
-							<TableBodyCell colspan="3" class="p-0">
-								<div class="px-1 py-1">
+							<TableBodyCell colspan="3" tdClass="px-2 py-1 whitespace-nowrap font-medium">
+								<div>
 									{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
 										<NewComponent id={lineKey} {description} />
 									{:else}
@@ -497,8 +592,8 @@
 									{/if}
 								</div>
 							</TableBodyCell>
-							<TableBodyCell colspan="3" />
-							<TableBodyCell colspan="5" class="p-0 object-right">
+							<TableBodyCell colspan="2" tdClass="px-2 py-1 whitespace-nowrap font-medium" />
+							<TableBodyCell colspan="6" tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="px-1 py-0">
 									<Accordion multiple>
 										<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
@@ -582,3 +677,16 @@
 		</TableBody>
 	</Table>
 {/if}
+
+<style>
+	datalist {
+		position: absolute;
+		background-color: white;
+		border: 1px solid blue;
+		border-radius: 0 0 5px 5px;
+		border-top: none;
+		font-family: sans-serif;
+		width: 350px;
+		padding: 5px;
+	}
+</style>

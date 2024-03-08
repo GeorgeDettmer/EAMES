@@ -167,7 +167,7 @@
 							messagesStore(`Copied ${name} to clipboard`, 'success');
 						}}
 					>
-						<Clipboard size="20" />
+						<Clipboard size="20" color="gray" />
 						<Tooltip defaultClass="py-1 px-2 text-xs">Copy to clipboard</Tooltip>
 					</Button>
 				</Input>

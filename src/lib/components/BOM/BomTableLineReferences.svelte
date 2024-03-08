@@ -6,6 +6,7 @@
 	export let references: string[] = [];
 	export let color: string = '';
 	export let conoslidate: boolean = false;
+	export let maxHeight: string = 'max-h-[100px]';
 
 	$: refs = conoslidate ? conoslidateReferences(references).flat() : references;
 	//$: console.log('REFS:', refs);
@@ -90,10 +91,13 @@
 		<Tooltip defaultClass="py-1 px-2 text-xs font-medium">{reference}</Tooltip>
 	{/each}
 </div> -->
-<div class="w-fit flex flex-wrap text-xs">
+<div
+	class="w-fit flex flex-wrap text-xs {maxHeight} overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700"
+>
 	{#each refs as reference}
 		{@const c = color ? color : pn ? 'blue' : 'gray'}
 		{#if reference}
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<span
 				class={`w-fit hover:shadow m-0.5 h-4  rounded font-medium px-1 bg-${c}-100 text-${c}-800 dark:bg-${c}-900 dark:text-${c}-300`}
 				on:mouseenter={(e) => {
@@ -105,8 +109,7 @@
 			>
 				<p class="text-clip hover:-text-clip text-center">{reference}</p>
 			</span>
-
-			<Tooltip defaultClass="py-1 px-2 text-xs font-medium">{expand(reference)}</Tooltip>
+			<!-- <Tooltip defaultClass="py-1 px-2 text-xs font-medium ">{expand(reference)}</Tooltip> -->
 		{/if}
 	{/each}
 </div>

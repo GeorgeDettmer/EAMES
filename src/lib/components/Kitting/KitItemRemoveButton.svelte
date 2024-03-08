@@ -51,7 +51,7 @@
 	}
 </script>
 
-<Button size="xs" color="red" {disabled} on:click={() => remove()}>
+<Button size="xs" color="red" disabled={disabled || !$page?.user} on:click={() => remove()}>
 	<slot />
 	{#if removing}
 		<Spinner class="ml-3" size="3" color="white" />

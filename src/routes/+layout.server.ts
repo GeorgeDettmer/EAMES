@@ -10,7 +10,8 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		!user &&
 		!url.pathname.includes('/login') &&
 		!url.pathname.includes('/api/health') &&
-		!url.pathname.startsWith('/packages')
+		!url.pathname.startsWith('/packages') &&
+		!url.pathname.startsWith('/kitting')
 	) {
 		throw redirect(302, '/login');
 	}

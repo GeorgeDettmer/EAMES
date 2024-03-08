@@ -41,11 +41,6 @@
 						name
 						revision_external
 						revision_internal
-						lines_aggregate {
-							aggregate {
-								count
-							}
-						}
 						lines(order_by: { reference: asc_nulls_last }) {
 							id
 							reference

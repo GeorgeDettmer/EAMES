@@ -539,6 +539,7 @@
 	$: descriptionOk = bomLine?.[0]?.description === partInfo?.description || descriptionOkCheckbox;
 
 	$: console.log('jk', jobKits);
+	$: console.log('kit:', kit);
 </script>
 
 <svelte:window
@@ -602,8 +603,11 @@
 						<Label class={'flex items-center'}>
 							<input
 								type="radio"
-								on:change={() => (kit = jk?.kit)}
-								checked={jk?.kit.id === kit?.kit?.id}
+								on:change={() => {
+									kit = jk?.kit;
+									console.log('set kit', kit, jk);
+								}}
+								checked={jk?.kit.id === kit?.id}
 								value={jk?.kit.id}
 								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
 							/>

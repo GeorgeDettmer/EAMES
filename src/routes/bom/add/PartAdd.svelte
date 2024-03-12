@@ -215,11 +215,9 @@
 							/>
 							Unknown
 						</Label>
-						<!-- <Helper class="pl-6">{k.id.split('-').slice(-1)}</Helper> -->
 					</li>
 				</ul>
 			</div>
-			<!-- <p class="flex-wrap">{description.split(' ')}</p> -->
 			<div class="flex ml-8 p-1">
 				<div class="pl-1">
 					<ul class="list-disc">
@@ -246,15 +244,6 @@
 			{#if cpl?.length > 0}
 				<a>CPL:{cpl}</a>
 			{/if}
-
-			<!-- {#each descriptionTokens as token}
-				{#if token?.value && token?.type}
-					<p>{token?.type}: {token?.value}</p>
-				{/if}
-			{/each} -->
-			<!-- {#each Object.keys(descriptionTokens) as token}
-				<p>{token}: {descriptionTokens[token]}</p>
-			{/each} -->
 		</div>
 	</div>
 

@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import BomTable from '$lib/components/BOM/BomTable.svelte';
+	import NewComponent from '$lib/components/BOM/NewComponent.svelte';
 	import { getParameterInsensitiveAny } from '$lib/utils';
 	import { getContextClient, gql, subscriptionStore } from '@urql/svelte';
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
 	import { Alert, Button, Input, Modal } from 'flowbite-svelte';
-	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
+	import { InfoCircleSolid, PlusOutline, ArrowLeftOutline, ArrowRightOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -57,6 +58,7 @@
 	$: assemblyInfo = $assemblyInfoStore?.data?.assemblies_by_pk;
 
 	import { read, utils, writeFileXLSX } from 'xlsx';
+	import PartAddWizard from '../PartAddWizard.svelte';
 	let files: Files;
 	let lines = [];
 	let html = '';
@@ -338,6 +340,9 @@
 	let name = '';
 
 	let skeletonPartsAddModal = false;
+	let partAddModal = false;
+
+	let partAddPart = '';
 </script>
 
 <Modal outsideclose bind:open={skeletonPartsAddModal} size="md">
@@ -370,6 +375,16 @@
 				Continue...
 			</Button>
 		</div>
+	</div>
+</Modal>
+
+<Modal outsideclose bind:open={partAddModal} size="lg" title={`Add ${partsNotInLibrary.length} components`}>
+	<div>
+		<PartAddWizard
+			parts={partsNotInLibrary?.map((p) => {
+				return { part: p, description: bom?.lines?.filter((l) => l.part === p)?.[0]?.description };
+			})}
+		/>
 	</div>
 </Modal>
 
@@ -445,7 +460,10 @@
 		<div class="w-1/3 ml-auto">
 			{#if partsNotInLibrary.length > 0}
 				<!--<Button outline color="red" on:click={() => (skeletonPartsAddModal = true)}>Insert Skeleton Parts</Button> -->
-				<p>{partsNotInLibrary.length} new parts <PlusOutline size="sm" /></p>
+				<p>{partsNotInLibrary.length} new parts</p>
+				<button on:click={() => (partAddModal = true)}>
+					<PlusOutline size="sm" />
+				</button>
 			{/if}
 		</div>
 	</div>

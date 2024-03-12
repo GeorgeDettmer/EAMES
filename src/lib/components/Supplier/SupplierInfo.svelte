@@ -69,7 +69,7 @@
 					/>
 				{:else}
 					<p
-						class="text-xl font-bold text-center w-8 p-0.5 rounded-lg text-gray-500 bg-gray-200
+						class="text-xl font-bold text-center min-w-8 p-0.5 rounded-lg text-gray-500 bg-gray-200
 						{supplierInfo?.id === 'STOCK' && 'bg-green-500 text-white'}
 						{supplierInfo?.id === 'FI' && 'bg-yellow-300 text-white'}
 						"

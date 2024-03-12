@@ -23,7 +23,7 @@
 				class={avatarClass + ' ring-white ring-1'}
 			>
 				{#if user?.initials}
-					<p class="text-white text-center align-middle">{user.initials}</p>
+					<p class="text-white text-center align-middle text-xs">{user.initials}</p>
 				{:else}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

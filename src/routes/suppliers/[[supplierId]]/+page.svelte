@@ -20,8 +20,8 @@
 	$: suppliersStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
-			subscription suppliers($hidden: Boolean_comparison_exp = {}) {
-				erp_suppliers(order_by: { name: asc }, where: { hidden: $hidden }) {
+			subscription suppliers($where: erp_suppliers_bool_exp = {}) {
+				erp_suppliers(order_by: { name: asc }, where: $where) {
 					id
 					name
 					names
@@ -64,7 +64,11 @@
 				}
 			}
 		`,
-		variables: { hidden: showHiddenSuppliers ? { _eq: true } : {} }
+		variables: {
+			where: {
+				hidden: showHiddenSuppliers ? {} : { _eq: false }
+			}
+		}
 	});
 	$: suppliers = $suppliersStore?.data?.erp_suppliers;
 

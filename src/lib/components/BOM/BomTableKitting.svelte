@@ -211,6 +211,7 @@
 	let descriptionSearch = '';
 	let supplierSearch = '';
 	let mountTypeSearch = '';
+	let referenceSearch = '';
 	$: ordersSuppliers = allocations
 		?.flatMap((a) => a?.orders_item?.order?.supplier?.name)
 		?.filter((v, i, a) => a.indexOf(v) === i)
@@ -302,7 +303,22 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCollapsible
+				padding="px-2 py-3"
+				columnId="references"
+				visible={visibleColumns?.includes('references')}
+				bind:collapsedColumns={$collapsedColumns}
+				showCollapseButton={false}
+			>
+				<input
+					class="block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded p-0.5"
+					type="text"
+					bind:value={referenceSearch}
+				/>
+				<div class="flex my-auto hover:text-red-600" on:click={() => (referenceSearch = '')}>
+					<XMark size="16" />
+				</div>
+			</TableHeadCollapsible>
 			<TableHeadCell padding="px-2 py-3" />
 			<TableHeadCell padding="px-2 py-3" />
 			<TableHeadCell padding="px-2 py-3">
@@ -414,7 +430,11 @@
 				{@const kittedQtyIndeterminate = kitItems?.some((ki) => ki?.quantity === null)}
 				{#if (partSearch == '' || (lineKey || 'Not Fitted')
 						?.toLowerCase()
-						.includes(partSearch.toLowerCase())) && (descriptionSearch == '' || description
+						.includes(partSearch.toLowerCase())) && (referenceSearch == '' || references?.some((r) => referenceSearch
+								?.toLowerCase()
+								?.split(',')
+								?.map((r) => r.trim())
+								.some((sr) => r?.toLowerCase() === sr))) && (descriptionSearch == '' || description
 							?.toLowerCase()
 							.includes(descriptionSearch.toLowerCase()) || line?.[0]?.description
 							?.toLowerCase()
@@ -514,7 +534,13 @@
 							visible={visibleColumns?.includes('references')}
 							bind:collapsedColumns={$collapsedColumns}
 						>
-							<BomTableLineReferences pn={lineKey} {references} conoslidate={$collapseReferences} />
+							<BomTableLineReferences
+								pn={lineKey}
+								{references}
+								maxHeight={referenceSearch ? '' : 'max-h-[100px]'}
+								conoslidate={referenceSearch ? false : $collapseReferences}
+								highlightedReferences={referenceSearch?.split(',')?.map((n) => n.trim())}
+							/>
 						</TableBodyCollapsible>
 
 						{#if visibleColumns?.includes('quantity')}

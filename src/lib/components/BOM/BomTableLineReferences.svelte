@@ -2,12 +2,15 @@
 	import { Tooltip } from 'flowbite-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { normalize, expand } from 'ranges-set';
+	import { reference } from '@popperjs/core';
 	export let pn;
 	export let references: string[] = [];
 	export let color: string = '';
 	export let conoslidate: boolean = false;
 	export let maxHeight: string = 'max-h-[100px]';
+	export let highlightedReferences: string[] = [];
 
+	$: highlightedReferencesLowercase = highlightedReferences.map((ref) => ref.toLowerCase());
 	$: refs = conoslidate ? conoslidateReferences(references).flat() : references;
 	//$: console.log('REFS:', refs);
 
@@ -97,7 +100,13 @@
 	class="w-fit flex flex-wrap text-xs {maxHeight} overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700"
 >
 	{#each refs as reference}
-		{@const c = color ? color : pn ? 'blue' : 'gray'}
+		{@const c = highlightedReferencesLowercase?.includes(reference?.toLowerCase())
+			? 'yellow'
+			: color
+			? color
+			: pn
+			? 'blue'
+			: 'gray'}
 		{#if reference}
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<span

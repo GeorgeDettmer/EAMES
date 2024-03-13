@@ -237,7 +237,7 @@
 							{#each mountTypeTotals as [mountType, count]}
 								<p>{mountType}: {count}</p>
 							{/each}
-							<p class="underline">TOTAL: {jobInfo.assembly.bom.lines.length}</p>
+							<p class="underline">TOTAL: {jobInfo.assembly.bom?.lines?.length || 0}</p>
 						</div>
 					</JobOverview>
 				</div>

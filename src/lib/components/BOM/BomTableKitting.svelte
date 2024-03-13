@@ -47,7 +47,7 @@
 	import ReceiptItemsTable from '../Kitting/ReceiptItemsTable.svelte';
 	import OrderItemsTable from '../Kitting/OrderItemsTable.svelte';
 
-	let items = [];
+	//let items = [];
 
 	let lines = new Map();
 	/* $: {
@@ -60,7 +60,7 @@
 		}
 		lines.get(part).push(line);
 	});
-	items = lines.keys();
+	//items = lines.keys();
 	/* } */
 	console.log(lines);
 	/* } */
@@ -222,8 +222,6 @@
 	$: console.log('ordersSuppliers', ordersSuppliers, supplierSearch);
 	$: console.log('allocations', allocations);
 	let collapseReferences = storage(writable(false), 'EAMES_kitting_collapseReferences');
-
-	$: console.log('jk table', jobs_kits);
 </script>
 
 <Modal outsideclose bind:open={receiveModal} size="lg" title={activeLine?.line?.[0]?.part}>

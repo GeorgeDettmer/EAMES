@@ -15,9 +15,9 @@
 	export let image: string = '';
 	export let images: string[] = [];
 
-	if (!name) {
-		name = id;
-	}
+	/* if (!name) { */
+	$: name = id;
+	/* } */
 
 	let supplierFilters = ['digikey', 'farnell', 'mouser', 'newark', 'octopart'];
 	let supplierFilter = true;
@@ -111,16 +111,31 @@
 		componentAdding = false;
 	}
 
+	function deriveComponentType(description: string) {
+		description = description?.trim()?.toLowerCase();
+		let descriptionParts: string[] = description?.split(' ');
+		let componentTypes: Record<string, string[]> = $page?.data?.config?.component_types || [];
+		let componentType: string = 'UNKNOWN';
+		for (let type in componentTypes) {
+			if (componentTypes[type].some((t) => descriptionParts?.[0] === t)) {
+				componentType = type;
+				return;
+			}
+		}
+		console.log('componentType', componentType);
+		return componentType;
+	}
+
 	let type: 'THT' | 'SMT' | '' | null = null;
 	let descriptionTokens = [];
 	$: {
-		if (String(description)) {
+		if (description) {
 			descriptionTokens = parse(description);
-			descriptionTokens.component = descriptionTokens.type || 'UNKNOWN';
-			descriptionTokens.type = type ? type : undefined;
+			descriptionTokens.component = descriptionTokens.type || deriveComponentType(description);
 			if (!type && descriptionTokens?.size) {
 				type = 'SMT';
 			}
+			descriptionTokens.type = type ? type : undefined;
 		}
 	}
 	$: cpl = matchCPL(descriptionTokens);
@@ -154,101 +169,86 @@
 	export let lockName = false;
 </script>
 
-<div class="grid grid-cols-2">
-	<div class="flex">
-		<div class="w-1/2">
-			<div class="mb-2">
-				<Label for="small-input" class="">Name</Label>
-				<Input id="small-input" size="sm" placeholder="Part name/number" disabled={lockName} bind:value={name}>
-					<Button
-						slot="right"
-						size="xs"
-						on:click={(e) => {
-							console.log('copying to clipboard', name);
-							copyToClipboard(name);
-							messagesStore(`Copied ${name} to clipboard`, 'success');
-						}}
-					>
-						<Clipboard size="20" color="gray" />
-						<Tooltip defaultClass="py-1 px-2 text-xs">Copy to clipboard</Tooltip>
-					</Button>
-				</Input>
-			</div>
-			<div class="mb-2">
-				<Label for="small-input" class="">Description</Label>
-				<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
-			</div>
-			<div class="mb-2">
+<div class="flex">
+	<div class="w-1/2">
+		<div class="mb-2">
+			<Label for="small-input" class="">Name</Label>
+			<Input
+				id="small-input"
+				size="sm"
+				placeholder="Part name/number"
+				disabled={lockName}
+				bind:value={name}
+				on:change={() => (images = [])}
+			>
+				<Button
+					slot="right"
+					size="xs"
+					on:click={(e) => {
+						console.log('copying to clipboard', name);
+						copyToClipboard(name);
+						messagesStore(`Copied ${name} to clipboard`, 'success');
+					}}
+				>
+					<Clipboard size="20" color="gray" />
+					<Tooltip defaultClass="py-1 px-2 text-xs">Copy to clipboard</Tooltip>
+				</Button>
+			</Input>
+		</div>
+		<div class="mb-2">
+			<Label for="small-input" class="">Description</Label>
+			<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
+		</div>
+		<div class="mb-2 flex gap-x-2">
+			<div class="w-1/2">
 				<Label for="small-input" class="">Image</Label>
 				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
-			</div>
-		</div>
-
-		<div class="w-1/2">
-			<div class="m-2">
-				<ul>
-					<li class="rounded p-0.5 uppercase">
-						<Label class={'flex items-center'}>
-							<input
-								type="radio"
-								bind:group={type}
-								value="SMT"
-								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
-							/>
-							SMT
-						</Label>
-						<Label class={'flex items-center'}>
-							<input
-								type="radio"
-								bind:group={type}
-								value="THT"
-								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
-							/>
-							THT
-						</Label>
-						<Label class={'flex items-center'}>
-							<input
-								type="radio"
-								bind:group={type}
-								value=""
-								class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
-							/>
-							Unknown
-						</Label>
-					</li>
-				</ul>
-			</div>
-			<div class="flex ml-8 p-1">
-				<div class="pl-1">
-					<ul class="list-disc">
-						{#each description?.split(' ')?.filter((d) => !!d) as t}
-							<li>{t}</li>
-						{/each}
-					</ul>
-				</div>
-				<div class="pl-4">
-					<ul class="list-none">
-						{#each Object.keys(descriptionTokens) as token}
-							<li class="flex">
-								{token}:
-								<!-- 								<EditableText innerText={descriptionTokens[token]} classes="mx-1 border-gray-300 border" />
- -->
-								<span>
-									{descriptionTokens[token]}
-								</span>
-							</li>
-						{/each}
+				<div class=" mt-3">
+					<ul>
+						<li class="rounded p-0.5 uppercase">
+							<Label class={'flex items-center'}>
+								<input
+									type="radio"
+									bind:group={type}
+									value="SMT"
+									class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+								/>
+								SMT
+							</Label>
+							<Label class={'flex items-center'}>
+								<input
+									type="radio"
+									bind:group={type}
+									value="THT"
+									class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+								/>
+								THT
+							</Label>
+							<Label class={'flex items-center'}>
+								<input
+									type="radio"
+									bind:group={type}
+									value=""
+									class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+								/>
+								Unknown
+							</Label>
+						</li>
 					</ul>
 				</div>
 			</div>
-			{#if cpl?.length > 0}
-				<a>CPL:{cpl}</a>
-			{/if}
+			<div class="w-1/2">
+				<div class="flex-col h-36 w-52 border rounded-sm">
+					{#if image}
+						<!-- svelte-ignore a11y-missing-attribute -->
+						<img class="max-h-32 p-1" src={image} />
+					{:else}
+						<p class="text-center">NO IMAGE</p>
+					{/if}
+				</div>
+			</div>
 		</div>
-	</div>
-
-	<div class="my-2 p-4">
-		<div>
+		<div class="">
 			<Button color="green" size="sm" on:click={() => addComponent()}>
 				Add ➕
 				{#if componentAdding}
@@ -271,40 +271,64 @@
 				{/if}
 			</Button>
 		</div>
-		<div class="flex p-1">
-			<div class="w-3/4 m-1">
-				{#if image}
-					<img src={image} />
+	</div>
+
+	<div class="w-1/2 pl-5">
+		<div class="flex max-h-64 w-fit overflow-y-auto overflow-x-auto gap-x-4">
+			<div class="flex-col">
+				<ul>
+					{#each description?.split(' ')?.filter((d) => !!d) as t}
+						<li>●{t}</li>
+					{/each}
+				</ul>
+			</div>
+			<div class="flex-col">
+				<ul class="list-none">
+					{#each Object.keys(descriptionTokens) as token}
+						<li class="flex">
+							{token}:
+							<span>
+								{descriptionTokens[token]}
+							</span>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</div>
+		{#if cpl?.length > 0}
+			<a>CPL:{cpl}</a>
+		{/if}
+		<div>
+			<div class="flex p-1">
+				{#if imagesFiltered.length > 0}
+					<div>
+						<button
+							on:click={() => {
+								if (filter_inUrl.length > 0) {
+									filter_inUrl = [];
+									supplierFilter = false;
+								} else {
+									filter_inUrl = supplierFilters;
+									supplierFilter = true;
+								}
+							}}
+							class="cursor-pointer text-xs"
+							class:line-through={!supplierFilter}
+						>
+							Supplier Filter
+						</button>
+						<div class="grid grid-cols-6 gap-0.5 p-0.5 max-w-96 overflow-x-auto">
+							{#each imagesFiltered as img}
+								{#if img}
+									<div>
+										<img class="w-28 cursor-pointer hover:shadow-md" src={img} on:click={() => (image = img)} />
+									</div>
+								{/if}
+							{/each}
+						</div>
+					</div>
 				{/if}
 			</div>
-			{#if imagesFiltered.length > 0}
-				<div>
-					<a
-						on:click={() => {
-							if (filter_inUrl.length > 0) {
-								filter_inUrl = [];
-								supplierFilter = false;
-							} else {
-								filter_inUrl = supplierFilters;
-								supplierFilter = true;
-							}
-						}}
-						class="cursor-pointer text-xs"
-						class:line-through={!supplierFilter}
-					>
-						Supplier Filter
-					</a>
-					<div class="grid grid-cols-6 gap-0.5 p-0.5 overflow-x-auto">
-						{#each imagesFiltered as img}
-							{#if img}
-								<div>
-									<img class="w-28 cursor-pointer hover:shadow-md" src={img} on:click={() => (image = img)} />
-								</div>
-							{/if}
-						{/each}
-					</div>
-				</div>
-			{/if}
 		</div>
 	</div>
 </div>

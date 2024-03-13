@@ -3,6 +3,7 @@
 	import { ArrowLeftOutline, ArrowRightOutline } from 'flowbite-svelte-icons';
 	import { Progressbar } from 'flowbite-svelte';
 	import { sineOut } from 'svelte/easing';
+	import PartAdd from './PartAdd.svelte';
 
 	interface Part {
 		part: string;
@@ -23,17 +24,28 @@
 		}
 	}
 
+	function previousPart() {
+		let idx = remainingParts.findIndex((p) => p.part === partAddPart.part);
+		if (idx < 1) {
+			partAddPart = remainingParts[idx - 1];
+		}
+	}
+
 	function nextPart() {
 		let idx = remainingParts.findIndex((p) => p.part === partAddPart.part);
-		partAddPart = remainingParts[0];
+		if (idx < remainingParts.length - 1) {
+			partAddPart = remainingParts[idx + 1];
+		}
 	}
+
+	$: console.log('partAddPart', partAddPart);
 </script>
 
 <div class="flex h-80">
 	<div class="w-1/4 px-1">
 		<div class="flex pb-2 gap-x-2">
 			<div class="">
-				<ArrowLeftOutline size="sm" on:click={() => {}} />
+				<ArrowLeftOutline size="sm" on:click={nextPart} />
 			</div>
 			<Progressbar
 				progress={String((100 / initialPartsCount) * (initialPartsCount - remainingPartsCount))}
@@ -43,7 +55,7 @@
 				size="h-1.5"
 			/>
 			<div class="">
-				<ArrowRightOutline size="sm" on:click={() => {}} />
+				<ArrowRightOutline size="sm" on:click={previousPart} />
 			</div>
 		</div>
 		<select
@@ -60,9 +72,9 @@
 			{/each}
 		</select>
 	</div>
-	<div class="w-3/4 max-h-80 overflow-y-auto">
+	<div class="w-3/4 max-h-80 overflow-y-auto p-0.5">
 		{#if partAddPart?.part}
-			<NewComponent id={partAddPart.part} description={partAddPart?.description || ''} lockName={true} />
+			<PartAdd id={partAddPart.part} description={partAddPart?.description || ''} lockName={true} />
 		{/if}
 	</div>
 </div>

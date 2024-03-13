@@ -27,7 +27,8 @@ Sentry.init({
 		})
 	],
 	environment: dev ? 'development' : 'production',
-	enabled: !dev
+	enabled: !dev,
+	normalizeDepth: 20
 });
 
 // If you have a custom error handler, pass it to `handleErrorWithSentry`

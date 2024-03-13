@@ -378,7 +378,7 @@
 	</div>
 </Modal>
 
-<Modal outsideclose bind:open={partAddModal} size="lg" title={`Add ${partsNotInLibrary.length} components`}>
+<Modal outsideclose bind:open={partAddModal} size="xl" title={`Add ${partsNotInLibrary.length} components`}>
 	<div>
 		<PartAddWizard
 			parts={partsNotInLibrary?.map((p) => {

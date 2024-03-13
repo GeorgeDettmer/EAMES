@@ -32,7 +32,7 @@
 	export let orderItems = [];
 	export let kitItems = [];
 	export let jobKits = [];
-	export let kit = jobKits?.[0];
+	export let kit = jobKits?.[0]?.kit;
 	export let visible = true;
 	export let createCarrier = part?.properties?.type?.toLowerCase() !== 'tht';
 	export let createLabel = false;

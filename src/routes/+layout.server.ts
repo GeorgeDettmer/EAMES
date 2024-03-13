@@ -34,13 +34,13 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let configData = (await configQuery).data?.system_config;
 	let config = {};
 	configData?.forEach((item) => {
-		config[`${item.name}_${item.type}`] = item?.json;
+		config[`${item?.name || ''}${item?.name ? '_' : ''}${item.type}`] = item?.json;
 	});
 	console.log(
 		'config: ',
 		configData.length,
 		':',
-		configData.flatMap((item) => `${item?.name}-${item?.type}${item?.user_id ? '*' : ''}`)
+		configData.flatMap((item) => `${item?.name || ''}${item?.name ? '_' : ''}${item?.type}${item?.user_id ? '*' : ''}`)
 	);
 	return {
 		config,

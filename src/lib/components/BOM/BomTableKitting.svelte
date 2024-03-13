@@ -583,7 +583,7 @@
 					</TableBodyRow>
 					{#if openRows?.includes(idx)}
 						<TableBodyRow class="h-24">
-							<TableBodyCell colspan="3" tdClass="px-2 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell colspan="4" tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div>
 									{#if partsInLibrary.length > 0 && !partsInLibrary?.includes(lineKey)}
 										<NewComponent id={lineKey} {description} />

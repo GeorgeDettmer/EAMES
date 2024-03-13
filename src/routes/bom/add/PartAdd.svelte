@@ -107,15 +107,22 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted component: ' + mutationResult.data.insert_parts_data_one.id, 'success');
+			id = '';
+			name = '';
+			description = '';
+			image = '';
+			images = [];
+			type = null;
 		}
 		componentAdding = false;
 	}
 
 	function deriveComponentType(description: string) {
 		description = description?.trim()?.toLowerCase();
-		let descriptionParts: string[] = description?.split(' ');
+		let descriptionParts: string[] = description?.split(/\s+/);
 		let componentTypes: Record<string, string[]> = $page?.data?.config?.component_types || [];
 		let componentType: string = 'UNKNOWN';
+		console.log('componentTypes', componentTypes);
 		for (let type in componentTypes) {
 			if (componentTypes[type].some((t) => descriptionParts?.[0] === t)) {
 				componentType = type;
@@ -126,12 +133,12 @@
 		return componentType;
 	}
 
-	let type: 'THT' | 'SMT' | '' | null = null;
+	let type: 'THT' | 'SMT' | 'PFT' | '' | null = null;
 	let descriptionTokens = [];
 	$: {
 		if (description) {
 			descriptionTokens = parse(description);
-			descriptionTokens.component = descriptionTokens.type || deriveComponentType(description);
+			descriptionTokens.component = descriptionTokens?.type || deriveComponentType(description);
 			if (!type && descriptionTokens?.size) {
 				type = 'SMT';
 			}
@@ -171,7 +178,7 @@
 
 <div class="flex">
 	<div class="w-1/2">
-		<div class="mb-2">
+		<div class="mb-1">
 			<Label for="small-input" class="">Name</Label>
 			<Input
 				id="small-input"
@@ -195,15 +202,15 @@
 				</Button>
 			</Input>
 		</div>
-		<div class="mb-2">
+		<div class="mb-1">
 			<Label for="small-input" class="">Description</Label>
 			<Input id="small-input" size="sm" placeholder="Part description" bind:value={description} />
 		</div>
-		<div class="mb-2 flex gap-x-2">
+		<div class="mb-1 flex gap-x-2">
 			<div class="w-1/2">
 				<Label for="small-input" class="">Image</Label>
 				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
-				<div class=" mt-3">
+				<div class="mt-1">
 					<ul>
 						<li class="rounded p-0.5 uppercase">
 							<Label class={'flex items-center'}>
@@ -223,6 +230,15 @@
 									class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
 								/>
 								THT
+							</Label>
+							<Label class={'flex items-center'}>
+								<input
+									type="radio"
+									bind:group={type}
+									value="PFT"
+									class={'mr-2 w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'}
+								/>
+								PFT
 							</Label>
 							<Label class={'flex items-center'}>
 								<input
@@ -277,7 +293,7 @@
 		<div class="flex max-h-64 w-fit overflow-y-auto overflow-x-auto gap-x-4">
 			<div class="flex-col">
 				<ul>
-					{#each description?.split(' ')?.filter((d) => !!d) as t}
+					{#each description?.split(/\s+/)?.filter((d) => !!d) as t}
 						<li>●{t}</li>
 					{/each}
 				</ul>

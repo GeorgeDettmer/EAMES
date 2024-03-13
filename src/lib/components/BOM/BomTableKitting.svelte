@@ -68,7 +68,8 @@
 	let highlightedReferences: string[] = [];
 	let openRows: number[] = [];
 
-	function qtyColor(qty: number, requiredQty: number) {
+	function qtyColor(qty: number, requiredQty: number, kittedQtyIndeterminate: boolean = false) {
+		if (kittedQtyIndeterminate) return 'purple';
 		if (qty === requiredQty) return 'green';
 		if (qty < requiredQty) return 'red';
 		if (qty > requiredQty) return 'green';
@@ -180,10 +181,11 @@
 		buildQty: number = 0,
 		orderQty: number = 0,
 		receivedQty: number = 0,
-		kittedQty: number = 0
+		kittedQty: number = 0,
+		kittedQtyIndeterminate: boolean = false
 	): 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'default' | 'custom' | undefined {
-		if (!pn) return 'default';
-
+		if (!pn) return 'yellow';
+		if (kittedQtyIndeterminate) return 'purple';
 		if (kittedQty > 0 && kittedQty < buildQty) {
 			return 'red';
 		} else if (kittedQty > 0 && kittedQty < orderQty) {
@@ -389,7 +391,7 @@
 				{@const line = lines.get(lineKey)}
 				{@const part = line?.[0]?.partByPart}
 				{@const references = line?.map((l) => l?.reference) || []}
-				{@const lineQty = line?.reduce((a, l) => a + (l?.quantity || 1), 0)}
+				{@const lineQty = line?.reduce((a, l) => a + (l?.quantity || 1), 0) + (line?.quantity || 0)}
 				{@const kitItems = job?.jobs_kits
 					?.map((jk) => jk.kit?.kits_items?.filter((i) => i.part_id === lineKey || i.part === lineKey))
 					.flat()}
@@ -404,12 +406,12 @@
 					(a, allocation) => a + (allocation?.quantity || allocation.order_item?.quantity),
 					0
 				)}
-				<!-- {@const orderItemQty = orderItems?.reduce((a, v) => a + v.quantity, 0)} -->
 				{@const receiptItems = orderItems?.map((i) => i.orders_items_receiveds)?.flat()}
 				{@const receivedItemQty = receiptItems?.reduce((a, v) => a + v?.quantity, 0)}
 				{@const buildQty = lineKey ? lineQty * job?.quantity : 0}
 				{@const description = part?.description}
-				{@const kittedQty = kitItems?.reduce((a, v) => a + v.quantity, 0)}
+				{@const kittedQty = kitItems?.reduce((a, v) => a + v?.quantity, 0)}
+				{@const kittedQtyIndeterminate = kitItems?.some((ki) => ki?.quantity === null)}
 				{#if (partSearch == '' || (lineKey || 'Not Fitted')
 						?.toLowerCase()
 						.includes(partSearch.toLowerCase())) && (descriptionSearch == '' || description
@@ -418,7 +420,7 @@
 							?.toLowerCase()
 							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch)) && (mountTypeSearch == '' || part?.properties?.type === mountTypeSearch)}
 					<TableBodyRow
-						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty)}
+						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty, kittedQtyIndeterminate)}
 						class={`cursor-pointer`}
 						on:click={(e) => {
 							handleRowClick(idx, references, line, lineKey, e);
@@ -451,6 +453,8 @@
 												? 'https://img.icons8.com/small/16/capacitor.png'
 												: type === 'SMT'
 												? 'https://img.icons8.com/metro/26/electronics.png'
+												: type === 'PFT'
+												? 'https://img.icons8.com/small/16/vise.png'
 												: 'https://img.icons8.com/small/16/help.png'}
 											alt="capacitor"
 										/>
@@ -523,29 +527,33 @@
 
 						{#if allocations && visibleColumns?.includes('order_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-								<div class="grid grid-cols-1 gap-y-1">
-									{#each allocations as allocation}
-										<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}>
-											{allocation?.quantity || allocation?.orders_item?.quantity} | {allocation?.orders_item?.order?.supplier
-												?.name}
-										</Badge>
-									{:else}
-										<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}
-											>0</Badge
-										>
-									{/each}
-								</div>
+								{#if lineKey}
+									<div class="grid grid-cols-1 gap-y-1">
+										{#each allocations as allocation}
+											<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}>
+												{allocation?.quantity || allocation?.orders_item?.quantity} | {allocation?.orders_item?.order
+													?.supplier?.name}
+											</Badge>
+										{:else}
+											<Badge class="mx-0.5" color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(orderItemQty, buildQty)}
+												>0</Badge
+											>
+										{/each}
+									</div>
+								{/if}
 							</TableBodyCell>
 						{/if}
 
 						{#if allocations && visibleColumns?.includes('received_quantity')}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-								<Badge
-									class="mx-0.5"
-									color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}
-								>
-									{receivedItemQty}
-								</Badge>
+								{#if lineKey}
+									<Badge
+										class="mx-0.5"
+										color={!lineKey || orderItemQty < 1 ? 'dark' : qtyColor(receivedItemQty, orderItemQty)}
+									>
+										{receivedItemQty}
+									</Badge>
+								{/if}
 							</TableBodyCell>
 						{/if}
 
@@ -553,29 +561,43 @@
 							{@const kitItemQty = kitItems?.reduce((accumulator, currentValue) => accumulator + currentValue.quantity, 0)}
 							{@const kitItemAttritionPercentage = ((kitItemQty - buildQty) / buildQty) * 100 || 0}
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
-									{kitItemQty}
-								</Badge>
+								{#if lineKey}
+									<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty, kittedQtyIndeterminate)}>
+										{#if kittedQtyIndeterminate}
+											∞
+										{:else}
+											{kitItemQty}
+										{/if}
+									</Badge>
+								{/if}
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
-								<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty)}>
-									{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
-								</Badge>
+								{#if lineKey}
+									<Badge class="mx-0.5" color={!lineKey ? 'dark' : qtyColor(kitItemQty, buildQty, kittedQtyIndeterminate)}>
+										{#if kittedQtyIndeterminate}
+											∞
+										{:else}
+											{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
+										{/if}
+									</Badge>
+								{/if}
 							</TableBodyCell>
 						{/if}
 						{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
 							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
-								<div
-									class="cursor-pointer w-fit"
-									on:click|stopPropagation={(e) => {
-										activeLine = { line, orderItems, kitItems };
-										receiveModal = true;
-										console.log('activeLine', activeLine);
-										e.preventDefault();
-									}}
-								>
-									<PlusOutline size="lg" />
-								</div>
+								{#if lineKey}
+									<div
+										class="cursor-pointer w-fit"
+										on:click|stopPropagation={(e) => {
+											activeLine = { line, orderItems, kitItems };
+											receiveModal = true;
+											console.log('activeLine', activeLine);
+											e.preventDefault();
+										}}
+									>
+										<PlusOutline size="lg" />
+									</div>
+								{/if}
 							</TableBodyCell>
 						{/if}
 					</TableBodyRow>

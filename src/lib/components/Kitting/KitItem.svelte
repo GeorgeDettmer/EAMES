@@ -140,7 +140,7 @@
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
-		if (kittingTotal < 1) {
+		if (!indeterminateQuantity && kittingTotal < 1) {
 			messagesStore('Quantity to add must more than 0', 'warning');
 			return;
 		}
@@ -164,7 +164,7 @@
 						}
 					}
 				`,
-				{ kit_id: kit.id, quantity: arbitraryQuantity, part: pn }
+				{ kit_id: kit.id, quantity: indeterminateQuantity ? null : arbitraryQuantity, part: pn }
 			);
 			if (mutationResult?.error) {
 				console.error('MUTATION ERROR: ', mutationResult);
@@ -537,7 +537,7 @@
 	let partInfo;
 	let descriptionOkCheckbox = false;
 	$: descriptionOk = bomLine?.[0]?.description === partInfo?.description || descriptionOkCheckbox;
-
+	$: indeterminateQuantity = arbitraryQuantityVisible && arbitraryQuantity < 1;
 	$: console.log('jk', jobKits);
 	$: console.log('kit:', kit);
 </script>
@@ -574,7 +574,12 @@
 						</p>
 					{/if}
 				{:else}
-					<p class="font-bold text-lg underline text-red-600">Kit {kittingTotal}</p>
+					{#if !indeterminateQuantity}
+						<p class="font-bold text-lg underline text-red-600">Kit {kittingTotal}</p>
+					{:else}
+						<p class="font-bold text-lg underline text-red-600">Kit indeterminate quantity</p>
+					{/if}
+
 					<p class=" italic text-red-600">arbitrary amount not associated with an order</p>
 				{/if}
 			</div>
@@ -632,7 +637,7 @@
 					<Button
 						color="blue"
 						size="sm"
-						disabled={kittingTotal < 1 || !kit?.id || !descriptionOkCheckbox}
+						disabled={(!indeterminateQuantity && kittingTotal < 1) || !kit?.id || !descriptionOkCheckbox}
 						on:click={() => addQuantity()}
 					>
 						Add
@@ -641,9 +646,9 @@
 						{/if}
 					</Button>
 					{#if !kit?.id || !descriptionOkCheckbox}
-						<Tooltip
-							>{(!kit?.id ? ' NO KIT SELECTED ' : '') + (!descriptionOkCheckbox ? ' DESCRIPTION NOT CHECKED ' : '')}</Tooltip
-						>
+						<Tooltip>
+							{(!kit?.id ? ' NO KIT SELECTED ' : '') + (!descriptionOkCheckbox ? ' DESCRIPTION NOT CHECKED ' : '')}
+						</Tooltip>
 					{/if}
 					{#if arbitraryQuantityVisible}
 						<div
@@ -653,15 +658,7 @@
 								//arbitraryQuantity = Math.max(arbitraryQuantity + (e.deltaY > 0 ? -1 : +1), 1);
 							}}
 						>
-							<Input
-								size="sm"
-								type="number"
-								value={arbitraryQuantity}
-								min="0"
-								on:input={(e) => {
-									arbitraryQuantity = Math.max(Number(e.target.value), 1);
-								}}
-							/>
+							<Input size="sm" type="number" bind:value={arbitraryQuantity} min="0" />
 						</div>
 					{/if}
 				</div>

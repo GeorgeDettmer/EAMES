@@ -212,6 +212,7 @@
 	$: {
 		mountTypeTotals = new Map();
 		jobInfo?.assembly?.bom?.lines?.forEach((l) => {
+			if (!l.partByPart) return;
 			const mt = l.partByPart?.properties?.type || 'UNKNOWN';
 			mountTypeTotals.set(mt, (mountTypeTotals.get(mt) || 0) + 1);
 		});
@@ -237,7 +238,7 @@
 							{#each mountTypeTotals as [mountType, count]}
 								<p>{mountType}: {count}</p>
 							{/each}
-							<p class="underline">TOTAL: {jobInfo.assembly.bom?.lines?.length || 0}</p>
+							<p class="underline">TOTAL: {jobInfo?.assembly?.bom?.lines?.length || 0}</p>
 						</div>
 					</JobOverview>
 				</div>

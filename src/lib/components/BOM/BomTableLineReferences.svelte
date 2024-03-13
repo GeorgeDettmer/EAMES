@@ -45,16 +45,18 @@
 		let fixes: Map<string, Array<string>> = new Map();
 
 		input.map((ref) => {
-			let regex = ref.match(/(?<PREFIX>([A-Za-z]+)*)(?<NUMBER>(\d)*)(?<SUFFIX>(.+)*)/);
-			let prefix = regex?.groups?.PREFIX;
-			let suffix = regex?.groups?.SUFFIX;
-			let number = regex?.groups?.NUMBER;
-			let fix = prefix + '|' + suffix;
-			if (!fix || !number) return ref;
-			if (!fixes.has(fix)) {
-				fixes.set(fix, []);
+			if (ref) {
+				let regex = ref.match(/(?<PREFIX>([A-Za-z]+)*)(?<NUMBER>(\d)*)(?<SUFFIX>(.+)*)/);
+				let prefix = regex?.groups?.PREFIX;
+				let suffix = regex?.groups?.SUFFIX;
+				let number = regex?.groups?.NUMBER;
+				let fix = prefix + '|' + suffix;
+				if (!fix || !number) return ref;
+				if (!fixes.has(fix)) {
+					fixes.set(fix, []);
+				}
+				fixes.get(fix)?.push(number);
 			}
-			fixes.get(fix)?.push(number);
 		});
 
 		let references: Array<string> = [...fixes.entries()].map(([fix, numbers], idx) => {

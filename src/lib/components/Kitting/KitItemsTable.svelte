@@ -49,7 +49,7 @@
 					{datetimeFormat(item.updated_at)}
 				</TableBodyCell> -->
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
-					{item?.quantity}
+					{item?.quantity || '∞'}
 				</TableBodyCell>
 				<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap text-xs text-center">
 					{item?.orders_item?.order?.supplier?.name || 'Unknown'}

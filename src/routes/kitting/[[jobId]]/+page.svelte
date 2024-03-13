@@ -11,6 +11,7 @@
 	import KittingDashboard from '$lib/components/Kitting/KittingDashboard.svelte';
 	import { onMount } from 'svelte';
 	import { numberToLetter } from '$lib/utils';
+	import BomTable from '$lib/components/BOM/BomTable.svelte';
 
 	onMount(() => {
 		return () => {
@@ -207,6 +208,15 @@
 		?.reduce((a, v) => a + v, 0);
 	$: totalBomItemQty = jobInfo?.assembly?.bom?.lines?.length || 0;
 
+	let mountTypeTotals: Map<string, number>;
+	$: {
+		mountTypeTotals = new Map();
+		jobInfo?.assembly?.bom?.lines?.forEach((l) => {
+			const mt = l.partByPart?.properties?.type || 'UNKNOWN';
+			mountTypeTotals.set(mt, (mountTypeTotals.get(mt) || 0) + 1);
+		});
+		console.log('mountTypeTotals', mountTypeTotals);
+	}
 	$: console.log('selectedBatches', selectedBatches);
 </script>
 
@@ -216,14 +226,18 @@
 			<div class="flex">
 				<div class="w-full">
 					<JobOverview job={jobInfo}>
-						<div class="pl-4">
+						<div class="pl-4 text-xs -space-y-1">
 							<!-- <div
 								class:bg-red-600={incompleteOrders?.length > 0}
 								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
 							>
 								<p class="text-white">{totalBomItemQty > totalKitItemQty ? incompleteOrders?.length : '✅'}</p>
 							</div> -->
-							{totalKitItemQty}/{totalBomItemQty * jobInfo.quantity}
+							<!-- {totalKitItemQty}/{totalBomItemQty * jobInfo.quantity} -->
+							{#each mountTypeTotals as [mountType, count]}
+								<p>{mountType}: {count}</p>
+							{/each}
+							<p class="underline">TOTAL: {jobInfo.assembly.bom.lines.length}</p>
 						</div>
 					</JobOverview>
 				</div>

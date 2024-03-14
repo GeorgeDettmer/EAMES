@@ -308,6 +308,22 @@
 	setContext('windowTitle', '');
 
 	let gqlError;
+
+	import { beforeNavigate } from '$app/navigation';
+	import { updated } from '$app/stores';
+
+	beforeNavigate(({ willUnload, to }) => {
+		if ($updated && !willUnload && to?.url) {
+			location.href = to.url.href;
+		}
+	});
+
+	const versionCheckInterval = intervalFnStore(() => {
+		if ($updated) {
+			console.log('SvelteKit app updated, reloading...');
+			location.reload();
+		}
+	}, 2500);
 </script>
 
 <svelte:window on:keydown={handleWindowKey} />

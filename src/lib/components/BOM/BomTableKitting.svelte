@@ -195,16 +195,6 @@
 		} else {
 			return 'default';
 		}
-
-		/* {
-			!lineKey
-				? 'default'
-				: kittedQty > 0 && kittedQty < orderItemQty
-				? 'yellow'
-				: kittedQty >= buildQty
-				? 'green'
-				: 'default';
-		} */
 	}
 
 	let partSearch = '';

@@ -320,10 +320,17 @@
 
 	const versionCheckInterval = intervalFnStore(() => {
 		if ($updated) {
-			console.log('SvelteKit app updated, reloading...');
-			location.reload();
+			console.log('SvelteKit app updated, reloading in 2 seconds...');
+			for (let i = 0; i < 3; i++) {
+				messagesStore('UPDATED! Reloading in 2 seconds...', 'warning');
+			}
+			setTimeout(() => {
+				console.log('SvelteKit app updated, reloading...');
+				messagesStore('UPDATED! Reloading...', 'error');
+				location.reload();
+			}, 2000);
 		}
-	}, 2500);
+	}, 5000);
 </script>
 
 <svelte:window on:keydown={handleWindowKey} />

@@ -185,7 +185,7 @@
 		kittedQtyIndeterminate: boolean = false
 	): 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'default' | 'custom' | undefined {
 		if (!pn) return 'yellow';
-		if (kittedQtyIndeterminate) return 'purple';
+		if (kittedQtyIndeterminate) return 'green';
 		if (kittedQty > 0 && kittedQty < buildQty) {
 			return 'red';
 		} else if (kittedQty > 0 && kittedQty < orderQty) {
@@ -595,6 +595,9 @@
 											{kitItemQty}
 										{/if}
 									</Badge>
+									{#if kittedQtyIndeterminate}
+										<Tooltip defaultClass="py-1 px-2 text-xs">Indeterminate quantity</Tooltip>
+									{/if}
 								{/if}
 							</TableBodyCell>
 							<TableBodyCell tdClass="px-2 py-1 whitespace-nowrap font-medium">
@@ -606,6 +609,9 @@
 											{kitItemQty - buildQty} ({Math.round(kitItemAttritionPercentage)}%)
 										{/if}
 									</Badge>
+									{#if kittedQtyIndeterminate}
+										<Tooltip defaultClass="py-1 px-2 text-xs">Indeterminate quantity</Tooltip>
+									{/if}
 								{/if}
 							</TableBodyCell>
 						{/if}

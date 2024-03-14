@@ -4,10 +4,11 @@
 	import { onMount } from 'svelte';
 	import { windowTitleStore } from '$lib/stores';
 	import { page } from '$app/stores';
-	import { messagesStore } from 'svelte-legos';
+	import { messagesStore, storage } from 'svelte-legos';
 	import EditModal from '../EditModal.svelte';
 	import SuppliersTable from '../SuppliersTable.svelte';
 	import type { Supplier } from '$lib/types';
+	import { writable } from 'svelte/store';
 
 	onMount(() => {
 		$windowTitleStore = 'Suppliers';
@@ -16,7 +17,7 @@
 		};
 	});
 
-	let showHiddenSuppliers: boolean = false;
+	let showHiddenSuppliers = storage(writable(false), 'EAMES_suppliers_showHiddenSuppliers');
 	$: suppliersStore = subscriptionStore({
 		client: getContextClient(),
 		query: gql`
@@ -66,7 +67,7 @@
 		`,
 		variables: {
 			where: {
-				hidden: showHiddenSuppliers ? {} : { _eq: false }
+				hidden: $showHiddenSuppliers ? {} : { _eq: false }
 			}
 		}
 	});
@@ -192,7 +193,7 @@
 
 <div class="pt-4 max-h-500px mx-auto">
 	{#if suppliers}
-		<SuppliersTable {suppliers} allowEdit={false} bind:showHiddenSuppliers />
+		<SuppliersTable {suppliers} allowEdit={false} bind:showHiddenSuppliers={$showHiddenSuppliers} />
 	{/if}
 </div>
 

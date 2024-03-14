@@ -336,7 +336,7 @@
 					</select>
 				{/if}
 			</TableHeadCell>
-			<TableHeadCell padding="px-6 py-1" colspan="4">
+			<TableHeadCell padding="px-4 py-1" colspan="4">
 				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>
 			</TableHeadCell>
 		</TableHead>
@@ -519,7 +519,7 @@
 						>
 							<div
 								class:max-w-sm={$collapsedColumns && !$collapsedColumns?.includes('references')}
-								class="max-w-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700 overflow-x-auto"
+								class="max-w-md scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-400 dark:scrollbar-thumb-gray-400 dark:scrollbar-track-gray-700 overflow-x-auto"
 							>
 								<p class="text-clip">{description || ''}</p>
 								{#if line?.[0]?.description && line?.[0]?.description !== description}
@@ -610,7 +610,7 @@
 							</TableBodyCell>
 						{/if}
 						{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
-							<TableBodyCell tdClass="px-6 py-1 whitespace-nowrap font-medium">
+							<TableBodyCell tdClass="px-4 py-1 whitespace-nowrap font-medium">
 								{#if lineKey}
 									<div
 										class="cursor-pointer w-fit"

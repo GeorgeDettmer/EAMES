@@ -7,6 +7,9 @@
 	export let open = false;
 
 	$: config = $page?.data?.config;
+
+	$: bomParts = job?.assembly?.bom?.lines?.map((l) => [l?.part, l?.partByPart]);
+	$: bomPartsUnique = new Map(bomParts);
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -47,7 +50,7 @@
 			<div><a href={`${window.origin}/assembly/${job?.assembly?.id}`} target="_blank">{job?.assembly?.name}</a></div>
 			<div>
 				<a href={`${window.origin}/bom/${job?.assembly?.bom?.id}?jobId=${job?.id}`} target="_blank">
-					BOM ({job?.assembly?.bom?.lines_aggregate?.aggregate?.count} lines)
+					BOM ({bomPartsUnique?.size} lines)
 				</a>
 			</div>
 		</div>

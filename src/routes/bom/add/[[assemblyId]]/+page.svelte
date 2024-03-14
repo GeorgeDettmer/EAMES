@@ -277,7 +277,8 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted BOM: ' + mutationResult.data.insert_bom_one.id, 'success');
-			if (assemblyId && mutationResult?.data?.insert_bom_one?.id) {
+			let bomId = mutationResult?.data?.insert_bom_one?.id;
+			if (assemblyId && bomId) {
 				mutationResult = await urqlClient.mutation(
 					gql`
 						mutation updateAssembly($assemblyId: bigint!, $bomId: uuid!) {
@@ -286,7 +287,7 @@
 							}
 						}
 					`,
-					{ assemblyId, bomId: mutationResult.data.insert_bom_one.id }
+					{ assemblyId, bomId: bomId }
 				);
 				if (mutationResult?.error) {
 					console.error('MUTATION ERROR: ', mutationResult);
@@ -296,7 +297,7 @@
 					messagesStore(`Set BOM for ${assemblyInfo?.name}`, 'success');
 				}
 			}
-			goto('/bom/' + mutationResult.data.insert_bom_one.id);
+			goto('/bom/' + bomId);
 		}
 	}
 

@@ -23,7 +23,9 @@
 				class={avatarClass + ' ring-white ring-1'}
 			>
 				{#if user?.initials}
-					<p class="text-white text-center align-middle text-xs">{user.initials}</p>
+					<div class="flex my-auto">
+						<p class="text-white text-center align-middle text-{user.initials.length > 2 ? 'xs' : 'sm'}">{user.initials}</p>
+					</div>
 				{:else}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

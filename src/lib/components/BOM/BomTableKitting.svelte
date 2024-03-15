@@ -184,7 +184,7 @@
 		kittedQty: number = 0,
 		kittedQtyIndeterminate: boolean = false
 	): 'blue' | 'red' | 'yellow' | 'green' | 'purple' | 'default' | 'custom' | undefined {
-		if (!pn) return 'yellow';
+		if (!pn) return 'default';
 		if (kittedQtyIndeterminate) return 'green';
 		if (kittedQty > 0 && kittedQty < buildQty) {
 			return 'red';
@@ -202,6 +202,7 @@
 	let supplierSearch = '';
 	let mountTypeSearch = '';
 	let referenceSearch = '';
+	let statusSearch: string[] = undefined;
 	$: ordersSuppliers = allocations
 		?.flatMap((a) => a?.orders_item?.order?.supplier?.name)
 		?.filter((v, i, a) => a.indexOf(v) === i)
@@ -326,14 +327,35 @@
 					</select>
 				{/if}
 			</TableHeadCell>
-			<TableHeadCell padding="px-4 py-1" colspan="4">
-				<p class="float-right">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>
+			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCell padding="px-2 py-3">
+				<select
+					class="w-16 text-xs border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
+					bind:value={statusSearch}
+				>
+					<option value={[]} />
+					<option value={['green']}>✔</option>
+					<option value={['yellow', 'default', 'red']}>―</option>
+					<option value={['red', 'default']}>❌</option>
+				</select>
+			</TableHeadCell>
+			<TableHeadCell padding="px-4 py-1" colspan="2">
+				<p class="float-right text-xs text-wrap">{bom?.name}({bom?.revision_external}:{bom?.revision_internal})</p>
 			</TableHeadCell>
 		</TableHead>
-		<TableHead>
-			<TableHeadCell padding="pl-3 px-2 py-3">#</TableHeadCell>
+		<TableHead theadClass="text-xs uppercase text-center">
+			<TableHeadCell padding="px-2 py-0" colspan="5" />
+			<TableHeadCell padding="px-2 py-0" colspan="5">
+				<div class="w-full bg-gray-800 rounded">
+					<p class="text-center">Qty</p>
+				</div>
+			</TableHeadCell>
+			<TableHeadCell padding="px-2 py-0" colspan="2" />
+		</TableHead>
+		<TableHead defaultRow>
+			<TableHeadCell padding="pl-3 px-2 pb-1">#</TableHeadCell>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 pb-1"
 				columnId="type"
 				visible={visibleColumns?.includes('type')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -341,7 +363,7 @@
 				Type
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 pb-1"
 				columnId="part"
 				visible={visibleColumns?.includes('part')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -349,7 +371,7 @@
 				Part
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 pb-1"
 				columnId="description"
 				visible={visibleColumns?.includes('description')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -357,7 +379,7 @@
 				Description
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 pb-1"
 				columnId="references"
 				visible={visibleColumns?.includes('references')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -373,20 +395,20 @@
 				</span>
 			</TableHeadCollapsible>
 			{#if visibleColumns?.includes('quantity')}
-				<TableHeadCell padding="px-2 py-3">Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Ref.</TableHeadCell>
 			{/if}
 			{#if job?.quantity && visibleColumns?.includes('build_quantity')}
-				<TableHeadCell padding="px-2 py-3">Build Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Build</TableHeadCell>
 			{/if}
 			{#if allocations && visibleColumns?.includes('order_quantity')}
-				<TableHeadCell padding="px-2 py-3">Order Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Order</TableHeadCell>
 			{/if}
 			{#if allocations && visibleColumns?.includes('received_quantity')}
-				<TableHeadCell padding="px-2 py-3">Received Qty</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Rec.</TableHeadCell>
 			{/if}
 			{#if job?.jobs_kits}
-				<TableHeadCell padding="px-2 py-3">Kit Qty</TableHeadCell>
-				<TableHeadCell padding="px-2 py-3">Kit Attrition</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Kit</TableHeadCell>
+				<TableHeadCell padding="px-2 pb-1">Kit Attrition</TableHeadCell>
 			{/if}
 			{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
 				<TableHeadCell />
@@ -428,7 +450,7 @@
 							?.toLowerCase()
 							.includes(descriptionSearch.toLowerCase()) || line?.[0]?.description
 							?.toLowerCase()
-							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch)) && (mountTypeSearch == '' || part?.properties?.type === mountTypeSearch)}
+							.includes(descriptionSearch.toLowerCase())) && (supplierSearch == '' || lineSuppliers?.includes(supplierSearch)) && (mountTypeSearch == '' || part?.properties?.type === mountTypeSearch) && (!statusSearch?.length || (lineKey && statusSearch?.includes(rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty, kittedQtyIndeterminate) || '')))}
 					<TableBodyRow
 						color={rowColor(lineKey, buildQty, orderItemQty, receivedItemQty, kittedQty, kittedQtyIndeterminate)}
 						class={`cursor-pointer`}
@@ -492,9 +514,9 @@
 						>
 							<div class="flex">
 								<p
-									class={`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
+									class="{`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
 										activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
-									}`}
+									}`} {!lineKey && 'text-gray-500'}"
 								>
 									{lineKey || 'Not Fitted'}
 								</p>
@@ -608,16 +630,18 @@
 						{#if visibleColumns?.includes('kit_button') && $page?.data?.user}
 							<TableBodyCell tdClass="px-4 py-1 whitespace-nowrap font-medium">
 								{#if lineKey}
-									<div
-										class="cursor-pointer w-fit"
-										on:click|stopPropagation={(e) => {
-											activeLine = { line, orderItems, kitItems };
-											receiveModal = true;
-											console.log('activeLine', activeLine);
-											e.preventDefault();
-										}}
-									>
-										<PlusOutline size="lg" />
+									<div class="flex my-auto">
+										<button
+											class="cursor-pointer w-fit"
+											on:click|stopPropagation={(e) => {
+												activeLine = { line, orderItems, kitItems };
+												receiveModal = true;
+												console.log('activeLine', activeLine);
+												e.preventDefault();
+											}}
+										>
+											<PlusOutline size="lg" />
+										</button>
 									</div>
 								{/if}
 							</TableBodyCell>

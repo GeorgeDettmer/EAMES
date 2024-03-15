@@ -55,7 +55,7 @@
 		style={user?.color ? `background-color:${user?.color}` : 'background-color:#64748b'}
 	>
 		{#if user?.initials}
-			<span class="text-white">{user.initials}</span>
+			<span class="text-white text-center align-middle text-{user.initials.length > 2 ? 'xs' : 'sm'}">{user.initials}</span>
 		{:else}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"

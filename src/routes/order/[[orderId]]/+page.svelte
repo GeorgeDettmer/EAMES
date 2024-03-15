@@ -1002,7 +1002,23 @@
 				</TableBodyRow>
 				{#if openRows?.includes(idx)}
 					<TableBodyRow>
-						<TableBodyCell />
+						<TableBodyCell>
+							{#each allocations as allocation}
+								<a href="/kitting/{allocation.job_id}" class="flex space-x-0.5 space-y-1">
+									<img
+										style="filter: brightness(0) invert(50%) "
+										width="22"
+										height="22"
+										src="https://img.icons8.com/ios/50/packing.png"
+										alt="packing"
+									/>
+									{#if allocations.length > 1}
+										<p class="text-xs my-auto">{allocation.job_id}</p>
+									{/if}
+								</a>
+								<Tooltip placement="right">Kit {allocation.job_id} items</Tooltip>
+							{/each}
+						</TableBodyCell>
 						<TableBodyCell colspan="3" tdClass="p-0">
 							<div class="flex mx-auto">
 								<div

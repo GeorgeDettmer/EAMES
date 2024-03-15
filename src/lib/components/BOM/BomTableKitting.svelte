@@ -709,7 +709,7 @@
 										</AccordionItem>
 										<AccordionItem paddingDefault="p-1" open={kittedQty > 0 || kittedQtyIndeterminate}>
 											<span slot="header" class="text-base flex gap-2">
-												{#if kittedQty === 0}
+												{#if kittedQty === 0 && !kittedQtyIndeterminate}
 													<img
 														style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
 														width="24"
@@ -717,7 +717,7 @@
 														src="https://img.icons8.com/ios/50/packing.png"
 														alt="packing"
 													/>
-												{:else if kittedQty >= orderItemQty}
+												{:else if kittedQty >= orderItemQty || kittedQtyIndeterminate}
 													<img
 														style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
 														width="24"

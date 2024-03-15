@@ -565,7 +565,7 @@
 						bind:value={supplierSearch}
 					/> -->
 				<select
-					class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0"
+					class="mx-auto w-fit block text-xs text-center disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded px-0.5 py-0 max-w-28"
 					bind:value={supplierSearch}
 					on:change={() => {
 						replaceStateWithQuery({
@@ -882,7 +882,7 @@
 									? 'yellow'
 									: 'blue'}
 							>
-								<p class={classes.popover}>
+								<p class="{classes.popover} max-w-28 text-wrap">
 									{order?.supplier?.name}
 								</p>
 							</Badge>

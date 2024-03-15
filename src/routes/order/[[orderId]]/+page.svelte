@@ -760,20 +760,22 @@
 				{@const shipments = order?.orders_items
 					?.flatMap((oi) => oi?.orders_items_shipments || [])
 					?.filter((v, i, s) => i === s.findIndex((a) => a.id === v.id))}
-				<TableBodyRow color={'default'} class={``}>
+				<TableBodyRow color={'default'}>
 					<TableBodyCell tdClass="px-1 whitespace-nowrap font-medium">
-						<button
-							class="my-auto cursor-pointer"
-							on:click|preventDefault={(e) => {
-								handleRowClick(idx, e);
-							}}
-						>
-							{#if openRows?.includes(idx)}
-								<ChevronDown size="22" />
-							{:else}
-								<ChevronRight size="22" />
-							{/if}
-						</button>
+						<div class="flex">
+							<button
+								class="my-auto cursor-pointer"
+								on:click|preventDefault={(e) => {
+									handleRowClick(idx, e);
+								}}
+							>
+								{#if openRows?.includes(idx)}
+									<ChevronDown size="22" />
+								{:else}
+									<ChevronRight size="22" />
+								{/if}
+							</button>
+						</div>
 					</TableBodyCell>
 					<TableBodyCell tdClass="px-1 py-1 whitespace-nowrap font-medium">
 						<div class="flex">

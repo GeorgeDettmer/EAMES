@@ -17,14 +17,15 @@
 			messagesStore('You must be logged in to perform this action', 'warning');
 			return;
 		}
-		/* if (!$page?.data?.user?.processes['eng']) {
-			alert(
-				`You do not have permission to insert components. You have permission for: ${Object.keys(
+		if (!$page?.data?.user?.processes['kitting']) {
+			messagesStore(
+				`You do not have permission to remove kit items. Kitting permission is required! (${Object.keys(
 					$page?.data?.user?.processes
-				)}`
+				)})`,
+				'warning'
 			);
 			return;
-		} */
+		}
 		removing = true;
 		let mutationResult;
 
@@ -51,7 +52,7 @@
 	}
 </script>
 
-<Button size="xs" color="red" disabled={disabled || !$page?.user} on:click={() => remove()}>
+<Button size="xs" color="red" disabled={disabled || !$page?.data?.user} on:click={() => remove()}>
 	<slot />
 	{#if removing}
 		<Spinner class="ml-3" size="3" color="white" />

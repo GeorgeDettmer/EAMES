@@ -14,6 +14,7 @@
 	import SupplierInfo from '$lib/components/Supplier/SupplierInfo.svelte';
 	import { getContextClient, gql, queryStore, subscriptionStore } from '@urql/svelte';
 	import { classes } from '$lib/utils';
+	import { EnvelopeOutline, PhoneOutline } from 'flowbite-svelte-icons';
 
 	export let supplier: Supplier;
 
@@ -234,9 +235,27 @@
 									{contact?.name}
 								</p>
 								{#if contact?.email}
-									<a href="mailto:{contact.email}" class="text-xs text-gray-500 truncate dark:text-gray-400 hover:underline">
-										{contact.email}
-									</a>
+									<div class="flex space-x-1">
+										<div class="my-auto">
+											<EnvelopeOutline size="xs" />
+										</div>
+										<a
+											href="mailto:{contact.email}"
+											class="text-xs text-gray-500 truncate dark:text-gray-400 hover:underline"
+										>
+											{contact.email}
+										</a>
+									</div>
+								{/if}
+								{#if contact?.phone}
+									<div class="flex space-x-1">
+										<div class="my-auto">
+											<PhoneOutline size="xs" />
+										</div>
+										<p class="text-xs text-gray-500 truncate dark:text-gray-400 hover:underline">
+											{contact.phone}
+										</p>
+									</div>
 								{/if}
 							</div>
 							{#if contact?.note}

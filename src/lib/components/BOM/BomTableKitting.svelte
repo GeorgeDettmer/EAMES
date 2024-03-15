@@ -234,9 +234,9 @@
 {#if bom}
 	<Table hoverable shadow>
 		<TableHead>
-			<TableHeadCell padding="px-2 py-3" />
+			<TableHeadCell padding="px-2 py-2" />
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 py-2"
 				columnId="type"
 				visible={visibleColumns?.includes('type')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -257,7 +257,7 @@
 				{/if}
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 py-2"
 				columnId="part"
 				visible={visibleColumns?.includes('part')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -279,7 +279,7 @@
 				</div>
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 py-2"
 				columnId="description"
 				visible={visibleColumns?.includes('description')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -295,7 +295,7 @@
 				</div>
 			</TableHeadCollapsible>
 			<TableHeadCollapsible
-				padding="px-2 py-3"
+				padding="px-2 py-2"
 				columnId="references"
 				visible={visibleColumns?.includes('references')}
 				bind:collapsedColumns={$collapsedColumns}
@@ -310,9 +310,9 @@
 					<XMark size="16" />
 				</div>
 			</TableHeadCollapsible>
-			<TableHeadCell padding="px-2 py-3" />
-			<TableHeadCell padding="px-2 py-3" />
-			<TableHeadCell padding="px-2 py-3">
+			<TableHeadCell padding="px-2 py-2" />
+			<TableHeadCell padding="px-2 py-2" />
+			<TableHeadCell padding="px-2 py-2">
 				{#if ordersSuppliers?.length > 0}
 					<select
 						class="w-fit block text-xs disabled:cursor-not-allowed disabled:opacity-50 border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
@@ -327,8 +327,8 @@
 					</select>
 				{/if}
 			</TableHeadCell>
-			<TableHeadCell padding="px-2 py-3" />
-			<TableHeadCell padding="px-2 py-3">
+			<TableHeadCell padding="px-2 py-2" />
+			<TableHeadCell padding="px-2 py-2">
 				<select
 					class="w-16 text-xs border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 dark:focus:border-primary-500 dark:focus:ring-primary-500 bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400 rounded py-0.5 px-0"
 					bind:value={statusSearch}
@@ -661,7 +661,10 @@
 							<TableBodyCell colspan="6" tdClass="px-2 py-1 whitespace-nowrap font-medium">
 								<div class="px-1 py-0">
 									<Accordion multiple>
-										<AccordionItem paddingDefault="p-1" open={receivedItemQty === 0 && kittedQty === 0}>
+										<AccordionItem
+											paddingDefault="p-1"
+											open={receivedItemQty === 0 && kittedQty === 0 && !kittedQtyIndeterminate}
+										>
 											<span slot="header" class="text-base flex gap-2">
 												<ShoppingCartSolid
 													class={`mt-0.5 ${orderItemQty >= buildQty ? 'text-green-500' : 'text-red-500'}`}
@@ -670,7 +673,10 @@
 											</span>
 											<OrderItemsTable {orderItems} />
 										</AccordionItem>
-										<AccordionItem paddingDefault="p-1" open={receivedItemQty > 0 && kittedQty < 1}>
+										<AccordionItem
+											paddingDefault="p-1"
+											open={receivedItemQty > 0 && kittedQty < 1 && !kittedQtyIndeterminate}
+										>
 											<span slot="header" class="text-base flex gap-2">
 												{#if receivedItemQty === 0}
 													<img
@@ -701,7 +707,7 @@
 											</span>
 											<ReceiptItemsTable {receiptItems} />
 										</AccordionItem>
-										<AccordionItem paddingDefault="p-1" open={kittedQty > 0}>
+										<AccordionItem paddingDefault="p-1" open={kittedQty > 0 || kittedQtyIndeterminate}>
 											<span slot="header" class="text-base flex gap-2">
 												{#if kittedQty === 0}
 													<img

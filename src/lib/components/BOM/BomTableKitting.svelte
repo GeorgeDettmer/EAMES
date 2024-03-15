@@ -514,9 +514,8 @@
 						>
 							<div class="flex">
 								<p
-									class="{`${partsInLibrary.length > 0 && partsInLibrary?.includes(lineKey) ? 'underline' : ''} ${
-										activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''
-									}`} {!lineKey && 'text-gray-500'}"
+									class="{activeLine?.line?.[0]?.part === lineKey ? 'bg-blue-400 p-1 rounded-sm' : ''}
+									{!lineKey && 'text-gray-500'}"
 								>
 									{lineKey || 'Not Fitted'}
 								</p>

@@ -346,7 +346,7 @@
 		<TableHead theadClass="text-xs uppercase text-center">
 			<TableHeadCell padding="px-2 py-0" colspan="5" />
 			<TableHeadCell padding="px-2 py-0" colspan="5">
-				<div class="w-full bg-gray-800 rounded">
+				<div class="w-full dark:bg-gray-800 bg-gray-300 rounded">
 					<p class="text-center">Qty</p>
 				</div>
 			</TableHeadCell>

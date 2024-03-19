@@ -132,7 +132,7 @@
 		console.log('componentType', componentType);
 		return componentType;
 	}
-	let defaultImage: string = '';
+
 	let type: 'THT' | 'SMT' | 'PFT' | '' | null = null;
 	let descriptionTokens = [];
 	$: {
@@ -143,27 +143,6 @@
 				type = 'SMT';
 			}
 			descriptionTokens.type = type ? type : undefined;
-			defaultImage = '';
-			if (type === 'SMT' && descriptionTokens?.component && descriptionTokens?.size) {
-				let cmp = descriptionTokens.component;
-				let s = descriptionTokens.size;
-				if (cmp === 'resistor') {
-					if (s === '0402') {
-						defaultImage = 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/596/Vishay-CRCW-0402.jpg';
-					}
-					if (s === '0603') {
-						defaultImage =
-							'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/2491/CRCW%200603%20%281608metric%29.jpg';
-					}
-					if (s === '0805') {
-						defaultImage =
-							'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/4849/541_CRCW-0805-%282125metric%29.jpg';
-					}
-					if (s === '1206') {
-						defaultImage = 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/596/Vishay-CRCW-1206.jpg';
-					}
-				}
-			}
 		}
 	}
 	$: cpl = matchCPL(descriptionTokens);
@@ -355,7 +334,7 @@
 							Supplier Filter
 						</button>
 						<div class="grid grid-cols-6 gap-0.5 p-0.5 max-w-96 overflow-x-auto">
-							{#each [defaultImage, ...imagesFiltered] as img}
+							{#each imagesFiltered as img}
 								{#if img}
 									<div>
 										<img class="w-28 cursor-pointer hover:shadow-md" src={img} on:click={() => (image = img)} />

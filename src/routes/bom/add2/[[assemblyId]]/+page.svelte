@@ -637,7 +637,8 @@
 		on:filedrop={(e) => {
 			files = e.detail.files;
 			console.log('DROP', e);
-			handleDropAsync(e.detail.event);
+			//handleDropAsync(e.detail.event);
+			fileDrop(e.detail.event);
 		}}
 	>
 		<div class="flex bg-slate-500 h-20">Drag & drop BOM</div>

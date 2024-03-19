@@ -335,7 +335,7 @@
 				>
 					<option value={[]} />
 					<option value={['green']}>✔</option>
-					<option value={['yellow', 'default', 'red']}>―</option>
+					<option value={['yellow', 'default', 'red']}>🟨</option>
 					<option value={['red', 'default']}>❌</option>
 				</select>
 			</TableHeadCell>

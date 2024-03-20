@@ -36,7 +36,6 @@
 	import OrderShipment from '$lib/components/Orders/OrderShipment - Copy.svelte';
 	import type { Shipment } from '$lib/types';
 	import { XMark } from 'svelte-heros-v2';
-	import { PUBLIC_FORCE_SET_ORDER_NUMBER } from '$env/static/public';
 
 	$windowTitleStore = `Order | New`;
 	onDestroy(() => {
@@ -51,6 +50,9 @@
 		initials: $page?.data?.user?.initials,
 		color: $page?.data?.user?.color
 	};
+
+	$: config = $page?.data?.config;
+	$: purchasing_order_force_set_order_number = config?.purchasing_order_force_set_order_number || false;
 
 	let headers = {};
 	function excelToObjects(stringData) {
@@ -342,7 +344,7 @@
 			messagesStore('An order contains no order items, remove the order or add items to it', 'error');
 			return;
 		}
-		if (PUBLIC_FORCE_SET_ORDER_NUMBER && orders.some((o) => !o.id)) {
+		if (purchasing_order_force_set_order_number && orders.some((o) => !o.id)) {
 			messagesStore('An order has no PO number set', 'error');
 			return;
 		}
@@ -827,7 +829,7 @@
 					inactiveClasses="border hover:border-b-4 rounded rounded-lg rounded-full bg-gray-200 border-gray-200 dark:border-gray-700 dark:bg-gray-700"
 				>
 					<span slot="title">
-						<OrderCreateHeader bind:order {suppliers} />
+						<OrderCreateHeader bind:order {suppliers} showSetOrderId={purchasing_order_force_set_order_number} />
 					</span>
 					<OrderCreateMulti
 						bind:jobs={allocated}

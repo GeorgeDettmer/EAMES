@@ -130,6 +130,14 @@
 						shipment {
 							id
 							confirmed_delivery_date
+							userByConfirmedDeliveryUserId {
+								id
+								username
+								first_name
+								last_name
+								initials
+								color
+							}
 						}
 					}
 				}
@@ -758,7 +766,7 @@
 					?.flatMap((oi) => oi?.jobs_allocations || [])
 					?.filter((v, i, s) => i === s.findIndex((a) => a.job_id === v.job_id && a.job_batch === v.job_batch))}
 				{@const shipments = order?.orders_items
-					?.flatMap((oi) => oi?.orders_items_shipments || [])
+					?.flatMap((oi) => oi?.orders_items_shipments?.flatMap((ois) => ois.shipment) || [])
 					?.filter((v, i, s) => i === s.findIndex((a) => a.id === v.id))}
 				<TableBodyRow color={'default'}>
 					<TableBodyCell tdClass="px-1 whitespace-nowrap font-medium">
@@ -965,38 +973,40 @@
 						columnId="status"
 						bind:collapsedColumns={$collapsedColumns}
 					>
-						<div class="flex">
+						<div class="flex space-x-1">
 							<OrderStatus {shipments} />
-							<a href={`${window.origin}/receiving/PO${order?.id}`} class="flex">
-								{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
-								{:else if ordersTotalReceivedQty === 0}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
-								{:else if ordersTotalReceivedQty < ordersTotalQty}
-									<img
-										style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
-										width="24"
-										height="24"
-										src="https://img.icons8.com/windows/32/unpacking.png"
-										alt="unpacking"
-									/>
-									<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
-								{/if}
-							</a>
+							<div class="my-auto">
+								<a href={`${window.origin}/receiving/PO${order?.id}`} class="flex">
+									{#if ordersTotalReceivedQty >= ordersTotalQty || order?.received_at}
+										<img
+											style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(70deg)"
+											width="24"
+											height="24"
+											src="https://img.icons8.com/windows/32/unpacking.png"
+											alt="unpacking"
+										/>
+										<p class="font-semibold pt-1 pl-2 uppercase text-xs">Received</p>
+									{:else if ordersTotalReceivedQty === 0}
+										<img
+											style="filter: brightness(0) saturate(10%) invert(30%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+											width="24"
+											height="24"
+											src="https://img.icons8.com/windows/32/unpacking.png"
+											alt="unpacking"
+										/>
+										<p class="font-semibold pt-1 pl-2 uppercase text-xs">Not Received</p>
+									{:else if ordersTotalReceivedQty < ordersTotalQty}
+										<img
+											style="filter: brightness(0) saturate(10%) invert(90%) sepia(97%) saturate(600%) hue-rotate(350deg)"
+											width="24"
+											height="24"
+											src="https://img.icons8.com/windows/32/unpacking.png"
+											alt="unpacking"
+										/>
+										<p class="font-semibold pt-1 pl-2 uppercase text-xs">Partially Received</p>
+									{/if}
+								</a>
+							</div>
 						</div>
 					</TableBodyCollapsible>
 				</TableBodyRow>

@@ -209,14 +209,24 @@
 	$: totalBomItemQty = jobInfo?.assembly?.bom?.lines?.length || 0;
 
 	let mountTypeTotals: Map<string, number>;
+	let mountTypeLines: Map<string, number>;
+	let parts = new Set();
 	$: {
 		mountTypeTotals = new Map();
+		mountTypeLines = new Map();
+
 		jobInfo?.assembly?.bom?.lines?.forEach((l) => {
-			if (!l.partByPart) return;
-			const mt = l.partByPart?.properties?.type || 'UNKNOWN';
+			let p = l.partByPart;
+			if (!p) return;
+			const mt = p?.properties?.type || 'UNKNOWN';
 			mountTypeTotals.set(mt, (mountTypeTotals.get(mt) || 0) + 1);
+			if (!parts.has(p.id)) {
+				parts.add(p.id);
+				mountTypeLines.set(mt, (mountTypeLines.get(mt) || 0) + 1);
+			}
 		});
-		console.log('mountTypeTotals', mountTypeTotals);
+		console.log('mountTypeTotals', mountTypeTotals, mountTypeTotals.size);
+		console.log('mountTypeLines', mountTypeLines, mountTypeLines.size);
 	}
 	$: console.log('selectedBatches', selectedBatches);
 </script>
@@ -228,13 +238,14 @@
 				<div class="w-full">
 					<JobOverview job={jobInfo}>
 						<div class="pl-4 text-xs -space-y-1">
-							<!-- <div
-								class:bg-red-600={incompleteOrders?.length > 0}
-								class="w-6 h-6 center rounded-full inline-flex items-center justify-center"
-							>
-								<p class="text-white">{totalBomItemQty > totalKitItemQty ? incompleteOrders?.length : '✅'}</p>
-							</div> -->
-							<!-- {totalKitItemQty}/{totalBomItemQty * jobInfo.quantity} -->
+							<p>Lines:</p>
+							{#each mountTypeLines as [mountType, count]}
+								<p>{mountType}: {count}</p>
+							{/each}
+							<p class="underline">TOTAL: {parts.size}</p>
+						</div>
+						<div class="pl-4 text-xs -space-y-1">
+							<p>Placements:</p>
 							{#each mountTypeTotals as [mountType, count]}
 								<p>{mountType}: {count}</p>
 							{/each}

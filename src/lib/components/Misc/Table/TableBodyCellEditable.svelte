@@ -73,7 +73,8 @@
 					adjustWidth(input);
 				}}
 				on:mousewheel={(e) => {
-					value = Math.max(Number(value) + (e.deltaY > 0 ? -1 : +1), 1);
+					input?.focus();
+					//value = Math.max(Number(value) + (e.deltaY > 0 ? -1 : +1), 1);
 				}}
 			/>
 		{:else}

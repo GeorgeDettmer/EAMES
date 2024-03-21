@@ -10,12 +10,13 @@
 		Badge,
 		Button,
 		Modal,
-		Label
+		Label,
+		Tooltip
 	} from 'flowbite-svelte';
 	import { page } from '$app/stores';
 	import { Plus } from 'svelte-heros-v2';
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { ChevronDoubleDownOutline } from 'flowbite-svelte-icons';
+	import { ChevronDoubleDownOutline, EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
 	import type { Shipment } from '$lib/types';
 	import OrderCreateTableRow from './Create/OrderCreateTableRow.svelte';
 	import { messagesStore, storage } from 'svelte-legos';
@@ -125,6 +126,15 @@
 			})
 		);
 	}
+
+	$: allVisible = orderItems?.every((i) => !!i?.visible);
+	function toggleAllVisibility(visibility: boolean) {
+		order?.orders_items?.forEach((i) => {
+			i.visible = visibility;
+		});
+		order.orders_items = order.orders_items;
+	}
+	$: console.log('allVisible', allVisible);
 	onDestroy(() => {
 		console.log('OrderCreateMulti', 'destroy');
 	});
@@ -389,14 +399,29 @@
 				</div>
 			</TableHeadCell>
 			<TableHeadCell>
-				<span
+				{#if $page?.data?.user?.permissions?.['tester']}
+					<button
+						class="cursor-pointer {!allVisible
+							? 'text-gray-300 dark:text-gray-500 hover:text-black hover:dark:text-white'
+							: ''}"
+						on:click={() => {
+							toggleAllVisibility(!allVisible);
+						}}
+					>
+						<EyeSlashOutline size="sm" class="focus:outline-none" />
+					</button>
+					{#if allVisible}
+						<Tooltip placement="left" defaultClass="text-xs py-1 px-2">Hide all line content</Tooltip>
+					{/if}
+				{/if}
+				<button
 					class="cursor-pointer"
 					on:click={() => {
 						dispatch('delete');
 					}}
 				>
 					❌
-				</span>
+				</button>
 			</TableHeadCell>
 			<slot name="head" />
 		</TableHead>
@@ -404,7 +429,8 @@
 			{#each orderItems as item, idx}
 				<OrderCreateTableRow
 					{idx}
-					{item}
+					bind:item
+					allowSetVisibility={$page?.data?.user?.permissions?.['tester']}
 					allocatabledShipments={shipments}
 					allocatableJobs={jobs}
 					on:remove={(e) => {

@@ -5,6 +5,7 @@
 	import UserIcon from '$lib/components/UserIcon.svelte';
 	import { datetimeFormat, numberToLetter } from '$lib/utils';
 	import { TableBodyRow, TableBodyCell, Tooltip, Badge } from 'flowbite-svelte';
+	import { EyeOutline, EyeSlashOutline } from 'flowbite-svelte-icons';
 	import { createEventDispatcher } from 'svelte';
 	import { XMark } from 'svelte-heros-v2';
 
@@ -25,6 +26,7 @@
 		{ id: 'Consumables' },
 		{ id: 'Other' }
 	];
+	export let allowSetVisibility: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -203,14 +205,31 @@
 		</div>
 	</TableBodyCell>
 	<TableBodyCell tdClass="px-6 py-1">
-		<span
-			class="cursor-pointer"
-			on:click={() => {
-				dispatch('remove', { item, idx });
-			}}
-		>
-			❌
-		</span>
+		<div class="flex space-x-1">
+			{#if allowSetVisibility}
+				<button
+					class="cursor-pointer {item?.visible
+						? 'text-gray-300 dark:text-gray-500 hover:text-black hover:dark:text-white'
+						: ''}"
+					on:click={() => {
+						item.visible = !item?.visible;
+					}}
+				>
+					<EyeSlashOutline size="sm" class="focus:outline-none" />
+				</button>
+				{#if item?.visible}
+					<Tooltip placement="left" defaultClass="text-xs py-1 px-2">Hide line content</Tooltip>
+				{/if}
+			{/if}
+			<button
+				class="cursor-pointer"
+				on:click={() => {
+					dispatch('remove', { item, idx });
+				}}
+			>
+				❌
+			</button>
+		</div>
 	</TableBodyCell>
 	<slot name="body" />
 </TableBodyRow>

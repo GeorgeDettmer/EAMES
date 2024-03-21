@@ -41,7 +41,7 @@
 		order.orders_items = orderItems.toSpliced(idx, 1);
 	}
 	function add() {
-		let matchingLine = orderItems.filter((i) => i.part === newPart).length > 0;
+		let matchingLine = orderItems.filter((i) => i.part === newPart?.trim() && i.spn === newSPN?.trim()).length > 0;
 		if (matchingLine) {
 			messagesStore('This part number already exists on this order!', 'error');
 			return;

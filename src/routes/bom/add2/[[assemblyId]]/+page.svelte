@@ -20,127 +20,94 @@
 		try {
 			const f = e.dataTransfer.files[0];
 			const data = await f.arrayBuffer();
-			parseBOM(data);
+			let d = parseBOMXLSX(data);
+			console.log(getBOM(d));
 		} catch (error) {
 			console.error('fileDrop', error);
 		}
 	}
-	function parseBOM(data) {
-		const wb = XLSX.read(data, { sheetStubs: true }); //TODO: Does sheetStubs cause empty cells to be included?
-		const ws = getParameterInsensitiveAny(wb.Sheets, ['bom']);
-		if (!ws) {
-			messagesStore("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
-			throw new Error("The supplied workbook does not include a sheet named 'BOM'. Found: " + wb.SheetNames);
+	function parseBOMXLSX(data, headerRow: number = 8, includeBlankRows: boolean = false) {
+		const workbook = XLSX.read(data);
+		console.log('workbook', workbook, XLSX);
+		console.log('names', workbook?.SheetNames);
+		if (workbook?.SheetNames && workbook.SheetNames?.length > 1 && !workbook?.SheetNames?.includes('BOM')) {
+			console.error('The supplied workbook does not include a sheet named "BOM"');
+			return;
 		}
-		console.log(wb.Sheets, ws);
-		lines = utils.sheet_to_json(ws);
-		html = utils.sheet_to_html(ws);
-		let range = {
-			s: { c: 0, r: 0 },
-			e: { c: 1000, r: 1000 }
-		};
-		if (ws['!autofilter']?.ref) {
-			range = utils.decode_range(ws['!autofilter']?.ref);
+		try {
+			const sheet = workbook.Sheets ? workbook.Sheets['BOM'] : workbook.Sheets[0];
+			const json = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: includeBlankRows, defval: '' });
+			console.log('json', json);
+			let lines = [];
+			for (let i = headerRow + 1; i < json.length; i++) {
+				let line = json[i];
+				lines.push(
+					new Map(
+						json[headerRow].map((key, j) => [
+							{
+								name: key?.toLowerCase(),
+								cell: XLSX.utils.encode_cell({ c: j, r: i }),
+								col: XLSX.utils.encode_col(j),
+								row: Number(XLSX.utils.encode_row(i))
+							},
+							line[j]
+						])
+					)
+				);
+			}
+			console.log(lines);
+			console.log('headers', json[headerRow]);
+			return lines;
+		} catch (error) {
+			console.error('parseBOMXLSX: Failed to parse imported Excel BOM: ', error);
+			return [];
 		}
-		console.log('data range:', range);
-		let rowsValues = [];
-		const includesAll = (arr, values) => values.every((v) => arr.includes(v));
-		/* for (let R = range.s.r; R <= range.e.r; ++R) {
-			let rowValues = [];
-			for (let C = range.s.c; C <= range.e.c; ++C) {
-				let cell_address = { c: C, r: R };
-				let cell_ref = utils.encode_cell(cell_address);
-				rowValues.push(ws[cell_ref]?.v);
-			}
-			rowsValues.push(rowValues);
-			console.log('row values:', rowValues);
-			if (includesAll(rowValues, ['MPN', 'Description', 'RefDes', 'Qty'])) {
-				console.log('Header: ', R, rowValues);
-			}
-		} */
-		console.log(rowsValues);
-		console.log(
-			'lines:',
-			lines,
-			Object.values(lines?.[0]),
-			includesAll(Object.values(lines?.[0]), _config.bom.template.default)
-		);
-		console.log('headings:', Object.values(_config.bom.headings));
-		let isKeyed: boolean = Object.values(_config.bom.headings)
-			.map((h) => {
-				return Object.keys(lines?.[0]).some((v) => h.includes(v.toLowerCase()));
-			})
-			.every((v) => v === true);
-		console.log('keyed:', isKeyed);
-		if (!isKeyed) {
-			let headerIdx = lines.findIndex((v) => includesAll(Object.values(v), _config.bom.template.default));
-			let newLines = lines.slice(headerIdx);
-			let keys = newLines[0];
-			newLines = lines.slice(headerIdx + 1);
-			keys = Object.values(keys);
-			lines = newLines.map((l, idx) => {
-				let newLine = {};
-				Object.values(l).forEach((v, i) => {
-					let newKey = keys[i];
-					if (Object.keys(newLine).includes(newKey)) return;
-					newLine[newKey] = v;
-				});
-				return newLine;
-			});
+	}
 
-			console.log('keys:', keys, headerIdx);
+	function getBOM(
+		lines,
+		mappings = {
+			quantity: ['J'],
+			part_number: ['O'],
+			description: ['description'],
+			references: ['refdes']
 		}
-		console.log('new lines:', lines);
-		lines.forEach((line, idx) => {
-			let pn = getParameterInsensitiveAny(line, _config.bom.headings.part);
-			let qty = getParameterInsensitiveAny(line, _config.bom.headings.quantity);
-			let references = getParameterInsensitiveAny(line, _config.bom.headings.references);
-			if (!pn && getParameterInsensitiveAny(lines?.[idx - 1], _config.bom.headings.part)) {
-				line.ipn = getParameterInsensitiveAny(lines?.[idx - 1], _config.bom.headings.part);
-			}
-			if (!qty && references) {
-				line.qty = references?.split(',')?.length;
-			}
-		});
-		let _lines = [];
-		lines.forEach((line) => {
-			let references = getParameterInsensitiveAny(line, _config.bom.headings.references);
-			let refs = references?.split(',')?.map((r) => r.trim()); //TODO: Check if null
-			let part = getParameterInsensitiveAny(line, _config.bom.headings.part);
-			part = part === 'Not Fitted' || !part ? null : String(part)?.trim();
-			let description = getParameterInsensitiveAny(line, _config.bom.headings.description);
-			description = part ? String(description)?.trim() : null;
-			let l = {
-				reference: null,
-				part,
-				description,
-				partByPart: { description: description }
-			};
-			if (!refs || refs.length == 0) {
-				console.error('BOM ADD', 'refs length 0 or null', references, refs);
-				let qty = getParameterInsensitiveAny(line, _config.bom.headings.quantity);
-				if (qty) {
-					//TODO: Add line with qty if no refs and qty is set
-					l.quantity = qty;
-					_lines.push(l);
+	) {
+		let bom = [];
+		mappings = Object.entries(mappings);
+		lines.forEach((line, i) => {
+			let bom_line = new Map();
+
+			line.entries().forEach(([key, value], idx) => {
+				let mapping = mappings.filter(([name, criteria]) =>
+					criteria.some((c) => {
+						let cType = typeof c;
+						if (cType === 'string') {
+							if (/^[A-Z]+$/.test(c)) {
+								return key.col === c;
+							}
+							return key.name === c;
+						}
+						if (cType === 'number' && idx === c) {
+							console.log(c, idx);
+							return idx === c;
+						}
+						return false;
+					})
+				);
+				if (mapping.length) {
+					let val = bom_line.get(mapping?.[0]?.[0]) || [];
+					if (value) val.push(value);
+					bom_line.set(mapping?.[0]?.[0], val);
 				}
-			} else {
-				refs.forEach((ref) => {
-					l = {
-						reference: ref,
-						part,
-						description,
-						partByPart: { description: description }
-					};
-					_lines.push(l);
-				});
-			}
+			});
+			bom.push(bom_line);
 		});
-		if (_lines) {
-			bom.lines = _lines;
-		}
-		console.log('bom.lines', bom?.lines);
-		name = files.accepted[0].name?.split('.xl')?.[0] || 'Unknown name';
+		console.log(
+			'bom',
+			bom?.map((l) => Object.fromEntries([...l]))
+		);
+		return bom;
 	}
 	/****************************************************************************************************************/
 
@@ -189,7 +156,6 @@
 	$: assemblyInfo = $assemblyInfoStore?.data?.assemblies_by_pk;
 
 	import PartAddWizard from '../PartAddWizard.svelte';
-	import { parse } from 'svelte/compiler';
 	let files: Files;
 	let lines = [];
 	let html = '';

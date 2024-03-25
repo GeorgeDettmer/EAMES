@@ -126,30 +126,50 @@
 		let descriptionParts: string[] = description?.split(/\s+/);
 		let componentTypes: Record<string, string[]> = $page?.data?.config?.component_types || [];
 		let componentType: string = 'UNKNOWN';
-		console.log('componentTypes', componentTypes);
+		//console.log('componentTypes', componentTypes, descriptionParts);
 		for (let type in componentTypes) {
 			if (componentTypes[type].some((t) => descriptionParts?.includes(t))) {
 				componentType = type;
-				return;
+				break;
 			}
 		}
-		console.log('componentType', componentType);
 		return componentType;
 	}
 	let defaultImage: string = '';
 	let type: 'THT' | 'SMT' | 'PFT' | '' | null = null;
 	let descriptionTokens = [];
-	$: {
-		if (description) {
+
+	/*
+	if (description) {
 			descriptionTokens = parse(description);
-			descriptionTokens.component = descriptionTokens?.type || deriveComponentType(description);
+			let derivedType = deriveComponentType(description);
+			descriptionTokens.component = descriptionTokens?.type;
+			if (derivedType && ['inductor']?.includes(derivedType)) {
+				descriptionTokens.component = derivedType;
+			}
 			if (!type && descriptionTokens?.size) {
 				type = 'SMT';
 			}
 			descriptionTokens.type = type ? type : undefined;
+		}
+	*/
+
+	$: {
+		if (description) {
+			descriptionTokens = parse(description);
+			let derivedType = deriveComponentType(description);
+			descriptionTokens.component = descriptionTokens?.type || derivedType;
+			if (!type && descriptionTokens?.size) {
+				type = 'SMT';
+			}
+			descriptionTokens.type = type ? type : undefined;
+			if (descriptionTokens?.component === 'resistor' && derivedType === 'inductor') {
+				descriptionTokens.component = derivedType;
+				delete descriptionTokens.resistance;
+			}
 			defaultImage = '';
 			if (type === 'SMT' && descriptionTokens?.component && descriptionTokens?.size) {
-				let cmp = descriptionTokens.component;
+				let cmp = derivedType;
 				let s = descriptionTokens.size;
 				if (cmp === 'resistor') {
 					if (s === '0402') {

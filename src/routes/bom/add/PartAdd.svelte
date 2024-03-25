@@ -7,6 +7,7 @@
 	import { copyToClipboard } from '$lib/utils';
 	import { Clipboard } from 'svelte-heros-v2';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -23,6 +24,8 @@
 	let supplierFilter = true;
 	let filter_inUrl = supplierFilters;
 	let imageSearching = false;
+
+	let dispatch = createEventDispatcher();
 
 	$: imagesFiltered = images
 		?.map((url) => {
@@ -107,6 +110,7 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted component: ' + mutationResult.data.insert_parts_data_one.id, 'success');
+			dispatch('component_added', { id, result: mutationResult });
 			id = '';
 			name = '';
 			description = '';

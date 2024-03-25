@@ -122,14 +122,15 @@
 		let descriptionParts: string[] = description?.split(/\s+/);
 		let componentTypes: Record<string, string[]> = $page?.data?.config?.component_types || [];
 		let componentType: string = 'UNKNOWN';
-		console.log('componentTypes', componentTypes);
-		for (let type in componentTypes) {
+		console.log('componentTypes', Object.keys(componentTypes));
+		for (let type of Object.keys(componentTypes)) {
+			console.log('componentType:', type);
 			if (componentTypes[type].some((t) => descriptionParts?.includes(t))) {
 				componentType = type;
 				return;
 			}
 		}
-		console.log('componentType', componentType);
+		//console.log('componentType', componentType);
 		return componentType;
 	}
 
@@ -138,7 +139,11 @@
 	$: {
 		if (description) {
 			descriptionTokens = parse(description);
-			descriptionTokens.component = descriptionTokens?.type || deriveComponentType(description);
+			let derivedType = deriveComponentType(description);
+			descriptionTokens.component = descriptionTokens?.type;
+			if (derivedType && ['inductor']?.includes(derivedType)) {
+				descriptionTokens.component = derivedType;
+			}
 			if (!type && descriptionTokens?.size) {
 				type = 'SMT';
 			}

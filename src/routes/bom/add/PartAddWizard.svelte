@@ -74,7 +74,15 @@
 	</div>
 	<div class="w-3/4 max-h-80 overflow-y-auto p-0.5">
 		{#if partAddPart?.part}
-			<PartAdd id={partAddPart.part} description={partAddPart?.description || ''} lockName={true} />
+			<PartAdd
+				id={partAddPart.part}
+				description={partAddPart?.description || ''}
+				lockName={true}
+				on:component_added={(e) => {
+					console.log('component_added:', e);
+					partAddPart = remainingParts?.[remainingParts?.findIndex((p) => p.part === e?.detail?.id) + 1];
+				}}
+			/>
 		{/if}
 	</div>
 </div>

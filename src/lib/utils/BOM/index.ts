@@ -1,3 +1,5 @@
+import * as XLSX from 'xlsx';
+
 interface Part {
 	id?: string;
 	name: string;
@@ -20,13 +22,10 @@ export class BOM {
 	_references: Set<string> = new Set();
 	_metadata: Map<string, string | number> = new Map();
 	constructor(lines: Map<string | null, BomLine[]>, metadata: Map<string, string | number>) {
-		if (lines?.size) {
-			this._lines = lines;
-		}
 		if (metadata?.size) {
 			this._metadata = metadata;
 		}
-		this._references = new Set([...this._lines.keys()]?.filter((k) => !!k) as string[]);
+		this.setLines(lines);
 	}
 
 	//To return a new map: Map<part,[{reference,quantity,description,...}]
@@ -34,22 +33,30 @@ export class BOM {
 		return this._lines;
 	}
 	set lines(lines: Map<string | null, BomLine[]>) {
-		this._lines = lines;
+		//this._lines = lines;
+		this.setLines(lines);
 	}
 
 	//To return a new map: Map<reference,{part,...}
 	get linesByRef() {
 		let linesByRef: Map<string, BomLine> = new Map();
 
-		this._lines.forEach(l, (pn) => {
+		this._lines.forEach((l, pn) => {
 			linesByRef.set(l?.reference, { pn, ...l });
 		});
 
 		return linesByRef;
 	}
 
-	setLinesFromSheetJSON(json: any[][]) {
-		for (let i = headerRow + 1; i < json.length; i++) {
+	private setLines(lines: Map<string | null, BomLine[]>) {
+		if (lines?.size) {
+			this._lines = lines;
+		}
+		this._references = new Set([...this._lines.keys()]?.filter((k) => !!k) as string[]);
+	}
+
+	setLinesFromSheetJSON(json: any[][], headerRow: int = 8) {
+		/* for (let i = headerRow + 1; i < json.length; i++) {
 			let line = json[i];
 			lines.push(
 				new Map(
@@ -66,6 +73,6 @@ export class BOM {
 			);
 		}
 		console.log(lines);
-		console.log('headers', json[headerRow]);
+		console.log('headers', json[headerRow]); */
 	}
 }

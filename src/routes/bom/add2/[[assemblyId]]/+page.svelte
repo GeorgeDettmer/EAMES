@@ -7,7 +7,7 @@
 	import FileDrop from 'filedrop-svelte';
 	import type { Files } from 'filedrop-svelte';
 	import { Alert, Button, Input, Modal } from 'flowbite-svelte';
-	import { InfoCircleSolid, PlusOutline } from 'flowbite-svelte-icons';
+	import { InfoCircleSolid, LinkedinSolid, PlusOutline } from 'flowbite-svelte-icons';
 	import { messagesStore } from 'svelte-legos';
 	const urqlClient = getContextClient();
 	$: assemblyId = Number($page?.data?.assemblyId);
@@ -21,27 +21,55 @@
 			const f = e.dataTransfer.files[0];
 			const data = await f.arrayBuffer();
 			let d = parseBOMXLSX(data);
-			console.log(getBOM(d));
+			console.log('getBOM', getBOM(d));
 		} catch (error) {
 			console.error('fileDrop', error);
 		}
 	}
-	function parseBOMXLSX(data, headerRow: number = 8, includeBlankRows: boolean = false) {
+
+	type Line = Map<string, Record<string, any>[]>;
+	type Lines = Line[];
+
+	function parseBOMXLSX(data, headerRow: number = 8, includeBlankRows: boolean = false): Lines {
 		const workbook = XLSX.read(data);
 		console.log('workbook', workbook, XLSX);
-		console.log('names', workbook?.SheetNames);
+		console.log('sheet names', workbook?.SheetNames);
 		if (workbook?.SheetNames && workbook.SheetNames?.length > 1 && !workbook?.SheetNames?.includes('BOM')) {
 			console.error('The supplied workbook does not include a sheet named "BOM"');
-			return;
+			return [];
 		}
 		try {
 			const sheet = workbook.Sheets ? workbook.Sheets['BOM'] : workbook.Sheets[0];
-			const json = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: includeBlankRows, defval: '' });
+			const json: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: includeBlankRows, defval: '' });
 			console.log('json', json);
-			let lines = [];
-			for (let i = headerRow + 1; i < json.length; i++) {
-				let line = json[i];
-				lines.push(
+			let lines: Lines = [];
+			let headers: string[] = json[headerRow];
+			for (let lineIdx = headerRow + 1; lineIdx < json.length; lineIdx++) {
+				const line = json[lineIdx];
+				const lineMap: Line = new Map();
+
+				for (let headerIdx = 0; headerIdx < headers.length; headerIdx++) {
+					const header = headers[headerIdx];
+					const value = line?.[headerIdx];
+					const headerKey = header?.trim()?.toLowerCase() || `?${XLSX.utils.encode_col(headerIdx)}?`;
+					const exisiting = lineMap.has(headerKey);
+
+					const lineDetail = {
+						cell: XLSX.utils.encode_cell({ c: headerIdx, r: lineIdx }),
+						col: XLSX.utils.encode_col(headerIdx),
+						row: Number(XLSX.utils.encode_row(lineIdx)),
+						value
+					};
+
+					if (exisiting) {
+						///console.log('exisiting', header, headerKey, lineDetail);
+						lineMap.get(headerKey)?.push(lineDetail);
+					} else {
+						lineMap.set(headerKey, [lineDetail]);
+					}
+				}
+				lines.push(lineMap);
+				/* lines.push(
 					new Map(
 						json[headerRow].map((key, j) => [
 							{
@@ -53,10 +81,10 @@
 							line[j]
 						])
 					)
-				);
+				); */
 			}
 			console.log(lines);
-			console.log('headers', json[headerRow]);
+			console.log('headers', headers);
 			return lines;
 		} catch (error) {
 			console.error('parseBOMXLSX: Failed to parse imported Excel BOM: ', error);
@@ -65,6 +93,70 @@
 	}
 
 	function getBOM(
+		lines: Lines,
+		mappings = {
+			quantity: ['J'],
+			part_number: ['O'],
+			description: ['description'],
+			references: ['refdes']
+		}
+	) {
+		let bom = [];
+
+		try {
+			for (let lineIdx = 0; lineIdx < 1; /* lines.length; */ lineIdx++) {
+				const line = lines[lineIdx];
+				if (!line) continue;
+				const lineHeaders = [...line.keys()];
+				const bomLineMap: Map<string, any[]> = new Map();
+				console.log(lineHeaders);
+				for (const mapping in mappings) {
+					let matchers: string[] = mappings[mapping as keyof typeof mappings];
+					let matched = lineHeaders.filter(([key, val]) => {
+						return matchers.some((c) => {
+							console.log('cccccccc', c, key, val);
+							let cType = typeof c;
+							if (cType === 'string') {
+								if (/^[A-Z]+$/.test(c)) {
+									console.log('cccccccc', 'col');
+									val?.col === c;
+								}
+								console.log('cccccccc', 'header');
+								return key === c;
+							}
+							/* if (cType === 'number' && idx === c) {
+							console.log(c, idx);
+							return idx === c;
+						} */
+							return false;
+						});
+					});
+
+					console.log('matched', matched);
+					if (matched.length > 0) {
+						let values: any[] | undefined = line
+							.get(mapping)
+							?.map((l) => l.value)
+							?.filter((v) => !!v);
+						if (values && values.length > 0) {
+							bomLineMap.set(mapping, values);
+							bom.push(bomLineMap);
+						}
+					}
+				}
+			}
+		} catch (error) {
+			console.error('parseBOMXLSX: Failed to parse imported Excel BOM: ', error);
+			return [];
+		}
+		console.log(
+			'bom',
+			bom?.map((l) => Object.fromEntries([...l]))
+		);
+		return bom;
+	}
+
+	/* function getBOM(
 		lines,
 		mappings = {
 			quantity: ['J'],
@@ -108,7 +200,7 @@
 			bom?.map((l) => Object.fromEntries([...l]))
 		);
 		return bom;
-	}
+	} */
 	/****************************************************************************************************************/
 
 	const _config = {

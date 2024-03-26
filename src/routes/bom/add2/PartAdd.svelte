@@ -7,6 +7,7 @@
 	import { copyToClipboard } from '$lib/utils';
 	import { Clipboard } from 'svelte-heros-v2';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -23,6 +24,8 @@
 	let supplierFilter = true;
 	let filter_inUrl = supplierFilters;
 	let imageSearching = false;
+
+	let dispatch = createEventDispatcher();
 
 	$: imagesFiltered = images
 		?.map((url) => {
@@ -107,6 +110,7 @@
 		} else {
 			console.log('MUTATION RESULT: ', mutationResult);
 			messagesStore('Inserted component: ' + mutationResult.data.insert_parts_data_one.id, 'success');
+			dispatch('component_added', { id, result: mutationResult });
 			id = '';
 			name = '';
 			description = '';
@@ -122,22 +126,21 @@
 		let descriptionParts: string[] = description?.split(/\s+/);
 		let componentTypes: Record<string, string[]> = $page?.data?.config?.component_types || [];
 		let componentType: string = 'UNKNOWN';
-		console.log('componentTypes', Object.keys(componentTypes));
-		for (let type of Object.keys(componentTypes)) {
-			console.log('componentType:', type);
+		//console.log('componentTypes', componentTypes, descriptionParts);
+		for (let type in componentTypes) {
 			if (componentTypes[type].some((t) => descriptionParts?.includes(t))) {
 				componentType = type;
-				return;
+				break;
 			}
 		}
-		//console.log('componentType', componentType);
 		return componentType;
 	}
-
+	let defaultImage: string = '';
 	let type: 'THT' | 'SMT' | 'PFT' | '' | null = null;
 	let descriptionTokens = [];
-	$: {
-		if (description) {
+
+	/*
+	if (description) {
 			descriptionTokens = parse(description);
 			let derivedType = deriveComponentType(description);
 			descriptionTokens.component = descriptionTokens?.type;
@@ -148,6 +151,43 @@
 				type = 'SMT';
 			}
 			descriptionTokens.type = type ? type : undefined;
+		}
+	*/
+
+	$: {
+		if (description) {
+			descriptionTokens = parse(description);
+			let derivedType = deriveComponentType(description);
+			descriptionTokens.component = descriptionTokens?.type || derivedType;
+			if (!type && descriptionTokens?.size) {
+				type = 'SMT';
+			}
+			descriptionTokens.type = type ? type : undefined;
+			if (descriptionTokens?.component === 'resistor' && derivedType === 'inductor') {
+				descriptionTokens.component = derivedType;
+				delete descriptionTokens.resistance;
+			}
+			defaultImage = '';
+			if (type === 'SMT' && descriptionTokens?.component && descriptionTokens?.size) {
+				let cmp = derivedType;
+				let s = descriptionTokens.size;
+				if (cmp === 'resistor') {
+					if (s === '0402') {
+						defaultImage = 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/596/Vishay-CRCW-0402.jpg';
+					}
+					if (s === '0603') {
+						defaultImage =
+							'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/2491/CRCW%200603%20%281608metric%29.jpg';
+					}
+					if (s === '0805') {
+						defaultImage =
+							'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/4849/541_CRCW-0805-%282125metric%29.jpg';
+					}
+					if (s === '1206') {
+						defaultImage = 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/596/Vishay-CRCW-1206.jpg';
+					}
+				}
+			}
 		}
 	}
 	$: cpl = matchCPL(descriptionTokens);
@@ -339,7 +379,7 @@
 							Supplier Filter
 						</button>
 						<div class="grid grid-cols-6 gap-0.5 p-0.5 max-w-96 overflow-x-auto">
-							{#each imagesFiltered as img}
+							{#each [defaultImage, ...imagesFiltered] as img}
 								{#if img}
 									<div>
 										<img class="w-28 cursor-pointer hover:shadow-md" src={img} on:click={() => (image = img)} />

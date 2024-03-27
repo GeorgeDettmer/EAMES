@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { classes } from '$lib/utils';
 	import { gql, getContextClient, queryStore } from '@urql/svelte';
-	import { Hr } from 'flowbite-svelte';
+	import { Hr, Tooltip } from 'flowbite-svelte';
 	import List from './KnowledgeBase/List.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { ArrowTopRightOnSquare } from 'svelte-heros-v2';
+	import { ArrowTopRightOnSquare, Cog, Cog8Tooth } from 'svelte-heros-v2';
 	import ViewerFromJson from './ViewerFromJSON.svelte';
 	import { capacitance } from '$lib/utils/electical';
+	import { InfoCircleOutline } from 'flowbite-svelte-icons';
 	export let partId: string = 'Unknown';
 	export let partLinkVisible: boolean = true;
 	export let kbVisible: boolean = false;
@@ -95,27 +96,31 @@
 			<div class="flex">
 				{#if partLinkVisible}
 					<div
-						class={'text-base font-bold leading-none text-gray-900 dark:text-white'}
+						class="text-base font-bold leading-none text-gray-900 dark:text-white flex space-x-1 py-0.5"
 						class:italic={!$partInfoStore?.data?.parts_data_by_pk}
 					>
 						{#if isGeneric}
 							<p>{partInfo?.name}</p>
 						{:else}
-							<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}
-								>{partInfo?.name}</a
-							>
+							<a target="_blank" href={window.origin + '/part/' + (partInfo?.name || '')} class={classes.link}>
+								{partInfo?.name}
+							</a>
+							<a target="_blank" href={`https://octopart.com/search?q=${partInfo?.name}&currency=GBP`} class={classes.link}>
+								<InfoCircleOutline size="sm" />
+							</a>
+							<Tooltip defaultClass="py-1 px-2 text-xs">Open in Octopart</Tooltip>
 						{/if}
 					</div>
 				{/if}
 
 				{#if showPopoutButton}
-					<div class="float-right ml-auto">
+					<!-- <div class="float-right ml-auto">
 						<a href={window.origin + '/part/' + (partInfo?.name || '')} target="_blank">
 							<ArrowTopRightOnSquare
 								class="text-xs dark:text-white text-center cursor-pointer opacity-75 hover:opacity-100"
 							/>
 						</a>
-					</div>
+					</div> -->
 				{/if}
 			</div>
 			<div class="mb-1 text-sm font-normal">

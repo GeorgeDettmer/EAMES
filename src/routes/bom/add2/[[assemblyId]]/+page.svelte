@@ -110,7 +110,30 @@
 				const lineHeaders = [...line.keys()];
 				const bomLineMap: Map<string, any[]> = new Map();
 				console.log(lineHeaders);
-				for (const mapping in mappings) {
+				for (let headerIdx = 0; headerIdx < lineHeaders.length; headerIdx++) {
+					const header: string = lineHeaders[headerIdx];
+
+					for (const mapping in mappings) {
+						const matchers: string[] = mappings[mapping as keyof typeof mappings];
+						for (const criteria of matchers) {
+							console.log('cccccccc', header, mapping, criteria);
+							const cType = typeof criteria;
+							if (cType === 'string') {
+								if (/^[A-Z]+$/.test(criteria)) {
+									console.log('cccccccc', 'col');
+									line?.col === criteria;
+								}
+								console.log('cccccccc', 'header');
+								return header === criteria;
+							}
+							/* if (cType === 'number' && idx === c) {
+							console.log(c, idx);
+							return idx === criteria;
+						}  */
+						}
+					}
+				}
+				/* for (const mapping in mappings) {
 					let matchers: string[] = mappings[mapping as keyof typeof mappings];
 					let matched = lineHeaders.filter(([key, val]) => {
 						return matchers.some((c) => {
@@ -124,10 +147,10 @@
 								console.log('cccccccc', 'header');
 								return key === c;
 							}
-							/* if (cType === 'number' && idx === c) {
+							 if (cType === 'number' && idx === c) {
 							console.log(c, idx);
 							return idx === c;
-						} */
+						} 
 							return false;
 						});
 					});
@@ -143,7 +166,7 @@
 							bom.push(bomLineMap);
 						}
 					}
-				}
+				} */
 			}
 		} catch (error) {
 			console.error('parseBOMXLSX: Failed to parse imported Excel BOM: ', error);

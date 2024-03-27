@@ -8,6 +8,7 @@
 	import { Clipboard } from 'svelte-heros-v2';
 	import EditableText from '$lib/components/Misc/EditableText.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { InfoCircleOutline, XCircleOutline } from 'flowbite-svelte-icons';
 
 	const urqlClient = getContextClient();
 	export let id: string = '';
@@ -15,6 +16,7 @@
 	export let description: string = '';
 	export let image: string = '';
 	export let images: string[] = [];
+	export let polarised: boolean | null | undefined = null;
 
 	/* if (!name) { */
 	$: name = id;
@@ -91,9 +93,17 @@
 					$description: String = ""
 					$image_url: String = ""
 					$properties: json = ""
+					$polarised: Boolean
 				) {
 					insert_parts_data_one(
-						object: { id: $id, name: $name, description: $description, image_url: $image_url, properties: $properties }
+						object: {
+							id: $id
+							name: $name
+							description: $description
+							image_url: $image_url
+							properties: $properties
+							polarised: $polarised
+						}
 					) {
 						id
 					}
@@ -102,7 +112,7 @@
 					}
 				}
 			`,
-			{ id: id.trim(), name: name.trim(), description, image_url: image, properties }
+			{ id: id.trim(), name: name.trim(), description, image_url: image, properties, polarised }
 		);
 		if (mutationResult?.error) {
 			console.error('MUTATION ERROR: ', mutationResult);
@@ -117,6 +127,7 @@
 			image = '';
 			images = [];
 			type = null;
+			polarised = null;
 		}
 		componentAdding = false;
 	}
@@ -255,6 +266,23 @@
 			<div class="w-1/2">
 				<Label for="small-input" class="">Image</Label>
 				<Input id="small-input" size="sm" placeholder="Part image url" bind:value={image} />
+				<div class="flex space-x-1 my-auto">
+					<Checkbox class="mt-1" bind:checked={polarised}>
+						<span class:line-through={polarised === null}>Polarised</span>
+					</Checkbox>
+					<button
+						class="hover:text-red-600"
+						on:click={() => {
+							console.log(polarised);
+							polarised = null;
+							console.log(polarised);
+						}}
+					>
+						<!-- <XCircleOutline size="sm" class="focus:outline-none" /> -->
+						x
+					</button>
+				</div>
+
 				<div class="mt-1">
 					<ul>
 						<li class="rounded p-0.5 uppercase">

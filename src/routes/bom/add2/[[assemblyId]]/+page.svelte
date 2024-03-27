@@ -121,7 +121,12 @@
 							if (cType === 'string') {
 								if (/^[A-Z]+$/.test(criteria)) {
 									console.log('cccccccc', 'col');
-									line?.col === criteria;
+									if (line?.col === criteria) {
+										console.log('cccccccc', 'matched', 'col');
+										let val = bom_line.get(mapping?.[0]?.[0]) || [];
+										if (value) val.push(value);
+										bom_line.set(mapping?.[0]?.[0], val);
+									}
 								}
 								console.log('cccccccc', 'header');
 								return header === criteria;

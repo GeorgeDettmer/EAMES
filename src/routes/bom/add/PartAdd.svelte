@@ -65,7 +65,7 @@
 			return;
 		}
 		if (type === null) {
-			messagesStore('Component type not set', 'error');
+			messagesStore('Component mount type not set', 'error');
 			return;
 		}
 		if (!name || !description || !image) {
@@ -381,6 +381,12 @@
 							</span>
 						</li>
 					{/each}
+					<li class="flex">
+						polarised:
+						<span>
+							{polarised === null ? 'undefined' : polarised}
+						</span>
+					</li>
 				</ul>
 			</div>
 		</div>
